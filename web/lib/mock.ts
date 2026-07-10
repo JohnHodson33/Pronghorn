@@ -9,6 +9,7 @@ export const STAGES = [
   "IOI Submitted",
   "LOI",
   "Diligence",
+  "Closed",
 ] as const;
 export type Stage = (typeof STAGES)[number];
 
@@ -28,6 +29,7 @@ export type Deal = {
   nextStep: string | null;
   nextStepDue: string | null; // ISO date
   sample?: boolean;
+  passed?: boolean; // passed deals keep their record but leave the board
 };
 
 export const deals: Deal[] = [
@@ -129,6 +131,41 @@ export const deals: Deal[] = [
     nextStepDue: "2026-07-18",
     sample: true,
   },
+  {
+    id: "d7",
+    company: "Cactus Flower Pest Solutions (sample)",
+    industry: "Pest Control",
+    city: "Mesa",
+    state: "AZ",
+    revenue: 5_100_000,
+    ebitda: 1_900_000,
+    ebitdaType: "EBITDA",
+    asking: 8_200_000,
+    stage: "Closed",
+    broker: "TBD",
+    brokerage: "Direct / proprietary",
+    nextStep: "Integration kickoff",
+    nextStepDue: null,
+    sample: true,
+  },
+  {
+    id: "d8",
+    company: "Metro Roofing Group (sample)",
+    industry: "Roofing",
+    city: "Houston",
+    state: "TX",
+    revenue: 7_400_000,
+    ebitda: 1_100_000,
+    ebitdaType: "EBITDA",
+    asking: 6_000_000,
+    stage: "Under Screening",
+    broker: "TBD",
+    brokerage: "Transworld",
+    nextStep: null,
+    nextStepDue: null,
+    sample: true,
+    passed: true,
+  },
 ];
 
 export type Listing = {
@@ -169,4 +206,16 @@ export function money(n: number | null): string {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M`;
   if (n >= 1_000) return `$${Math.round(n / 1_000)}K`;
   return `$${n}`;
+}
+
+// cash-flow margin: cash flow ÷ revenue
+export function margin(cashFlow: number | null, revenue: number | null): string {
+  if (cashFlow === null || revenue === null || revenue === 0) return "—";
+  return `${Math.round((cashFlow / revenue) * 100)}%`;
+}
+
+// entry multiple: asking ÷ cash flow
+export function multiple(asking: number | null, cashFlow: number | null): string {
+  if (asking === null || cashFlow === null || cashFlow === 0) return "—";
+  return `${(asking / cashFlow).toFixed(1)}×`;
 }

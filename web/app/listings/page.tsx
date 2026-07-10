@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { listings, money, type Listing } from "@/lib/mock";
+import { listings, margin, money, multiple, type Listing } from "@/lib/mock";
 
 const tierBadge: Record<number, string> = {
   1: "bg-emerald-100 text-emerald-800",
@@ -118,19 +118,26 @@ export default function Listings() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500">
+              <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Tier</th>
               <th className="px-4 py-3">Listing</th>
               <th className="px-4 py-3">Location</th>
-              <th className="px-4 py-3 text-right">Cash flow</th>
               <th className="px-4 py-3 text-right">Revenue</th>
+              <th className="px-4 py-3 text-right">EBITDA / SDE</th>
+              <th className="px-4 py-3 text-right">Margin</th>
               <th className="px-4 py-3 text-right">Asking</th>
+              <th className="px-4 py-3 text-right">Multiple</th>
               <th className="px-4 py-3">First seen</th>
-              <th className="px-4 py-3">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
             {rows.map((l) => (
               <tr key={l.id} className="hover:bg-zinc-50" title={l.tierReasoning}>
+                <td className="px-4 py-3">
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle[l.status]}`}>
+                    {l.status}
+                  </span>
+                </td>
                 <td className="px-4 py-3">
                   <span className={`rounded px-2 py-0.5 text-xs font-semibold ${tierBadge[l.tier]}`}>
                     {l.tier}
@@ -147,25 +154,29 @@ export default function Listings() {
                   {l.state}
                   {l.priorityState && <span className="ml-1 text-emerald-700">★</span>}
                 </td>
+                <td className="px-4 py-3 text-right tabular-nums">{money(l.revenue)}</td>
                 <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
                   <span className="font-semibold">{money(l.cashFlow)}</span>
                   {l.cashFlowType !== "unknown" && (
                     <span className="ml-1 text-xs text-zinc-500">{l.cashFlowType}</span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-right tabular-nums">{money(l.revenue)}</td>
-                <td className="px-4 py-3 text-right tabular-nums">{money(l.asking)}</td>
-                <td className="whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{l.firstSeen}</td>
-                <td className="px-4 py-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle[l.status]}`}>
-                    {l.status}
-                  </span>
+                <td className="px-4 py-3 text-right tabular-nums text-zinc-600">
+                  {margin(l.cashFlow, l.revenue)}
                 </td>
+                <td className="px-4 py-3 text-right tabular-nums">{money(l.asking)}</td>
+                <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+                  <span className="font-semibold">{multiple(l.asking, l.cashFlow)}</span>
+                  {l.cashFlowType !== "unknown" && l.asking !== null && l.cashFlow !== null && (
+                    <span className="ml-1 text-xs text-zinc-500">{l.cashFlowType}</span>
+                  )}
+                </td>
+                <td className="whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{l.firstSeen}</td>
               </tr>
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-10 text-center text-sm text-zinc-400">
+                <td colSpan={10} className="px-4 py-10 text-center text-sm text-zinc-400">
                   No listings match the current filters.
                 </td>
               </tr>
