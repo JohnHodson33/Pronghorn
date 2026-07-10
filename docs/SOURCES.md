@@ -6,7 +6,7 @@ Status: `candidate` → `adapter-built` → `live` → (`blocked` / `retired`)
 
 | Source | URL | Status | Notes |
 |---|---|---|---|
-| BizBuySell | bizbuysell.com | candidate | Biggest US marketplace. Likely anti-bot — expect Playwright. |
+| BizBuySell | bizbuysell.com | **adapter-built** | Working Puppeteer adapter in `scraper/sources/bizbuysell.js` (detail pages blocked — search results only). Weekly scheduled run live on old OneDrive copy until Phase 1 cutover. |
 | BizQuest | bizquest.com | candidate | Same parent co. as BizBuySell |
 | BusinessBroker.net | businessbroker.net | candidate | |
 | DealStream | dealstream.com | candidate | Formerly MergerNetwork |

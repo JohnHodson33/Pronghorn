@@ -49,6 +49,32 @@ BizQuest etc.). Fingerprint on normalized (location + revenue + asking price +
 industry) buckets, then Claude API judgment call for near-matches. Never
 auto-merge destructively — link records via a `duplicate_of` reference.
 
+## Existing codebase — Phase 1 seed (`scraper/`)
+
+Copied 2026-07-09 from `C:\Users\johnd\OneDrive\Documents\00. Pronghorn\Claude Code\
+BizBuySell Scraper` (original left in place — its Windows Task Scheduler weekly run
+still works until we cut over). Already built and working:
+
+- `core/orchestrator.js` — multi-source runner, designed for N sources from day one
+- `core/source_base.js` + `sources/bizbuysell.js` — adapter pattern (Puppeteer)
+- `core/filters.js` + `config.json` — investment criteria as data: industry keyword
+  include/exclude, state include/exclude/priority, size bounds ($300K SDE floor,
+  $10M cap, unknown-cash-flow asking-price proxy)
+- `core/seen_store.js` — new/seen tracking across runs
+- `core/orchestrator.js` dedup — cross-source fuzzy matching (state+price+cash-flow
+  key, name-token confirm, flags `duplicate_of`, never drops)
+- `screener/claude_screener.js` — Haiku-powered tier classifier (Tier 1–4) with the
+  full Pronghorn mandate baked into the system prompt; extracts revenue from
+  descriptions; ~$0.001/listing
+- `delivery/outlook.js` — emails results via Microsoft Graph
+
+**Port plan (Phase 1):** keep orchestrator/adapter/screener architecture; replace
+CSV/JSON + email output with Supabase upserts; replace seen_store with DB
+first_seen/last_seen; move config.json `relevance` criteria into DB as editable
+"screen profiles" so the frontend can toggle industry/geography/size filters live
+(John's requirement: the UI is a configurable search engine — guardrails are
+saved filter sets, not code).
+
 ## Scraper design
 
 - One thin **adapter per site** (parse this site's HTML → common Listing shape);

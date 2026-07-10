@@ -1,0 +1,66 @@
+{
+  "sources": {
+    "bizbuysell": {
+      "enabled": true,
+      "module": "./sources/bizbuysell",
+      "max_pages": 30
+    }
+  },
+  "relevance": {
+    "_comment": "Edit these lists anytime — no code changes needed. Keywords match whole words/phrases (case-insensitive) against listing name + industry + description. Empty include list = all industries pass. States are 2-letter codes; empty include_states = national. priority_states listings get flagged/starred, never filtered. Size bounds: null = no bound. unknown_cash_flow_min_asking_price: listings that don't disclose cash flow are kept only if asking price is at least this (proxy for the $300K SDE floor).",
+    "industry_keywords_include": [
+      "pool service", "pool services", "pool cleaning", "pool maintenance", "pool route",
+      "pest control", "exterminating", "extermination",
+      "lawn care", "lawn maintenance", "lawn treatment", "fertilization", "weed control",
+      "lake management", "pond management", "water management", "aquatic",
+      "tree care", "tree service", "tree trimming", "arborist",
+      "landscaping", "landscape", "hardscape",
+      "hvac", "heating and cooling", "heating and air", "heating & air", "air conditioning", "furnace", "mechanical contractor",
+      "plumbing", "plumber", "drain cleaning",
+      "electrician", "electrical contractor", "electrical services", "electrical service",
+      "roofing", "roof repair",
+      "windows and doors", "window and door", "window installation", "window replacement", "door installation", "garage door",
+      "gutter", "siding", "chimney", "septic", "irrigation", "sprinkler", "fencing", "fence",
+      "pressure washing", "power washing", "window cleaning",
+      "janitorial", "commercial cleaning", "cleaning service", "cleaning services", "maid service", "house cleaning", "carpet cleaning",
+      "restoration", "remediation", "mold", "water damage", "fire damage",
+      "property maintenance", "facility services", "facilities maintenance", "building maintenance",
+      "junk removal", "waste", "sanitation", "portable toilet",
+      "home services", "handyman", "appliance repair", "locksmith"
+    ],
+    "industry_keywords_exclude": [],
+    "geography": {
+      "include_states": [],
+      "exclude_states": [],
+      "priority_states": ["AZ", "NV", "TX", "UT", "CO", "NM", "GA", "NC", "SC", "TN"]
+    },
+    "size": {
+      "min_asking_price": null,
+      "max_asking_price": null,
+      "min_cash_flow": 300000,
+      "max_cash_flow": 10000000,
+      "unknown_cash_flow_min_asking_price": 750000
+    },
+    "keep_when_unknown": true
+  },
+  "filters": {
+    "max_multiple_flag": 5.0
+  },
+  "screener": {
+    "model": "claude-haiku-4-5-20251001",
+    "batch_size": 10,
+    "batch_delay_ms": 1000
+  },
+  "output": {
+    "save_json": true,
+    "save_csv": true,
+    "output_folder": "./output",
+    "log_folder": "./logs"
+  },
+  "schedule": {
+    "frequency": "weekly",
+    "day": "monday",
+    "run_time": "06:00",
+    "_comment": "Documentation only — the actual trigger lives in Windows Task Scheduler (task: Pronghorn Deal Sourcing). Machine timezone is US Mountain Standard Time (Arizona, no DST)."
+  }
+}
