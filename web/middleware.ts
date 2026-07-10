@@ -16,14 +16,14 @@ export const config = {
 };
 
 export function middleware(req: NextRequest) {
-  const password = process.env.GATE_PASSWORD;
+  const password = process.env.GATE_PASSWORD?.trim();
   if (!password) return NextResponse.next(); // no gate configured (local dev)
 
   const auth = req.headers.get("authorization");
   if (auth?.startsWith("Basic ")) {
     try {
       const decoded = atob(auth.slice(6)); // "user:pass"
-      const pass = decoded.slice(decoded.indexOf(":") + 1);
+      const pass = decoded.slice(decoded.indexOf(":") + 1).trim();
       if (pass === password) return NextResponse.next();
     } catch {
       // fall through to challenge
