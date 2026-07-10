@@ -30,6 +30,24 @@ const DEFAULT_PATHS = [
   '/industry/services-construction-businesses-for-sale.aspx',
 ];
 
+const STATE_CODES = {
+  alabama: 'AL', alaska: 'AK', arizona: 'AZ', arkansas: 'AR', california: 'CA',
+  colorado: 'CO', connecticut: 'CT', delaware: 'DE', florida: 'FL', georgia: 'GA',
+  hawaii: 'HI', idaho: 'ID', illinois: 'IL', indiana: 'IN', iowa: 'IA',
+  kansas: 'KS', kentucky: 'KY', louisiana: 'LA', maine: 'ME', maryland: 'MD',
+  massachusetts: 'MA', michigan: 'MI', minnesota: 'MN', mississippi: 'MS',
+  missouri: 'MO', montana: 'MT', nebraska: 'NE', nevada: 'NV',
+  'new hampshire': 'NH', 'new jersey': 'NJ', 'new mexico': 'NM', 'new york': 'NY',
+  'north carolina': 'NC', 'north dakota': 'ND', ohio: 'OH', oklahoma: 'OK',
+  oregon: 'OR', pennsylvania: 'PA', 'rhode island': 'RI', 'south carolina': 'SC',
+  'south dakota': 'SD', tennessee: 'TN', texas: 'TX', utah: 'UT', vermont: 'VT',
+  virginia: 'VA', washington: 'WA', 'west virginia': 'WV', wisconsin: 'WI',
+  wyoming: 'WY', 'district of columbia': 'DC',
+};
+
+// normalize a name for fuzzy JSON-LD matching: lowercase, alphanumerics only
+const normName = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
 class BusinessBrokerScraper extends SourceScraper {
   async scrape() {
     const base = 'https://www.businessbroker.net';
@@ -94,7 +112,7 @@ class BusinessBrokerScraper extends SourceScraper {
         for (const it of items) {
           const biz = it.item;
           if (biz?.name) {
-            ldByName.set(biz.name.trim().toLowerCase(), {
+            ldByName.set(normName(biz.name), {
               city: biz.address?.addressLocality || null,
               state: biz.address?.addressRegion || null,
               price: this.parseMoney(biz.makesOffer?.[0]?.price ?? biz.priceRange),
@@ -124,14 +142,20 @@ class BusinessBrokerScraper extends SourceScraper {
       }
     });
 
-    const slugName = (href) => {
+    const slugWords = (href) => {
       const m = href.match(/\/business-for-sale\/([^/]+)\/\d+\.aspx$/);
-      if (!m) return null;
-      return m[1]
-        .split('-')
-        .filter(Boolean)
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ');
+      return m ? m[1].split('-').filter(Boolean) : null;
+    };
+    const slugName = (href) => {
+      const w = slugWords(href);
+      return w ? w.map((x) => x.charAt(0).toUpperCase() + x.slice(1)).join(' ') : null;
+    };
+    // listing slugs end in the state name: "...-augusta-georgia" / "...-new-york"
+    const slugState = (href) => {
+      const w = slugWords(href);
+      if (!w || w.length < 2) return null;
+      const lastTwo = `${w[w.length - 2]} ${w[w.length - 1]}`.toLowerCase();
+      return STATE_CODES[lastTwo] ?? STATE_CODES[w[w.length - 1].toLowerCase()] ?? null;
     };
 
     const out = [];
@@ -156,10 +180,10 @@ class BusinessBrokerScraper extends SourceScraper {
       const revenue = this.matchMoney(cardText, /(?:gross\s*revenue|revenue|gross\s*income):?\s*\$\s*([\d,.]+)/i);
       const locM = cardText.match(/([A-Za-z .'-]+),\s*([A-Z]{2})\b/);
 
-      const ld = name ? ldByName.get(name.trim().toLowerCase()) : null;
+      const ld = name ? ldByName.get(normName(name)) : null;
       const clean = (v) => (v && !/not\s*disclosed|undisclosed|confidential/i.test(v) ? v.trim() : null);
       const city = clean(locM?.[1]) ?? clean(ld?.city);
-      const state = locM?.[2] || ld?.state || null;
+      const state = locM?.[2] || ld?.state || slugState(href);
 
       out.push(this.listing({
         source_listing_id: id,

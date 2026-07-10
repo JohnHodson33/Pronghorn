@@ -146,6 +146,15 @@ async function syncListings(listings) {
           name:             l.name,
           city:             l.location?.city ?? null,
           state:            l.location?.state ?? null,
+          // re-annotate against the CURRENT screen profile (criteria may have
+          // changed in the UI since this row was first seen)
+          priority_state:   !!l.priority_state,
+          raw: {
+            ...l.raw,
+            relevant:      l.relevant ?? null,
+            filter_reason: l.filter_reason ?? null,
+            date_listed:   l.date_listed ?? null,
+          },
         };
 
         if (prev.delisted_at) {
