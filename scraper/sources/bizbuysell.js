@@ -9,6 +9,11 @@ const SourceScraper = require('../core/source_base');
 const DELAY_MS = 2500;
 
 class BizBuySellScraper extends SourceScraper {
+  // Overridable by mirror-site subclasses (BizQuest shares the JSON-LD format)
+  pageUrl(pg) {
+    return `https://www.bizbuysell.com/businesses-for-sale/${pg}/`;
+  }
+
   async scrape() {
     const maxPages = this.config.max_pages || 10;
     const seen = new Set();
@@ -22,7 +27,7 @@ class BizBuySellScraper extends SourceScraper {
       await page.setExtraHTTPHeaders({ 'Accept-Charset': 'utf-8' });
 
       for (let pg = 1; pg <= maxPages; pg++) {
-        const url = `https://www.bizbuysell.com/businesses-for-sale/${pg}/`;
+        const url = this.pageUrl(pg);
         this.info(`Scraping page ${pg}/${maxPages}: ${url}`);
 
         try {

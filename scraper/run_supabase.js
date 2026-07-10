@@ -17,7 +17,7 @@ const { applyRelevanceFilters } = require('./core/filters');
 const { screenListings } = require('./screener/claude_screener');
 const {
   loadRelevanceFromDb, loadSourceToggles, syncListings, applyScreeningResults,
-  applyDuplicateLinks, touchSource,
+  applyDuplicateLinks, applyMirrorDuplicates, touchSource,
 } = require('./core/db_output');
 const log = require('./utils/logger');
 const baseConfig = require('./config.json');
@@ -75,8 +75,22 @@ async function main() {
   // --- Sync to Supabase (insert new, refresh seen, emit events) ---
   const { idMap, insertedIds, stats } = await syncListings(listings);
 
-  // --- Screen: new, relevant, not a cross-source duplicate ---
-  const toScreen = listings.filter((l) => insertedIds.has(l.id) && l.relevant && !l.duplicate_of);
+  // --- Mirror dedup (deterministic, same-external-id feeds like BizQuest) ---
+  const mirrorDupes = new Set();
+  for (const [name, sc] of Object.entries(config.sources)) {
+    if (sc.enabled && sc.mirror_of) {
+      await applyMirrorDuplicates(name, sc.mirror_of);
+      for (const l of listings) if (l.source === name) mirrorDupes.add(l.id);
+    }
+  }
+
+  // --- Screen: new, relevant, not a duplicate. Mirror-source listings are
+  // skipped entirely for screening only when they duplicate a primary row;
+  // cheap approach: never screen mirror rows this run — non-dupes get screened
+  // once their next sighting confirms them (or via classify backfill).
+  const toScreen = listings.filter(
+    (l) => insertedIds.has(l.id) && l.relevant && !l.duplicate_of && !mirrorDupes.has(l.id)
+  );
   log.info(`Funnel: ${listings.length} scraped → ${listings.filter((l) => l.relevant).length} relevant → ${stats.inserted} new in DB → ${toScreen.length} to screen`);
 
   if (args.screen && toScreen.length > 0) {

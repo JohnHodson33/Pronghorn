@@ -9,6 +9,12 @@
       "enabled": true,
       "module": "./sources/businessbroker",
       "max_pages_per_path": 5
+    },
+    "bizquest": {
+      "enabled": true,
+      "module": "./sources/bizquest",
+      "max_pages": 30,
+      "mirror_of": "bizbuysell"
     }
   },
   "relevance": {

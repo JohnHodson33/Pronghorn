@@ -26,9 +26,23 @@ full report + questions awaiting John's morning answers.**
 Supabase Settings → API → roll key, then update `scraper/.env` AND
 `web/.env.local`.
 
-**Next (needs John's morning answers):** cutover of old scheduled run, delisting
-rule, daily cadence, Supabase Auth (Tom's email) → then Vercel deploy, review
-workflow (status buttons), deal/company detail pages, adapter #3 (BBF Florida).
+**John's morning answers (2026-07-10) — now driving the build:**
+1. Old weekly email run: keep in parallel as a check; retire when build trusted ✔ (both scheduled tasks active)
+2. Delisting: mark delisted but KEEP data. NEW REQUIREMENT: market-multiples
+   database by industry × EBITDA band from ALL listings (incl. delisted/unnamed)
+   → **/analytics page built**; industry backfill classifier run. Note: partial
+   crawls (30-page BizBuySell) can't prove delisting by absence — planned
+   URL-checker job will verify stale listings directly (docs/DECISIONS.md)
+3. Daily cadence approved → **"Pronghorn Supabase Daily" task, 6:00 AM** ✔
+4. Tom = tberman@pronghornequity.com; auth built but access flipped on later
+   today after more improvements — NEEDS: publishable key from John
+5. HubSpot: TWO-WAY net-new sync until sunset → docs/HUBSPOT-SYNC-DESIGN.md;
+   NEEDS: HubSpot Private App token from John
+6. BizQuest: build despite mirror, with dedup → adapter + mirror-dedup built,
+   full run executed
+7. Key rotation: John doing now
+(9–12 from overnight notes still open: Notion token, Granola, promote-flow
+broker fields, Tier 1 alerting)
 
 ## Phase 0 — Foundations
 

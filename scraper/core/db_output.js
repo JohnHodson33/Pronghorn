@@ -228,6 +228,42 @@ async function applyDuplicateLinks(listings, idMap) {
 }
 
 /**
+ * Mirror dedup: some sites republish another site's exact feed (BizQuest ↔
+ * BizBuySell share productIds). Link mirror rows to the primary via
+ * duplicate_of on matching external_id — deterministic, no fuzzy matching.
+ */
+async function applyMirrorDuplicates(mirrorSource, primarySource) {
+  const fetchAll = async (source, cols) => {
+    const out = [];
+    for (let from = 0; ; from += 1000) {
+      const { data, error } = await supabase
+        .from('listings').select(cols).eq('source_id', source).range(from, from + 999);
+      if (error) throw new Error(error.message);
+      out.push(...data);
+      if (data.length < 1000) break;
+    }
+    return out;
+  };
+
+  const primary = new Map((await fetchAll(primarySource, 'id, external_id')).map((r) => [r.external_id, r.id]));
+  const mirrors = await fetchAll(mirrorSource, 'id, external_id, duplicate_of');
+
+  let linked = 0;
+  for (const c of chunks(mirrors.filter((m) => !m.duplicate_of && primary.has(m.external_id)), 20)) {
+    await Promise.all(c.map(async (m) => {
+      const { error } = await supabase
+        .from('listings')
+        .update({ duplicate_of: primary.get(m.external_id) })
+        .eq('id', m.id);
+      if (error) log.error(`Mirror link failed for ${m.id}: ${error.message}`);
+      else linked++;
+    }));
+  }
+  log.info(`Mirror dedup ${mirrorSource}→${primarySource}: ${linked} linked`);
+  return linked;
+}
+
+/**
  * DB enabled-flags for sources — the UI's Sources page toggles these, and the
  * pipeline honors them over config.json's static `enabled`.
  * Returns Map(sourceId → enabled). Sources absent from the DB default to true.
@@ -250,4 +286,4 @@ async function touchSource(sourceId, status) {
   if (error) log.error(`touchSource(${sourceId}) failed: ${error.message}`);
 }
 
-module.exports = { loadRelevanceFromDb, loadSourceToggles, syncListings, applyScreeningResults, applyDuplicateLinks, touchSource };
+module.exports = { loadRelevanceFromDb, loadSourceToggles, syncListings, applyScreeningResults, applyDuplicateLinks, applyMirrorDuplicates, touchSource };
