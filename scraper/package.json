@@ -12,6 +12,7 @@
   "type": "commonjs",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.104.2",
+    "@supabase/supabase-js": "^2.110.2",
     "axios": "^1.17.0",
     "cheerio": "^1.2.0",
     "dotenv": "^17.4.2",
