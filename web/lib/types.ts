@@ -18,4 +18,5 @@ export type UiListing = {
   firstSeen: string; // YYYY-MM-DD
   status: "new" | "reviewed" | "pursuing" | "passed";
   relevant: boolean; // passed the screen-profile relevance filter
+  url: string | null; // source listing page
 };

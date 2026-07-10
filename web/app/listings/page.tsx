@@ -8,6 +8,6 @@ export const dynamic = "force-dynamic"; // always hit the DB — sourcing data i
 export default async function ListingsPage() {
   const live = await fetchListings();
   const rows: UiListing[] =
-    live ?? mockListings.map((l) => ({ ...l, tier: l.tier as UiListing["tier"], relevant: true }));
+    live ?? mockListings.map((l) => ({ ...l, tier: l.tier as UiListing["tier"], relevant: true, url: null }));
   return <ListingsTable rows={rows} live={live !== null} />;
 }

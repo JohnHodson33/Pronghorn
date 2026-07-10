@@ -32,16 +32,19 @@ export default function ListingsTable({ rows: allRows, live }: { rows: UiListing
 
   const rows = useMemo(
     () =>
-      allRows.filter((l) => {
-        if (relevantOnly && !l.relevant) return false;
-        if (q && !`${l.name} ${l.industry} ${l.city} ${l.state}`.toLowerCase().includes(q.toLowerCase())) return false;
-        if (industry !== "all" && l.industry !== industry) return false;
-        if (state !== "all" && l.state !== state) return false;
-        if (l.tier !== null && !tiers.includes(l.tier)) return false;
-        if (minCF && (l.cashFlow === null || l.cashFlow < Number(minCF))) return false;
-        if (priorityOnly && !l.priorityState) return false;
-        return true;
-      }),
+      allRows
+        .filter((l) => {
+          if (relevantOnly && !l.relevant) return false;
+          if (q && !`${l.name} ${l.industry} ${l.city} ${l.state}`.toLowerCase().includes(q.toLowerCase())) return false;
+          if (industry !== "all" && l.industry !== industry) return false;
+          if (state !== "all" && l.state !== state) return false;
+          if (l.tier !== null && !tiers.includes(l.tier)) return false;
+          if (minCF && (l.cashFlow === null || l.cashFlow < Number(minCF))) return false;
+          if (priorityOnly && !l.priorityState) return false;
+          return true;
+        })
+        // Best deals first: Tier 1 → 4, unscreened last; newest within a tier
+        .sort((a, b) => (a.tier ?? 9) - (b.tier ?? 9) || (a.firstSeen < b.firstSeen ? 1 : -1)),
     [allRows, q, industry, state, tiers, minCF, priorityOnly, relevantOnly]
   );
 
@@ -169,7 +172,18 @@ export default function ListingsTable({ rows: allRows, live }: { rows: UiListing
                   )}
                 </td>
                 <td className="max-w-md px-4 py-3">
-                  <div className="truncate font-medium">{l.name}</div>
+                  {l.url ? (
+                    <a
+                      href={l.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block truncate font-medium hover:text-emerald-700 hover:underline"
+                    >
+                      {l.name} ↗
+                    </a>
+                  ) : (
+                    <div className="truncate font-medium">{l.name}</div>
+                  )}
                   <div className="text-xs text-zinc-500">
                     {l.industry} · {l.source}
                   </div>

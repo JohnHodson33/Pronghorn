@@ -19,6 +19,7 @@ type Row = {
   priority_state: boolean | null;
   first_seen_at: string;
   raw: { relevant?: boolean | null } | null;
+  url: string | null;
 };
 
 function num(v: number | string | null): number | null {
@@ -35,20 +36,28 @@ function cfType(t: string | null): UiListing["cashFlowType"] {
 
 export async function fetchListings(): Promise<UiListing[] | null> {
   if (!hasDb()) return null;
-  const { data, error } = await serverDb()
-    .from("listings")
-    .select(
-      "id, source_id, name, industry, industry_raw, city, state, asking_price, gross_revenue, cash_flow, cash_flow_type, tier, tier_reasoning, priority_state, first_seen_at, raw"
-    )
-    .is("delisted_at", null)
-    .is("duplicate_of", null)
-    .order("first_seen_at", { ascending: false })
-    .limit(2000);
-  if (error) {
-    console.error("fetchListings failed:", error.message);
-    return null;
+  // PostgREST caps a single response at 1,000 rows — page with .range()
+  const PAGE = 1000;
+  const MAX = 10_000;
+  const all: Row[] = [];
+  for (let from = 0; from < MAX; from += PAGE) {
+    const { data, error } = await serverDb()
+      .from("listings")
+      .select(
+        "id, source_id, name, industry, industry_raw, city, state, asking_price, gross_revenue, cash_flow, cash_flow_type, tier, tier_reasoning, priority_state, first_seen_at, raw, url"
+      )
+      .is("delisted_at", null)
+      .is("duplicate_of", null)
+      .order("first_seen_at", { ascending: false })
+      .range(from, from + PAGE - 1);
+    if (error) {
+      console.error("fetchListings failed:", error.message);
+      return null;
+    }
+    all.push(...(data as Row[]));
+    if (!data || data.length < PAGE) break;
   }
-  return (data as Row[]).map((r) => ({
+  return all.map((r) => ({
     id: r.id,
     name: r.name ?? "(unnamed listing)",
     source: r.source_id ?? "unknown",
@@ -65,6 +74,7 @@ export async function fetchListings(): Promise<UiListing[] | null> {
     firstSeen: r.first_seen_at.slice(0, 10),
     status: "new", // listing_reviews workflow lands with auth (morning question)
     relevant: r.raw?.relevant !== false,
+    url: r.url,
   }));
 }
 
