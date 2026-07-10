@@ -14,7 +14,8 @@ roster, identity-resolution columns. Scraper connects to Supabase (`core/db.js`)
 1. Write `core/db_output.js` — upsert listings to Supabase (replace CSV/JSON+email)
 2. Load screen profile FROM db instead of config.json `relevance`
 3. Replace `seen_store` with DB first_seen/last_seen; emit `listing_events`
-4. Run BizBuySell end-to-end into Supabase; verify rows land
+4. Run BizBuySell end-to-end into Supabase — **small test first (1–2 pages),
+   verify rows/mapping, THEN scale to full 30-page pull** (John's call)
 5. Point frontend `web/` at live Supabase data (swap `lib/mock.ts`)
 
 **Open security TODO:** rotate the Supabase secret key (was shared in chat) —
