@@ -68,6 +68,14 @@ broker fields, Tier 1 alerting)
 - [ ] Keep Claude screener (tiering) in the pipeline; store tier + reasoning per listing
 - [ ] Cut over the weekly scheduled run; retire old OneDrive copy + Outlook email delivery
 
+## DEPLOYED (2026-07-10)
+
+Live at **https://pronghorn-green.vercel.app** (Vercel, team pronghorn-equity-
+partners). Password gate (middleware.ts / GATE_PASSWORD) — John + Tom via shared
+password until per-user Supabase Auth is built. Reads live Supabase data, so
+daily scrapes appear automatically. Redeploy: `cd web; vercel deploy --prod
+--yes --token <in web/.env.local>`.
+
 ## Phase 2 — Frontend v1
 
 - [ ] Next.js app on Vercel, Supabase auth (John + Tom logins)
