@@ -104,28 +104,40 @@ class BusinessBrokerScraper extends SourceScraper {
       } catch { /* ignore */ }
     });
 
-    // Pass 1: several anchors can point at the same listing (title link + a
-    // whole-card wrapper link). Keep the SHORTEST non-empty anchor text per id —
-    // that's the real title, not the swallowed card text.
+    // Pass 1: several anchors can point at the same listing (title link, a
+    // whole-card wrapper link, and "Read More" buttons). Keep the shortest
+    // NON-JUNK anchor text per id; the URL slug is the reliable fallback
+    // (e.g. /business-for-sale/premier-ohio-environmental.../1011566.aspx).
+    const JUNK = /^(read\s*more|view( details| listing)?|details|learn\s*more|more\s*info|photos?|contact|save|share)$/i;
     const anchors = new Map(); // id → { href, name, el }
     $('a[href*="/business-for-sale/"]').each((_, el) => {
       const href = $(el).attr('href') || '';
       const m = href.match(/\/(\d+)\.aspx$/);
       if (!m) return;
       const id = m[1];
-      const text = $(el).text().replace(/\s+/g, ' ').trim();
+      const raw = $(el).text().replace(/\s+/g, ' ').trim();
+      const text = raw && !JUNK.test(raw) && raw.length >= 8 && raw.length <= 160 ? raw : null;
       const prev = anchors.get(id);
-      if (!prev) anchors.set(id, { href, name: text || null, el });
+      if (!prev) anchors.set(id, { href, name: text, el });
       else if (text && (!prev.name || text.length < prev.name.length)) {
         anchors.set(id, { href, name: text, el: prev.el });
       }
     });
 
+    const slugName = (href) => {
+      const m = href.match(/\/business-for-sale\/([^/]+)\/\d+\.aspx$/);
+      if (!m) return null;
+      return m[1]
+        .split('-')
+        .filter(Boolean)
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
+    };
+
     const out = [];
     for (const [id, a] of anchors) {
       const { href } = a;
-      let name = a.name;
-      if (name && name.length > 160) name = name.slice(0, 157) + '…'; // last-resort guard
+      const name = a.name || slugName(href);
 
       // find a card-sized ancestor containing financial text
       let card = $(a.el);

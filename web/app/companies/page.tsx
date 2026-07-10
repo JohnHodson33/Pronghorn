@@ -38,7 +38,9 @@ export default async function Companies() {
               {companies.map((c) => (
                 <tr key={c.id} className="hover:bg-zinc-50">
                   <td className="px-4 py-3">
-                    <div className="font-medium">{c.name}</div>
+                    <a href={`/companies/${c.id}`} className="font-medium hover:text-emerald-700 hover:underline">
+                      {c.name}
+                    </a>
                     <div className="text-xs text-zinc-500">{c.industry ?? "—"}</div>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3">
