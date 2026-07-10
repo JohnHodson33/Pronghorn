@@ -24,6 +24,7 @@ async function main() {
       .from('listings')
       .select('id, name, description, industry_raw')
       .is('industry', null)
+      .is('duplicate_of', null) // mirrors are excluded from analytics anyway
       .range(from, from + 999);
     if (error) throw new Error(error.message);
     rows.push(...data);

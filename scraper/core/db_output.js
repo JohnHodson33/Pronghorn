@@ -84,6 +84,7 @@ function toRow(l) {
 async function syncListings(listings) {
   const idMap = new Map();
   const insertedIds = new Set();
+  const untieredIds = new Set(); // existing rows never screened (self-heal)
   const events = [];
   const stats = { inserted: 0, updated: 0, price_changes: 0, relisted: 0 };
   const now = new Date().toISOString();
@@ -100,7 +101,7 @@ async function syncListings(listings) {
     for (const c of chunks(group.map((l) => l.source_listing_id), CHUNK)) {
       const { data, error } = await supabase
         .from('listings')
-        .select('id, external_id, asking_price, cash_flow, delisted_at')
+        .select('id, external_id, asking_price, cash_flow, delisted_at, tier, duplicate_of')
         .eq('source_id', source)
         .in('external_id', c);
       if (error) throw new Error(`Lookup failed for ${source}: ${error.message}`);
@@ -133,6 +134,7 @@ async function syncListings(listings) {
       await Promise.all(c.map(async (l) => {
         const prev = existing.get(l.source_listing_id);
         idMap.set(l.id, prev.id);
+        if (prev.tier === null && !prev.duplicate_of) untieredIds.add(l.id);
 
         const patch = {
           last_seen_at:     now,
@@ -185,7 +187,7 @@ async function syncListings(listings) {
   }
 
   log.info(`DB sync: ${stats.inserted} inserted, ${stats.updated} updated, ${stats.price_changes} price changes, ${stats.relisted} relisted`);
-  return { idMap, insertedIds, stats };
+  return { idMap, insertedIds, untieredIds, stats };
 }
 
 /** Write screener results (tier, reasoning, normalized industry, extracted revenue) back to rows. */
@@ -248,6 +250,7 @@ async function applyMirrorDuplicates(mirrorSource, primarySource) {
   const primary = new Map((await fetchAll(primarySource, 'id, external_id')).map((r) => [r.external_id, r.id]));
   const mirrors = await fetchAll(mirrorSource, 'id, external_id, duplicate_of');
 
+  const dupeExternalIds = new Set(mirrors.filter((m) => m.duplicate_of).map((m) => m.external_id));
   let linked = 0;
   for (const c of chunks(mirrors.filter((m) => !m.duplicate_of && primary.has(m.external_id)), 20)) {
     await Promise.all(c.map(async (m) => {
@@ -256,11 +259,11 @@ async function applyMirrorDuplicates(mirrorSource, primarySource) {
         .update({ duplicate_of: primary.get(m.external_id) })
         .eq('id', m.id);
       if (error) log.error(`Mirror link failed for ${m.id}: ${error.message}`);
-      else linked++;
+      else { linked++; dupeExternalIds.add(m.external_id); }
     }));
   }
-  log.info(`Mirror dedup ${mirrorSource}→${primarySource}: ${linked} linked`);
-  return linked;
+  log.info(`Mirror dedup ${mirrorSource}→${primarySource}: ${linked} linked (${dupeExternalIds.size} total dupes)`);
+  return dupeExternalIds; // external_ids that duplicate the primary source
 }
 
 /**

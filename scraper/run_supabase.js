@@ -73,23 +73,25 @@ async function main() {
   applyRelevanceFilters(listings, config.relevance);
 
   // --- Sync to Supabase (insert new, refresh seen, emit events) ---
-  const { idMap, insertedIds, stats } = await syncListings(listings);
+  const { idMap, insertedIds, untieredIds, stats } = await syncListings(listings);
 
   // --- Mirror dedup (deterministic, same-external-id feeds like BizQuest) ---
-  const mirrorDupes = new Set();
+  const mirrorDupes = new Set(); // global ids of listings that duplicate a primary row
   for (const [name, sc] of Object.entries(config.sources)) {
     if (sc.enabled && sc.mirror_of) {
-      await applyMirrorDuplicates(name, sc.mirror_of);
-      for (const l of listings) if (l.source === name) mirrorDupes.add(l.id);
+      const dupeExternalIds = await applyMirrorDuplicates(name, sc.mirror_of);
+      for (const l of listings) {
+        if (l.source === name && dupeExternalIds.has(l.source_listing_id)) mirrorDupes.add(l.id);
+      }
     }
   }
 
-  // --- Screen: new, relevant, not a duplicate. Mirror-source listings are
-  // skipped entirely for screening only when they duplicate a primary row;
-  // cheap approach: never screen mirror rows this run — non-dupes get screened
-  // once their next sighting confirms them (or via classify backfill).
+  // --- Screen: relevant, not a duplicate, and either newly inserted or an
+  // existing row that was never screened (self-heals gaps from earlier runs).
   const toScreen = listings.filter(
-    (l) => insertedIds.has(l.id) && l.relevant && !l.duplicate_of && !mirrorDupes.has(l.id)
+    (l) =>
+      l.relevant && !l.duplicate_of && !mirrorDupes.has(l.id) &&
+      (insertedIds.has(l.id) || untieredIds.has(l.id))
   );
   log.info(`Funnel: ${listings.length} scraped → ${listings.filter((l) => l.relevant).length} relevant → ${stats.inserted} new in DB → ${toScreen.length} to screen`);
 
