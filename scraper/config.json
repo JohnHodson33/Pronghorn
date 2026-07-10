@@ -30,6 +30,11 @@
       "module": "./sources/transworld",
       "max_pages": 40,
       "_comment": "WIP - client-side app: filter param serves global inventory, pagination needs JS-routing work (see SOURCES.md)"
+    },
+    "sunbelt": {
+      "enabled": true,
+      "module": "./sources/sunbelt",
+      "max_details": 120
     }
   },
   "relevance": {

@@ -91,6 +91,21 @@ broker fields, Tier 1 alerting)
 - [ ] Deal vetting: CIM review tool (scorecard-based, attaches to company record)
 - [ ] Retire HubSpot
 
+## Phase 6 — River Guides / advisor sourcing (people channel)
+
+Third sourcing channel (John considers it equal in importance to Phase 5's
+company list-building). Source industry advisors/operators — "river guides" —
+who diligence assets & unlock proprietary flow in exchange for equity + a board
+seat. Same LinkedIn-scraping engine also sources sellers/owners for Phase 5.
+
+- [ ] LinkedIn sourcing engine (Sales Navigator base; work within guardrails)
+- [ ] Target profiles: recent exits in the vertical, ex-corp-dev at consolidators,
+      retired owner-operators
+- [ ] People schema: advisors/executives as contacts w/ background, exit history,
+      relationship stage (identified → contacted → engaged → on a deal)
+- [ ] Enrich (contact info) → outreach to recruit as advisors
+- [ ] Reuse for seller/owner contact discovery (feeds Phase 5 outreach)
+
 ## Phase 5 — Enrichment, lead-gen & outreach (friend's tool 3 as blueprint)
 
 - [ ] Off-market list building: multi-source engine per TRANSCRIPT-NOTES source
