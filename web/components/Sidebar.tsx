@@ -10,6 +10,7 @@ const nav: { section: string; items: { label: string; href: string | null }[] }[
       { label: "Dashboard", href: "/" },
       { label: "Broker Listings", href: "/listings" },
       { label: "Screen Criteria", href: "/criteria" },
+      { label: "Scrape Sources", href: "/sources" },
       { label: "List Building", href: null },
     ],
   },
@@ -17,7 +18,7 @@ const nav: { section: string; items: { label: string; href: string | null }[] }[
     section: "CRM",
     items: [
       { label: "Pipeline", href: "/pipeline" },
-      { label: "Companies", href: null },
+      { label: "Companies", href: "/companies" },
       { label: "Contacts & Brokers", href: null },
     ],
   },

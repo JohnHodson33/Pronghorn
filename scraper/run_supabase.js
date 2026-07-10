@@ -16,7 +16,7 @@ const { runSources } = require('./core/orchestrator');
 const { applyRelevanceFilters } = require('./core/filters');
 const { screenListings } = require('./screener/claude_screener');
 const {
-  loadRelevanceFromDb, syncListings, applyScreeningResults,
+  loadRelevanceFromDb, loadSourceToggles, syncListings, applyScreeningResults,
   applyDuplicateLinks, touchSource,
 } = require('./core/db_output');
 const log = require('./utils/logger');
@@ -43,6 +43,15 @@ async function main() {
 
   const config = JSON.parse(JSON.stringify(baseConfig));
   config.relevance = relevance;
+
+  // UI toggles (Sources page) override config.json enabled flags
+  const toggles = await loadSourceToggles();
+  for (const [name, sc] of Object.entries(config.sources)) {
+    if (toggles.has(name) && toggles.get(name) === false) {
+      sc.enabled = false;
+      log.info(`Source "${name}" disabled via UI toggle — skipping`);
+    }
+  }
   if (maxMultipleFlag != null) config.filters = { ...config.filters, max_multiple_flag: maxMultipleFlag };
   if (args.pages) {
     for (const s of Object.values(config.sources)) {

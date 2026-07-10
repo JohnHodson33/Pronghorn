@@ -104,17 +104,31 @@ class BusinessBrokerScraper extends SourceScraper {
       } catch { /* ignore */ }
     });
 
-    // DOM cards: unique detail links, then the smallest ancestor with $ text
-    const out = [];
-    const seenIds = new Set();
+    // Pass 1: several anchors can point at the same listing (title link + a
+    // whole-card wrapper link). Keep the SHORTEST non-empty anchor text per id —
+    // that's the real title, not the swallowed card text.
+    const anchors = new Map(); // id → { href, name, el }
     $('a[href*="/business-for-sale/"]').each((_, el) => {
       const href = $(el).attr('href') || '';
       const m = href.match(/\/(\d+)\.aspx$/);
-      if (!m || seenIds.has(m[1])) return;
+      if (!m) return;
       const id = m[1];
+      const text = $(el).text().replace(/\s+/g, ' ').trim();
+      const prev = anchors.get(id);
+      if (!prev) anchors.set(id, { href, name: text || null, el });
+      else if (text && (!prev.name || text.length < prev.name.length)) {
+        anchors.set(id, { href, name: text, el: prev.el });
+      }
+    });
+
+    const out = [];
+    for (const [id, a] of anchors) {
+      const { href } = a;
+      let name = a.name;
+      if (name && name.length > 160) name = name.slice(0, 157) + '…'; // last-resort guard
 
       // find a card-sized ancestor containing financial text
-      let card = $(el);
+      let card = $(a.el);
       let cardText = '';
       for (let i = 0; i < 8; i++) {
         card = card.parent();
@@ -123,10 +137,7 @@ class BusinessBrokerScraper extends SourceScraper {
         if (/\$/.test(t) && t.length < 1500) { cardText = t; break; }
         if (t.length >= 1500) break;
       }
-
-      const name = $(el).text().replace(/\s+/g, ' ').trim() || null;
-      if (!name && !cardText) return;
-      seenIds.add(id);
+      if (!name && !cardText) continue;
 
       const asking = this.matchMoney(cardText, /asking\s*price:?\s*\$\s*([\d,.]+)/i);
       const cashFlow = this.matchMoney(cardText, /cash\s*flow:?\s*\$\s*([\d,.]+)/i);
@@ -134,6 +145,9 @@ class BusinessBrokerScraper extends SourceScraper {
       const locM = cardText.match(/([A-Za-z .'-]+),\s*([A-Z]{2})\b/);
 
       const ld = name ? ldByName.get(name.trim().toLowerCase()) : null;
+      const clean = (v) => (v && !/not\s*disclosed|undisclosed|confidential/i.test(v) ? v.trim() : null);
+      const city = clean(locM?.[1]) ?? clean(ld?.city);
+      const state = locM?.[2] || ld?.state || null;
 
       out.push(this.listing({
         source_listing_id: id,
@@ -141,9 +155,9 @@ class BusinessBrokerScraper extends SourceScraper {
         url: href.startsWith('http') ? href : `https://www.businessbroker.net${href}`,
         description: cardText ? cardText.slice(0, 500) : null,
         location: {
-          city: locM?.[1]?.trim() || ld?.city || null,
-          state: locM?.[2] || ld?.state || null,
-          raw: locM ? `${locM[1].trim()}, ${locM[2]}` : null,
+          city,
+          state,
+          raw: [city, state].filter(Boolean).join(', ') || null,
         },
         asking_price: asking ?? ld?.price ?? null,
         gross_revenue: revenue,
@@ -151,7 +165,7 @@ class BusinessBrokerScraper extends SourceScraper {
         cash_flow_type: cashFlow != null ? 'cash flow' : null, // site label is generic
         raw: { crawl_path: path },
       }));
-    });
+    }
 
     return out;
   }

@@ -137,3 +137,44 @@ top, click any name to open the source listing. That's your morning review queue
    approach. Tradeoff: targeted crawls could miss mislabeled listings. Default
    going forward: firehose where cheap, targeted where the site is huge? Or
    always firehose for completeness?
+
+---
+
+# Second wave (after your pre-bed directives)
+
+You asked for: source/list-building toggles in the UI, everything integrated
+into the CRM company profile, and Notion/Granola meeting-note capture. Built:
+
+1. **Scrape Sources page** (sidebar → Scrape Sources): all 37 roster sources
+   grouped by tier with on/off toggles, "scraper built" badges, and live
+   last-run status. **The toggles are real** — the pipeline reads them at run
+   start and skips anything switched off.
+2. **Listings → CRM bridge**: a "→ CRM" button on every live listing row. It
+   prompts for the REAL company name (firm no-anonymized-records rule enforced
+   server-side), then creates company + deal (stage Sourced) + activity log
+   entry, links the listing, and the Pipeline board flips to LIVE data.
+   Tested end-to-end with a throwaway record, then cleaned up — pipeline is
+   sample data again until you promote your first real one.
+3. **Companies page live** (sidebar → Companies): the canonical CRM entity
+   list — empty until first promotion, with instructions on-screen.
+4. **Data-quality bugs found & fixed** in the BusinessBroker adapter (some rows
+   swallowed whole card text as the name; "Not Disclosed" parsed as a city).
+   Fixed the parser, made re-runs repair existing rows, repair run executed.
+5. **Meeting notes design** → docs/MEETING-NOTES-DESIGN.md. Recommendation:
+   a scheduled Notion→activities sync (Granola rides through its Notion export,
+   so one pipe covers both), plus an in-app "Log meeting" paste box as the
+   day-one manual path. Notes attach to companies; both of you see everything.
+
+### More questions (9–12)
+
+9. **Notion token:** create an integration at notion.so/my-integrations, share
+   your meeting-notes database with it, and paste the token into a local file
+   (I'll walk you through — same pattern as the Supabase key, NOT in chat).
+   Also: which Notion database holds the AI meeting notes?
+10. **Granola:** if/when you switch, enable Granola→Notion export and the same
+    pipe carries it. Any reason to prefer a direct Granola path?
+11. **Promote flow contacts:** when promoting a listing, should the prompt also
+    ask for broker name/firm (creates the broker + contact records right then)?
+    Currently it only asks for the company name.
+12. **Tier 1 alerting:** want new Tier 1 listings pushed to you (email/phone
+    notification) when a scrape lands them, or is the dashboard enough?

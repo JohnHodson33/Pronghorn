@@ -136,11 +136,16 @@ async function syncListings(listings) {
 
         const patch = {
           last_seen_at:     now,
+          // volatile financials
           asking_price:     l.asking_price,
           cash_flow:        l.cash_flow,
           cash_flow_type:   l.cash_flow_type,
           implied_multiple: l.implied_multiple,
           multiple_flag:    !!l.multiple_flag,
+          // titles/locations get repaired when an adapter's parsing improves
+          name:             l.name,
+          city:             l.location?.city ?? null,
+          state:            l.location?.state ?? null,
         };
 
         if (prev.delisted_at) {
@@ -213,6 +218,20 @@ async function applyDuplicateLinks(listings, idMap) {
   if (dupes.length) log.info(`Duplicate links written: ${dupes.length}`);
 }
 
+/**
+ * DB enabled-flags for sources — the UI's Sources page toggles these, and the
+ * pipeline honors them over config.json's static `enabled`.
+ * Returns Map(sourceId → enabled). Sources absent from the DB default to true.
+ */
+async function loadSourceToggles() {
+  const { data, error } = await supabase.from('scrape_sources').select('id, enabled');
+  if (error) {
+    log.warn(`Could not load source toggles (${error.message}) — falling back to config.json`);
+    return new Map();
+  }
+  return new Map(data.map((r) => [r.id, r.enabled]));
+}
+
 /** Stamp the source's last run. */
 async function touchSource(sourceId, status) {
   const { error } = await supabase
@@ -222,4 +241,4 @@ async function touchSource(sourceId, status) {
   if (error) log.error(`touchSource(${sourceId}) failed: ${error.message}`);
 }
 
-module.exports = { loadRelevanceFromDb, syncListings, applyScreeningResults, applyDuplicateLinks, touchSource };
+module.exports = { loadRelevanceFromDb, loadSourceToggles, syncListings, applyScreeningResults, applyDuplicateLinks, touchSource };
