@@ -45,7 +45,10 @@ async function main() {
   config.relevance = relevance;
   if (maxMultipleFlag != null) config.filters = { ...config.filters, max_multiple_flag: maxMultipleFlag };
   if (args.pages) {
-    for (const s of Object.values(config.sources)) s.max_pages = args.pages;
+    for (const s of Object.values(config.sources)) {
+      s.max_pages = args.pages;
+      s.max_pages_per_path = Math.min(args.pages, s.max_pages_per_path ?? args.pages);
+    }
     log.info(`Page override: max ${args.pages} page(s) per source (test mode)`);
   }
 

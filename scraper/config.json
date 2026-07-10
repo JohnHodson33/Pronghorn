@@ -4,6 +4,11 @@
       "enabled": true,
       "module": "./sources/bizbuysell",
       "max_pages": 30
+    },
+    "businessbroker": {
+      "enabled": true,
+      "module": "./sources/businessbroker",
+      "max_pages_per_path": 5
     }
   },
   "relevance": {

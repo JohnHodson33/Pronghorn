@@ -11,8 +11,8 @@ decide which adapters are worth maintaining.
 | Source | URL | Status | Notes |
 |---|---|---|---|
 | BizBuySell | bizbuysell.com | **adapter-built** | Working Puppeteer adapter (`scraper/sources/bizbuysell.js`); weekly run live on old copy until cutover |
-| BizQuest | bizquest.com | candidate | Same parent as BizBuySell — likely similar structure |
-| BusinessBroker.net | businessbroker.net | candidate | |
+| BizQuest | bizquest.com | **deprioritized** | Probed 2026-07-10: near-total MIRROR of BizBuySell (identical JSON-LD, same product IDs, same order — shared CoStar feed). ~Zero incremental inventory |
+| BusinessBroker.net | businessbroker.net | **adapter-built** | Live 2026-07-10 (`scraper/sources/businessbroker.js`). Independent inventory. Targeted keyword/industry-page crawl; no dedicated pest/HVAC pages — they surface in landscaping/repair/construction pages |
 | DealStream | dealstream.com | candidate | Formerly MergerNetwork |
 | BusinessesForSale.com | businessesforsale.com | candidate | International + US |
 | BusinessMart | businessmart.com | candidate | |
@@ -78,11 +78,16 @@ High value per adapter.
 | Franchise Resales | franchiseresales.com | candidate | Lawn/pest franchises resell here |
 | FranchiseGator resales | franchisegator.com | candidate | Low priority |
 
-## Adapter build order (proposed)
+## Adapter build order (updated 2026-07-10 after probes)
 
-1. BizQuest (clone of BizBuySell structure — fastest win)
-2. BBF Florida MLS (one adapter, hundreds of brokers)
-3. Transworld + Sunbelt (biggest network inventories)
-4. TABB / GABB / CVBBA / AZBBA (priority-state MLS coverage)
-5. BusinessBroker.net, DealStream, BusinessesForSale.com
-6. Everything else by measured yield
+1. ~~BizQuest~~ — deprioritized (mirror of BizBuySell, no incremental inventory)
+2. ~~BusinessBroker.net~~ — ✅ built, live
+3. BBF Florida MLS (one adapter, hundreds of brokers)
+4. Transworld + Sunbelt (biggest network inventories)
+5. TABB / GABB / CVBBA / AZBBA (priority-state MLS coverage)
+6. DealStream, BusinessesForSale.com
+7. Everything else by measured yield
+
+Lesson from BizQuest: **probe before building** (`scraper/probe.js <url>`) — five
+minutes of probing can kill or confirm an adapter. Also check whether candidate
+sources share a parent company/feed with an existing source.
