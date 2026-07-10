@@ -78,6 +78,28 @@ High value per adapter.
 | Franchise Resales | franchiseresales.com | candidate | Lawn/pest franchises resell here |
 | FranchiseGator resales | franchisegator.com | candidate | Low priority |
 
+## Probe intelligence (2026-07-10 batch sweep) — build difficulty & gatekeeping
+
+**Key finding for John: NO login walls found anywhere in the probed roster.**
+Everything below is build-work, not credentials. Axial remains the only
+credentialed source (no unattended scrape possible — email ingest + co-pilot
+browser sessions only).
+
+| Source | Verdict | Detail |
+|---|---|---|
+| Synergy | ✅ **LIVE** | Clean cards; 20 listings |
+| Viking Mergers | ✅ **LIVE** | 45 listings, EBITDA-forward, Southeast priority states; 1 Tier 1 on first run |
+| Sunbelt | 🟢 buildable next | `/business-search/business-results/` has cards + financials; multi-office URLs |
+| Transworld | 🟢 buildable next | `/buy-a-business/business-listing-search` — asking price + EBITDA on cards |
+| VR Business Brokers | 🟡 medium | Corporate page aggregates, but listings live on per-franchise domains (vrmiamicenter.com etc.) — crawl fan-out needed |
+| Murphy Business | 🟡 medium | Listings page is a JS search app — needs network-request probe |
+| BusinessesForSale.com | 🟡 medium | Search URL not exposed in nav — needs targeted URL discovery |
+| GABB (Georgia) | 🟡 medium | `/businesses-for-sale` shows financial text; card links use nonstandard pattern |
+| CVBBA / AZBBA / TABB | 🟡 unknown | Listing portals not found on first pass — likely external platforms (bizmls-style) |
+| BBF Florida MLS | 🟡 medium | Embedded bizmls.com ASP app; needs form-flow work (highest volume of the associations) |
+| DealStream | 🔴 **blocked** | DataDome captcha interstitial — same class as LoopNet; deprioritize |
+| Axial | 🔴 no unattended access | Email ingest + co-pilot sessions only (platform limitation) |
+
 ## Adapter build order (updated 2026-07-10 after probes)
 
 1. ~~BizQuest~~ — deprioritized (mirror of BizBuySell, no incremental inventory)

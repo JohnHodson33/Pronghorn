@@ -27,7 +27,8 @@ puppeteerExtra.use(StealthPlugin());
     });
 
     // Walk up from the second listing link to a container that includes price text
-    const links = $('a[href*="/business-for-sale/"]').toArray();
+    const pattern = process.argv[3] || '/business-for-sale/';
+    const links = $(`a[href*="${pattern}"]`).toArray();
     if (links.length > 1) {
       let el = $(links[1]);
       for (let i = 0; i < 8; i++) {

@@ -15,6 +15,15 @@
       "module": "./sources/bizquest",
       "max_pages": 30,
       "mirror_of": "bizbuysell"
+    },
+    "synergy": {
+      "enabled": true,
+      "module": "./sources/synergy",
+      "max_pages": 15
+    },
+    "viking": {
+      "enabled": true,
+      "module": "./sources/viking"
     }
   },
   "relevance": {
