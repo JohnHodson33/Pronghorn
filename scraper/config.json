@@ -24,6 +24,12 @@
     "viking": {
       "enabled": true,
       "module": "./sources/viking"
+    },
+    "transworld": {
+      "enabled": false,
+      "module": "./sources/transworld",
+      "max_pages": 40,
+      "_comment": "WIP - client-side app: filter param serves global inventory, pagination needs JS-routing work (see SOURCES.md)"
     }
   },
   "relevance": {
