@@ -88,3 +88,52 @@
 (All visible now at localhost:3000/listings with the thesis-fit filter — hover
 rows for the screener's reasoning. The $550K-ask/1.2× FL HVAC and the 4.4× OKC
 one are worth a skeptical first look for opposite reasons.)
+
+## Post-report additions (kept pushing after the write-up above)
+
+### Adapter #2 shipped: BusinessBroker.net ✅
+
+- **BizQuest probed first and KILLED** — it's a near-total mirror of BizBuySell
+  (same CoStar feed, identical product IDs in identical order). Zero incremental
+  inventory; deprioritized in SOURCES.md. Five minutes of probing saved a wasted
+  adapter. New rule + reusable tool: `node scraper/probe.js <url>` before building.
+- **BusinessBroker.net built instead** (independent inventory). Different crawl
+  strategy: the site has keyword/industry pages, so we crawl **thesis-targeted
+  pages** (landscaping, lawn care, plumbing, pool service & repair, electrician,
+  cleaning, repair, construction — verified against their indexes) instead of a
+  firehose. Result: **61% relevance rate vs BizBuySell's 2.4%.**
+- Run results: 672 listings, 208 screened → **14 Tier 1, 61 Tier 2** (~$0.44 API
+  for both runs on this source).
+
+### Adapter #3 recon: BBF Florida MLS
+
+Their listings live in an embedded iframe app (`bizmls.com` — an old ASP CGI
+system). A direct hit on the endpoint returned empty; it needs the iframe's form
+POST flow. **Medium difficulty, needs a dedicated session** — still worth it
+(hundreds of FL brokerages behind one adapter).
+
+### UX fixes shipped along the way
+
+Listing names now link out to the source listing (↗), Tier 1s sort to the top,
+and a Supabase 1,000-row response cap was found and fixed with pagination.
+
+## GRAND TOTALS — your database this morning
+
+| | |
+|---|---|
+| Listings in database | **2,264** (BizBuySell 1,592 · BusinessBroker.net 672) |
+| **Tier 1 — review now** | **37** |
+| Tier 2 — watchlist | 113 |
+| Change events logged | 2,264 (every listing's history starts tonight) |
+| Total Claude API cost for the night | ~$0.48 |
+
+Open localhost:3000/listings → "Thesis-fit only" is on by default, Tier 1s on
+top, click any name to open the source listing. That's your morning review queue.
+
+### One more question (#8)
+
+8. **Crawl strategy per source:** BusinessBroker.net uses targeted keyword pages
+   (fast, cheap, high hit-rate) rather than BizBuySell's scrape-everything
+   approach. Tradeoff: targeted crawls could miss mislabeled listings. Default
+   going forward: firehose where cheap, targeted where the site is huge? Or
+   always firehose for completeness?

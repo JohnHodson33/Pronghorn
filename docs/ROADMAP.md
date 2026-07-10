@@ -115,3 +115,9 @@ workflow (status buttons), deal/company detail pages, adapter #3 (BBF Florida).
   repo pushed, Supabase live w/ 3 migrations verified. Expanded source roster to
   37 (added state broker-association MLS portals). Designed cross-prong identity
   resolution (one company, many discoveries). Scraper now connects to Supabase.
+- **2026-07-09→10 (overnight, autonomous)** — PHASE 1 SHIPPED: full Supabase port
+  (db_output + run_supabase), DB-driven criteria, live frontend + criteria editor,
+  BizBuySell full pull (1,592), BizQuest killed via probe (BizBuySell mirror),
+  BusinessBroker.net adapter built + full pull (672, 61% relevance), BBF recon.
+  **DB: 2,264 listings, 37 Tier 1, 113 Tier 2, ~$0.48 API.** 8 questions await
+  John in OVERNIGHT-NOTES.md.
