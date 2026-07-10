@@ -1,18 +1,27 @@
-# Scrape Sources
+# Broker Scrape Sources — target roster
 
-Status: `candidate` → `adapter-built` → `live` → (`blocked` / `retired`)
+Goal: 50+ live sources. Status: `candidate` → `adapter-built` → `live` → (`blocked` / `retired`).
+Every source also gets a row in the `scrape_sources` table (candidates seeded disabled).
+**Standing rules:** every broker we meet gets their site checked for a listings page;
+revisit this roster monthly; source-quality analytics (listings/week per source)
+decide which adapters are worth maintaining.
 
-## Tier 1 — Major aggregators (highest listing volume)
+## Tier 1 — Major aggregators / marketplaces
 
 | Source | URL | Status | Notes |
 |---|---|---|---|
-| BizBuySell | bizbuysell.com | **adapter-built** | Working Puppeteer adapter in `scraper/sources/bizbuysell.js` (detail pages blocked — search results only). Weekly scheduled run live on old OneDrive copy until Phase 1 cutover. |
-| BizQuest | bizquest.com | candidate | Same parent co. as BizBuySell |
+| BizBuySell | bizbuysell.com | **adapter-built** | Working Puppeteer adapter (`scraper/sources/bizbuysell.js`); weekly run live on old copy until cutover |
+| BizQuest | bizquest.com | candidate | Same parent as BizBuySell — likely similar structure |
 | BusinessBroker.net | businessbroker.net | candidate | |
 | DealStream | dealstream.com | candidate | Formerly MergerNetwork |
 | BusinessesForSale.com | businessesforsale.com | candidate | International + US |
-| LoopNet (business-for-sale section) | loopnet.com | candidate | CoStar-owned, aggressive anti-bot |
-| Axial | axial.net | **blocked** | No API; SPA blocks automation. Email-teaser ingest only (firm rule: no blind teasers as deals). |
+| BusinessMart | businessmart.com | candidate | |
+| BizBen | bizben.com | candidate | California-focused |
+| GlobalBX | globalbx.com | candidate | Free listing site |
+| LoopNet (business-for-sale) | loopnet.com | candidate | CoStar — aggressive anti-bot, expect hard |
+| BizNexus | biznexus.com | candidate | Aggregates other sources — evaluate overlap value |
+| Acquire.com | acquire.com | candidate | Mostly online businesses — low priority |
+| Axial | axial.net | **blocked** | Email-teaser ingest only (no blind teasers as deals) |
 
 ## Tier 2 — National brokerage networks (own listing pages)
 
@@ -20,24 +29,60 @@ Status: `candidate` → `adapter-built` → `live` → (`blocked` / `retired`)
 |---|---|---|---|
 | Sunbelt Business Brokers | sunbeltnetwork.com | candidate | Largest franchise network |
 | Transworld Business Advisors | tworld.com | candidate | |
-| Murphy Business | murphybusiness.com | candidate | Existing relationship (Luis Zavala — Affordable Windows deal) |
-| VR Business Brokers | vrbusinessbrokers.com | candidate | Existing relationship (Ramzi Daklouche, Atlanta) |
+| Murphy Business | murphybusiness.com | candidate | Existing relationship (Luis Zavala) |
+| VR Business Brokers | vrbusinessbrokers.com | candidate | Existing relationship (Ramzi Daklouche) |
 | First Choice Business Brokers | fcbb.com | candidate | |
-| Website Closers / others | — | candidate | Evaluate fit |
+| Link Business | linkbusiness.com | candidate | |
+| Calhoun Companies | calhouncompanies.com | candidate | Upper Midwest |
+| Peterson Acquisitions | petersonacquisitions.com | candidate | |
+| Raincatcher | raincatcher.com | candidate | |
+| Viking Mergers & Acquisitions | vikingmergers.com | candidate | Southeast — priority-state coverage |
+| Synergy Business Brokers | synergybb.com | candidate | |
+| Woodbridge International | woodbridgegrp.com | candidate | |
+| Benchmark International | benchmarkintl.com | candidate | Lower middle market |
+| Sun Acquisitions | sunacquisitions.com | candidate | Chicago/Midwest |
+| Hedgestone Business Advisors | hedgestone.com | candidate | |
+| Website Closers | websiteclosers.com | candidate | Some services businesses — low priority |
 
-## Tier 3 — Green-industry / sector specialists
+## Tier 3 — State/regional broker association MLS portals
+
+These are multi-broker listing databases — one adapter covers many brokerages.
+High value per adapter.
 
 | Source | URL | Status | Notes |
 |---|---|---|---|
-| Principium Group (White Oak) | principiumgroup.com | candidate | Ron Edmonds — green industry M&A specialist, existing relationship |
+| Business Brokers of Florida (BBF) | bbfmls.com | candidate | True MLS — largest state association |
+| Texas Assoc. of Business Brokers (TABB) | tabb.org | candidate | Priority state |
+| Georgia Assoc. of Business Brokers (GABB) | gabb.org | candidate | Priority state |
+| California Assoc. of Business Brokers (CABB) | cabb.org | candidate | |
+| Carolinas-Virginia Business Brokers (CVBBA) | cvbba.com | candidate | Priority states NC/SC |
+| Midwest Business Brokers & Intermediaries (MBBI) | mbbi.org | candidate | |
+| Arizona Business Brokers Assoc. (AZBBA) | azbba.org | candidate | Home priority state |
+| M&A Source member listings | masource.org | candidate | Lower middle market |
+| IBBA member directory | ibba.org | candidate | Broker discovery more than listings |
+
+## Tier 4 — Green-industry / sector specialists
+
+| Source | URL | Status | Notes |
+|---|---|---|---|
+| Principium Group (White Oak) | principiumgroup.com | candidate | Ron Edmonds — green industry M&A; existing relationship |
 | The Advisory Investment Bank | — | candidate | Oliver Bogner — Landmark Pest deal |
 | Three Sixty Seven Advisors | — | candidate | Existing broker contact |
-| (brainstorm more green-industry brokers) | — | — | Landscape/tree/pest specialist shops |
+| PCO M&A Specialists (pest) | — | candidate | Pest-control-specific intermediary — research |
+| Landscape/tree/pool specialist shops | — | research | Brainstorm monthly; harvest from broker meetings |
 
-## Backlog / to evaluate
+## Tier 5 — Franchise resale (route/service businesses surface here)
 
-- Synergy Business Brokers, Calder Capital, Peterson Acquisitions, Raincatcher,
-  Viking Mergers, Woodbridge International, regional SBA-broker sites
-- State business broker association directories (broker discovery, not listings)
-- **Routine brainstorm cadence:** revisit this list monthly; every broker we meet
-  gets their site checked for a listings page.
+| Source | URL | Status | Notes |
+|---|---|---|---|
+| Franchise Resales | franchiseresales.com | candidate | Lawn/pest franchises resell here |
+| FranchiseGator resales | franchisegator.com | candidate | Low priority |
+
+## Adapter build order (proposed)
+
+1. BizQuest (clone of BizBuySell structure — fastest win)
+2. BBF Florida MLS (one adapter, hundreds of brokers)
+3. Transworld + Sunbelt (biggest network inventories)
+4. TABB / GABB / CVBBA / AZBBA (priority-state MLS coverage)
+5. BusinessBroker.net, DealStream, BusinessesForSale.com
+6. Everything else by measured yield

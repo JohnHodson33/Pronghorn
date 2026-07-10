@@ -60,6 +60,41 @@ possible.
 Design so CRM tables (companies, contacts, deals, activities) can join in
 later without rework — listings become the top of the deal funnel.
 
+## Identity resolution — one company, many discoveries (firm requirement)
+
+The same tree-care company can arrive twice: its broker listing lands via the
+on-market scraper, then its website surfaces in an off-market Google list build.
+That must consolidate to ONE company, never two outreach targets.
+
+- **`companies` is the canonical entity.** Both `listings.company_id` and
+  `leads.company_id` point into it. Outreach/enrichment always read from
+  `companies`, so a consolidated company can never be double-contacted.
+- **Match keys, strongest first:** (1) normalized website domain
+  (`listings.website_domain` / `leads.website_domain`, stripped of www/protocol);
+  (2) phone number (normalized digits); (3) fuzzy name + city/state.
+- **Auto-link on exact domain or phone match; Claude API adjudicates fuzzy
+  name matches** (cheap Haiku call). Never destructive: linking sets company_id;
+  the listing and lead rows survive with their own provenance.
+- **A consolidated company shows both origins in the UI** ("Listed by broker X"
+  + "Found via list build Y") — knowing a proprietary target is already brokered
+  is itself critical sourcing intelligence.
+
+## Criteria are data, never code (firm requirement)
+
+Both prongs run off editable, saved criteria — nothing hardcoded:
+
+- **On-market:** `screen_profiles` rows (industry keywords, geography,
+  size bounds) drive the scraper filter AND the Claude screener context.
+  Editable in the UI (criteria editor screen), rerunnable anytime; adjusting
+  criteria and re-pulling must be trivial.
+- **Off-market:** every list build stores its own query params (`lead_lists`
+  row: industry, geography, radius, count, sources). Saved/re-runnable
+  searches; defaults come from the active screen profile so both prongs stay
+  aligned with the current thesis.
+- Criteria changes are expected to be frequent (multi-industry now, narrowing
+  later) — treat the criteria editor as a first-class screen, not a settings
+  afterthought.
+
 ## Dedup strategy
 
 Same business often appears on 2–4 sites (broker's own site + BizBuySell +
