@@ -9,6 +9,7 @@ const nav: { section: string; items: { label: string; href: string | null }[] }[
     items: [
       { label: "Dashboard", href: "/" },
       { label: "Broker Listings", href: "/listings" },
+      { label: "Screen Criteria", href: "/criteria" },
       { label: "List Building", href: null },
     ],
   },

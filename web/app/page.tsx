@@ -1,15 +1,18 @@
 import Link from "next/link";
-import { deals, listings, money, STAGES } from "@/lib/mock";
+import { deals, money, STAGES } from "@/lib/mock";
+import { listingStats } from "@/lib/listings";
 
 // Chart palette — validated (dataviz six checks, light surface):
 const C_EBITDA = "#047857";
 const C_REVENUE = "#3b82f6";
 
-export default function Dashboard() {
+export const dynamic = "force-dynamic";
+
+export default async function Dashboard() {
+  const live = await listingStats();
   const active = deals.filter((d) => !d.passed);
   const pipeRev = active.reduce((s, d) => s + (d.revenue ?? 0), 0);
   const pipeEbitda = active.reduce((s, d) => s + (d.ebitda ?? 0), 0);
-  const newThisWeek = listings.filter((l) => l.firstSeen >= "2026-07-03").length;
   const nextDeadline = active
     .filter((d) => d.nextStepDue)
     .sort((a, b) => (a.nextStepDue! < b.nextStepDue! ? -1 : 1))[0];
@@ -53,11 +56,18 @@ export default function Dashboard() {
       <header className="flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Sourcing Dashboard</h1>
-          <p className="text-sm text-zinc-500">Mock data for UI iteration.</p>
+          <p className="text-sm text-zinc-500">
+            {live
+              ? `Live: ${live.total.toLocaleString()} listings in database · ${live.tier1} Tier 1`
+              : "Sample data — database not connected."}
+            {" · Deal pipeline below is sample data until the CRM migration."}
+          </p>
         </div>
-        <Link href="/listings" className="text-sm font-medium text-emerald-700 hover:underline">
-          {newThisWeek} new listings this week →
-        </Link>
+        {live && (
+          <Link href="/listings" className="text-sm font-medium text-emerald-700 hover:underline">
+            {live.newThisWeek} new listings this week →
+          </Link>
+        )}
       </header>
 
       <section className="grid grid-cols-2 gap-4 xl:grid-cols-4">
