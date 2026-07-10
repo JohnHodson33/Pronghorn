@@ -122,7 +122,7 @@ and a Supabase 1,000-row response cap was found and fixed with pagination.
 | | |
 |---|---|
 | Listings in database | **2,264** (BizBuySell 1,592 · BusinessBroker.net 672) |
-| **Tier 1 — review now** | **37** |
+| **Tier 1 — review now** | **37 (16 in priority states** after the state-repair runs**)** |
 | Tier 2 — watchlist | 113 |
 | Change events logged | 2,264 (every listing's history starts tonight) |
 | Total Claude API cost for the night | ~$0.48 |
@@ -164,6 +164,33 @@ into the CRM company profile, and Notion/Granola meeting-note capture. Built:
    a scheduled Notion→activities sync (Granola rides through its Notion export,
    so one pipe covers both), plus an in-app "Log meeting" paste box as the
    day-one manual path. Notes attach to companies; both of you see everything.
+
+### Third wave: company profile page (the CRM hub)
+
+**`/companies/<id>` is live** — click any company name: financial tiles, deal
+stage, link back to the source listing, and the **shared activity feed** with a
+"Log meeting" box (meeting/call/email/note + optional Notion/CIM link). This is
+the day-one manual path for your meeting-notes requirement — paste from
+Notion/Granola and it's attached to the company, visible to Tom. Verified
+end-to-end (test note logged and rendered, then test data deleted). The
+automated Notion sync (design doc) layers on top once you provide the token.
+
+### Data-quality saga (honest report)
+
+The BusinessBroker adapter shipped with parsing bugs I found during testing:
+whole-card text swallowed as listing names, and "Not Disclosed" parsed as a
+city. My first fix (take the shortest link text per card) backfired — it grabbed
+the cards' "Read More" buttons, briefly renaming all 672 rows "Read More." The
+name fix then broke state extraction (it had been keyed off the old names).
+Final state, all verified: names derived from URL slugs with junk-text
+filtering (**0 junk names**), states from slug tails + normalized JSON-LD
+matching (**667/672 = 99.3% state coverage**, better than the original run).
+
+Two durable improvements came out of the mess: (1) re-runs now repair
+names/cities/annotations in place, so parser improvements retroactively fix old
+rows; (2) **criteria edits are retroactive** — change the screen profile in the
+UI and the next run re-annotates every existing listing against it, not just
+new arrivals.
 
 ### More questions (9–12)
 
