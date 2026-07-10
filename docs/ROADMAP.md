@@ -4,17 +4,24 @@
 
 ## Current status (2026-07-09)
 
-**Phase 0 nearly done.** Repo + docs created; friend's call transcript reviewed
-(see TRANSCRIPT-NOTES.md); existing BizBuySell scraper found and copied into
-`scraper/` — Phase 1 is a **port to Supabase**, not a rebuild. Anthropic Console
-account already exists (key in old scraper's .env).
+**Phase 0 DONE. Infrastructure live.** All accounts created (GitHub, Supabase,
+Vercel). Repo pushed to github.com/JohnHodson33/Pronghorn. Supabase project
+`hjkqdcufigiolwmsxpiu` live with all 3 migrations applied and verified via
+`scraper/check_db.js`: 12 tables, Green Industry Default screen profile, 37-source
+roster, identity-resolution columns. Scraper connects to Supabase (`core/db.js`).
 
-Waiting on:
-- [ ] John: GitHub, Supabase, Vercel accounts — exact steps in **docs/SETUP-CHECKLIST.md**
+**Next up — Phase 1 port (fresh session recommended):**
+1. Write `core/db_output.js` — upsert listings to Supabase (replace CSV/JSON+email)
+2. Load screen profile FROM db instead of config.json `relevance`
+3. Replace `seen_store` with DB first_seen/last_seen; emit `listing_events`
+4. Run BizBuySell end-to-end into Supabase; verify rows land
+5. Point frontend `web/` at live Supabase data (swap `lib/mock.ts`)
 
-Building ahead without accounts: Supabase schema v1 + seed written
-(`supabase/migrations/`), lead-gen source stack researched and expanded beyond
-Jake's (`docs/LEADGEN-SOURCES.md`), Next.js frontend scaffolding started (`web/`).
+**Open security TODO:** rotate the Supabase secret key (was shared in chat) —
+Supabase Settings → API → roll key, then update `scraper/.env` line.
+
+**UI feedback still to apply (from screenshots):** contact row on deal cards
+(broker vs owner by role); deal + company detail pages; criteria editor screen.
 
 ## Phase 0 — Foundations
 
@@ -94,3 +101,10 @@ Jake's (`docs/LEADGEN-SOURCES.md`), Next.js frontend scaffolding started (`web/`
   exact signup list), LEADGEN-SOURCES (Jake's stack + Sun Belt license boards,
   green-industry associations, SOS registries, Serper-over-SerpApi swap). Next.js
   scaffold started in `web/`.
+- **2026-07-09 (session end)** — First UI built (dashboard/listings/pipeline on
+  mock data w/ real deals) + iterated on John's feedback (Closed stage, passed-as-
+  status, per-stage $ totals, financial-statement cards, chart dashboard, listings
+  reordered w/ margin + entry-multiple). INFRASTRUCTURE STOOD UP: all accounts,
+  repo pushed, Supabase live w/ 3 migrations verified. Expanded source roster to
+  37 (added state broker-association MLS portals). Designed cross-prong identity
+  resolution (one company, many discoveries). Scraper now connects to Supabase.
