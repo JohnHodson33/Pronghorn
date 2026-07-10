@@ -1,5 +1,23 @@
 # Architecture
 
+## The two sourcing prongs
+
+Everything feeds one funnel from two directions:
+
+1. **On-market (broker scraper):** comb public broker/marketplace listings on a
+   schedule, filtered by toggleable deal parameters (size, geography, industry).
+2. **Off-market (proprietary list building):** scrape the open web — Google
+   Local/Maps/Web, Google Places, OSM, BBB, state license boards, industry
+   associations, Parallel/Exa AI search — to build lead lists of companies that
+   aren't for sale, then enrich and cold-outreach them directly for better pricing
+   outside the broker network.
+
+Both prongs land in the same Supabase database and flow into the same CRM,
+enrichment, and outreach modules. The platform is a **one-stop shop** — John and
+Tom run all sourcing, list building, enrichment, outreach prep, and deal logging
+in one hosted tool that is the firm's source of truth, with as much automated as
+possible.
+
 ## System overview
 
 ```

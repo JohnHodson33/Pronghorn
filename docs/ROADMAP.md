@@ -61,8 +61,11 @@ Waiting on:
 
 ## Phase 5 — Enrichment, lead-gen & outreach (friend's tool 3 as blueprint)
 
-- [ ] Off-market list building: Exa + Parallel APIs (industry + geography +
-      count → lead list); every real company has a Google presence
+- [ ] Off-market list building: multi-source engine per TRANSCRIPT-NOTES source
+      stack — SerpApi (Google Local/Maps/Web), Google Places official (rescue),
+      Parallel, Exa (rescue), OSM, BBB, state license boards, industry
+      associations. Toggleable sources, per-run cost estimate, month-to-date
+      spend widget, recent-scrapes history with CSV export
 - [ ] Contact enrichment: Upwork VA step (phone/email/LinkedIn) or vendor
 - [ ] Claude API enrichment per company: website overview, PE backing, news
 - [ ] Outreach library: email sequences, custom variables, AI-personalized

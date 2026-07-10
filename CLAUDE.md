@@ -6,6 +6,10 @@ tree care, pest control. Hub-and-spoke: $1–5M EBITDA anchors + sub-threshold t
 
 ## What this project is
 
+Sourcing has **two prongs**: on-market (broker scraper) and off-market
+(proprietary Google-presence list building → enrichment → cold outreach for
+better pricing outside the broker network). Both feed the same database and CRM.
+
 1. **Broker scraper** — pulls business-for-sale listings from ~50 public broker/listing
    sites on a schedule into a master database, deduped and normalized.
 2. **Web frontend** — dashboard hosted on Vercel where John and Tom review, filter,

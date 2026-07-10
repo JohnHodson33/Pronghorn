@@ -18,9 +18,10 @@ Console API. Validated takeaways:
    intern reviews weekly, marks status per listing, dashboard shows listings/week and
    which brokers are producing. One-click push of a listing into the CRM.
 3. **Enrichment & lead-gen platform** (our Phase 5) — proprietary outreach, off-market:
-   - **List building:** scrape Google via **Exa** and **Parallel** APIs (~$0.005/page)
-     instead of paying ZoomInfo/Apollo/Grata. Assumption: any real company has a
-     Google presence. Input industry + geography + lead count → list in ~1 min.
+   - **List building:** input industry/service + lead count (10–150) + geography
+     (city with ~70-mile radius, or national) → list in ~1 min. Per-run cost
+     estimate shown up front (~$0.03–0.05 per 10-lead build; his whole month: $1).
+     Assumption: any real company has a Google presence — skip ZoomInfo/Apollo/Grata.
    - **Contact enrichment:** one manual step — an Upwork VA fills phone, email,
      LinkedIn per lead (cheaper than data vendors).
    - **AI enrichment:** Claude API pulls website overview, PE backing, news articles
@@ -31,6 +32,40 @@ Console API. Validated takeaways:
    - **Cold-call screen:** mirrors reply.io manual-call tasks via API; shows company
      info + call script on one screen — smile and dial. (Also experimenting with
      **Nooks** parallel dialer.)
+
+## List-building source stack (from screenshot of his tool, 2026-07-09)
+
+His "google-scrape" page runs 10 toggleable sources per list build, each with a
+one-line description of when it fires. Replicate this design:
+
+| Source | Type | Role |
+|---|---|---|
+| Google Local (SerpApi) | paid | Local-pack results — best per-call signal: rating + phone + address |
+| Google Maps (SerpApi) | paid | Maps engine — additional places not in the local pack |
+| Google Web (SerpApi) | paid | Organic results — broad fan-out for company sites that don't show in Maps |
+| Google Places (official API) | rescue | Structured source (replaces Yelp); grid-ties metro for website/phone/rating; fires when core sources fall short of target; runs on Google's free monthly credit, call-capped per run |
+| Parallel (AI company search) | paid | Entity search — describe companies in plain language; strongest in thin markets; ~$0.005/search |
+| Exa | rescue | Paid Exa.ai search — only fires when other sources come up short |
+| OpenStreetMap (Overpass API) | free | Long-tail; best for trades with strong OSM coverage |
+| Better Business Bureau | free | BBB category listings — adds A+/A/B grades + accreditation flag |
+| State license boards | free | Western US contractor license registries (CA, TX, AZ, OR, WA, CO, NM, UT); fires when state + trade match |
+| Industry associations | free | AFA (fencing), ACCA (HVAC), PHTA (pool & spa); fires when trade matches |
+
+Design notes: sources show per-source API-key status badges; "rescue" sources are
+fallbacks that only fire when primary sources miss the lead target; the page pulls
+official company websites from Google, parses light homepage signals, exports a CSV
+for the researcher/VA to enrich — owner contact fields stay blank by design.
+Month-to-date spend widget in the header ("$1.00 — 576 Serper · 31 Claude · 0 Exa ·
+7 jobs"). Recent scrapes list below with status + leads/target + timestamp + export.
+
+## His app's information architecture (sidebar)
+
+- **Lead Generation:** List Building
+- **Lead Enrichment:** Dashboard · Enrichment · Outreach Library · Folders · Copy Analytics
+- **Cold Calling:** Dashboard · Call Lists · Scripts
+- Global search bar across contacts, companies, campaigns, imports
+- Auth: personal account per user (partner permissioned), Settings, hosted on
+  a custom domain via Vercel
 
 ## Cost reality
 
