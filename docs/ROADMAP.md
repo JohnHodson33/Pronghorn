@@ -10,19 +10,25 @@ Vercel). Repo pushed to github.com/JohnHodson33/Pronghorn. Supabase project
 `scraper/check_db.js`: 12 tables, Green Industry Default screen profile, 37-source
 roster, identity-resolution columns. Scraper connects to Supabase (`core/db.js`).
 
-**Next up — Phase 1 port (fresh session recommended):**
-1. Write `core/db_output.js` — upsert listings to Supabase (replace CSV/JSON+email)
-2. Load screen profile FROM db instead of config.json `relevance`
-3. Replace `seen_store` with DB first_seen/last_seen; emit `listing_events`
-4. Run BizBuySell end-to-end into Supabase — **small test first (1–2 pages),
-   verify rows/mapping, THEN scale to full 30-page pull** (John's call)
-5. Point frontend `web/` at live Supabase data (swap `lib/mock.ts`)
+**PHASE 1 COMPLETE (overnight 07-09→10). See docs/OVERNIGHT-NOTES.md for the
+full report + questions awaiting John's morning answers.**
+- [x] `core/db_output.js` — Supabase upserts, events, screener writeback
+- [x] Criteria load from screen_profiles (UI-editable, pipeline obeys)
+- [x] DB first/last-seen replaces seen_store; listing_events live
+- [x] BizBuySell: 2-page test verified → full 30-page pull (1,592 listings, 0 errors)
+- [x] Frontend live: listings page (LIVE badge, tier sort, outbound links,
+      thesis-fit toggle), dashboard stats, **Screen Criteria editor page**
+- [x] BONUS — Adapter #2: BusinessBroker.net (independent inventory, targeted
+      keyword pages, 61% relevance rate). BizQuest probed → deprioritized (mirror
+      of BizBuySell). Reusable `scraper/probe.js` for future sources.
 
 **Open security TODO:** rotate the Supabase secret key (was shared in chat) —
-Supabase Settings → API → roll key, then update `scraper/.env` line.
+Supabase Settings → API → roll key, then update `scraper/.env` AND
+`web/.env.local`.
 
-**UI feedback still to apply (from screenshots):** contact row on deal cards
-(broker vs owner by role); deal + company detail pages; criteria editor screen.
+**Next (needs John's morning answers):** cutover of old scheduled run, delisting
+rule, daily cadence, Supabase Auth (Tom's email) → then Vercel deploy, review
+workflow (status buttons), deal/company detail pages, adapter #3 (BBF Florida).
 
 ## Phase 0 — Foundations
 
