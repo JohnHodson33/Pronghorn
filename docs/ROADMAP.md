@@ -10,7 +10,11 @@
 account already exists (key in old scraper's .env).
 
 Waiting on:
-- [ ] John: GitHub, Supabase, Vercel accounts (see checklist below)
+- [ ] John: GitHub, Supabase, Vercel accounts — exact steps in **docs/SETUP-CHECKLIST.md**
+
+Building ahead without accounts: Supabase schema v1 + seed written
+(`supabase/migrations/`), lead-gen source stack researched and expanded beyond
+Jake's (`docs/LEADGEN-SOURCES.md`), Next.js frontend scaffolding started (`web/`).
 
 ## Phase 0 — Foundations
 
@@ -84,3 +88,9 @@ Waiting on:
   Phase 5 scoped from his enrichment/outreach tool. Found prior BizBuySell scraper
   (OneDrive), copied to `scraper/`. Phase 1 reframed as port-to-Supabase. Key
   requirement logged: filter guardrails must be UI-toggleable screen profiles.
+- **2026-07-09 (later still)** — Working mode set: Claude acts as proactive product
+  partner, improves on secondhand specs. Built ahead of accounts: Supabase schema
+  v1 + seed migrations (both prongs + CRM core + RLS), SETUP-CHECKLIST (John's
+  exact signup list), LEADGEN-SOURCES (Jake's stack + Sun Belt license boards,
+  green-industry associations, SOS registries, Serper-over-SerpApi swap). Next.js
+  scaffold started in `web/`.
