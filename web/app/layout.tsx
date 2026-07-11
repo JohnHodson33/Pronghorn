@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import GlobalSearch from "@/components/GlobalSearch";
 import Sidebar from "@/components/Sidebar";
 
 const geistSans = Geist({
@@ -31,7 +32,12 @@ export default function RootLayout({
       <body className="min-h-screen bg-zinc-50 font-sans text-zinc-900">
         <div className="flex min-h-screen">
           <Sidebar />
-          <main className="min-w-0 flex-1">{children}</main>
+          <div className="flex h-screen min-w-0 flex-1 flex-col">
+            <div className="z-40 flex justify-center border-b border-zinc-200 bg-zinc-50/90 px-4 py-2 backdrop-blur">
+              <GlobalSearch />
+            </div>
+            <main className="min-h-0 min-w-0 flex-1 overflow-y-auto">{children}</main>
+          </div>
         </div>
       </body>
     </html>

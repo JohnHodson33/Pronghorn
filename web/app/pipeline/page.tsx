@@ -32,7 +32,7 @@ export default async function Pipeline() {
   const passedCount = isLive ? 0 : mockDeals.filter((d) => d.passed).length;
 
   return (
-    <div className="flex h-screen flex-col p-8">
+    <div className="flex h-full flex-col p-8">
       <header className="mb-6 flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Deal Pipeline</h1>
