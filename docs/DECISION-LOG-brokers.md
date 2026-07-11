@@ -66,3 +66,30 @@ Recon on the rest (two `probe_new_sources` batches), all NOT built:
   no-go, matching roster's "M&A advisors, no public grid" note.
 - Sunbelt Atlanta uses per-city subdomains w/ callrail widgets — the national
   `sunbelt` adapter already covers this network; no incremental value.
+
+## 2026-07-10 — Lane A session summary (for PM merge)
+
+Entire Lane A queue cleared. Branch `lane/brokers`, 9 commits, ready to merge.
+
+**New adapters (6):** `bizmls` (national bizmls, +143), `murphy` (456),
+`sun` (6), `bizben` (4,433), `fcbb` (825), `hedgestone` (720 — net-new source).
+**Enrichment:** `transworld` now pulls broker contacts on thesis-fit listings.
+
+**DB impact:** ~7,000 new listing rows (bulk = CA/national market-multiples
+data), ~40 new thesis-relevant, ~20 new Tier 1. ~1,100 new broker contacts
+(BizBen/FCBB/Transworld) — usable for Phase 5/6 outreach.
+
+**New `scrape_sources` rows** (added directly to DB, so a fresh `run_supabase`
+picks them up): bizmls, murphy, sunacquisitions, bizben, fcbb, hedgestone.
+Adapter count 10 → 16.
+
+**PM action items:**
+1. Merge `lane/brokers` → main; the config.json additions + 6 new
+   `sources/*.js` are self-contained (no web/ or Sidebar.tsx touched).
+2. SOURCES.md is stale: move Murphy/Sun/BizBen/FCBB out of BENCHED → LIVE;
+   add HedgeStone + bizmls; note Transworld broker enrichment.
+3. **Decision for John:** build We Sell Restaurants (clean API, off-thesis
+   restaurant multiples) — yes/no? (see above).
+4. Daily-run cost/time: Transworld enrichment adds ~4.5 min (150 detail
+   fetches). BizBen full run ~3 min. All within a nightly window but worth
+   knowing. Consider lowering `max_detail_enrich` if the 6am job gets tight.
