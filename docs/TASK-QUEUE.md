@@ -184,6 +184,11 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
   web/.env.local + Vercel yourself. Everything else is ready and waiting.
 - ✅ Serper, Google Places, Hunter, Exa keys all LIVE in `scraper/.env` (verified 7/11).
 - ⏳ Parallel key — John setting up.
+- 🆕 **GitHub Actions secrets** (Lane A's ops workflows are landed but dormant;
+  they run nightly once you add these in GitHub → repo Settings → Secrets and
+  variables → Actions): `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`,
+  `ANTHROPIC_API_KEY`, `EXA_API_KEY`, `HUNTER_API_KEY` — same values as
+  scraper/.env. Until then, run them manually via workflow_dispatch.
 - 🆕 **Build-vs-buy: Kumo (withkumo.com) / BizScout** (Lane A recon, details in
   DECISION-LOG-brokers.md 7/11): paid aggregators with 100k+/20k+ AI-deduped
   listings + CSV export vs our free 18.6k/27-source scraper. A subscription
