@@ -3,16 +3,30 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+// IA per docs/DASHBOARD-VISION.md: overview layer spanning both sourcing
+// prongs, then the two engines, then CRM, then outreach — reads top-to-bottom
+// as criteria → engines → CRM → outreach.
 const nav: { section: string; items: { label: string; href: string | null }[] }[] = [
   {
-    section: "Sourcing",
+    section: "Overview",
     items: [
       { label: "Dashboard", href: "/" },
-      { label: "Broker Listings", href: "/listings" },
-      { label: "Screen Criteria", href: "/criteria" },
-      { label: "Scrape Sources", href: "/sources" },
       { label: "Market Multiples", href: "/analytics" },
-      { label: "List Building", href: "/list-building" },
+      { label: "Screening Criteria", href: "/criteria" },
+    ],
+  },
+  {
+    section: "Broker Sourcing",
+    items: [
+      { label: "Broker Listings", href: "/listings" },
+      { label: "Scrape Sources", href: "/sources" },
+    ],
+  },
+  {
+    section: "Proprietary Sourcing",
+    items: [
+      { label: "Proprietary Deal Flow", href: "/list-building" },
+      { label: "Enrichment", href: "/enrichment" },
     ],
   },
   {
@@ -27,7 +41,6 @@ const nav: { section: string; items: { label: string; href: string | null }[] }[
   {
     section: "Outreach",
     items: [
-      { label: "Enrichment", href: "/enrichment" },
       { label: "Outreach Library", href: "/outreach" },
       { label: "Cold Calling", href: "/cold-calling" },
     ],

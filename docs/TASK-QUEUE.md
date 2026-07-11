@@ -32,6 +32,20 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 🔥🔥 **DASHBOARD V3 — John's overnight directive 7/11; read docs/DASHBOARD-VISION.md
+  FIRST.** Rebuild `/` as a VISUAL command center, not a listing: (a) total-
+  pipeline funnel across all stages, broker AND proprietary prongs side by side;
+  (b) **Key Actions widget on top** — the human-attention queue for John/Tom
+  (NDAs awaiting countersign, queued inquiry emails awaiting one-click send,
+  ready-to-promote listings, stale pursuits, pending decisions); (c) **deal
+  funnel BY INDUSTRY SUBSECTOR** (landscape / tree care / pest / other-green):
+  per subsector, broker-pipeline deal count vs proprietary targets fully
+  enriched & outreach-ready; (d) visual — bars/funnels/stage columns, not rows.
+  Use Lane C's aggregate views once they land; interim compute from tables.
+- 🔥 **Unified Screening Criteria UX** (DASHBOARD-VISION §2.1): ONE criteria set
+  with sliding-scale controls (EBITDA/revenue range, geography, subsector
+  toggles) consumed by BOTH funnels — listings filtering AND list-building
+  targeting read the same server-persisted criteria.
 - 🔥🔥 **LISTING PURSUIT FLOW** (see docs/LISTING-PURSUIT-FLOW.md — John's core ask):
   On listing detail/rows add **"Request info"** → sets listing_reviews.status
   `info_requested`, logs activity, and (if broker email known) pre-drafts an
@@ -56,6 +70,14 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+- 🔥🔥 **DASHBOARD AGGREGATES for Dashboard V3** (John's overnight directive 7/11;
+  read docs/DASHBOARD-VISION.md): build the data layer Lane B's new dashboard
+  needs — (a) funnel counts by stage × industry-subsector × prong
+  (broker/proprietary), (b) a **key-actions feed** (NDA countersign pending,
+  queued emails awaiting send, ready_to_promote rows, pursuits with no activity
+  >7d), (c) enrichment-coverage stats per subsector (targets outreach-ready =
+  owner name + email/phone present). Prefer SQL views (add to a migration) +
+  thin `/api/dashboard` route; document the shapes for Lane B in this file.
 - 🔨 LANE C — 🔥🔥 **PURSUIT AUTO-DETECT from Outlook** — SHIPPED + BACKFILLED.
   `scraper/ingest_pursuit.js`: NDA-in-process → info_requested (+countersign-pending
   note), executed-NDA/DocuSign-complete → nda_signed, CIM/data-room → cim_received
@@ -105,11 +127,17 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 ---
 
 ## Decisions bubbled to John (non-blocking)
-- ⏳ **Serper + Google Places keys NOT yet in `scraper/.env`** (only Exa is). Add them
-  (see LISTBUILDING-API-SETUP.md) — Serper is the core signal.
+- ✅ Serper, Google Places, Hunter, Exa keys all LIVE in `scraper/.env` (verified 7/11).
 - ⏳ Parallel key — John setting up.
-- ⏳ Email-finder (Hunter vs Prospeo) for owner emails — PM recommends Hunter free tier first.
-- ⏳ Apply `supabase/migrations/0004_contact_directory.sql` in Supabase SQL editor.
+- ⏳ **Apply `supabase/migrations/0004_contact_directory.sql` AND
+  `0005_pursuit_flow.sql` in the Supabase SQL editor** — PM verified 0005 is NOT
+  applied (inquiry_profiles missing); no exec path exists via service key, so
+  this needs you. Everything degrades gracefully until then.
+- 🆕 PM judgment call (reversible): sidebar restructured per your overnight
+  guidance — Overview (Dashboard / Market Multiples / Screening Criteria), then
+  Broker Sourcing, then Proprietary Sourcing (List Building relabeled
+  **"Proprietary Deal Flow"**, route unchanged), then CRM, then Outreach. Say
+  the word if you want different names/grouping.
 - ⏳ Outlook re-auth with `Mail.Read` scope (for scheduled email ingestion).
 - ⏳ HubSpot Private App token in `.env` (to activate live two-way push).
 - ✅ Notion connected via MCP. ✅ HubSpot two-way approved. ✅ Exa key added.
