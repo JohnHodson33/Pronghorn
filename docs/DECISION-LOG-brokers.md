@@ -185,3 +185,11 @@ effect starts on subsequent daily runs.
 
 **Standing:** working continuously per John's never-stop directive. This session
 added 12 sources + broker enrichment + source-quality analytics + delisting job.
+
+## 2026-07-11 — loop iteration notes
+- Re-probed GlobalBX (42k listings advertised): still Cloudflare-blocked (403
+  "Just a moment"). Confirmed roster SKIP status; not fighting anti-bot evasion.
+- BizNexus: GoHighLevel funnel, no public listings grid (re-confirmed). Skip.
+- Next platform angles to try: regional Sunbelt sites (sunbeltmidwest.com has a
+  dedicated green-industry /landscaping page; main sunbelt adapter under-scrapes
+  the network — only ~36/run). Worth deeper Sunbelt-network coverage next.
