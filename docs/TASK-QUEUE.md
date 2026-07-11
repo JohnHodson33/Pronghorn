@@ -160,10 +160,11 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 ## Decisions bubbled to John (non-blocking)
 - ✅ Serper, Google Places, Hunter, Exa keys all LIVE in `scraper/.env` (verified 7/11).
 - ⏳ Parallel key — John setting up.
-- ⏳ **Apply `supabase/migrations/0004_contact_directory.sql` AND
-  `0005_pursuit_flow.sql` in the Supabase SQL editor** — PM verified 0005 is NOT
-  applied (inquiry_profiles missing); no exec path exists via service key, so
-  this needs you. Everything degrades gracefully until then.
+- ⏳ **Apply migrations `0004_contact_directory.sql` + `0005_pursuit_flow.sql` +
+  `0006_dashboard_aggregates.sql` in the Supabase SQL editor** (run in order) —
+  PM verified 0005 is NOT applied (inquiry_profiles missing); no exec path
+  exists via service key, so this needs you. Everything degrades gracefully
+  until then (dashboard + pursuit run on query fallbacks).
 - 🆕 PM judgment call (reversible): sidebar restructured per your overnight
   guidance — Overview (Dashboard / Market Multiples / Screening Criteria), then
   Broker Sourcing, then Proprietary Sourcing (List Building relabeled
