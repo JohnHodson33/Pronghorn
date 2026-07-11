@@ -205,3 +205,21 @@ added 12 sources + broker enrichment + source-quality analytics + delisting job.
   API surfaced; each is maybe 20–50 listings — diminishing returns, skipped.
 - Re-probed GlobalBX: still Cloudflare-blocked (roster SKIP confirmed).
 - Running totals: **18,458 listings, 103 T1 + 228 T2, 25 sources** (24 enabled).
+
+## 2026-07-11 — loop iter: DealRelations platform (3rd reusable platform)
+
+- **DealRelations** (`dealrelations.js`) — multi-tenant broker CRM used by many
+  Sunbelt regional offices. Per-broker subdomain (<sub>.dealrelations.com):
+  /listings index + SSR detail pages w/ spec table (Price, Disc Earn=SDE,
+  Sales=revenue, County, State) + **agent name + office phone**. Generic
+  adapter; configured 3 subdomains (Naples FL, Pasadena CA, Atlanta GA) = 44
+  listings, 6 brokers. More subdomains can be appended freely.
+  ➡️ PM/future: web-search more <office>.dealrelations.com subdomains to expand
+  (each Sunbelt office is one). thesunbeltbrokers uses /pages/listings (diff
+  structure) — not yet supported.
+- Explored + rejected this iter: CABB (/listings just proxies BizBuySell —
+  already have it); MBBI (re-embeds BizBuySell); CVBBA (no public portal);
+  Deal Studio (per-broker WordPress, no shared marketplace); other Sunbelt
+  regionals (sunbeltsfl/md — JS widgets, no feed).
+- **Three reusable platforms now cracked: bizmls, Tupelo, DealRelations** — the
+  highest-leverage pattern for adding many brokers per adapter.
