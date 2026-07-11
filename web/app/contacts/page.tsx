@@ -10,7 +10,13 @@ const roleStyle: Record<string, string> = {
   seller: "bg-emerald-100 text-emerald-800",
   broker: "bg-blue-100 text-blue-700",
   advisor: "bg-amber-100 text-amber-800",
+  investor: "bg-purple-100 text-purple-800",
+  recruiter: "bg-pink-100 text-pink-700",
+  network: "bg-cyan-100 text-cyan-800",
 };
+
+// Display order: deal principals first, then the people who bring/close deals.
+const roleOrder = ["owner", "seller", "broker", "investor", "advisor", "recruiter", "network", "other"];
 
 type Row = {
   id: string;
@@ -28,20 +34,39 @@ export default async function Contacts() {
     const { data } = await serverDb()
       .from("contacts")
       .select("id, name, role, email, phone, notes, companies(name)")
-      .order("role")
+      .order("name")
       .limit(500);
-    rows = (data as unknown as Row[]) ?? [];
+    rows = ((data as unknown as Row[]) ?? []).sort(
+      (a, b) =>
+        roleOrder.indexOf(a.role ?? "other") - roleOrder.indexOf(b.role ?? "other")
+    );
   }
+
+  const roleCounts = rows.reduce<Record<string, number>>((acc, r) => {
+    const k = r.role ?? "other";
+    acc[k] = (acc[k] ?? 0) + 1;
+    return acc;
+  }, {});
 
   return (
     <div className="p-8 space-y-5">
       <header>
         <h1 className="text-2xl font-bold tracking-tight">Contacts</h1>
         <p className="text-sm text-zinc-500">
-          Owners, sellers, and sell-side brokers tied to companies. Meeting notes and outreach attach
-          to these. (Full Outlook/HubSpot contact-directory sync is a separate build.)
+          The full relationship directory — owners, brokers, investors, advisors — imported from
+          HubSpot (read-only) and growing as deals are enriched. Meeting notes and outreach attach to these.
         </p>
       </header>
+
+      {rows.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {roleOrder.filter((r) => roleCounts[r]).map((r) => (
+            <span key={r} className={`rounded-full px-2.5 py-1 text-xs font-medium ${roleStyle[r] ?? "bg-zinc-100 text-zinc-600"}`}>
+              {r} · {roleCounts[r]}
+            </span>
+          ))}
+        </div>
+      )}
 
       {rows.length === 0 ? (
         <div className="rounded-xl border border-dashed border-zinc-300 bg-white px-6 py-16 text-center text-sm text-zinc-400">

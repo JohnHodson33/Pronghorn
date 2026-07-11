@@ -33,9 +33,13 @@ Status keys: ⬜ open · 🔨 in-progress (add your lane) · ✅ done (PM verifi
 - ⬜ Company detail: add contacts section, listing history, market-multiple comparison.
 
 ## Lane C — CRM & Data / Integrations  (branch `lane/integrations`; owns `scraper/` integration scripts, `web/app/api/*` for data)
-- ⬜ Full HubSpot contact-directory sync (130 contacts) — proper importer with role
-  inference; filter system/noise (docusign, microsoft, gusto, etc.).
-- ⬜ Free-source list-building scraper (OSM Overpass, state license boards, SoS) — NO
+- 🔨 LANE C — Full HubSpot contact-directory sync (130 contacts) — proper importer with
+  role inference; filter system/noise (docusign, microsoft, gusto, etc.).
+  STATUS: imported & verified — 109 contacts live (15 noise + 3 internal filtered,
+  dupes merged, idempotent re-run). Importer: `scraper/import_hubspot_contacts.js`.
+  PM ACTION: apply `supabase/migrations/0004_contact_directory.sql` via dashboard SQL
+  editor (importer uses notes breadcrumbs until then).
+- 🔨 LANE C — Free-source list-building scraper (OSM Overpass, state license boards, SoS) — NO
   API keys needed; wires the List Building tab to actually produce leads.
 - ⬜ Notion meeting-notes ingestion (per MEETING-NOTES-DESIGN.md; needs John's token —
   bubble to PM if blocked).
