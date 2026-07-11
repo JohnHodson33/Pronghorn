@@ -27,9 +27,9 @@ const nav: { section: string; items: { label: string; href: string | null }[] }[
   {
     section: "Outreach",
     items: [
-      { label: "Enrichment", href: null },
-      { label: "Outreach Library", href: null },
-      { label: "Cold Calling", href: null },
+      { label: "Enrichment", href: "/enrichment" },
+      { label: "Outreach Library", href: "/outreach" },
+      { label: "Cold Calling", href: "/cold-calling" },
     ],
   },
 ];
