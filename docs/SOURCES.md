@@ -94,7 +94,7 @@ browser sessions only).
 | VR Business Brokers | 🟡 medium | Corporate page aggregates, but listings live on per-franchise domains (vrmiamicenter.com etc.) — crawl fan-out needed |
 | Murphy Business | 🟡 medium | Listings page is a JS search app — needs network-request probe |
 | BusinessesForSale.com | 🟡 medium | Search URL not exposed in nav — needs targeted URL discovery |
-| GABB (Georgia) | 🟡 medium | `/businesses-for-sale` shows financial text; card links use nonstandard pattern |
+| GABB (Georgia) | ✅ **LIVE (API)** | Public JSON API (Webflow CMS via Railway webhook) — 199 structured listings incl. broker names + **SOLD transaction comps** (real closed multiples). No browser needed, 8s/run. Georgia priority state. **Pattern to reuse: other state assocs may expose the same Webflow API** |
 | CVBBA / AZBBA / TABB | 🟡 unknown | Listing portals not found on first pass — likely external platforms (bizmls-style) |
 | BBF Florida MLS | 🟡 medium | Embedded bizmls.com ASP app; needs form-flow work (highest volume of the associations) |
 | DealStream | 🔴 **blocked** | DataDome captcha interstitial — same class as LoopNet; deprioritize |
@@ -113,3 +113,12 @@ browser sessions only).
 Lesson from BizQuest: **probe before building** (`scraper/probe.js <url>`) — five
 minutes of probing can kill or confirm an adapter. Also check whether candidate
 sources share a parent company/feed with an existing source.
+
+Lesson from GABB: **check the network tab for a JSON API** (`probe_embed.js`
+lists API-ish XHR calls). Many "hard" JS sites are actually fed by a clean public
+API — far better than HTML scraping. GABB, and likely other Webflow-based broker
+sites, expose structured data incl. sold comps this way.
+
+## Live sources (7): bizbuysell, bizquest (mirror), businessbroker, synergy,
+## viking, sunbelt, gabb. Next candidates: other state-assoc APIs, Murphy, VR,
+## BBF Florida, Transworld (JS-routing fix).

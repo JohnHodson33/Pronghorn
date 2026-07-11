@@ -35,6 +35,10 @@
       "enabled": true,
       "module": "./sources/sunbelt",
       "max_details": 120
+    },
+    "gabb": {
+      "enabled": true,
+      "module": "./sources/gabb"
     }
   },
   "relevance": {
