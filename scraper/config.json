@@ -28,7 +28,10 @@
     "transworld": {
       "enabled": true,
       "module": "./sources/transworld",
-      "max_pages": 80
+      "max_pages": 80,
+      "enrich_details": true,
+      "enrich_min_cash_flow": 300000,
+      "max_detail_enrich": 150
     },
     "sunbelt": {
       "enabled": true,
@@ -56,6 +59,43 @@
       "folder": "bbfnew",
       "state": "Florida",
       "entry": "https://bizmls.com/bbf/businesses"
+    },
+    "bizmls": {
+      "enabled": true,
+      "module": "./sources/bbf",
+      "org": "BIZMLS",
+      "folder": "BIZMLS",
+      "state": "ALL",
+      "entry": "https://bizmls.com/business-search.asp",
+      "exclude_states": ["FL"],
+      "_comment": "National bizmls member search — non-FL inventory (TX-heavy). FL excluded: bbf source is authoritative there."
+    },
+    "murphy": {
+      "enabled": true,
+      "module": "./sources/murphy",
+      "per_page": 200,
+      "max_pages": 10
+    },
+    "sunacquisitions": {
+      "enabled": true,
+      "module": "./sources/sun"
+    },
+    "bizben": {
+      "enabled": true,
+      "module": "./sources/bizben",
+      "limit": 100,
+      "max_pages": 80
+    },
+    "fcbb": {
+      "enabled": true,
+      "module": "./sources/fcbb",
+      "page_size": 100,
+      "max_pages": 20
+    },
+    "hedgestone": {
+      "enabled": true,
+      "module": "./sources/hedgestone",
+      "max_pages": 25
     }
   },
   "relevance": {

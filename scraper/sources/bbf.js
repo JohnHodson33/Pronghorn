@@ -1,19 +1,23 @@
-// Business Brokers of Florida (BBF) adapter. Their public MLS runs on the
-// bizmls.com ASP platform. The search page is a POST form, but a session
-// (obtained by loading the entry URL) plus `displayall=all` returns the full
-// results table in one GET. Aggregates ~hundreds of FL brokerages → high value.
+// bizmls.com platform adapter (ASP MLS used by state broker associations).
+// The search page is a POST form, but a session (obtained by loading the entry
+// URL) plus `displayall=all&rpp=9999` returns the full results table in one GET.
 //
-// Row = 7 cells: [0] Listing# (BBF-xxxx) · [1] "County, Florida USA" ·
-// [2] Category (may be prefixed "*May Qualify For Visa*") · [3] Price (asking) ·
+// Registered twice in config.json:
+//   "bbf"    — Business Brokers of Florida (org=bbf, folder=bbfnew, state=Florida);
+//              ~2,100 listings, hundreds of FL brokerages.
+//   "bizmls" — national search (org/folder=BIZMLS, state=ALL) which carries every
+//              member listing incl. TX/NC/GA rows; excludes FL (bbf is
+//              authoritative there) via exclude_states.
+//
+// Row = 7 cells: [0] Listing# · [1] "County, State USA" · [2] Category (may be
+// prefixed with badges like "*May Qualify For Visa*") · [3] Price (asking) ·
 // [4] Down payment · [5] Disc Earn (SDE cash flow) · [6] Sales (revenue).
-//
-// Same platform backs other associations (AZBBA etc.) — this adapter generalizes
-// via config (org/folder/state).
 
 const cheerio = require('cheerio');
 const SourceScraper = require('../core/source_base');
+const { stateFromText } = require('../core/states');
 
-class BbfScraper extends SourceScraper {
+class BizmlsScraper extends SourceScraper {
   async scrape() {
     const org = this.config.org || 'bbf';
     const folder = this.config.folder || 'bbfnew';
@@ -49,6 +53,8 @@ class BbfScraper extends SourceScraper {
     const $ = cheerio.load(html);
     const out = [];
     const seen = new Set();
+    const exclude = new Set(this.config.exclude_states || []);
+    let excluded = 0;
 
     $('tr').each((_, el) => {
       const link = $(el).find('a[onclick*="LIST_NUMBER"]').first();
@@ -63,17 +69,19 @@ class BbfScraper extends SourceScraper {
       if (cells.length < 7) return;
 
       const locRaw = cells[1] || '';
-      const county = locRaw.replace(/,?\s*florida\s*usa\s*$/i, '').replace(/,\s*$/, '').trim() || null;
-      const industry = (cells[2] || '').replace(/\*[^*]+\*/g, '').trim() || null; // strip "*May Qualify For Visa*"
+      const stateCode = stateFromText(locRaw); // "Withheld" etc. → null
+      if (stateCode && exclude.has(stateCode)) { excluded++; return; }
+      const county = locRaw.replace(/,\s*[A-Za-z .]+?\s*USA\s*$/i, '').replace(/,\s*$/, '').trim() || null;
+      const industry = (cells[2] || '').replace(/\*[^*]+\*/g, '').trim() || null; // strip "*May Qualify For Visa*" badges
 
       out.push(this.listing({
         source_listing_id: id,
-        name: industry ? `${industry} — ${county || 'Florida'} (${id})` : `BBF Listing ${id}`,
+        name: industry ? `${industry} — ${county || stateCode || 'undisclosed'} (${id})` : `Listing ${id}`,
         url: `https://bizmls.com/cgi-bin/a-bus-d.asp?folder=${folder}&LIST_NUMBER=${id}`,
         description: null,
         location: {
-          city: county, // BBF gives county, not city
-          state: 'FL',
+          city: county, // bizmls gives county, not city
+          state: stateCode,
           raw: locRaw || null,
         },
         industry,
@@ -85,8 +93,9 @@ class BbfScraper extends SourceScraper {
       }));
     });
 
+    if (excluded) this.info(`Skipped ${excluded} rows in excluded states (${[...exclude].join(', ')})`);
     return out;
   }
 }
 
-module.exports = BbfScraper;
+module.exports = BizmlsScraper;

@@ -7,11 +7,20 @@
 // Response item fields: heading, slug, location (state name), price (asking),
 // seller_discretionary_earnings / cash_flow / ebitda / annual_revenue,
 // categories (JSON string array), industry.
+//
+// DETAIL ENRICHMENT: the search API omits the broker. The per-listing detail
+// API (POST /api/listings/<slug-lowercased>) returns an `employee` block
+// (name, email, phone, license, office) plus richer listing fields
+// (ebitda_price, year_established, reason_for_sale). Fetching that for all
+// ~3,500 listings would triple the request count, so we enrich only the subset
+// worth a broker contact: cash flow ≥ enrich_min_cash_flow (thesis SDE floor),
+// capped at max_detail_enrich. Toggle with config.enrich_details.
 
 const SourceScraper = require('../core/source_base');
 const { stateFromText } = require('../core/states');
 
 const DELAY_MS = 1500;
+const DETAIL_DELAY_MS = 900;
 
 class TransworldScraper extends SourceScraper {
   async scrape() {
@@ -63,10 +72,75 @@ class TransworldScraper extends SourceScraper {
         this.info(`Page ${pg}: ${resp.data.length} items (${listings.length} total)`);
         await this.sleep(DELAY_MS);
       }
+
+      // --- Detail enrichment (broker + extra fields) on the qualifying subset ---
+      if (this.config.enrich_details !== false) {
+        await this.enrichDetails(page, listings);
+      }
     });
 
     this.info(`Scrape complete — ${listings.length} listings (${pageErrors} errors)`);
     return { listings, stats: { pagesOk: listings.length ? 1 : 0, pageErrors } };
+  }
+
+  async enrichDetails(page, listings) {
+    const minCash = this.config.enrich_min_cash_flow ?? 300000;
+    const cap = this.config.max_detail_enrich ?? 150;
+    const targets = listings
+      .filter((l) => l.cash_flow != null && l.cash_flow >= minCash)
+      .slice(0, cap);
+    if (targets.length === 0) { this.info('Detail enrichment: no listings meet threshold'); return; }
+    this.info(`Detail enrichment: ${targets.length} listing(s) (cash flow ≥ ${minCash}, cap ${cap})`);
+
+    let enriched = 0;
+    let errors = 0;
+    for (const l of targets) {
+      try {
+        const detail = await page.evaluate(async (slug) => {
+          const xsrf = decodeURIComponent((document.cookie.match(/XSRF-TOKEN=([^;]+)/) || [])[1] || '');
+          const r = await fetch(`https://www.tworld.com/api/listings/${slug.toLowerCase()}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-XSRF-TOKEN': xsrf, 'X-Requested-With': 'XMLHttpRequest' },
+            body: '{}',
+          });
+          if (!r.ok) return { status: r.status };
+          const j = await r.json();
+          const root = j.data || j;
+          return { status: 200, employee: root.employee || null, listing: root.listing || null };
+        }, l.source_listing_id);
+
+        if (detail.status !== 200) { errors++; continue; }
+
+        const emp = detail.employee;
+        if (emp && emp.name) {
+          l.broker = {
+            name: emp.name.trim(),
+            company: emp.office && emp.office.name ? `Transworld — ${emp.office.name}` : 'Transworld Business Advisors',
+            phone: emp.phone || null,
+            email: emp.email || null,
+          };
+        }
+        const det = detail.listing || {};
+        // Backfill EBITDA / metadata the search API doesn't carry.
+        if (l.cash_flow == null) {
+          const ebitda = this.parseMoney(det.ebitda_price);
+          if (ebitda) { l.cash_flow = ebitda; l.cash_flow_type = 'EBITDA'; }
+        }
+        l.raw = {
+          ...l.raw,
+          year_established: det.year_established || null,
+          reason_for_sale: det.reason_for_sale || null,
+          broker_license: emp && emp.license ? emp.license : null,
+          office: emp && emp.office ? emp.office.name : null,
+        };
+        enriched++;
+        await this.sleep(DETAIL_DELAY_MS);
+      } catch (err) {
+        errors++;
+        if (errors >= 5) { this.warn('Detail enrichment: too many errors, stopping'); break; }
+      }
+    }
+    this.info(`Detail enrichment complete — ${enriched} enriched, ${errors} errors`);
   }
 
   mapItem(it) {
