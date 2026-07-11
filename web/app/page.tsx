@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 const actionIcon: Record<string, string> = {
   promote: "🚀",
   send_inquiry: "✉️",
+  queued_email: "📮",
   nda: "✍️",
   stale: "⏳",
   deadline: "📅",

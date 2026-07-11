@@ -220,6 +220,21 @@ also executed the two swaps previously flagged as PM actions:
   per-listing draft api — Lane B surfaces (Key Actions rows, PursuitPanel)
   are ready to consume them; today the send path is the mailto draft.
 
+## 2026-07-12 — Outbox integration (pursuit round 2 hooks)
+
+- **"Request info" now drafts-first**: PursuitPanel POSTs `/api/outbox`
+  (Lane C's Claude-drafted inquiry → queued for John's one-click send; the
+  route flips status itself). Falls back to the plain status flip + mailto/
+  co-pilot surface when drafting isn't available (no broker email 422, no
+  API key/migration 503). Queued drafts show on the listing page with a
+  "Review & send in Outbox →" banner (listing-detail loader reads
+  outbox_emails, tolerant pre-0006).
+- **Dashboard Key Actions** now include queued outbox drafts ("Inquiry
+  awaiting your send… one click in the Outbox", urgent) linking to /outbox.
+- Still open from round 2: co-pilot browser-prefill for form-based sources
+  (needs John's own machine/Chrome), NDA-required-source pre-flagging (needs
+  per-source metadata — Lane A/C).
+
 ## Lane B session setup
 
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch
