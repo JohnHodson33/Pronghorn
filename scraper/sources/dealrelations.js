@@ -13,7 +13,7 @@
 
 const cheerio = require('cheerio');
 const SourceScraper = require('../core/source_base');
-const { STATE_CODES } = require('../core/states');
+const { STATE_CODES, stateFromText } = require('../core/states');
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 
@@ -75,27 +75,42 @@ class DealRelationsScraper extends SourceScraper {
   parseDetail(id, url, html, brokerName) {
     const $ = cheerio.load(html);
 
-    // Spec table: sequences of <td><strong>Label</strong></td><td>:</td><td>value</td>.
-    // Collect label→value by walking the td list.
+    const slug = id.split(':')[1] || id;
+
+    // Template A (Sunbelt-style): a spec table of
+    // <td><strong>Label</strong></td><td>:</td><td>value</td> rows.
     const fields = {};
     const cells = $('td.display').toArray();
     for (let i = 0; i < cells.length; i++) {
       const label = $(cells[i]).find('strong').first().text().replace(/\s+/g, ' ').trim();
       if (!label || label === ':') continue;
-      // value is the next display cell that isn't the ":" separator
       for (let j = i + 1; j < Math.min(i + 3, cells.length); j++) {
         const t = $(cells[j]).text().replace(/\s+/g, ' ').trim();
         if (t && t !== ':' && !$(cells[j]).find('strong').length) { fields[label.toLowerCase()] = t; break; }
       }
     }
 
-    // og:title is the clean listing name ("Trusted Roofing Firm…"); the <title>
-    // tag is just "<broker> | <name>" (or bare "<broker> |" when name is blank).
-    const title = ($('meta[property="og:title"]').attr('content')
-      || $('h1').first().text()
-      || $('title').text().replace(/^[^|]*\|\s*/, '')).replace(/\s+/g, ' ').trim() || null;
+    // Template B (IAG/VR-style): a `.top-text` block —
+    // "Price: $X<br>Revenue: $Y<br>Adjusted Cash Flow: $Z<br>Location: …".
+    if (Object.keys(fields).length === 0) {
+      const top = $('.top-text').text().replace(/\s+/g, ' ');
+      const grab = (label) => (top.match(new RegExp(`${label}:\\s*\\$?([\\d,]+)`, 'i')) || [])[1] || null;
+      if (grab('Price')) fields['price'] = grab('Price');
+      if (grab('Revenue')) fields['sales'] = grab('Revenue');
+      const cf = grab('Adjusted Cash Flow') || grab('Cash Flow');
+      if (cf) fields['disc earn'] = cf;
+      const locM = top.match(/Location:\s*([A-Za-z .,'-]+?)(?:\s*(?:Price|Revenue|Cash|$))/i);
+      if (locM && locM[1].trim()) fields['state/prov'] = locM[1].trim();
+    }
+
+    // Name: og:title is the descriptive name on template A but only the slug on
+    // template B — fall back to a humanized slug (drop any leading listing number).
+    const og = ($('meta[property="og:title"]').attr('content') || '').replace(/\s+/g, ' ').trim();
+    const title = og && !/^\d/.test(og) && !/dealrelations/i.test(og)
+      ? og
+      : this.titleCase(slug.replace(/^\d+-/, '').replace(/-/g, ' '));
     const stateName = (fields['state/prov'] || '').toLowerCase();
-    const state = STATE_CODES[stateName] || null;
+    const state = STATE_CODES[stateName] || stateFromText(fields['state/prov']) || null;
 
     // Agent: <strong>NAME</strong> preceding an "Office :" phone.
     let agentName = null;

@@ -134,7 +134,12 @@
       "subdomains": [
         { "sub": "sunbeltnaples", "name": "Sunbelt Naples FL" },
         { "sub": "angelicamichail", "name": "Sunbelt Pasadena CA" },
-        { "sub": "sunbeltatlanta", "name": "Sunbelt Atlanta GA" }
+        { "sub": "sunbeltatlanta", "name": "Sunbelt Atlanta GA" },
+        { "sub": "iagmerger", "name": "IAG Merger & Acquisition" },
+        { "sub": "vrbiztriangle", "name": "VR Business Brokers Triangle NC" },
+        { "sub": "sagbrokerage", "name": "Sofranko Advisory Group PA" },
+        { "sub": "thevalleybusinessbroker", "name": "The Valley Business Broker" },
+        { "sub": "tericraft", "name": "TeriCraft Business Sales" }
       ],
       "_comment": "DealRelations multi-tenant platform. Add more Sunbelt/other broker subdomains (each <sub>.dealrelations.com/listings). Detail pages carry agent name + office phone."
     },
