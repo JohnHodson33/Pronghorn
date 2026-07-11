@@ -333,3 +333,21 @@ delisting.yml with dry_run=true first.
   are broad (mostly off-thesis), so expected incremental thesis yield is small.
   Logged for the PM as a known coverage lever if the biggest network is worth a
   dedicated session later.
+
+## 2026-07-11 — loop iter: health sweep CAUGHT + FIXED a bizben resilience bug
+
+- **bizben was silently under-collecting.** Health-sweep re-run returned only
+  757 listings (vs 4,433) — BizBen's AWS API Gateway throws intermittent HTTP
+  500s under rapid pagination, and the adapter `break`s the whole token-chained
+  pool on the first error. On a transient blip the daily run would lose ~80% of
+  BizBen's inventory with no crash/alert.
+- **Fixed:** added `fetchPage()` with exponential backoff (1.5s/3s/6s, 4 tries)
+  on 429/5xx + network errors. Verified recovery, 0 errors. Committed.
+- gabb health-checked: 200 listings, clean.
+- ➡️ Note for PM: other token/page-chained fetch adapters (tupelomarket,
+  dealrelations, fcbb) also break-on-first-error but are far less 500-prone
+  (SSR/stable APIs). Left as-is; the bizben AWS gateway was uniquely fragile.
+  If a daily run ever shows a source's count crater, this class of transient
+  error is the first suspect — the source_quality report will surface it.
+- **This is the value of the maintenance loop:** a silent data-loss bug that
+  only surfaces under load, caught by rotating health sweeps.
