@@ -121,3 +121,45 @@ After PM merged the first 6 adapters to main, continued the source hunt.
   adapter already covers it).
 
 **Adapter count now 16 → 18** (vr, franchiseresales). Branch has 15 commits.
+
+## 2026-07-11 — post-merge round 2: 5 sources + analytics + enrichment + delisting
+
+Continuing per John's SELF-ITERATE / never-stop directive (TASK-QUEUE top).
+
+**5 more NEW sources (adapter count 18 → 23):**
+| Source | Backend | Listings | Notes |
+|---|---|---|---|
+| VR Business Brokers (`vr`) | SSR WP Views cards | 366 | Unbenched; corporate page aggregates all offices |
+| Franchise Resales (`franchiseresales`) | sitemap + JSON-LD | 74 | Green home-services franchise resales only |
+| Certified BB Houston (`tupelo`) | Tupelo SMB public API | 16 | **Generic reusable platform adapter** (org_id param) |
+| The Firm / Omaha (`thefirm`) | Umbraco SSR cards | 29 | 7 relevant, 1 T1+1 T2 — high hit rate |
+| Calder Capital (`calder`) | WP search-filter SSR | 37 | Revenue/CashFlow/RealEstate, Midwest LMM |
+
+**Source-quality analytics** (`source_quality.js`) — ranks all sources by
+thesis-fit yield + flags gaps. First run: **17,975 listings, 83 T1 + 216 T2.**
+Top thesis source = businessbroker (127 fit). Flagged bizquest + linkbusiness
+as low-value; flagged 8 sources with thesis-fit but zero broker contacts.
+
+**Broker-contact enrichment** (the outreach end-state goal):
+- `businessbroker` detail pages embed JSON-LD Organization (founder=broker,
+  email, phone). Added bounded enrichment (cash flow ≥ floor, cap 150).
+  Run: **120 enriched → 61 new brokers synced + 76 listings linked.** Only
+  seeds brokers table with real person names (raw contact stashed otherwise).
+- Brokers table now ~1,260 rows (was ~1,100) — real names+emails+phones for
+  cold outreach.
+
+**Delisting/freshness** (`mark_delisted.js`) — marks listings delisted after
+~2 missed full crawls (keeps row+financials for Market Multiples), emits
+'delisted' events. Excludes targeted/mirror sources (businessbroker,
+franchiseresales, bizquest) where absence ≠ delisting. Verified logic; live
+effect starts on subsequent daily runs.
+
+**PM action items:**
+1. Merge lane/brokers (23 sources + 3 new scripts). All scraper-only.
+2. **Wire `node mark_delisted.js` into the daily job** (after run_supabase).
+3. `source_quality.js` is a good weekly PM report — consider surfacing on a
+   Source Health dashboard tile (Lane B).
+4. bizquest is confirmed dead weight (1,597 listings, 0 CF, 0 fit — pure
+   BizBuySell mirror). Recommend disabling to cut ~1,600 junk rows + run time.
+5. Relevance-keyword gap still open (add "painting"/"restore" to Green Industry
+   Default screen profile — would recover ~15-20 real targets already in DB).
