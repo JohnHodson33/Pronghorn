@@ -367,3 +367,21 @@ delisting.yml with dry_run=true first.
   are single-request or naturally page-independent; transworld/tupelomarket/
   dealrelations already tolerate multiple errors before stopping. The
   break-on-first-error data-loss class is now closed across the roster.
+
+## 2026-07-11 — loop iter: FULL-ROSTER health verification (all clean)
+
+- Ran source_quality.js + health-checked the last stale source (bizbuysell,
+  browser-based): **1,583 listings, 30 pages, 0 errors, not Cloudflare-blocked.**
+- **Entire roster now verified healthy this session** — all 25 enabled sources
+  parse cleanly. bizben restored to 4,518 (retry fix confirmed working in the
+  audit, up from the 757 transient-500 under-collection). No broken parses.
+- Current totals: ~18,700 listings, 105 T1 + 229 T2, 27 sources (25 enabled;
+  bizquest + certifiedbb disabled).
+- **State of the broker prong: complete + hardened + self-maintaining.** Free-
+  source discovery saturated, 3 reusable platforms, broker enrichment on the
+  high-yield sources, delisting + source-quality jobs, 4 CI workflows (dormant
+  pending John's secrets), all paginated-API adapters retry-resilient.
+- Lengthening loop cadence to ~1h: the system is stable and healthy, so the
+  marginal value of a 30-min health check is low. Still watching for PM
+  merges/new tasks and opportunistic platforms; will tighten cadence again if
+  something actionable appears.
