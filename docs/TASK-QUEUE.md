@@ -51,14 +51,29 @@ Status keys: ⬜ open · 🔨 in-progress (add your lane) · ✅ done (PM verifi
 - ⬜ Add per-source detail-page enrichment where broker names live (Transworld detail).
 
 ## Lane B — Frontend / Tabs  (branch `lane/frontend`; owns new dirs in `web/app/*`, `web/lib/*`, new `web/components/*`; DO NOT edit Sidebar.tsx — tell PM the new route)
-- ⬜ Deal detail page `/pipeline/[id]` or `/deals/[id]`: financials, stage dropdown
-  (PATCH deal), activity log (reuse ActivityForm), broker/owner contacts.
-- ⬜ Enrichment tab scaffold (per LEADGEN-SOURCES; per-company enrichment status).
-- ⬜ Outreach Library tab scaffold (email sequences + variables, per TRANSCRIPT-NOTES).
-- ⬜ Cold Calling tab scaffold (call list + script + company info on one screen).
-- ⬜ Listings: CSV export button; saved filter views.
-- ⬜ Dashboard v2: real Tier-1 feed, source health, multiples snapshot, next deadlines.
-- ⬜ Company detail: add contacts section, listing history, market-multiple comparison.
+✅ DONE (merged+deployed): deal detail w/ stage edit, Enrichment/Outreach/Cold-Calling
+tabs, CSV export + ListingsTableV2, Dashboard v2 (now at /), Company detail v2 +
+editable CompanyEditor, Companies table (industry col/search/filters), pipeline→deal links.
+
+### Lane B — next (REFILLED 2026-07-11)
+- 🔥 **Listing detail page** `/listings/[id]`: click any broker listing → in-app
+  detail (financials, tier + screener reasoning, price/event history from
+  listing_events, source link) + a "Promote to company/deal" action (real name
+  required). Make listing names in ListingsTableV2 link here.
+- 🔥 **Global search** (top bar, like Jake's): search companies + contacts +
+  listings + deals from one box → jump to the record. New `web/app/api/search`.
+- 🔥 **Contacts editable + linkable**: add/edit a contact inline, set role
+  (owner/broker/advisor), attach to a company AND a deal; add contacts from the
+  company profile. New PATCH/POST `web/app/api/contacts`.
+- ⬜ **Mobile-responsive pass** — John reviews on mobile a lot; make sidebar
+  collapsible, tables horizontally scrollable, cards stack. High impact.
+- ⬜ **Deal detail: market-multiple comparison widget** — show this deal's implied
+  multiple vs. its industry × size-band peers from /analytics data ("priced at
+  4.0× EBITDA; industry median 3.2× → rich").
+- ⬜ **Broker detail page** `/brokers/[id]`: a broker's listings + deals + coverage.
+- ⬜ **Pipeline drag-and-drop** stage moves (nice-to-have over the dropdown).
+- ⬜ **Enrichment/Outreach/Cold-Calling**: wire to real data as list-building leads
+  flow (coordinate with Lane C's /api/leads).
 
 ## Lane C — CRM & Data / Integrations  (branch `lane/integrations`; owns `scraper/` integration scripts, `web/app/api/*` for data)
 ### Shipped by Lane C (PM: verify + action items below)
