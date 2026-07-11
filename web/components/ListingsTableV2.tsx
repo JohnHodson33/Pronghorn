@@ -5,6 +5,7 @@
 // Export writes the CURRENT filtered+sorted rows client-side (no extra fetch);
 // saved views keep name → full filter/sort state in localStorage.
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { margin, money, multiple } from "@/lib/mock";
 import type { UiListing } from "@/lib/types";
@@ -19,7 +20,13 @@ const tierBadge: Record<number, string> = {
 const statusStyle: Record<UiListing["status"], string> = {
   new: "bg-blue-50 text-blue-700",
   reviewed: "bg-zinc-100 text-zinc-600",
+  interested: "bg-emerald-50 text-emerald-700",
   pursuing: "bg-emerald-100 text-emerald-800",
+  info_requested: "bg-amber-100 text-amber-800",
+  nda_signed: "bg-sky-100 text-sky-800",
+  cim_received: "bg-violet-100 text-violet-800",
+  promoted: "bg-emerald-100 text-emerald-800",
+  pushed_to_crm: "bg-emerald-100 text-emerald-800",
   passed: "bg-zinc-100 text-zinc-400 line-through",
 };
 
@@ -216,7 +223,7 @@ export default function ListingsTableV2({ rows: allRows, live }: { rows: UiListi
   const inputCls = "rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-600";
 
   return (
-    <div className="p-8 space-y-5">
+    <div className="p-4 md:p-8 space-y-5">
       <header className="flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Broker Listings</h1>
@@ -328,7 +335,9 @@ export default function ListingsTableV2({ rows: allRows, live }: { rows: UiListi
             {rows.map((l) => (
               <tr key={l.id} className="hover:bg-zinc-50" title={l.tierReasoning}>
                 <td className="px-4 py-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle[l.status]}`}>{l.status}</span>
+                  <span className={`whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle[l.status]}`}>
+                    {l.status.replace(/_/g, " ")}
+                  </span>
                 </td>
                 <td className="px-4 py-3">
                   {l.tier !== null ? (
@@ -338,14 +347,20 @@ export default function ListingsTableV2({ rows: allRows, live }: { rows: UiListi
                   )}
                 </td>
                 <td className="max-w-md px-4 py-3">
-                  {l.url ? (
-                    <a href={l.url} target="_blank" rel="noopener noreferrer" className="block truncate font-medium hover:text-emerald-700 hover:underline">
-                      {l.name} ↗
-                    </a>
-                  ) : (
-                    <div className="truncate font-medium">{l.name}</div>
-                  )}
-                  <div className="text-xs text-zinc-500">{l.industry} · {l.source}</div>
+                  <Link href={`/listings/${l.id}`} className="block truncate font-medium hover:text-emerald-700 hover:underline">
+                    {l.name}
+                  </Link>
+                  <div className="text-xs text-zinc-500">
+                    {l.industry} · {l.source}
+                    {l.url && (
+                      <>
+                        {" · "}
+                        <a href={l.url} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline">
+                          source ↗
+                        </a>
+                      </>
+                    )}
+                  </div>
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">
                   {l.city ? `${l.city}, ` : ""}{l.state ?? "—"}

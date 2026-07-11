@@ -16,7 +16,18 @@ export type UiListing = {
   tierReasoning: string;
   priorityState: boolean;
   firstSeen: string; // YYYY-MM-DD
-  status: "new" | "reviewed" | "pursuing" | "passed";
+  // Pursuit lifecycle (LISTING-PURSUIT-FLOW.md) + legacy review values.
+  status:
+    | "new"
+    | "interested"
+    | "info_requested"
+    | "nda_signed"
+    | "cim_received"
+    | "promoted"
+    | "passed"
+    | "reviewed"
+    | "pursuing"
+    | "pushed_to_crm";
   relevant: boolean; // passed the screen-profile relevance filter
   url: string | null; // source listing page
 };

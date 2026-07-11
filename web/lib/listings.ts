@@ -20,6 +20,7 @@ type Row = {
   first_seen_at: string;
   raw: { relevant?: boolean | null } | null;
   url: string | null;
+  listing_reviews: { status: string } | { status: string }[] | null;
 };
 
 function num(v: number | string | null): number | null {
@@ -48,7 +49,7 @@ export async function fetchListings(): Promise<UiListing[] | null> {
     const { data, error } = await serverDb()
       .from("listings")
       .select(
-        "id, source_id, name, industry, industry_raw, city, state, asking_price, gross_revenue, cash_flow, cash_flow_type, tier, tier_reasoning, priority_state, first_seen_at, raw, url"
+        "id, source_id, name, industry, industry_raw, city, state, asking_price, gross_revenue, cash_flow, cash_flow_type, tier, tier_reasoning, priority_state, first_seen_at, raw, url, listing_reviews(status)"
       )
       .is("delisted_at", null)
       .is("duplicate_of", null)
@@ -78,7 +79,10 @@ export async function fetchListings(): Promise<UiListing[] | null> {
     tierReasoning: r.tier_reasoning ?? "",
     priorityState: !!r.priority_state,
     firstSeen: r.first_seen_at.slice(0, 10),
-    status: "new", // listing_reviews workflow lands with auth (morning question)
+    status: (() => {
+      const rev = Array.isArray(r.listing_reviews) ? r.listing_reviews[0] : r.listing_reviews;
+      return (rev?.status ?? "new") as UiListing["status"];
+    })(),
     relevant: r.raw?.relevant !== false,
     url: r.url,
   }));

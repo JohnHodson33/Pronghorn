@@ -69,7 +69,7 @@ export default function ListBuilding() {
   const anyKeyNeeded = LEADGEN_SOURCES.some((s) => s.needsKey && enabled.has(s.id));
 
   return (
-    <div className="max-w-5xl p-8 space-y-6">
+    <div className="max-w-5xl p-4 md:p-8 space-y-6">
       <header className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">List Building</h1>
@@ -145,14 +145,16 @@ export default function ListBuilding() {
         ) : (
           <ul className="divide-y divide-zinc-100">
             {recent.map((l) => (
-              <li key={l.id} className="flex items-center justify-between px-5 py-3">
-                <div>
-                  <div className="text-sm font-medium">{l.query_industry}{l.query_geography ? ` — ${l.query_geography}` : " — National"}</div>
-                  <div className="text-xs text-zinc-500">target {l.target_count} · {l.created_at.slice(0, 16).replace("T", " ")}</div>
-                </div>
-                <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600">
-                  {l.status === "pending" ? "queued" : l.status} · {l.leads_found} found
-                </span>
+              <li key={l.id}>
+                <a href={`/list-building/${l.id}`} className="flex items-center justify-between px-5 py-3 hover:bg-zinc-50">
+                  <div>
+                    <div className="text-sm font-medium text-emerald-800">{l.query_industry}{l.query_geography ? ` — ${l.query_geography}` : " — National"}</div>
+                    <div className="text-xs text-zinc-500">target {l.target_count} · {l.created_at.slice(0, 16).replace("T", " ")}</div>
+                  </div>
+                  <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600">
+                    {l.status === "pending" ? "queued" : l.status} · {l.leads_found} found →
+                  </span>
+                </a>
               </li>
             ))}
           </ul>

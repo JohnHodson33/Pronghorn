@@ -93,3 +93,103 @@ Adapter count 10 → 16.
 4. Daily-run cost/time: Transworld enrichment adds ~4.5 min (150 detail
    fetches). BizBen full run ~3 min. All within a nightly window but worth
    knowing. Consider lowering `max_detail_enrich` if the 6am job gets tight.
+
+## 2026-07-10 (cont.) — post-merge round: VR + Franchise Resales
+
+After PM merged the first 6 adapters to main, continued the source hunt.
+
+- **VR Business Brokers** (`vr.js`) — UNBENCHED. The corporate
+  /businesses-for-sale/ page DOES aggregate all franchise-office inventory
+  (roster note said "per-franchise domains only" — wrong). SSR cards, WP Views
+  pagination. 366 listings, 3 Tier 2. No cash flow on cards (asking/coverage
+  data). The homepage "suspicious injected scripts" note was a false alarm.
+- **Franchise Resales** (`franchiseresales.js`) — NEW. Franchise-resale board,
+  74 green/home-services resales crawled (of 606 total; green_only filter).
+  JSON-LD price + brand, body-text cash flow.
+  ⚠️ **RELEVANCE-CONFIG NOTE FOR JOHN:** only 1 of 74 passed the thesis screen.
+  Many green franchises were dropped because the DB screen keyword list
+  (screen_profiles, UI-editable) lacks common trade terms — notably **"painting"
+  / "painters"** and **"restore"** (list has "restoration" but not the bare
+  "restore" that ServiceMaster/CertaPro use). Adding those to the Green Industry
+  Default profile would recover ~15–20 real home-services targets already in the
+  DB (not just from this source). I did NOT edit screen_profiles (shared data) —
+  flagging for John/PM to update via the Screen Criteria editor.
+- Recon also cleared (no public grid / off-thesis / parked): BusinessMart,
+  BizNexus (GoHighLevel funnel), Principium (green M&A ADVISOR — no public
+  listings, educational content only), Truforte, Crowne Atlantic, Apex, The
+  Firm, Calder (cert error). Sunbelt search-page 404 (national `sunbelt`
+  adapter already covers it).
+
+**Adapter count now 16 → 18** (vr, franchiseresales). Branch has 15 commits.
+
+## 2026-07-11 — post-merge round 2: 5 sources + analytics + enrichment + delisting
+
+Continuing per John's SELF-ITERATE / never-stop directive (TASK-QUEUE top).
+
+**5 more NEW sources (adapter count 18 → 23):**
+| Source | Backend | Listings | Notes |
+|---|---|---|---|
+| VR Business Brokers (`vr`) | SSR WP Views cards | 366 | Unbenched; corporate page aggregates all offices |
+| Franchise Resales (`franchiseresales`) | sitemap + JSON-LD | 74 | Green home-services franchise resales only |
+| Certified BB Houston (`tupelo`) | Tupelo SMB public API | 16 | **Generic reusable platform adapter** (org_id param) |
+| The Firm / Omaha (`thefirm`) | Umbraco SSR cards | 29 | 7 relevant, 1 T1+1 T2 — high hit rate |
+| Calder Capital (`calder`) | WP search-filter SSR | 37 | Revenue/CashFlow/RealEstate, Midwest LMM |
+
+**Source-quality analytics** (`source_quality.js`) — ranks all sources by
+thesis-fit yield + flags gaps. First run: **17,975 listings, 83 T1 + 216 T2.**
+Top thesis source = businessbroker (127 fit). Flagged bizquest + linkbusiness
+as low-value; flagged 8 sources with thesis-fit but zero broker contacts.
+
+**Broker-contact enrichment** (the outreach end-state goal):
+- `businessbroker` detail pages embed JSON-LD Organization (founder=broker,
+  email, phone). Added bounded enrichment (cash flow ≥ floor, cap 150).
+  Run: **120 enriched → 61 new brokers synced + 76 listings linked.** Only
+  seeds brokers table with real person names (raw contact stashed otherwise).
+- Brokers table now ~1,260 rows (was ~1,100) — real names+emails+phones for
+  cold outreach.
+
+**Delisting/freshness** (`mark_delisted.js`) — marks listings delisted after
+~2 missed full crawls (keeps row+financials for Market Multiples), emits
+'delisted' events. Excludes targeted/mirror sources (businessbroker,
+franchiseresales, bizquest) where absence ≠ delisting. Verified logic; live
+effect starts on subsequent daily runs.
+
+**PM action items:**
+1. Merge lane/brokers (23 sources + 3 new scripts). All scraper-only.
+2. **Wire `node mark_delisted.js` into the daily job** (after run_supabase).
+3. `source_quality.js` is a good weekly PM report — consider surfacing on a
+   Source Health dashboard tile (Lane B).
+4. bizquest is confirmed dead weight (1,597 listings, 0 CF, 0 fit — pure
+   BizBuySell mirror). Recommend disabling to cut ~1,600 junk rows + run time.
+5. Relevance-keyword gap still open (add "painting"/"restore" to Green Industry
+   Default screen profile — would recover ~15-20 real targets already in DB).
+
+## 2026-07-11 — round 3: Tupelo Marketplace platform-wide (best yield of session)
+
+- Web-search-driven discovery: **Tupelo SMB has a platform-wide marketplace**
+  (tupelosmb.com/marketplace) aggregating EVERY broker on the CRM. Built
+  `tupelomarket` — 50 state SSR pages, ~335 listings. First run: **18 Tier 1 +
+  8 Tier 2** — the best thesis yield/run of the whole session. Green-industry
+  (HVAC/plumbing/landscaping) surfaces across the platform. Disabled the narrow
+  per-org `certifiedbb` (superseded; same Tupelo cuids).
+- **Lesson: web-search for the PLATFORM behind a broker.** bizmls, Tupelo, and
+  (earlier) GABB/Webflow are all multi-tenant platforms where one adapter yields
+  many brokers. Worth periodically searching "business broker CRM/marketplace".
+- Updated totals: **18,319 listings, 101 Tier 1 + 226 Tier 2, 23 sources.**
+- Broker-enrichment walls hit: remaining gap sources are blocked —
+  bizbuysell (Cloudflare on detail), fcbb (office-level only, no agent name),
+  tupelomarket (broker gated behind NDA form), bbf (bizmls, thin). The
+  well-structured broker sources (transworld, bizben, businessbroker, gabb)
+  are already enriched. Owner-level contact is the Phase-5 proprietary channel,
+  not broker sites — flagged as the real gap toward the END-STATE GOAL.
+
+**Standing:** working continuously per John's never-stop directive. This session
+added 12 sources + broker enrichment + source-quality analytics + delisting job.
+
+## 2026-07-11 — loop iteration notes
+- Re-probed GlobalBX (42k listings advertised): still Cloudflare-blocked (403
+  "Just a moment"). Confirmed roster SKIP status; not fighting anti-bot evasion.
+- BizNexus: GoHighLevel funnel, no public listings grid (re-confirmed). Skip.
+- Next platform angles to try: regional Sunbelt sites (sunbeltmidwest.com has a
+  dedicated green-industry /landscaping page; main sunbelt adapter under-scrapes
+  the network — only ~36/run). Worth deeper Sunbelt-network coverage next.

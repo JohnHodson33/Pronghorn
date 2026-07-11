@@ -8,7 +8,10 @@
     "businessbroker": {
       "enabled": true,
       "module": "./sources/businessbroker",
-      "max_pages_per_path": 5
+      "max_pages_per_path": 5,
+      "enrich_details": true,
+      "enrich_min_cash_flow": 300000,
+      "max_detail_enrich": 150
     },
     "bizquest": {
       "enabled": true,
@@ -96,6 +99,38 @@
       "enabled": true,
       "module": "./sources/hedgestone",
       "max_pages": 25
+    },
+    "vr": {
+      "enabled": true,
+      "module": "./sources/vr",
+      "max_pages": 25
+    },
+    "franchiseresales": {
+      "enabled": true,
+      "module": "./sources/franchiseresales",
+      "green_only": true,
+      "max_details": 200
+    },
+    "certifiedbb": {
+      "enabled": false,
+      "module": "./sources/tupelo",
+      "organization_id": "cmae8krad00000uvpcxogwexz",
+      "broker_name": "Certified Business Brokers (Houston)",
+      "broker_url": "https://certifiedbb.com",
+      "_comment": "DISABLED — superseded by tupelomarket (platform-wide; same listing cuids). Kept as the per-org adapter template: to deep-crawl one broker, set enabled=true with their organizationId (from crm.tupelosmb.com/api/public/listings)."
+    },
+    "tupelomarket": {
+      "enabled": true,
+      "module": "./sources/tupelomarket",
+      "_comment": "Platform-wide Tupelo SMB marketplace — all brokers, 50 state SSR pages."
+    },
+    "thefirm": {
+      "enabled": true,
+      "module": "./sources/thefirm"
+    },
+    "calder": {
+      "enabled": true,
+      "module": "./sources/calder"
     }
   },
   "relevance": {

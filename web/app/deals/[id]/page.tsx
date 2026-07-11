@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ActivityForm from "@/components/ActivityForm";
+import ContactsSection from "@/components/ContactsSection";
 import DealControls from "@/components/DealControls";
+import MarketCheckCard from "@/components/MarketCheckCard";
 import { fetchDealDetail } from "@/lib/deal-detail";
+import { computeMarketCheck } from "@/lib/market-check";
 import { hasDb } from "@/lib/db";
 import { money } from "@/lib/mock";
 
@@ -14,13 +17,6 @@ const kindIcon: Record<string, string> = {
   meeting: "🗓", call: "📞", email: "✉️", note: "📝", task: "☑", doc: "📄",
 };
 
-const roleBadge: Record<string, string> = {
-  owner: "bg-emerald-100 text-emerald-800",
-  seller: "bg-emerald-100 text-emerald-800",
-  broker: "bg-sky-100 text-sky-800",
-  advisor: "bg-violet-100 text-violet-800",
-};
-
 export default async function DealPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!hasDb()) return <div className="p-8 text-sm text-zinc-400">Database not connected.</div>;
@@ -28,6 +24,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
   const deal = await fetchDealDetail(id);
   if (!deal) notFound();
   const c = deal.company;
+  const marketCheck = await computeMarketCheck(c.industry, c.ebitda, deal.asking);
 
   const multiple =
     deal.asking !== null && c.ebitda !== null && c.ebitda > 0
@@ -35,7 +32,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
       : null;
 
   return (
-    <div className="max-w-4xl p-8 space-y-6">
+    <div className="max-w-4xl p-4 md:p-8 space-y-6">
       <header>
         <Link href="/pipeline" className="text-sm text-emerald-700 hover:underline">← Pipeline</Link>
         <div className="mt-2 flex items-end justify-between gap-4">
@@ -91,6 +88,8 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
         ))}
       </section>
 
+      <MarketCheckCard check={marketCheck} />
+
       {deal.listing && (
         <div className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm">
           <span className="text-zinc-500">Source listing: </span>
@@ -113,63 +112,27 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
         </div>
       )}
 
-      <section className="space-y-3">
-        <h2 className="font-semibold">Contacts</h2>
-        <div className="grid gap-3 md:grid-cols-2">
-          {deal.broker && (
-            <div className="rounded-xl border border-zinc-200 bg-white p-4">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold">{deal.broker.name ?? "Unnamed broker"}</span>
-                <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-800">
-                  listing broker
-                </span>
+      {deal.broker && (
+        <div className="rounded-xl border border-zinc-200 bg-white p-4">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold">{deal.broker.name ?? "Unnamed broker"}</span>
+            <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-800">
+              listing broker
+            </span>
+          </div>
+          {deal.broker.brokerage && <div className="mt-0.5 text-xs text-zinc-500">{deal.broker.brokerage}</div>}
+          <div className="mt-2 space-y-0.5 text-sm">
+            {deal.broker.phone && <div>📞 {deal.broker.phone}</div>}
+            {deal.broker.email && (
+              <div>
+                ✉️ <a href={`mailto:${deal.broker.email}`} className="text-emerald-700 hover:underline">{deal.broker.email}</a>
               </div>
-              {deal.broker.brokerage && <div className="mt-0.5 text-xs text-zinc-500">{deal.broker.brokerage}</div>}
-              <div className="mt-2 space-y-0.5 text-sm">
-                {deal.broker.phone && <div>📞 {deal.broker.phone}</div>}
-                {deal.broker.email && (
-                  <div>
-                    ✉️ <a href={`mailto:${deal.broker.email}`} className="text-emerald-700 hover:underline">{deal.broker.email}</a>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-          {deal.contacts.map((p) => (
-            <div key={p.id} className="rounded-xl border border-zinc-200 bg-white p-4">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold">{p.name ?? "Unnamed"}</span>
-                {p.role && (
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${roleBadge[p.role] ?? "bg-zinc-100 text-zinc-600"}`}>
-                    {p.role}
-                  </span>
-                )}
-              </div>
-              <div className="mt-2 space-y-0.5 text-sm">
-                {p.phone && <div>📞 {p.phone}</div>}
-                {p.email && (
-                  <div>
-                    ✉️ <a href={`mailto:${p.email}`} className="text-emerald-700 hover:underline">{p.email}</a>
-                  </div>
-                )}
-                {p.linkedin && (
-                  <div>
-                    <a href={p.linkedin} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline">
-                      LinkedIn ↗
-                    </a>
-                  </div>
-                )}
-                {p.notes && <p className="pt-1 text-xs text-zinc-500">{p.notes}</p>}
-              </div>
-            </div>
-          ))}
-          {!deal.broker && deal.contacts.length === 0 && (
-            <div className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-xs text-zinc-400 md:col-span-2">
-              No contacts yet — broker and owner contacts land here as they&apos;re captured.
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </section>
+      )}
+
+      <ContactsSection companyId={c.id} contacts={deal.contacts} />
 
       <section className="space-y-3">
         <h2 className="font-semibold">Activity</h2>

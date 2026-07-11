@@ -13,7 +13,7 @@ export default async function ColdCalling() {
   const leads = (await fetchCallList()) ?? [];
 
   return (
-    <div className="max-w-6xl p-8 space-y-6">
+    <div className="max-w-6xl p-4 md:p-8 space-y-6">
       <header>
         <h1 className="text-2xl font-bold tracking-tight">Cold Calling</h1>
         <p className="text-sm text-zinc-500">

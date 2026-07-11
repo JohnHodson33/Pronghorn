@@ -7,13 +7,19 @@ import { hasDb, serverDb } from "@/lib/db";
 
 export async function POST(req: Request) {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
-  const { listingId, companyName } = await req.json();
+  const { listingId, companyName, realRevenue, realEbitda, ownerName, ownerEmail, ownerPhone } =
+    await req.json();
   const name = String(companyName ?? "").trim();
   if (!listingId || name.length < 2)
     return NextResponse.json(
       { error: "Real company name required (firm rule: no anonymized records in the CRM)" },
       { status: 400 }
     );
+  const num = (v: unknown) => {
+    if (v === null || v === undefined || v === "") return null;
+    const n = Number(String(v).replace(/[,$]/g, ""));
+    return Number.isFinite(n) ? n : null;
+  };
 
   const db = serverDb();
   const { data: l, error: le } = await db
@@ -31,8 +37,8 @@ export async function POST(req: Request) {
       industry: l.industry ?? l.industry_raw,
       city: l.city,
       state: l.state,
-      revenue: l.gross_revenue,
-      ebitda: l.cash_flow,
+      revenue: num(realRevenue) ?? l.gross_revenue,
+      ebitda: num(realEbitda) ?? l.cash_flow,
       ebitda_type: l.cash_flow_type,
       origin: "listing",
       listing_id: l.id,
@@ -50,12 +56,34 @@ export async function POST(req: Request) {
   if (de) return NextResponse.json({ error: de.message }, { status: 500 });
 
   await db.from("listings").update({ company_id: company.id }).eq("id", l.id);
-  await db.from("listing_reviews").upsert({ listing_id: l.id, status: "pushed_to_crm" });
+  await db.from("listing_reviews").upsert({ listing_id: l.id, status: "promoted" });
+
+  // Owner contact from the post-NDA reveal.
+  if (String(ownerName ?? "").trim()) {
+    await db.from("contacts").insert({
+      company_id: company.id,
+      role: "owner",
+      name: String(ownerName).trim(),
+      email: String(ownerEmail ?? "").trim() || null,
+      phone: String(ownerPhone ?? "").trim() || null,
+    });
+  }
+
+  // Carry the pursuit history over as the founding activity.
+  const { data: events } = await db
+    .from("listing_events")
+    .select("event_type, created_at")
+    .eq("listing_id", l.id)
+    .order("created_at", { ascending: true })
+    .limit(50);
+  const history = (events ?? [])
+    .map((e) => `${e.created_at.slice(0, 10)} — ${e.event_type}`)
+    .join("\n");
   await db.from("activities").insert({
     company_id: company.id,
     deal_id: deal.id,
     kind: "note",
-    body: `Deal created from broker listing "${l.name}"`,
+    body: `Deal created from broker listing "${l.name}"${history ? `\n\nPursuit history:\n${history}` : ""}`,
   });
 
   return NextResponse.json({ ok: true, companyId: company.id, dealId: deal.id });
