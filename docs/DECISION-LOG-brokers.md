@@ -385,3 +385,17 @@ delisting.yml with dry_run=true first.
   marginal value of a 30-min health check is low. Still watching for PM
   merges/new tasks and opportunistic platforms; will tighten cadence again if
   something actionable appears.
+
+## 2026-07-11 — loop iter: health check (bbf clean) + BayState/wpbdp probe
+
+- Health: bbf re-run clean (2,102 listings, 0 errors). No new PM tasks in queue.
+- HVAC-vertical hunt: specialist HVAC brokers (Cetane, Business Modification
+  Group, ROI) are advisory-only (no public grids); the marketplaces (BizBuySell,
+  BusinessBroker.net, Synergy, DealStream) are already covered or blocked.
+- **BayState Business Brokers** (MA/CT/NH/RI regional) — WordPress
+  `business-directory-plugin` (wpbdp). Listings render behind the plugin's own
+  view (no wp-json route, no detail links on the /businesses-for-sale index).
+  One small NE office — low volume, not a quick win. BUT wpbdp is a widely-used
+  plugin → potential reusable pattern like DealRelations. ➡️ Logged as a
+  candidate for a dedicated session: reverse the wpbdp listing view/AJAX once,
+  then many brokers on that plugin become addable. Low priority (regional, small).
