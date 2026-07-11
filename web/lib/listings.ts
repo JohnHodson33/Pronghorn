@@ -37,8 +37,12 @@ function cfType(t: string | null): UiListing["cashFlowType"] {
 export async function fetchListings(): Promise<UiListing[] | null> {
   if (!hasDb()) return null;
   // PostgREST caps a single response at 1,000 rows — page with .range()
+  // Only fetch the thesis-fit review set (screened → tier assigned). The full
+  // ~7k+ raw universe stays in the DB and feeds the Market Multiples page; it's
+  // never all shipped to the browser (that made this page take 20s+). Screened
+  // listings are a few hundred rows → fast.
   const PAGE = 1000;
-  const MAX = 10_000;
+  const MAX = 5_000;
   const all: Row[] = [];
   for (let from = 0; from < MAX; from += PAGE) {
     const { data, error } = await serverDb()
@@ -48,6 +52,8 @@ export async function fetchListings(): Promise<UiListing[] | null> {
       )
       .is("delisted_at", null)
       .is("duplicate_of", null)
+      .not("tier", "is", null) // thesis-fit only (screened)
+      .order("tier", { ascending: true })
       .order("first_seen_at", { ascending: false })
       .range(from, from + PAGE - 1);
     if (error) {
