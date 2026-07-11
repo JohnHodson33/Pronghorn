@@ -196,6 +196,30 @@ also executed the two swaps previously flagged as PM actions:
 - Listings table now shows REAL review statuses (joined listing_reviews;
   was hardcoded "new").
 
+## 2026-07-11 (overnight) — Dashboard V3 command center + 0005 alignment
+
+- **`/` rebuilt per DASHBOARD-VISION.md §1** (lib/dashboard-v3.ts): (a) **Key
+  Actions** human-attention queue on top — ready-to-promote (cim_received),
+  NDA states (distinguishes "broker countersign pending" [watch] from "your
+  signature needed" [urgent]), drafted inquiries awaiting John's one-click
+  send, stale pursuits >7d, overdue next steps — verified live with John's two
+  real FCBB NDA pursuits from Lane C's Outlook backfill; (b) **total-pipeline
+  funnel** — prospecting states (amber) flowing into deal stages (green),
+  bar-chart style; (c) **subsector matrix** — per green subsector: thesis-fit
+  broker listings vs proprietary targets, with the outreach-ready fraction as
+  a darker overlay (the "commit to one vertical" picture). Interim aggregates
+  from tables; swap to Lane C's views/api when they land.
+- v2 dashboard widgets displaced (Tier-1 feed, source health, multiples
+  snapshot, stage chart): loaders remain in lib/dashboard.ts — resurrect onto
+  /sources or /analytics if John misses them.
+- **/api/inquiry-profile aligned to migration 0005** (uuid pk, `default_note`
+  column, first-row singleton). Pre-migration behavior unchanged
+  (localStorage fallback). **PM: apply 0005 + 0004 in the SQL editor** — the
+  dashboard's stale-pursuit detection and shared inquiry profile need them.
+- Round-2 dependencies for Lane C: one-click Outlook SEND api + Claude
+  per-listing draft api — Lane B surfaces (Key Actions rows, PursuitPanel)
+  are ready to consume them; today the send path is the mailto draft.
+
 ## Lane B session setup
 
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch
