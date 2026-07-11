@@ -56,12 +56,18 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
-- 🔨 LANE C — 🔥🔥 **PURSUIT AUTO-DETECT from Outlook** (docs/LISTING-PURSUIT-FLOW.md): extend
-  Outlook ingestion to detect NDA-executed/DocuSign-complete → matching listing
-  `nda_signed`; CIM/offering-memo/data-room → `cim_received` + attach doc; match by
-  broker email/domain + fuzzy business name. BACKFILL John's existing NDA
-  confirmations now. Build the listing_reviews status enum + timestamps migration
-  + "ready to promote" queue. The self-regulating loop. Coordinate migration w/ Lane B.
+- 🔨 LANE C — 🔥🔥 **PURSUIT AUTO-DETECT from Outlook** — SHIPPED + BACKFILLED.
+  `scraper/ingest_pursuit.js`: NDA-in-process → info_requested (+countersign-pending
+  note), executed-NDA/DocuSign-complete → nda_signed, CIM/data-room → cim_received
+  (+doc link). Sender-domain → source narrowing, exact-name match w/ short-name
+  ref-anchor guard, forward-only, idempotent per message id, listing_events audit.
+  BACKFILL RAN: John's two FCBB NDAs from TODAY detected & advanced (Aquatic
+  contractor 226-24809 + Tree Service 327-24860 → info_requested; auto-flips to
+  nda_signed when the countersigned copies arrive). DETECTION ONLY — never sends.
+  LANE B CONTRACT: `supabase/migrations/0005_pursuit_flow.sql` = status values +
+  requested_at/nda_signed_at/cim_received_at/doc_url + inquiry_profiles table +
+  ready_to_promote view. **PM ACTION: apply 0005 (and 0004) in SQL editor** —
+  detector works pre-migration via notes fallback.
 - 🔨 LANE C — **Enrichment worker** — SHIPPED & RUNNING. `scraper/enrich/run_enrichment.js`:
   website scrape (home/about/contact) + Exa web/LinkedIn snippets → Claude Haiku
   extracts owner name/title/email/phone/LinkedIn + signals → leads.owner_* (fill-

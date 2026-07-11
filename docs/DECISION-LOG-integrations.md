@@ -175,6 +175,23 @@ synced via `ingest_notion_tracker.js`: nail-thesis financials (revenue/EBITDA/
 employees/LOI prices) backfilled onto all 14 companies, 6 broker contacts got
 phones, and 2 OWNER contacts landed (Jason Ly with a cell number).
 
+## 2026-07-11 — Pursuit auto-detect: the self-regulating loop is live
+
+`ingest_pursuit.js` turns broker emails into listing pursuit-state changes
+(LISTING-PURSUIT-FLOW §2). Design choices worth keeping: (1) "NDA is in
+Process" (FCBB pattern — buyer signed, agent countersign pending) maps to
+info_requested with an explanatory note, NOT nda_signed — the executed-copy
+email advances it, so state never overstates reality. (2) Matching requires the
+listing's exact normalized name in the email text, narrowed by sender domain →
+source; names under 12 chars additionally need the broker's ref-number anchor
+(guards "Tree Service" against false matches). Ambiguous emails are logged for
+review, never guessed. (3) Forward-only ladder; promoted/passed are terminal.
+(4) Idempotent via listing_events.detail.msg. Backfill found John's two FCBB
+NDA submissions from TODAY and matched both to scraped fcbb listings by exact
+name. Migration 0005 adds the timestamps + inquiry_profiles + ready_to_promote
+view (Lane B's contract for the Prospecting lane); detector degrades to notes
+until it's applied. Guardrail: detection only — sending/signing is John's click.
+
 ## 2026-07-10 — dotenv "vestauth" banner: false alarm
 
 `dotenv@17.4.2` prints rotating ad tips (incl. `vestauth.com`). Diffed the installed
