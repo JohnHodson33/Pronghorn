@@ -85,8 +85,10 @@ Status keys: ⬜ open · 🔨 in-progress (add your lane) · ✅ done (PM verifi
   adds the token (zero extra friction, keeps the write-back under his direct control).
   Dry-run verified: currently 0 net-new candidates (all deals originated in HubSpot);
   activates naturally when a scraped listing is promoted to a deal.
-- ⬜ Paid list-building workers (Serper first, then Google Places; Exa/Parallel
-  rescue) — read keys from .env, activate on key arrival. See LISTBUILDING-API-SETUP.md.
+- ✅ Paid list-building workers (Serper + Google Places) — BUILT, key-activated.
+  `leadgen/sources/serper.js` (paid primary, per-engine toggles, credit→cost_actual)
+  + `places.js` (rescue tier). Skip cleanly w/o keys (verified). Exa/Parallel still
+  open as further rescue tiers. **PM ACTION: none until John adds SERPER_API_KEY.**
 - ⬜ More state license boards for list-building. RECON so far (2026-07-11): TX TDLR
   shipped (Socrata). TN data.tn.gov: no pest dataset. GA Kelly Solutions
   (kellysolutions.com): 403 for curl / 404 on guessed paths — find correct GA
@@ -96,6 +98,10 @@ Status keys: ⬜ open · 🔨 in-progress (add your lane) · ✅ done (PM verifi
   yet probed.
 - ⬜ Login-network sync (Axial co-pilot + CIM ingestion; SMB.co/SMBmarket/DealForce
   headless login) — pending John's credentials in .env (CREDENTIALS-INTAKE.md).
+  RECON (2026-07-11): DealForce public `/opportunities` = Vue SPA on Azure Cognitive
+  Search, but featured deals are BLIND TEASERS (no names) → can't be deals (real-name
+  rule); named access is login-gated → co-pilot path, not headless. Axial/SMB not yet
+  probed. This is a browser-co-pilot task (John's live session), not a curl scrape.
 
 ## PM / Integrator  (this/primary session; branch `main`; owns Sidebar.tsx, shared docs, deploys)
 - Merge lane branches → main; run `npm run build` + `vercel deploy --prod`.

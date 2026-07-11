@@ -130,6 +130,34 @@ loop. John adds the token himself anyway — setting the flag beside it is zero
 friction and makes the enablement unambiguous. Dry-run: 0 candidates today
 (everything originated in HubSpot), so nothing is waiting on the gate.
 
+## 2026-07-11 — Paid list-building + external-source recon (what's buildable free)
+
+Serper + Google Places workers built and key-activated (skip cleanly with a
+setup pointer when the key is absent; verified live on a no-key run). Serper is
+the paid primary (per-engine toggles, credit→cost_actual accounting); Places is
+rescue-tier (fires only when primaries miss target). ratings/review_count now
+flow into leads for the review-velocity size proxy.
+
+State license boards beyond TX — recon (so nobody re-walks this):
+- **TX TDLR** — shipped, Socrata JSON, owner names. The gold standard.
+- **TN** (data.tn.gov Socrata) — no pest/contractor licensee dataset. Dead end.
+- **GA Kelly Solutions** — 403 to curl, 404 on guessed paths. Needs a real
+  browser session to find the correct GA pestcontrol path; headless build later.
+- **FL FDACS** — the company-license search is an embedded **Power BI report**
+  (aeslicensing.fdacs.gov/Reports/PBI---Company-License). Not HTTP-scrapable
+  without driving Power BI's query protocol — deprioritize vs. easier states.
+- Net: TX was the easy Socrata win; other states each need bespoke work. Best
+  next free source is SoS registries (owner names) — separate build.
+
+DealForce (login network) recon: public `/opportunities` renders a Vue SPA
+backed by **Azure Cognitive Search**; the featured deals are **blind teasers**
+(no company names — "Manufacturer of industrial-grade power solutions", rev/
+EBITDA/region only). Under the firm real-name rule these CANNOT become deal/
+company records; they could feed Market Multiples (rev×EBITDA×industry) like
+other unnamed listings, but that's Lane A's multiples table. Full/named access
+is login-gated → the co-pilot path (John's live browser) per CREDENTIALS-INTAKE,
+not a headless scrape. No adapter built; recon logged.
+
 ## 2026-07-10 — dotenv "vestauth" banner: false alarm
 
 `dotenv@17.4.2` prints rotating ad tips (incl. `vestauth.com`). Diffed the installed
