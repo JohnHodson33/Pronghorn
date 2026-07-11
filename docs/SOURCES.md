@@ -93,7 +93,7 @@ browser sessions only).
 | Transworld | 🟡 WIP (adapter drafted, disabled) | Client-side app: `listing=` filter param cold-loads GLOBAL inventory (junk); pagination needs in-page JS routing (click next / intercept XHR) not URL loads; cards render post-JSON-LD so financial walk found nothing. 3,529 US listings behind it — worth a dedicated session. Junk test rows deleted |
 | VR Business Brokers | 🟡 medium | Corporate page aggregates, but listings live on per-franchise domains (vrmiamicenter.com etc.) — crawl fan-out needed |
 | Murphy Business | 🟡 medium | Listings page is a JS search app — needs network-request probe |
-| BusinessesForSale.com | 🟡 medium | Search URL not exposed in nav — needs targeted URL discovery |
+| BusinessesForSale.com | ✅ **LIVE** | `/us/search/businesses-for-sale?page=N` — JSON-LD ItemList w/ asking/revenue/cash flow + region per card. ~16,800 US listings (biggest source). Region "California - South" → state-mapped |
 | GABB (Georgia) | ✅ **LIVE (API)** | Public JSON API (Webflow CMS via Railway webhook) — 199 structured listings incl. broker names + **SOLD transaction comps** (real closed multiples). No browser needed, 8s/run. Georgia priority state. **Pattern to reuse: other state assocs may expose the same Webflow API** |
 | CVBBA / AZBBA / TABB | 🟡 unknown | Listing portals not found on first pass — likely external platforms (bizmls-style) |
 | BBF Florida MLS | 🟡 medium | Embedded bizmls.com ASP app; needs form-flow work (highest volume of the associations) |
@@ -119,6 +119,11 @@ lists API-ish XHR calls). Many "hard" JS sites are actually fed by a clean publi
 API — far better than HTML scraping. GABB, and likely other Webflow-based broker
 sites, expose structured data incl. sold comps this way.
 
-## Live sources (7): bizbuysell, bizquest (mirror), businessbroker, synergy,
-## viking, sunbelt, gabb. Next candidates: other state-assoc APIs, Murphy, VR,
-## BBF Florida, Transworld (JS-routing fix).
+## Live sources (8): bizbuysell, bizquest (mirror), businessbroker, synergy,
+## viking, sunbelt, gabb (API), businessesforsale (~16.8k listings).
+##
+## Benched / needs work:
+## - Transworld (JS routing), AZBBA + BBF Florida (JS/Akamai MLS platforms),
+##   TABB (just embeds BizBuySell — skip), GlobalBX + DealStream + LoopNet
+##   (Cloudflare/DataDome), Murphy (JS app), VR (per-franchise domains).
+## Next tractable: BusinessMart (HTML), other state-assoc Webflow APIs.

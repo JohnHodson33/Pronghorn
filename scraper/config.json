@@ -39,6 +39,11 @@
     "gabb": {
       "enabled": true,
       "module": "./sources/gabb"
+    },
+    "businessesforsale": {
+      "enabled": true,
+      "module": "./sources/businessesforsale",
+      "max_pages": 40
     }
   },
   "relevance": {
