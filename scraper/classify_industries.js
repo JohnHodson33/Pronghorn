@@ -10,27 +10,35 @@ const MODEL = 'claude-haiku-4-5-20251001';
 const BATCH = 15;
 
 const SYSTEM = `Classify the business-for-sale listing into exactly one industry from this list:
-Pest Control | Pool Services | Lawn Care | Lake/Pond Management | Tree Care | Landscaping | HVAC | Plumbing | Electrical | Roofing | Windows & Doors | Cleaning/Janitorial | Restoration | Property Maintenance | Other Essential Services | Restaurant/Food | Retail | Auto | Construction/Contractor | Manufacturing | Healthcare | Professional Services | Transportation/Logistics | Internet/Online | Hospitality | Other
+Pest Control | Wildlife/Animal Control | Pool Services | Lawn Care | Lake/Pond Management | Tree Care | Landscaping | Irrigation | Fencing | HVAC | Plumbing | Electrical | Roofing | Windows & Doors | Cleaning/Janitorial | Restoration | Property Maintenance | Other Essential Services | Restaurant/Food | Retail | Auto | Construction/Contractor | Manufacturing | Healthcare | Professional Services | Transportation/Logistics | Internet/Online | Hospitality | Other
+
+Guidance: "Wildlife/Animal Control" = nuisance wildlife removal, trapping, animal
+exclusion (distinct from insect Pest Control). "Fencing" = fence installation/
+repair (residential or commercial). "Irrigation" = sprinkler/irrigation systems.
+Prefer the most specific thesis vertical when applicable.
 
 Respond ONLY with JSON: {"industry":"<one of the above>"}`;
 
 async function main() {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  // --all reclassifies every listing (e.g. after a taxonomy change); default
+  // only fills in unclassified rows.
+  const reclassifyAll = process.argv.includes('--all');
 
-  // fetch all unclassified (paginate past the 1000-row cap)
+  // fetch target rows (paginate past the 1000-row cap)
   const rows = [];
   for (let from = 0; ; from += 1000) {
-    const { data, error } = await supabase
+    let q = supabase
       .from('listings')
       .select('id, name, description, industry_raw')
-      .is('industry', null)
-      .is('duplicate_of', null) // mirrors are excluded from analytics anyway
-      .range(from, from + 999);
+      .is('duplicate_of', null); // mirrors are excluded from analytics anyway
+    if (!reclassifyAll) q = q.is('industry', null);
+    const { data, error } = await q.range(from, from + 999);
     if (error) throw new Error(error.message);
     rows.push(...data);
     if (data.length < 1000) break;
   }
-  console.log(`Classifying ${rows.length} listings...`);
+  console.log(`Classifying ${rows.length} listings${reclassifyAll ? ' (reclassify ALL)' : ''}...`);
 
   let done = 0;
   let failed = 0;

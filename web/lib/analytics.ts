@@ -11,6 +11,33 @@ export const SIZE_BANDS = [
   { key: "3M+", min: 3_000_000, max: Infinity },
 ] as const;
 
+// Pronghorn's active-thesis verticals, in priority order. The Market Multiples
+// page shows these first; everything else is a secondary "reference" section.
+// (Evolves over time — edit here. Fencing/Wildlife added to the classifier
+// taxonomy 2026-07-11; populate via reclassify.)
+export const THESIS_INDUSTRIES = [
+  "Landscaping",
+  "Lawn Care",
+  "Tree Care",
+  "Pool Services",
+  "Pest Control",
+  "Wildlife/Animal Control",
+  "Fencing",
+  "HVAC",
+  "Plumbing",
+  "Electrical",
+  "Irrigation",
+  "Roofing",
+  "Lake/Pond Management",
+  "Windows & Doors",
+  "Property Maintenance",
+  "Restoration",
+  "Cleaning/Janitorial",
+] as const;
+
+const THESIS_RANK = new Map<string, number>(THESIS_INDUSTRIES.map((n, i) => [n, i]));
+export const isThesisIndustry = (industry: string) => THESIS_RANK.has(industry);
+
 type Obs = {
   industry: string;
   cashFlow: number;
@@ -22,6 +49,7 @@ type Obs = {
 
 export type IndustryStats = {
   industry: string;
+  isThesis: boolean;
   n: number;
   medMultiple: number | null; // all bases
   nMultiple: number;
@@ -105,6 +133,7 @@ export async function fetchMarketStats(): Promise<{
       }
       return {
         industry,
+        isThesis: isThesisIndustry(industry),
         n: list.length,
         medMultiple: median(multiples),
         nMultiple: multiples.length,
@@ -116,7 +145,13 @@ export async function fetchMarketStats(): Promise<{
       };
     })
     .filter((s) => s.nMultiple >= 3)
-    .sort((a, b) => b.nMultiple - a.nMultiple);
+    // Thesis industries first (in priority order), then everything else by volume.
+    .sort((a, b) => {
+      const ra = THESIS_RANK.has(a.industry) ? THESIS_RANK.get(a.industry)! : Infinity;
+      const rb = THESIS_RANK.has(b.industry) ? THESIS_RANK.get(b.industry)! : Infinity;
+      if (ra !== rb) return ra - rb;
+      return b.nMultiple - a.nMultiple;
+    });
 
   return {
     stats,

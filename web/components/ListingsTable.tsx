@@ -42,21 +42,6 @@ export default function ListingsTable({ rows: allRows, live }: { rows: UiListing
   const industries = [...new Set(allRows.map((l) => l.industry))].sort();
   const states = [...new Set(allRows.map((l) => l.state).filter(Boolean))].sort() as string[];
   const sources = [...new Set(allRows.map((l) => l.source))].sort();
-  const [promoted, setPromoted] = useState<Set<string>>(new Set());
-
-  async function promote(l: UiListing) {
-    const name = window.prompt(
-      `Promote to CRM: create a company + deal from this listing.\n\nFirm rule: the CRM only takes REAL company names (from the CIM, NDA, or broker call) — no anonymized records.\n\nReal company name for:\n"${l.name}"`
-    );
-    if (!name || name.trim().length < 2) return;
-    const res = await fetch("/api/promote", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ listingId: l.id, companyName: name.trim() }),
-    });
-    if (res.ok) setPromoted((prev) => new Set(prev).add(l.id));
-    else window.alert(`Promote failed: ${(await res.json()).error}`);
-  }
 
   const [q, setQ] = useState("");
   const [industry, setIndustry] = useState("all");
@@ -201,7 +186,6 @@ export default function ListingsTable({ rows: allRows, live }: { rows: UiListing
               <SortTh k="asking" align="right">Asking</SortTh>
               <SortTh k="multiple" align="right">Multiple</SortTh>
               <SortTh k="firstSeen">First seen</SortTh>
-              {live && <th className="px-4 py-3" />}
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
@@ -245,24 +229,11 @@ export default function ListingsTable({ rows: allRows, live }: { rows: UiListing
                   )}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{l.firstSeen}</td>
-                {live && (
-                  <td className="px-4 py-3">
-                    {promoted.has(l.id) ? (
-                      <span className="whitespace-nowrap rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">in CRM ✓</span>
-                    ) : (
-                      <button onClick={() => promote(l)}
-                        className="whitespace-nowrap rounded-md border border-emerald-700 px-2 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-50"
-                        title="Create a company + deal in the CRM (requires the real company name)">
-                        → CRM
-                      </button>
-                    )}
-                  </td>
-                )}
               </tr>
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={live ? 11 : 10} className="px-4 py-10 text-center text-sm text-zinc-400">
+                <td colSpan={10} className="px-4 py-10 text-center text-sm text-zinc-400">
                   No listings match the current filters.
                 </td>
               </tr>
