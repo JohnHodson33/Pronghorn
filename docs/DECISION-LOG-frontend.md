@@ -103,6 +103,36 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   route dir created while `next dev` ran — restart the dev server if a brand-
   new route 404s.
 
+## 2026-07-11 — 🔥 John's live CRM feedback (PM-directed, existing files edited)
+
+Per PM directive, Lane B now edits the existing pipeline/companies pages
+(ownership delegated for these items):
+
+- **Pipeline** (`app/pipeline/page.tsx`, `lib/crm.ts`): every card is a
+  `<Link>` to `/deals/[id]` (hover ring); fetchDeals resolves the broker —
+  company contact with role=broker first, origin-listing broker fallback —
+  so cards show "Broker · name".
+- **Companies tab** (`app/companies/page.tsx` + new
+  `components/CompaniesTable.tsx`): Industry is its own column (chip style),
+  search bar, industry filter chips (Nail Salon / Tree Care / …), stage
+  dropdown + has-deal toggle, whole row navigates to the profile.
+- **Company profile editable** (`app/companies/[id]/page.tsx` swapped to
+  `CompanyDetailV2`): new `components/CompanyEditor.tsx` (name/industry/
+  location/website/revenue/EBITDA/basis) → new `PATCH /api/companies/[id]`
+  (whitelisted; name cannot be blanked — no-blind-teaser rule); DealControls
+  embedded so John can move stages from the profile. Deal detail already
+  shows company + broker + owner + notes with links (verified live —
+  Landmark reads IOI Submitted from Lane C's Outlook ingest).
+
+## 2026-07-11 — Pending PM swaps executed by Lane B
+
+Since the PM delegated existing-file edits for the feedback round, Lane B
+also executed the two swaps previously flagged as PM actions:
+- `app/listings/page.tsx` now imports `ListingsTableV2`; old
+  `ListingsTable.tsx` deleted.
+- Dashboard v2 promoted to `/` (`app/page.tsx`); temp `/dashboard-v2` route
+  deleted. Sidebar needs no change.
+
 ## Lane B session setup
 
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch
