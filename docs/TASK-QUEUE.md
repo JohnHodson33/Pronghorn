@@ -43,14 +43,15 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
   enriched & outreach-ready; (d) visual — bars/funnels/stage columns, not rows.
   Use Lane C's aggregate views once they land; interim compute from tables.
 - 🔥🔥 **PURSUIT AUTOMATION ROUND 2** (John re-hit the gap live 7/11 overnight —
-  read the ADDENDUM in docs/LISTING-PURSUIT-FLOW.md): (a) **one-click send
-  surface**: queued inquiry emails visible + sendable in ONE click from listing
-  detail AND the Dashboard Key Actions widget (Outlook send fires only on
-  John's click); (b) **Claude-drafted per-listing inquiry note** — reference
-  listing specifics + 2–3 smart diligence questions, editable before queue;
-  (c) **NDA action queue**: NDA-required sources surface as a Key Action with
-  the NDA link, auto-advance via existing Outlook detector. Lane C owns the
-  send API + drafting; Lane B owns the surfaces.
+  read the ADDENDUM in docs/LISTING-PURSUIT-FLOW.md): (b) Claude-drafted
+  per-listing inquiry note — ✅ SHIPPED by Lane C (`/api/outbox` POST drafts via
+  Haiku + queues + flips info_requested). (a) one-click send surface — 🔨 **PM
+  took this** (Lane B silent 3 cycles): `/outbox` page shipped (edit/cancel/
+  send-with-explanation; send returns Lane C's deliberate 501 until John asks
+  for the Graph send route + provisions env). REMAINING for Lane B: listing
+  detail + rows need a "Request info" hook into POST /api/outbox, and Dashboard
+  Key Actions `queued_email` items should link to /outbox. (c) **NDA action
+  queue** still open — NDA-required sources as a Key Action with the NDA link.
 - 🔥 **Inquiry Co-pilot for form-based sources** (Lane C w/ Lane B surface, see
   ADDENDUM): BizBuySell-style listings where inquiry = a login+form. Build the
   co-pilot path — "Request info" opens the listing's inquiry page with a

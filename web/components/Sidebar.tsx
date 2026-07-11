@@ -41,6 +41,7 @@ const nav: { section: string; items: { label: string; href: string | null }[] }[
   {
     section: "Outreach",
     items: [
+      { label: "Outbox", href: "/outbox" },
       { label: "Outreach Library", href: "/outreach" },
       { label: "Cold Calling", href: "/cold-calling" },
     ],
