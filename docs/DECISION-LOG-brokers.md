@@ -399,3 +399,23 @@ delisting.yml with dry_run=true first.
   plugin → potential reusable pattern like DealRelations. ➡️ Logged as a
   candidate for a dedicated session: reverse the wpbdp listing view/AJAX once,
   then many brokers on that plugin become addable. Low priority (regional, small).
+
+## 2026-07-11 — loop iter: 4th reusable platform — wpbdp adapter built
+
+- Cracked the BayState/wpbdp lead from last iter into a **generic
+  `wpbdp.js`** adapter (4th reusable platform after bizmls, Tupelo,
+  DealRelations). WordPress business-directory-plugin: `?wpbdp_view=all_listings`
+  index → detail pages with `wpbdp-field-*` rows (Revenue, Cash Flow, Asking,
+  location, **Broker name**). Add directory URLs in config.
+- Fixed 2 parse bugs before shipping: og:title for clean names; first-dollar
+  extraction so parenthetical amounts don't concatenate (was producing
+  $14.6M from "$146,000 (add'l $48K…)").
+- First broker (BayState, New England): 13 listings, 6 brokers linked, 0 thesis
+  this batch (current inventory = liquor/ecommerce/auto). Value is the pattern.
+- ➡️ Expansion note: web search does NOT index the wpbdp footprint well
+  (technical param). More wpbdp brokers will be added as encountered, or via a
+  footprint search (e.g. PublicWWW/BuiltWith for "business-directory-plugin" +
+  "for sale") — a good ad-hoc task for John if he wants to scale this platform.
+- Health: bbf re-verified clean (2,102, 0 errors) this iter.
+- **4 reusable platforms now live** (bizmls, Tupelo, DealRelations, wpbdp) +
+  ~28 sources.
