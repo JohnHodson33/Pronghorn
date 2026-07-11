@@ -33,15 +33,24 @@ Status keys: ⬜ open · 🔨 in-progress (add your lane) · ✅ done (PM verifi
 - ⬜ Company detail: add contacts section, listing history, market-multiple comparison.
 
 ## Lane C — CRM & Data / Integrations  (branch `lane/integrations`; owns `scraper/` integration scripts, `web/app/api/*` for data)
-- ⬜ Full HubSpot contact-directory sync (130 contacts) — proper importer with role
-  inference; filter system/noise (docusign, microsoft, gusto, etc.).
-- ⬜ Free-source list-building scraper (OSM Overpass, state license boards, SoS) — NO
-  API keys needed; wires the List Building tab to actually produce leads.
-- ⬜ Notion meeting-notes ingestion (per MEETING-NOTES-DESIGN.md; needs John's token —
-  bubble to PM if blocked).
-- ⬜ HubSpot one-way deal/company refresh (keep imported deals current); design the
-  two-way push but DO NOT enable it (loop-in guardrail).
+- ⬜ **Notion sync — UNBLOCKED (no token needed): Notion is connected via MCP**
+  (mcp__b6bc9fca__notion-*, workspace "Pronghorn Equity"). Build Notion → CRM:
+  pull meeting notes + Deal Tracker + Broker Directory into activities/companies/
+  contacts. READ-ONLY from Notion.
+- ⬜ **HubSpot TWO-WAY sync — APPROVED by John (2026-07-11).** Build it: net-new
+  records logged in the CRM push to HubSpot; new HubSpot records import in.
+  Respect no-blind-teaser rule + stage mapping (Closed-Lost custom id 3939497680).
+  Deprioritize if it blocks other work (HubSpot may sunset later).
+- ⬜ Free-source list-building scraper (OSM Overpass, state license boards, SoS,
+  BBB, trade assocs) — NO API keys needed; wires List Building to produce leads NOW.
+- ⬜ Paid-source list-building workers (Serper/Google Places/Exa/Parallel) — code
+  them to read keys from .env; they activate when John adds keys (see
+  LISTBUILDING-API-SETUP.md). Serper + Places first.
+- ⬜ Full HubSpot contact-directory sync (130 contacts) — role inference; filter
+  system/noise (docusign, microsoft, gusto, calendar, etc.).
 - ⬜ Outlook email→contact/activity ingestion (Outlook MCP; extract deal correspondents).
+- ⬜ Login-network sync (Axial co-pilot + CIM ingestion; SMB.co/SMBmarket/DealForce
+  headless-login scrape) — pending John's credentials in .env (CREDENTIALS-INTAKE.md).
 
 ## PM / Integrator  (this/primary session; branch `main`; owns Sidebar.tsx, shared docs, deploys)
 - Merge lane branches → main; run `npm run build` + `vercel deploy --prod`.
@@ -53,7 +62,9 @@ Status keys: ⬜ open · 🔨 in-progress (add your lane) · ✅ done (PM verifi
 ---
 
 ## Bubbled-up decisions for John (PM keeps current — see DECISION-LOG.md too)
-- Which login/paid deal networks to join (Axial/PrivSource/SMB.co/…) — see BROKER-SOURCE-LIST.md.
-- Notion integration token (for meeting-notes sync).
-- Data-source API keys for paid list-building (Serper/Google Places/Parallel/Exa).
-- Approve enabling HubSpot two-way push (currently import-only).
+- ✅ Notion — RESOLVED: already connected via MCP, no token needed.
+- ✅ HubSpot two-way push — APPROVED (2026-07-11). Building.
+- ⏳ List-building API keys — John setting up per LISTBUILDING-API-SETUP.md
+  (free sources build now; Serper+Places first for paid). Put keys in scraper/.env.
+- ⏳ Login deal networks — John providing credentials per CREDENTIALS-INTAKE.md
+  (Axial = co-pilot + CIM ingestion; others = headless login once creds arrive).
