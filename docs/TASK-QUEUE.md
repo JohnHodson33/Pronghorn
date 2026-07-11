@@ -82,7 +82,17 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
   Ran: 14 nail companies got revenue/EBITDA/employees/listing URLs + LOI prices
   (post-mortem gold), 6 brokers got phones/full names, 2 OWNER contacts added
   (Thomas Trujilo; Jason Ly w/ cell). Idempotent.
-- ⬜ Email-finder integration (Hunter free tier to start) for verified owner emails.
+- ✅ Email-finder (Hunter) — `scraper/enrich/find_emails.js`: verified owner emails
+  from owner_name+domain, score≥70, one attempt/lead ever (25/mo free quota
+  protected, default cap 5/run), license-board "LAST, FIRST" names normalized,
+  generic mailboxes preserved. LIVE: 2/3 verified at score 95–97 first run.
+- ✅ SELF-ITERATE website-discovery — shipped inside run_enrichment.js: Exa finds
+  the company site for website-less license-board leads (name/domain token match,
+  directory junk filtered), persists to leads.website, then normal enrichment.
+  `--retry-skipped` flag re-runs prior no-context leads (4/12 recovered on test).
+- ✅ Serper + Google Places LIVE (keys arrived) — verified on Pest Control/Tucson:
+  50 Serper + 20 Places candidates → 28 unique leads. Fixed maps pagination (GPS
+  ll anchor from geocoder).
 - ✅ Upwork VA loop — `scraper/va_export.js` (shortlist CSV: enrichment-skipped +
   fewest-known-fields first) + `va_import.js` (fill-blanks-only, --overwrite flag,
   va audit trail in enrichment jsonb). Round-trip tested. PM: draft the VA job post

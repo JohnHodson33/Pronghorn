@@ -64,6 +64,39 @@ async function scrapeWebsite(website) {
   return pages.join('\n\n');
 }
 
+const JUNK_DOMAINS = /yelp|angi|thumbtack|houzz|facebook|bbb\.org|yellowpages|linkedin|instagram|twitter|x\.com|mapquest|manta\.com|dnb\.com|buzzfile|zoominfo|chamberofcommerce|porch\.com|homeadvisor|nextdoor|bizapedia|opencorporates|glassdoor|indeed/i;
+
+/** Website discovery for leads without one (license-board rows): Exa search the
+ * company name + location, keep the first non-directory hit whose title or
+ * domain actually matches the company. Persisted to leads.website so every
+ * later step (enrichment, outreach, VA) benefits. */
+async function discoverWebsite(lead, totals, log) {
+  const key = process.env.EXA_API_KEY;
+  if (!key) return null;
+  const where = [lead.city, lead.state].filter(Boolean).join(' ');
+  try {
+    const { data } = await axios.post('https://api.exa.ai/search', {
+      query: `${lead.name} ${where}`,
+      numResults: 4,
+    }, { headers: { 'x-api-key': key, 'Content-Type': 'application/json' }, timeout: 30000 });
+    totals.exa++;
+    const nameTokens = lead.name.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(/\s+/)
+      .filter((t) => t.length > 3 && !['inc', 'llc', 'corp', 'company', 'services', 'service'].includes(t));
+    for (const r of data.results || []) {
+      if (!r.url || JUNK_DOMAINS.test(r.url)) continue;
+      const domain = r.url.split('/')[2]?.toLowerCase() || '';
+      const title = (r.title || '').toLowerCase();
+      const hit = nameTokens.some((t) => domain.includes(t) || title.includes(t));
+      if (hit) {
+        const site = r.url.split('/').slice(0, 3).join('/');
+        log?.info(`    website discovered: ${site}`);
+        return site;
+      }
+    }
+  } catch (e) { log?.warn(`  website discovery: ${e.response?.status || e.message}`); }
+  return null;
+}
+
 /** Exa web + LinkedIn snippets when the website is missing or thin. */
 async function exaSnippets(lead) {
   const key = process.env.EXA_API_KEY;
@@ -85,7 +118,14 @@ async function exaSnippets(lead) {
   }
 }
 
-async function enrichLead(anthropic, lead, totals) {
+async function enrichLead(anthropic, lead, totals, log) {
+  if (!lead.website) {
+    const site = await discoverWebsite(lead, totals, log);
+    if (site) {
+      lead.website = site;
+      await supabase.from('leads').update({ website: site }).eq('id', lead.id);
+    }
+  }
   let context = '';
   if (lead.website) context = await scrapeWebsite(lead.website);
   let exaUsed = 0;
@@ -123,9 +163,12 @@ async function main() {
   const limit = Number(arg('--limit')) || 25;
   const listId = arg('--list');
 
+  const retrySkipped = process.argv.includes('--retry-skipped');
   let q = supabase.from('leads')
     .select('id, name, website, phone, city, state, owner_name, owner_email, owner_phone, owner_linkedin, enrichment, status')
-    .eq('status', 'new').is('enrichment', null).order('created_at', { ascending: true }).limit(limit);
+    .eq('status', 'new').order('created_at', { ascending: true }).limit(limit);
+  // default: untouched leads; --retry-skipped: re-run ones that had no context
+  q = retrySkipped ? q.not('enrichment->skipped', 'is', null) : q.is('enrichment', null);
   if (listId) q = q.eq('lead_list_id', listId);
   const { data: leads, error } = await q;
   if (error) throw new Error(error.message);
@@ -138,7 +181,7 @@ async function main() {
 
   for (const lead of leads) {
     try {
-      const { out, skip } = await enrichLead(anthropic, lead, totals);
+      const { out, skip } = await enrichLead(anthropic, lead, totals, log);
       if (skip) {
         await supabase.from('leads').update({ enrichment: { skipped: skip, at: new Date().toISOString() } }).eq('id', lead.id);
         skipped++;
