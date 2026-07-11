@@ -14,10 +14,11 @@
       "max_detail_enrich": 150
     },
     "bizquest": {
-      "enabled": true,
+      "enabled": false,
       "module": "./sources/bizquest",
       "max_pages": 30,
-      "mirror_of": "bizbuysell"
+      "mirror_of": "bizbuysell",
+      "_comment": "DISABLED 2026-07-11 (source-quality: drop low-value). Pure BizBuySell mirror — 1,597 listings, 0 thesis-fit, 0 cash flow, 100% mirror-dedup. Re-enable only to re-validate BizBuySell coverage."
     },
     "synergy": {
       "enabled": true,
