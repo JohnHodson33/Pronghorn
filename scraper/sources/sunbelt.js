@@ -112,41 +112,57 @@ class SunbeltScraper extends SourceScraper {
   parseDetail(html, card) {
     const $ = cheerio.load(html);
     const fin = {};
-    $('.resultsBusiness__detailsFinancial--item').each((_, el) => {
-      const text = $(el).text().replace(/\s+/g, ' ').trim(); // "$14,500,000 Asking Price"
-      const label = $(el).find('.resultsBusiness__detailsFinancial--itemSpan').text().trim().toLowerCase();
-      const valPart = text.replace(new RegExp(label, 'i'), '').trim();
-      const val = /n\/a/i.test(valPart) ? null : this.parseSunbeltMoney(valPart);
+    // Each value is a <strong>$X</strong> immediately followed by a
+    // <span class="...itemSpan">Label</span> inside an <li>.
+    $('.resultsBusiness__detailsFinancial--itemSpan').each((_, el) => {
+      const label = $(el).text().trim().toLowerCase();
+      const strong = $(el).prevAll('strong').first().text().trim()
+        || $(el).parent().find('strong').first().text().trim();
+      const val = /n\/a/i.test(strong) || !strong ? null : this.parseSunbeltMoney(strong);
       if (label.includes('asking')) fin.asking = val;
       else if (label.includes('cash flow')) fin.cash = val;
       else if (label.includes('gross revenue')) fin.rev = val;
       else if (label.includes('adjusted ebitda')) fin.ebitda = val;
+      // "down payment" intentionally ignored
     });
 
-    const title = ($('h1').first().text() || card.name || '').trim() || null;
-    // location: URL prefix "/boca-raton-fl/..." or page text
+    // Location block: City / State rows under .resultsBusiness__detailsOffice
+    const office = $('.resultsBusiness__detailsOffice');
+    let city = null;
+    let stateName = null;
+    office.find('li').each((_, li) => {
+      const lab = $(li).find('strong').text().trim().toLowerCase();
+      const val = $(li).find('span').text().trim();
+      if (lab.startsWith('city')) city = val || null;
+      else if (lab.startsWith('state')) stateName = val || null;
+    });
     const urlLoc = card.url.match(/sunbeltnetwork\.com\/([a-z-]+)-([a-z]{2})\/buy-a-business/i);
+    const state = stateFromText(stateName) || (urlLoc ? urlLoc[2].toUpperCase() : null);
+    // "South Florida" etc. aren't real cities — keep only if it looks like one
+    const cleanCity = city && !/^n\/a$/i.test(city) ? city : (urlLoc ? this.slugToName(urlLoc[1]) : null);
+
+    const title = ($('h1').first().text() || card.name || '').trim() || null;
     const bodyText = $('body').text().replace(/\s+/g, ' ');
 
-    // Prefer explicit EBITDA basis when present, else cash flow.
-    const cash = fin.ebitda ?? fin.cash;
-    const cfType = fin.ebitda ? 'EBITDA' : fin.cash ? 'cash flow' : null;
+    // Report cash flow as the driver; keep adjusted EBITDA in raw for analytics.
+    const cash = fin.cash ?? fin.ebitda;
+    const cfType = fin.cash ? 'cash flow' : fin.ebitda ? 'EBITDA' : null;
 
     return this.listing({
       source_listing_id: card.id,
       name: title,
       url: card.url,
-      description: bodyText.slice(bodyText.search(/business description|description/i), 500) || null,
+      description: bodyText.slice(0, 500) || null,
       location: {
-        city: urlLoc ? this.slugToName(urlLoc[1]) : null,
-        state: urlLoc ? urlLoc[2].toUpperCase() : stateFromText(bodyText.slice(0, 4000)),
-        raw: urlLoc ? `${this.slugToName(urlLoc[1])}, ${urlLoc[2].toUpperCase()}` : null,
+        city: cleanCity,
+        state,
+        raw: [cleanCity, state].filter(Boolean).join(', ') || null,
       },
       asking_price: fin.asking ?? card.askingCard,
       gross_revenue: fin.rev,
       cash_flow: cash,
       cash_flow_type: cfType,
-      raw: { adjusted_ebitda: fin.ebitda, reported_cash_flow: fin.cash },
+      raw: { adjusted_ebitda: fin.ebitda ?? null, reported_cash_flow: fin.cash ?? null },
     });
   }
 

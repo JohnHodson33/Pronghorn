@@ -18,9 +18,30 @@ const statusStyle: Record<UiListing["status"], string> = {
   passed: "bg-zinc-100 text-zinc-400 line-through",
 };
 
+// Numeric accessors for sorting (nulls sort last regardless of direction).
+const marginNum = (l: UiListing) =>
+  l.cashFlow !== null && l.revenue ? l.cashFlow / l.revenue : null;
+const multipleNum = (l: UiListing) =>
+  l.asking !== null && l.cashFlow ? l.asking / l.cashFlow : null;
+
+type SortKey =
+  | "tier" | "revenue" | "cashFlow" | "margin" | "asking" | "multiple" | "firstSeen" | "state";
+
+const accessors: Record<SortKey, (l: UiListing) => number | string | null> = {
+  tier: (l) => l.tier,
+  revenue: (l) => l.revenue,
+  cashFlow: (l) => l.cashFlow,
+  margin: marginNum,
+  asking: (l) => l.asking,
+  multiple: multipleNum,
+  firstSeen: (l) => l.firstSeen,
+  state: (l) => l.state,
+};
+
 export default function ListingsTable({ rows: allRows, live }: { rows: UiListing[]; live: boolean }) {
   const industries = [...new Set(allRows.map((l) => l.industry))].sort();
   const states = [...new Set(allRows.map((l) => l.state).filter(Boolean))].sort() as string[];
+  const sources = [...new Set(allRows.map((l) => l.source))].sort();
   const [promoted, setPromoted] = useState<Set<string>>(new Set());
 
   async function promote(l: UiListing) {
@@ -40,31 +61,77 @@ export default function ListingsTable({ rows: allRows, live }: { rows: UiListing
   const [q, setQ] = useState("");
   const [industry, setIndustry] = useState("all");
   const [state, setState] = useState("all");
+  const [source, setSource] = useState("all");
   const [tiers, setTiers] = useState<number[]>([1, 2, 3, 4]);
   const [minCF, setMinCF] = useState("");
+  const [maxCF, setMaxCF] = useState("");
+  const [maxMult, setMaxMult] = useState("");
   const [priorityOnly, setPriorityOnly] = useState(false);
-  const [relevantOnly, setRelevantOnly] = useState(live); // live default: thesis-fit view
+  const [relevantOnly, setRelevantOnly] = useState(live);
 
-  const rows = useMemo(
-    () =>
-      allRows
-        .filter((l) => {
-          if (relevantOnly && !l.relevant) return false;
-          if (q && !`${l.name} ${l.industry} ${l.city} ${l.state}`.toLowerCase().includes(q.toLowerCase())) return false;
-          if (industry !== "all" && l.industry !== industry) return false;
-          if (state !== "all" && l.state !== state) return false;
-          if (l.tier !== null && !tiers.includes(l.tier)) return false;
-          if (minCF && (l.cashFlow === null || l.cashFlow < Number(minCF))) return false;
-          if (priorityOnly && !l.priorityState) return false;
-          return true;
-        })
-        // Best deals first: Tier 1 → 4, unscreened last; newest within a tier
-        .sort((a, b) => (a.tier ?? 9) - (b.tier ?? 9) || (a.firstSeen < b.firstSeen ? 1 : -1)),
-    [allRows, q, industry, state, tiers, minCF, priorityOnly, relevantOnly]
-  );
+  // Default sort: best deals first (tier asc, then newest).
+  const [sortKey, setSortKey] = useState<SortKey>("tier");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  function clickSort(key: SortKey) {
+    if (key === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
+      setSortKey(key);
+      // sensible default direction per column: money/margin/multiple high→low first
+      setSortDir(["tier", "firstSeen", "state"].includes(key) ? "asc" : "desc");
+    }
+  }
+
+  const rows = useMemo(() => {
+    const filtered = allRows.filter((l) => {
+      if (relevantOnly && !l.relevant) return false;
+      if (q && !`${l.name} ${l.industry} ${l.city} ${l.state}`.toLowerCase().includes(q.toLowerCase())) return false;
+      if (industry !== "all" && l.industry !== industry) return false;
+      if (state !== "all" && l.state !== state) return false;
+      if (source !== "all" && l.source !== source) return false;
+      if (l.tier !== null && !tiers.includes(l.tier)) return false;
+      if (minCF && (l.cashFlow === null || l.cashFlow < Number(minCF))) return false;
+      if (maxCF && (l.cashFlow === null || l.cashFlow > Number(maxCF))) return false;
+      if (maxMult) {
+        const m = multipleNum(l);
+        if (m === null || m > Number(maxMult)) return false;
+      }
+      if (priorityOnly && !l.priorityState) return false;
+      return true;
+    });
+
+    const acc = accessors[sortKey];
+    const dir = sortDir === "asc" ? 1 : -1;
+    return filtered.sort((a, b) => {
+      const va = acc(a);
+      const vb = acc(b);
+      // nulls always last, regardless of sort direction
+      if (va === null && vb === null) return 0;
+      if (va === null) return 1;
+      if (vb === null) return -1;
+      if (typeof va === "string" || typeof vb === "string") {
+        return String(va).localeCompare(String(vb)) * dir;
+      }
+      return (va - vb) * dir;
+    });
+  }, [allRows, q, industry, state, source, tiers, minCF, maxCF, maxMult, priorityOnly, relevantOnly, sortKey, sortDir]);
 
   const toggleTier = (t: number) =>
     setTiers((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t].sort()));
+
+  const arrow = (key: SortKey) => (sortKey === key ? (sortDir === "asc" ? " ▲" : " ▼") : "");
+  const SortTh = ({ k, children, align = "left" }: { k: SortKey; children: React.ReactNode; align?: "left" | "right" }) => (
+    <th
+      onClick={() => clickSort(k)}
+      className={`cursor-pointer select-none px-4 py-3 hover:text-zinc-900 ${align === "right" ? "text-right" : "text-left"} ${sortKey === k ? "text-emerald-700" : ""}`}
+      title="Click to sort"
+    >
+      {children}
+      <span className="text-emerald-600">{arrow(k)}</span>
+    </th>
+  );
+
+  const inputCls = "rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-600";
 
   return (
     <div className="p-8 space-y-5">
@@ -72,7 +139,7 @@ export default function ListingsTable({ rows: allRows, live }: { rows: UiListing
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Broker Listings</h1>
           <p className="text-sm text-zinc-500">
-            Every guardrail below is a live toggle — this is the configurable search engine, not a fixed filter.
+            Filter with the controls, or click any column header to sort. This is the configurable search engine.
           </p>
         </div>
         <span
@@ -85,88 +152,55 @@ export default function ListingsTable({ rows: allRows, live }: { rows: UiListing
       </header>
 
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4">
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search listings…"
-          className="w-56 rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-600"
-        />
-        <select
-          value={industry}
-          onChange={(e) => setIndustry(e.target.value)}
-          className="rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-sm"
-        >
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search…" className={`w-48 ${inputCls}`} />
+        <select value={industry} onChange={(e) => setIndustry(e.target.value)} className={inputCls}>
           <option value="all">All industries</option>
-          {industries.map((i) => (
-            <option key={i}>{i}</option>
-          ))}
+          {industries.map((i) => <option key={i}>{i}</option>)}
         </select>
-        <select
-          value={state}
-          onChange={(e) => setState(e.target.value)}
-          className="rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-sm"
-        >
+        <select value={state} onChange={(e) => setState(e.target.value)} className={inputCls}>
           <option value="all">All states</option>
-          {states.map((s) => (
-            <option key={s}>{s}</option>
-          ))}
+          {states.map((s) => <option key={s}>{s}</option>)}
         </select>
-        <input
-          value={minCF}
-          onChange={(e) => setMinCF(e.target.value.replace(/\D/g, ""))}
-          placeholder="Min cash flow ($)"
-          className="w-36 rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-600"
-        />
+        <select value={source} onChange={(e) => setSource(e.target.value)} className={inputCls}>
+          <option value="all">All sources</option>
+          {sources.map((s) => <option key={s}>{s}</option>)}
+        </select>
+        <input value={minCF} onChange={(e) => setMinCF(e.target.value.replace(/\D/g, ""))} placeholder="Min cash flow $" className={`w-32 ${inputCls}`} />
+        <input value={maxCF} onChange={(e) => setMaxCF(e.target.value.replace(/\D/g, ""))} placeholder="Max cash flow $" className={`w-32 ${inputCls}`} />
+        <input value={maxMult} onChange={(e) => setMaxMult(e.target.value.replace(/[^0-9.]/g, ""))} placeholder="Max multiple ×" className={`w-28 ${inputCls}`} />
         <div className="flex items-center gap-1">
           {[1, 2, 3, 4].map((t) => (
-            <button
-              key={t}
-              onClick={() => toggleTier(t)}
-              className={`rounded-md px-2.5 py-1 text-xs font-semibold transition ${
-                tiers.includes(t) ? tierBadge[t] : "bg-zinc-50 text-zinc-300"
-              }`}
-            >
+            <button key={t} onClick={() => toggleTier(t)}
+              className={`rounded-md px-2.5 py-1 text-xs font-semibold transition ${tiers.includes(t) ? tierBadge[t] : "bg-zinc-50 text-zinc-300"}`}>
               T{t}
             </button>
           ))}
         </div>
         <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
-          <input
-            type="checkbox"
-            checked={priorityOnly}
-            onChange={(e) => setPriorityOnly(e.target.checked)}
-            className="accent-emerald-700"
-          />
-          Priority states only
+          <input type="checkbox" checked={priorityOnly} onChange={(e) => setPriorityOnly(e.target.checked)} className="accent-emerald-700" />
+          Priority states
         </label>
         <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
-          <input
-            type="checkbox"
-            checked={relevantOnly}
-            onChange={(e) => setRelevantOnly(e.target.checked)}
-            className="accent-emerald-700"
-          />
+          <input type="checkbox" checked={relevantOnly} onChange={(e) => setRelevantOnly(e.target.checked)} className="accent-emerald-700" />
           Thesis-fit only
         </label>
-        <span className="ml-auto text-sm text-zinc-500 tabular-nums">
-          {rows.length} of {allRows.length}
-        </span>
+        <span className="ml-auto text-sm text-zinc-500 tabular-nums">{rows.length} of {allRows.length}</span>
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500">
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Tier</th>
-              <th className="px-4 py-3">Listing</th>
-              <th className="px-4 py-3">Location</th>
-              <th className="px-4 py-3 text-right">Revenue</th>
-              <th className="px-4 py-3 text-right">EBITDA / SDE</th>
-              <th className="px-4 py-3 text-right">Margin</th>
-              <th className="px-4 py-3 text-right">Asking</th>
-              <th className="px-4 py-3 text-right">Multiple</th>
-              <th className="px-4 py-3">First seen</th>
+            <tr className="border-b border-zinc-200 text-xs uppercase tracking-wide text-zinc-500">
+              <th className="px-4 py-3 text-left">Status</th>
+              <SortTh k="tier">Tier</SortTh>
+              <th className="px-4 py-3 text-left">Listing</th>
+              <SortTh k="state">Location</SortTh>
+              <SortTh k="revenue" align="right">Revenue</SortTh>
+              <SortTh k="cashFlow" align="right">EBITDA / SDE</SortTh>
+              <SortTh k="margin" align="right">Margin</SortTh>
+              <SortTh k="asking" align="right">Asking</SortTh>
+              <SortTh k="multiple" align="right">Multiple</SortTh>
+              <SortTh k="firstSeen">First seen</SortTh>
               {live && <th className="px-4 py-3" />}
             </tr>
           </thead>
@@ -174,51 +208,35 @@ export default function ListingsTable({ rows: allRows, live }: { rows: UiListing
             {rows.map((l) => (
               <tr key={l.id} className="hover:bg-zinc-50" title={l.tierReasoning}>
                 <td className="px-4 py-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle[l.status]}`}>
-                    {l.status}
-                  </span>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle[l.status]}`}>{l.status}</span>
                 </td>
                 <td className="px-4 py-3">
                   {l.tier !== null ? (
-                    <span className={`rounded px-2 py-0.5 text-xs font-semibold ${tierBadge[l.tier]}`}>
-                      {l.tier}
-                    </span>
+                    <span className={`rounded px-2 py-0.5 text-xs font-semibold ${tierBadge[l.tier]}`}>{l.tier}</span>
                   ) : (
                     <span className="rounded bg-zinc-50 px-2 py-0.5 text-xs text-zinc-400">—</span>
                   )}
                 </td>
                 <td className="max-w-md px-4 py-3">
                   {l.url ? (
-                    <a
-                      href={l.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block truncate font-medium hover:text-emerald-700 hover:underline"
-                    >
+                    <a href={l.url} target="_blank" rel="noopener noreferrer" className="block truncate font-medium hover:text-emerald-700 hover:underline">
                       {l.name} ↗
                     </a>
                   ) : (
                     <div className="truncate font-medium">{l.name}</div>
                   )}
-                  <div className="text-xs text-zinc-500">
-                    {l.industry} · {l.source}
-                  </div>
+                  <div className="text-xs text-zinc-500">{l.industry} · {l.source}</div>
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">
-                  {l.city ? `${l.city}, ` : ""}
-                  {l.state ?? "—"}
+                  {l.city ? `${l.city}, ` : ""}{l.state ?? "—"}
                   {l.priorityState && <span className="ml-1 text-emerald-700">★</span>}
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums">{money(l.revenue)}</td>
                 <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
                   <span className="font-semibold">{money(l.cashFlow)}</span>
-                  {l.cashFlowType !== "unknown" && (
-                    <span className="ml-1 text-xs text-zinc-500">{l.cashFlowType}</span>
-                  )}
+                  {l.cashFlowType !== "unknown" && <span className="ml-1 text-xs text-zinc-500">{l.cashFlowType}</span>}
                 </td>
-                <td className="px-4 py-3 text-right tabular-nums text-zinc-600">
-                  {margin(l.cashFlow, l.revenue)}
-                </td>
+                <td className="px-4 py-3 text-right tabular-nums text-zinc-600">{margin(l.cashFlow, l.revenue)}</td>
                 <td className="px-4 py-3 text-right tabular-nums">{money(l.asking)}</td>
                 <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
                   <span className="font-semibold">{multiple(l.asking, l.cashFlow)}</span>
@@ -230,15 +248,11 @@ export default function ListingsTable({ rows: allRows, live }: { rows: UiListing
                 {live && (
                   <td className="px-4 py-3">
                     {promoted.has(l.id) ? (
-                      <span className="whitespace-nowrap rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
-                        in CRM ✓
-                      </span>
+                      <span className="whitespace-nowrap rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">in CRM ✓</span>
                     ) : (
-                      <button
-                        onClick={() => promote(l)}
+                      <button onClick={() => promote(l)}
                         className="whitespace-nowrap rounded-md border border-emerald-700 px-2 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-50"
-                        title="Create a company + deal in the CRM (requires the real company name)"
-                      >
+                        title="Create a company + deal in the CRM (requires the real company name)">
                         → CRM
                       </button>
                     )}
@@ -257,8 +271,7 @@ export default function ListingsTable({ rows: allRows, live }: { rows: UiListing
         </table>
       </div>
       <p className="text-xs text-zinc-400">
-        Hover a row for the Claude screener&apos;s tier reasoning. &quot;Thesis-fit only&quot; hides listings that
-        failed the screen profile (kept in the database for auditing). Unscreened rows show — in Tier.
+        Click a column header to sort (click again to reverse). Hover a row for the Claude screener&apos;s tier reasoning.
       </p>
     </div>
   );

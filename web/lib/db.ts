@@ -6,13 +6,19 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 let cached: SupabaseClient | null = null;
 
+// Env values set via `vercel env add` (piped) can carry a trailing newline —
+// trim so a stray \n never corrupts the URL/key and breaks the client.
+const url = process.env.SUPABASE_URL?.trim();
+const key = process.env.SUPABASE_SERVICE_KEY?.trim();
+
 export function hasDb(): boolean {
-  return !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY);
+  return !!(url && key);
 }
 
 export function serverDb(): SupabaseClient {
   if (!cached) {
-    cached = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!, {
+    if (!url || !key) throw new Error("SUPABASE_URL / SUPABASE_SERVICE_KEY not set");
+    cached = createClient(url, key, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
   }
