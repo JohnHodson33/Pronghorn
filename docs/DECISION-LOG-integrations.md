@@ -192,6 +192,21 @@ name. Migration 0005 adds the timestamps + inquiry_profiles + ready_to_promote
 view (Lane B's contract for the Prospecting lane); detector degrades to notes
 until it's applied. Guardrail: detection only — sending/signing is John's click.
 
+## 2026-07-11 — Owner-contact funnel proven end-to-end
+
+With Serper/Places/Hunter keys live, every tier of ENRICHMENT-STRATEGY now runs:
+1. List-build (Serper primary + OSM/TDLR free + Places/Exa/Parallel rescue) —
+   Pest Control/Tucson: 50+20 candidates → 28 unique leads, cost tracked.
+2. Website discovery (new, inside run_enrichment.js): Exa finds the site for
+   license-board leads (token-match guard, directory junk filtered), persists
+   it; `--retry-skipped` recovered 4/12 previously-dead leads.
+3. Claude owner extraction — high-confidence names at ~$0.01/lead.
+4. Hunter email-finder (find_emails.js): verified owner emails at score 95–97
+   on first live run; free quota protected (one attempt/lead, 5/run cap,
+   LAST,FIRST license names normalized, generic mailboxes kept separately).
+5. VA CSV loop for whatever survives all of the above.
+Serper maps pagination fixed (needs GPS ll anchor — geocoder now feeds it).
+
 ## 2026-07-10 — dotenv "vestauth" banner: false alarm
 
 `dotenv@17.4.2` prints rotating ad tips (incl. `vestauth.com`). Diffed the installed

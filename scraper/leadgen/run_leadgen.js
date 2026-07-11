@@ -74,7 +74,7 @@ async function runList(list, dbKeys) {
     const serperEngines = ['serper_local', 'serper_maps', 'serper_web'].filter(on);
     if (serperEngines.length) {
       const { leads: sl, credits } = await fetchSerperLeads(
-        list.query_industry, list.query_geography, { engines: serperEngines }, log);
+        list.query_industry, list.query_geography, { engines: serperEngines, geo }, log);
       costActual += credits * COST_PER_CREDIT;
       if (sl.length) log.info(`  serper: ${sl.length} candidates (${credits} credits)`);
       candidates.push(...sl);

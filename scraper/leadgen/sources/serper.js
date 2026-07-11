@@ -42,7 +42,7 @@ async function post(key, engine, body) {
 /**
  * @param industry free-text industry
  * @param geography "City, ST" or null
- * @param opts { engines: string[] (UI source ids), maxPages }
+ * @param opts { engines: string[] (UI source ids), maxPages, geo: geocode() result }
  * @returns { leads, credits }
  */
 async function fetchSerperLeads(industry, geography, opts = {}, log) {
@@ -63,7 +63,13 @@ async function fetchSerperLeads(industry, geography, opts = {}, log) {
         if (engine === 'places' && !engines.includes('serper_local')) continue;
         if (engine === 'maps' && !engines.includes('serper_maps')) continue;
         for (let page = 1; page <= maxPages; page++) {
-          const data = await post(key, engine, { q, page });
+          const body = { q, page };
+          // maps pagination requires a GPS anchor; skip deep pages without one
+          if (engine === 'maps') {
+            if (opts.geo) body.ll = `@${opts.geo.lat},${opts.geo.lon},12z`;
+            else if (page > 1) break;
+          }
+          const data = await post(key, engine, body);
           credits++;
           const rows = data.places || [];
           leads.push(...rows.map((p) => placeToLead(p, engine === 'places' ? 'serper_local' : 'serper_maps')).filter(Boolean));
