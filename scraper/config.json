@@ -72,6 +72,10 @@
       "module": "./sources/murphy",
       "per_page": 200,
       "max_pages": 10
+    },
+    "sunacquisitions": {
+      "enabled": true,
+      "module": "./sources/sun"
     }
   },
   "relevance": {
