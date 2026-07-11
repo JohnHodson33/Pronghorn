@@ -94,6 +94,19 @@ Mail.Read before this goes on the daily cadence. Also logged Dan Mello
 (advisor) — Tom's tree-care river-guide candidate from the 7/10 thread, the
 first Phase 6 people-channel record.
 
+## 2026-07-10 — Notion meeting notes: ingested via MCP, token only needed for cron
+
+The "needs John's token" blocker only applies to UNATTENDED syncs — this session's
+Notion MCP reads the meeting-notes database directly. 9 notes found; the two
+company-specific ones (Landmark/Oliver 7/7, Gage/Ron 7/7) are now meeting
+activities with summaries + action items, idempotent on Notion page URL
+(`ingest_notion_meetings.js`). Remaining notes are thesis/vendor-level; the
+scheduled version should implement the design doc's `Company:` template line +
+unmatched-review queue. Notable content captured: Landmark margin-profile
+questions + MSO/rollover seller posture; Gage owner seeks full exit, mgmt comp
+flags, tree-care consolidator map (Tree Guardians, SavATree, Cannopy/Alpine,
+Tree Care Partners/CPS).
+
 ## 2026-07-10 — dotenv "vestauth" banner: false alarm
 
 `dotenv@17.4.2` prints rotating ad tips (incl. `vestauth.com`). Diffed the installed

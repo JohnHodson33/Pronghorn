@@ -47,8 +47,15 @@ Status keys: ⬜ open · 🔨 in-progress (add your lane) · ✅ done (PM verifi
   Tree Care/Phoenix 3. New data route `web/app/api/leads` (GET ?list=). PM ACTION:
   add `node leadgen/run_leadgen.js` to the daily scheduled run so UI-created lists
   get processed. Other state boards (AZ OPM, GA, NC…) are follow-on adapters.
-- ⬜ Notion meeting-notes ingestion (per MEETING-NOTES-DESIGN.md; needs John's token —
+- 🔨 LANE C — Notion meeting-notes ingestion (per MEETING-NOTES-DESIGN.md; needs John's token —
   bubble to PM if blocked).
+  STATUS: UNBLOCKED (worker session has Notion MCP — no token needed for manual runs)
+  & shipped. `scraper/ingest_notion_meetings.js` — kind='meeting' activities,
+  idempotent on Notion page URL. Ran: Landmark/Oliver call + Gage/Ron tree-care call
+  (7/7) now on their company feeds with action items. 7 more notes in Notion are
+  thesis-level (not company-specific) — the scheduled version needs the `Company:`
+  template convention + review queue per the design doc. Token still needed only
+  for an UNATTENDED scheduled sync.
 - 🔨 LANE C — HubSpot one-way deal/company refresh (keep imported deals current); design the
   two-way push but DO NOT enable it (loop-in guardrail).
   STATUS: shipped & run. `scraper/sync_hubspot.js` — internal-stage-ID map (labels are
