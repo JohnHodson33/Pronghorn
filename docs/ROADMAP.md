@@ -83,6 +83,18 @@ daily scrapes appear automatically. Redeploy: `cd web; vercel deploy --prod
 - [ ] Listing detail view with status (new / reviewed / pursuing / passed) + notes
 - [ ] "New since last visit" view
 
+## Broker-scraper status (2026-07-11)
+
+**10 live sources**, daily 6am auto-run: bizbuysell, bizquest (mirror),
+businessbroker, synergy, viking, sunbelt (adj. EBITDA), gabb (API + sold comps),
+businessesforsale (~16.8k), linkbusiness (SDE/broker), transworld (Laravel CSRF
+API, ~3.5k). **DB: 7,281 unique businesses, 7,278 classified, 5,687 with cash
+flow, 5,630 with computable multiple** — deep market-intel coverage.
+Listings page serves the ~459 screened thesis-fit rows (fast); full universe
+feeds Market Multiples. Remaining broker sources need dedicated JS/ASP builds
+(see docs/SOURCES.md) — rapid-adapter phase complete. Natural next pivot:
+proprietary list-building (Phase 5) — John's stated primary deal channel.
+
 ## Phase 3 — Scale & automate
 
 - [ ] GitHub Actions scheduled runs (daily)
