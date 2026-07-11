@@ -6,19 +6,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ActivityForm from "@/components/ActivityForm";
 import CompanyEditor from "@/components/CompanyEditor";
+import ContactsSection from "@/components/ContactsSection";
 import DealControls from "@/components/DealControls";
 import { fetchCompanyDetail } from "@/lib/company-detail";
 import { money } from "@/lib/mock";
 
 const kindIcon: Record<string, string> = {
   meeting: "🗓", call: "📞", email: "✉️", note: "📝", task: "☑", doc: "📄",
-};
-
-const roleBadge: Record<string, string> = {
-  owner: "bg-emerald-100 text-emerald-800",
-  seller: "bg-emerald-100 text-emerald-800",
-  broker: "bg-sky-100 text-sky-800",
-  advisor: "bg-violet-100 text-violet-800",
 };
 
 const eventLabel: Record<string, string> = {
@@ -151,42 +145,7 @@ export default async function CompanyDetailV2({ id }: { id: string }) {
         </section>
       )}
 
-      <section className="space-y-3">
-        <h2 className="font-semibold">Contacts</h2>
-        <div className="grid gap-3 md:grid-cols-2">
-          {contacts.map((p) => (
-            <div key={p.id} className="rounded-xl border border-zinc-200 bg-white p-4">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold">{p.name ?? "Unnamed"}</span>
-                {p.role && (
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${roleBadge[p.role] ?? "bg-zinc-100 text-zinc-600"}`}>
-                    {p.role}
-                  </span>
-                )}
-              </div>
-              <div className="mt-2 space-y-0.5 text-sm">
-                {p.phone && <div>📞 {p.phone}</div>}
-                {p.email && (
-                  <div>
-                    ✉️ <a href={`mailto:${p.email}`} className="text-emerald-700 hover:underline">{p.email}</a>
-                  </div>
-                )}
-                {p.linkedin && (
-                  <div>
-                    <a href={p.linkedin} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline">LinkedIn ↗</a>
-                  </div>
-                )}
-                {p.notes && <p className="pt-1 text-xs text-zinc-500">{p.notes}</p>}
-              </div>
-            </div>
-          ))}
-          {contacts.length === 0 && (
-            <div className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-xs text-zinc-400 md:col-span-2">
-              No contacts on record yet.
-            </div>
-          )}
-        </div>
-      </section>
+      <ContactsSection companyId={c.id} contacts={contacts} />
 
       <section className="space-y-3">
         <h2 className="font-semibold">Listing history</h2>
