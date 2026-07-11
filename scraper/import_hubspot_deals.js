@@ -11,20 +11,24 @@ const DEALS = [
   // --- Active green-industry deals ---
   { hubspot_id: '335079251689', company: 'Landmark Pest Management', industry: 'Pest Control', city: 'Schaumburg', state: 'IL',
     revenue: 11200000, ebitda: 4100000, ebitda_type: 'EBITDA', asking: null, stage: 'Under Screening',
-    broker: { name: 'Oliver Bogner', firm: 'The Advisory Investment Bank' },
+    broker: { name: 'Oliver Bogner', firm: 'The Advisory Investment Bank', email: 'oliver@theadvisoryib.com' },
+    owner: { name: 'Rebecca Fyffe', title: 'Founder & CEO (Owner / Seller)' },
     note: 'PRE-IOI (IOI 7/10). 8,747 accounts, 73.1% retention, 101.3% NRR, 36.6% margin. Platform 10-12x.' },
   { hubspot_id: '335063621337', company: 'BF Stonework LLC', industry: 'Pool Services', city: 'Atlanta', state: 'GA',
     revenue: 16080000, ebitda: 3090000, ebitda_type: 'EBITDA', asking: null, stage: 'Info Requested',
-    broker: { name: 'Ramzi Daklouche', firm: 'VR Business Brokers Atlanta' },
+    broker: { name: 'Ramzi Daklouche', firm: 'VR Business Brokers Atlanta', email: 'ramzi@vrbizworld.com', phone: '6784708675' },
+    owner: { name: 'Fabio Batista', title: 'Managing Member / Owner (90%)' },
     note: 'Pool finishing/resurfacing/outdoor-living. 19.2% EBITDA margin, 20.2% 3yr rev CAGR. 84/88 workers 1099 (diligence risk). Open to 15-25% rollover.' },
   { hubspot_id: '335077301994', company: 'Gage Tree Care', industry: 'Tree Care', city: 'Anchorage', state: 'AK',
     revenue: 4500000, ebitda: 908000, ebitda_type: 'EBITDA', asking: null, stage: 'Info Requested',
-    broker: { name: 'Matt Stemmler', firm: 'Principium | White Oak' },
+    broker: { name: 'Matt Stemmler', firm: 'Principium | White Oak', email: 'matt@principium-whiteoak.com', phone: '9014380909' },
+    owner: { name: 'Scott Gage', title: 'Owner / President (100%)' },
     note: 'Counter-seasonal (tree + Christmas lights + snow). 2025 low-snow year = earnings upside. Owner retains real estate, leases back. IOI process.' },
   { hubspot_id: '335107058394', company: 'Affordable Windows & Doors of Tampa Bay', industry: 'Windows & Doors', city: 'Tampa', state: 'FL',
     revenue: 3910000, ebitda: 700000, ebitda_type: 'SDE', asking: 1400000, stage: 'Info Requested',
-    broker: { name: 'Luis Zavala', firm: 'Murphy Business' },
-    note: 'Hurricane-impact replacement windows/doors. SBA pre-qual, ~2x SDE. FLAG: revenue declining, SDE volatile. Owner Darrin Payne.' },
+    broker: { name: 'Luis Zavala', firm: 'Murphy Business', email: 'l.zavala@murphybusiness.com', phone: '8134372925' },
+    owner: { name: 'Darrin Payne', title: 'Owner (100%)' },
+    note: 'Hurricane-impact replacement windows/doors. SBA pre-qual, ~2x SDE. FLAG: revenue declining, SDE volatile.' },
 ];
 
 // Nail-salon history (Closed-Lost) — imported as passed for the record.
@@ -79,14 +83,18 @@ async function main() {
       else { const { data } = await supabase.from('deals').insert(dealPayload).select('id').single(); dealId = data?.id; }
       deals++;
 
-      // sell-side broker as a contact (role=broker)
-      if (d.broker) {
-        const { data: exC } = await supabase.from('contacts').select('id').eq('company_id', companyId).eq('role', 'broker').maybeSingle();
-        if (!exC) {
-          await supabase.from('contacts').insert({ company_id: companyId, role: 'broker', name: d.broker.name, notes: d.broker.firm });
-          contacts++;
-        }
-      }
+      // sell-side broker + business owner as contacts
+      const addContact = async (role, c, notes) => {
+        if (!c) return;
+        const { data: ex } = await supabase.from('contacts').select('id').eq('company_id', companyId).eq('role', role).maybeSingle();
+        if (ex) return;
+        await supabase.from('contacts').insert({
+          company_id: companyId, role, name: c.name, email: c.email ?? null, phone: c.phone ?? null, notes,
+        });
+        contacts++;
+      };
+      await addContact('broker', d.broker, d.broker?.firm);
+      await addContact('owner', d.owner, d.owner?.title);
       // seed an activity noting the HubSpot import + the deal note
       if (dealId && d.note) {
         const { count } = await supabase.from('activities').select('*', { count: 'exact', head: true }).eq('deal_id', dealId).eq('kind', 'note');

@@ -20,6 +20,7 @@ const nav: { section: string; items: { label: string; href: string | null }[] }[
     items: [
       { label: "Pipeline", href: "/pipeline" },
       { label: "Companies", href: "/companies" },
+      { label: "Contacts", href: "/contacts" },
       { label: "Brokers", href: "/brokers" },
     ],
   },
