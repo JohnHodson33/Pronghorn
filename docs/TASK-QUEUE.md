@@ -85,14 +85,20 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
-- 🔥🔥 **DASHBOARD AGGREGATES for Dashboard V3** (John's overnight directive 7/11;
-  read docs/DASHBOARD-VISION.md): build the data layer Lane B's new dashboard
-  needs — (a) funnel counts by stage × industry-subsector × prong
-  (broker/proprietary), (b) a **key-actions feed** (NDA countersign pending,
-  queued emails awaiting send, ready_to_promote rows, pursuits with no activity
-  >7d), (c) enrichment-coverage stats per subsector (targets outreach-ready =
-  owner name + email/phone present). Prefer SQL views (add to a migration) +
-  thin `/api/dashboard` route; document the shapes for Lane B in this file.
+- 🔨 LANE C — 🔥🔥 **DASHBOARD AGGREGATES for Dashboard V3** — SHIPPED & VERIFIED.
+  `GET /api/dashboard` (works TODAY, no migration needed) returns:
+    `funnel:   [{prong: "broker"|"proprietary", subsector, stage, n}]`
+      stages: screened_tier_1/2 → info_requested/nda_signed/cim_received →
+      deal_<Stage> (CRM) · proprietary: lead_new/lead_enriched/…
+    `keyActions: [{kind, title, detail, refId, at}]`
+      kinds: nda_countersign_pending · ready_to_promote · queued_email ·
+      stale_pursuit (>7d) · next_step_due (due ≤ tomorrow)
+    `coverage: [{subsector, total, enriched, outreachReady}]`
+  Verified live: funnel has 40 stage×subsector rows; key actions show John's 2
+  FCBB NDA countersigns pending; coverage shows HVAC 150/20/8 etc.
+  Migration `0006_dashboard_aggregates.sql` = same shapes as SQL views + the
+  **outbox_emails table** (queued|sent|cancelled — Round-2 one-click-send
+  contract; NOTHING auto-sends). **PM: apply 0004+0005+0006 together.**
 - 🔨 LANE C — 🔥🔥 **PURSUIT AUTO-DETECT from Outlook** — SHIPPED + BACKFILLED.
   `scraper/ingest_pursuit.js`: NDA-in-process → info_requested (+countersign-pending
   note), executed-NDA/DocuSign-complete → nda_signed, CIM/data-room → cim_received
