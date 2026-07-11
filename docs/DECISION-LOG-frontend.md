@@ -23,6 +23,20 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   file conflict, flagging for awareness.)
 - Chose `/deals/[id]` over `/pipeline/[id]`: pipeline is a view of deals, and
   deal URLs shouldn't imply board position. `deals/` is a NEW dir (Lane B owns).
+## 2026-07-10 — Enrichment tab (`/enrichment`)
+
+- **New route: `/enrichment`** — leads funnel between List Building and
+  outreach. Status cards (new → enriching → enriched → in_sequence →
+  contacted → responded, dead) that filter the table; per-lead row shows
+  source tags + BBB grade, owner-contact completeness dots (phone/email/
+  LinkedIn — the VA step), and AI-signal chips read from `leads.enrichment`
+  jsonb (overview, PE-backed). Read-only scaffold: statuses advance once the
+  enrichment worker (Lane C) lands.
+- **PM to wire:** Sidebar "Enrichment (soon)" placeholder → live link to
+  `/enrichment`.
+
+## Lane B session setup
+
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch
   `lane/frontend`) because the main checkout had `lane/brokers` checked out —
   switching branches under a live Lane A session would cross-contaminate
