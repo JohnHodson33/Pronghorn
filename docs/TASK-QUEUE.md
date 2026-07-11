@@ -149,6 +149,11 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
   DECISION-LOG-integrations (GA Kelly blocked, FL = Power BI, TN empty).
 - ⬜ Login-network sync — Axial (co-pilot + CIM ingest) + DealForce (creds in .env).
 - ⬜ SELF-ITERATE: what contact data are we still missing per company? Close the gap.
+  COVERAGE CHECKPOINT (2026-07-11 ~03:00, after full enrichment + Hunter passes):
+  **255 leads · 122 owner names · 21 owner emails · 23 outreach-ready.**
+  Remaining levers: owner PHONES (5 — VA shortlist is the lever, va_export.js
+  ready), LinkedIn (9 — VA), and Hunter quota pacing (~35 credits left this
+  month; spend on shortlist leads John actually wants to call first).
 
 ## PM / Integrator  (branch `main`; owns Sidebar.tsx, shared docs, deploys)
 - Merge lane branches → main; build + deploy; wire new routes into Sidebar.
