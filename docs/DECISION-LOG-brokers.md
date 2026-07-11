@@ -314,3 +314,22 @@ Workflows are **dormant until these exist**; once added they run on schedule.
 After adding: test each via GitHub → Actions → pick workflow → "Run workflow"
 (workflow_dispatch) before trusting the cron. Recommend running
 delisting.yml with dry_run=true first.
+
+## 2026-07-11 — loop iter: health sweep clean + sunbelt coverage diagnosis
+
+- **Health sweep:** re-ran murphy (456), fcbb (825), hedgestone (720) — all
+  parse clean, 0 errors. `mark_delisted.js --dry-run` → 0 (correct; nothing
+  stale yet). All 25 enabled sources confirmed healthy.
+- **Sunbelt coverage diagnosis (not fixed — low ROI):** the national
+  sunbeltnetwork.com service category alone renders **184 results**, but the
+  `sunbelt` adapter collects only ~36 cards (page 1 of 5 thesis categories).
+  The gap is **JS click-pagination** (`javascript:void(0)`, form POST to
+  /business-results/, no working `?page=N` URL) — same class as the Transworld
+  challenge. The detail-fetch cap (120) is NOT the binding constraint; card
+  collection is. Considered a thesis-keyword detail-prioritization tweak but it
+  was a no-op while cards(36) < cap(120), so reverted to avoid dead complexity.
+  ➡️ Real fix = drive click-pagination per category (Transworld-style). LOW
+  PRIORITY: sunbelt currently yields 0 Tier 1/2 from its 36, and the categories
+  are broad (mostly off-thesis), so expected incremental thesis yield is small.
+  Logged for the PM as a known coverage lever if the biggest network is worth a
+  dedicated session later.
