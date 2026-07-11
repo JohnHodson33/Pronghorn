@@ -107,6 +107,14 @@
       "module": "./sources/franchiseresales",
       "green_only": true,
       "max_details": 200
+    },
+    "certifiedbb": {
+      "enabled": true,
+      "module": "./sources/tupelo",
+      "organization_id": "cmae8krad00000uvpcxogwexz",
+      "broker_name": "Certified Business Brokers (Houston)",
+      "broker_url": "https://certifiedbb.com",
+      "_comment": "Tupelo SMB platform instance. Add more brokers on this platform by copying this block with their organizationId (from crm.tupelosmb.com/api/public/listings)."
     }
   },
   "relevance": {
