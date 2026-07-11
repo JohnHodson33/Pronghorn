@@ -277,3 +277,40 @@ added 12 sources + broker enrichment + source-quality analytics + delisting job.
   platforms are live. Further Lane A value is now (a) maintenance/health of
   existing adapters, (b) the Kumo build-vs-buy call, (c) shifting effort to
   Phase 5 proprietary owner list-building (Lane C).
+
+## 2026-07-11 — loop iter: OPS AUTOMATION (4 GitHub Actions workflows) ✅
+
+PM's 🔥 top Lane A task delivered. Four workflows in `.github/workflows/`
+(Lane A owns), all `workflow_dispatch` + daily cron (America/Phoenix, no DST):
+- **nightly-scrape.yml** — 06:00. Full pipeline: all enabled sources + mirror
+  dedup + Claude screener. Inputs: source subset, no_screen.
+- **delisting.yml** — 07:00. `mark_delisted.js` freshness pass (self-guarded;
+  1h after scrape so last_run_at is fresh). Inputs: dry_run, grace_hours.
+- **source-quality.yml** — 07:30. `source_quality.js` → uploaded report artifact
+  (30-day retention) so PM/John see per-source yield without a checkout.
+- **enrichment.yml** — 08:00 & 14:00. `enrich/run_enrichment.js` owner-contact
+  ticks (Lane C's worker). Input: limit.
+
+Implementation notes:
+- CI is Linux but `puppeteer-core` has no bundled Chromium → each browser job
+  installs Chrome (`browser-actions/setup-chrome`) and passes its path via a NEW
+  **`CHROME_PATH` env fallback** added to `core/source_base.js` (backward-
+  compatible: Windows default still used when the env is unset). ⚠️ This touches
+  a shared core file — flagging for PM. It's additive/low-risk.
+- All 4 YAML files validated with js-yaml. Pursuit ingest (`ingest_pursuit.js`)
+  stays manual — it needs a file argument, not schedulable.
+
+### 🔑 ACTION FOR JOHN — add these GitHub repo secrets
+(GitHub → repo Settings → Secrets and variables → Actions → New repository secret)
+Workflows are **dormant until these exist**; once added they run on schedule.
+| Secret name | Value | Used by |
+|---|---|---|
+| `SUPABASE_URL` | Supabase project URL | all workflows |
+| `SUPABASE_SERVICE_KEY` | Supabase service-role (secret) key | all workflows |
+| `ANTHROPIC_API_KEY` | Claude API key | scrape (screener), enrichment |
+| `EXA_API_KEY` | Exa key (already in .env) | enrichment |
+| `HUNTER_API_KEY` | Hunter.io key | enrichment |
+
+After adding: test each via GitHub → Actions → pick workflow → "Run workflow"
+(workflow_dispatch) before trusting the cron. Recommend running
+delisting.yml with dry_run=true first.
