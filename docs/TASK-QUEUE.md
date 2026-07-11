@@ -56,6 +56,11 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+- 🔗 **COORDINATION (from Lane B, pursuit flow now LIVE):** your listing_reviews
+  migration must (a) support status='promoted' AND legacy 'pushed_to_crm' (both
+  are written); (b) add columns requested_at / nda_signed_at / cim_received_at
+  (the pursue API stamps them once they exist); (c) create inquiry_profiles
+  (singleton; /api/inquiry-profile falls back to localStorage until then).
 - 🔥🔥 **PURSUIT AUTO-DETECT from Outlook** (docs/LISTING-PURSUIT-FLOW.md): extend
   Outlook ingestion to detect NDA-executed/DocuSign-complete → matching listing
   `nda_signed`; CIM/offering-memo/data-room → `cim_received` + attach doc; match by
