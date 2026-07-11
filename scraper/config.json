@@ -96,6 +96,11 @@
       "enabled": true,
       "module": "./sources/hedgestone",
       "max_pages": 25
+    },
+    "vr": {
+      "enabled": true,
+      "module": "./sources/vr",
+      "max_pages": 25
     }
   },
   "relevance": {
