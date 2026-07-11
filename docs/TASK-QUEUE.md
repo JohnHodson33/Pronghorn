@@ -41,6 +41,26 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 🔥🔥 **PASSED STAGE + DEALS TAB (John live feedback 7/11 ~11:45).** (a) Add a
+  **"Passed"** deal stage: the deals now sitting in the pipeline's "Closed"
+  column are deals we PASSED on (we have closed zero) — move them to Passed
+  (coordinate data fix w/ Lane C). Passing a deal REMOVES it from the pipeline
+  board (Passed is not a column) via a quick "Pass" action + pass-reason
+  (reuse closed_lost_reason). Keep "Closed" for future actual closes. (b) Build
+  **/deals index** — the missing CRM search surface: searchable/filterable/
+  exportable table (shared list pattern) across ALL deals incl. Passed, showing
+  company → owner contact, broker, stage, asking/valuation, fit score; rows →
+  /deals/[id]. Passed deals must be findable here forever (deals fall out of
+  the pipeline and may fall back in). PM wires "Deals" into Sidebar on merge.
+- 🔥 **Contacts ↔ Brokers rationalization (John's MECE point 7/11):** Brokers
+  tab = auto-scraped directory (hundreds, cold); Contacts = curated CRM people
+  (only 18 broker-contacts promoted so far) — the UI never explains this.
+  (a) Reframe Brokers tab as "Broker Directory" with an explainer line +
+  one-click **"Add to Contacts"** per row (creates contact w/ broker_id link);
+  (b) add role/industry tags + a "Brokers" filter chip on Contacts; (c) contact
+  detail shows linked broker-directory record (industries covered, listings).
+  Keep both tabs but make the relationship explicit: directory = universe,
+  contacts = relationships.
 - 🔥🔥 **DASHBOARD V3 — John's overnight directive 7/11; read docs/DASHBOARD-VISION.md
   FIRST.** Rebuild `/` as a VISUAL command center, not a listing: (a) total-
   pipeline funnel across all stages, broker AND proprietary prongs side by side;
@@ -98,6 +118,12 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+- 🔥 **DATA FIX for Passed stage (w/ Lane B, John 7/11):** deals currently at
+  stage 'Closed' (nail post-mortem imports etc.) are passes, not closes —
+  migrate them to 'Passed' (preserve any closed_lost_reason as the pass
+  reason). Update any stage lists/enums scripts write. HubSpot push mapping:
+  'Passed' → HubSpot custom Closed-Lost stage id 3939497680 (Deal Sourcing
+  pipeline labels are mislabeled vs internal ids — use the id, not the label).
 - 🔨 LANE C — 🔥🔥 **DASHBOARD AGGREGATES for Dashboard V3** — SHIPPED & VERIFIED.
   `GET /api/dashboard` (works TODAY, no migration needed) returns:
     `funnel:   [{prong: "broker"|"proprietary", subsector, stage, n}]`
