@@ -49,8 +49,13 @@ Status keys: ⬜ open · 🔨 in-progress (add your lane) · ✅ done (PM verifi
   get processed. Other state boards (AZ OPM, GA, NC…) are follow-on adapters.
 - ⬜ Notion meeting-notes ingestion (per MEETING-NOTES-DESIGN.md; needs John's token —
   bubble to PM if blocked).
-- ⬜ HubSpot one-way deal/company refresh (keep imported deals current); design the
+- 🔨 LANE C — HubSpot one-way deal/company refresh (keep imported deals current); design the
   two-way push but DO NOT enable it (loop-in guardrail).
+  STATUS: shipped & run. `scraper/sync_hubspot.js` — internal-stage-ID map (labels are
+  booby-trapped: `closedlost` is labeled "Closed - Won"), refreshes stage/amount/
+  closed-lost reasons. Ran via MCP dump: 14 nail deals got their REAL closed-lost
+  reasons. `--push` hard-refuses (guardrail). Live REST mode activates when John
+  drops HUBSPOT_TOKEN into scraper/.env.
 - ⬜ Outlook email→contact/activity ingestion (Outlook MCP; extract deal correspondents).
 
 ## PM / Integrator  (this/primary session; branch `main`; owns Sidebar.tsx, shared docs, deploys)

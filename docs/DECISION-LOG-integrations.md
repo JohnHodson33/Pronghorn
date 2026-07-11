@@ -67,6 +67,18 @@ is a junction to the main checkout (fine for Node, NOT fine for Next/Turbopack �
 - PM: add `node leadgen/run_leadgen.js` to the daily schedule so pending lists
   from the UI actually run.
 
+## 2026-07-10 — HubSpot deal refresh: stage IDs verified, labels booby-trapped
+
+Pulled the live dealstage enum: internal id `closedlost` carries label
+"Closed - Won", `closedwon` is "LOI", and Closed-Lost is custom id 3939497680 —
+exactly the mislabeling the sync design warned about. `sync_hubspot.js` maps
+INTERNAL IDs only. Refresh ran from an MCP dump (no token yet): 14 nail-salon
+deals gained their real closed-lost reasons (QoE doubts, non-compete conflicts,
+seller ghosting — useful post-mortem data), 4 active deals already matched, and
+the anonymized Axial deal was flagged net-new but NOT imported (real-name rule).
+Platform→HubSpot push exists as a flag that refuses to run until John approves
+two-way sync. The stage map lives in one place (STAGE_MAP) for the eventual push.
+
 ## 2026-07-10 — dotenv "vestauth" banner: false alarm
 
 `dotenv@17.4.2` prints rotating ad tips (incl. `vestauth.com`). Diffed the installed
