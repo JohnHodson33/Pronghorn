@@ -107,6 +107,29 @@ questions + MSO/rollover seller posture; Gage owner seeks full exit, mgmt comp
 flags, tree-care consolidator map (Tree Guardians, SavATree, Cannopy/Alpine,
 Tree Care Partners/CPS).
 
+## 2026-07-11 — Landmark IOI + mail→stage automation
+
+John submitted the Landmark IOI 7/10 23:24 (Pronghorn - Landmark IOI_07.10.2026_vF.pdf
+to Oliver Bogner): $41M–$45M, 10x–11x on $4.1M LTM Apr-2026 Adj. EBITDA. Platform
+updated: deal → "IOI Submitted", our_valuation $43M (range midpoint), next step =
+management presentations wk of Jul 13 & 20 (LOIs due after). Rich IOI activity
+logged with the Outlook link. Generalized in `ingest_outlook.js`: IOI/LOI submission
+language in OUR OWN sent mail auto-advances the deal stage — forward-only (replies
+quoting the phrase can't regress or re-trigger), with an [auto] audit note. Both
+paths verified on throwaway data. Relationship audit: all 4 active deals have
+owner+broker contacts on company_id, matching the deal-detail loader — no repair.
+
+## 2026-07-11 — Two-way push: built, gated on John's own .env flip
+
+PM relayed John's approval for the HubSpot push. Built `--push` fully (net-new
+company+deal creation, internal stage ids, blind-teaser exclusion, two-way
+hubspot_id breadcrumbs, --dry-run) but kept it gated on HUBSPOT_TOKEN +
+HUBSPOT_PUSH_ENABLED=true. Reasoning: this session's standing guardrail is
+import-only; a relayed approval shouldn't be the thing that flips a write-back
+loop. John adds the token himself anyway — setting the flag beside it is zero
+friction and makes the enablement unambiguous. Dry-run: 0 candidates today
+(everything originated in HubSpot), so nothing is waiting on the gate.
+
 ## 2026-07-10 — dotenv "vestauth" banner: false alarm
 
 `dotenv@17.4.2` prints rotating ad tips (incl. `vestauth.com`). Diffed the installed

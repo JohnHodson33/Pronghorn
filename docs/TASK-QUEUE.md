@@ -78,12 +78,22 @@ Status keys: ⬜ open · 🔨 in-progress (add your lane) · ✅ done (PM verifi
   token is Mail.Send-only — John must re-auth with Mail.Read for scheduling.**
 
 ### Lane C — next
-- ⬜ **HubSpot TWO-WAY push — APPROVED by John (2026-07-11).** Wire `sync_hubspot.js
-  --push` to write net-new CRM records to HubSpot (needs HUBSPOT_TOKEN). Respect
-  no-blind-teaser + real stage IDs. Deprioritize if it blocks (HubSpot may sunset).
+- 🔨 LANE C — **HubSpot TWO-WAY push.** BUILT: `sync_hubspot.js --push [--dry-run]` creates
+  net-new company+deal in HubSpot (internal stage ids, real-name rule enforced,
+  breadcrumbs both ways). GATED on `HUBSPOT_TOKEN` + `HUBSPOT_PUSH_ENABLED=true` in
+  scraper/.env — approval was relayed via PM, so John flips the flag himself when he
+  adds the token (zero extra friction, keeps the write-back under his direct control).
+  Dry-run verified: currently 0 net-new candidates (all deals originated in HubSpot);
+  activates naturally when a scraped listing is promoted to a deal.
 - ⬜ Paid list-building workers (Serper first, then Google Places; Exa/Parallel
   rescue) — read keys from .env, activate on key arrival. See LISTBUILDING-API-SETUP.md.
-- ⬜ More state license boards (AZ OPM, GA, NC, SC, TN, FL) for list-building.
+- ⬜ More state license boards for list-building. RECON so far (2026-07-11): TX TDLR
+  shipped (Socrata). TN data.tn.gov: no pest dataset. GA Kelly Solutions
+  (kellysolutions.com): 403 for curl / 404 on guessed paths — find correct GA
+  pestcontrol path with a browser session. FL FDACS: aessearch.fdacs.gov/
+  companysearch.asp exists but times out from CLI; ceu.fdacs.gov LicenseeReport.aspx
+  is a candidate bulk report — probe with headless browser. AZ OPM/SC Clemson: not
+  yet probed.
 - ⬜ Login-network sync (Axial co-pilot + CIM ingestion; SMB.co/SMBmarket/DealForce
   headless login) — pending John's credentials in .env (CREDENTIALS-INTAKE.md).
 
