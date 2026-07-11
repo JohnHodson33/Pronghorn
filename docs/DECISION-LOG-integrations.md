@@ -158,6 +158,23 @@ other unnamed listings, but that's Lane A's multiples table. Full/named access
 is login-gated → the co-pilot path (John's live browser) per CREDENTIALS-INTAKE,
 not a headless scrape. No adapter built; recon logged.
 
+## 2026-07-11 — Enrichment worker live: the ~free owner-contact tier works
+
+`enrich/run_enrichment.js` implements ENRICHMENT-STRATEGY steps 1–2: scrape the
+lead's website (home/about/contact via cheerio), fall back to Exa web+LinkedIn
+snippets when the site is missing/thin, then Claude Haiku extracts owner name/
+title/email/phone/LinkedIn + acquisition signals into a strict JSON schema
+(explicitly forbidden from inventing contact data; license-board owner names are
+never overwritten). Live results: HIGH-confidence owner names on most of the
+Dallas HVAC batch (e.g. real owners for Xtreme Air, BIMS, Vent-One, Copeland,
+Texaire) at ~$0.01/lead all-in. Leads with no website AND thin search results
+are marked skipped — that's the VA shortlist, exactly as the strategy intends.
+Exa also verified in the list-building rescue path (Lake Mgmt/Tucson: 0 free →
+20 real companies incl. SOLitude). Notion Deal Tracker + Broker Directory
+synced via `ingest_notion_tracker.js`: nail-thesis financials (revenue/EBITDA/
+employees/LOI prices) backfilled onto all 14 companies, 6 broker contacts got
+phones, and 2 OWNER contacts landed (Jason Ly with a cell number).
+
 ## 2026-07-10 — dotenv "vestauth" banner: false alarm
 
 `dotenv@17.4.2` prints rotating ad tips (incl. `vestauth.com`). Diffed the installed

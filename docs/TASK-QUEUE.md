@@ -48,15 +48,24 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
-- 🔥 **Enrichment worker** (see ENRICHMENT-STRATEGY.md): per lead/company, scrape
-  website + Google + LinkedIn snippet, Claude-extract owner name/email/signals.
-  ~Free. Write to leads/companies + activities. This is the core of the vision.
-- 🔥 **Exa is LIVE (key in .env)** — wire Exa into the list-building rescue path now.
-- 🔥 HubSpot TWO-WAY push (approved) — `sync_hubspot.js --push` for net-new CRM records.
+- 🔨 LANE C — **Enrichment worker** — SHIPPED & RUNNING. `scraper/enrich/run_enrichment.js`:
+  website scrape (home/about/contact) + Exa web/LinkedIn snippets → Claude Haiku
+  extracts owner name/title/email/phone/LinkedIn + signals → leads.owner_* (fill-
+  blanks-only; license-board names are ground truth) + enrichment jsonb, status→
+  enriched. Live: owner names at HIGH confidence on most Dallas HVAC leads
+  (~$0.01/lead incl. Exa). `--limit/--list` flags; ready for the daily schedule.
+- ✅ **Exa wired into rescue path** — verified live: Lake Mgmt/Tucson list produced
+  20 real companies (SOLitude, Johnson Lake Mgmt…) where free sources had 0.
+- 🔨 LANE C — HubSpot TWO-WAY push — built + gated; fires once John sets
+  HUBSPOT_TOKEN + HUBSPOT_PUSH_ENABLED=true in scraper/.env.
+- ✅ Notion Deal Tracker + Broker Directory sync — `scraper/ingest_notion_tracker.js`.
+  Ran: 14 nail companies got revenue/EBITDA/employees/listing URLs + LOI prices
+  (post-mortem gold), 6 brokers got phones/full names, 2 OWNER contacts added
+  (Thomas Trujilo; Jason Ly w/ cell). Idempotent.
 - ⬜ Email-finder integration (Hunter free tier to start) for verified owner emails.
 - ⬜ Upwork VA loop: CSV export of shortlist (blank owner cell/LinkedIn) → re-import.
-- ⬜ More state license boards (AZ OPM, GA, NC, SC, TN, FL).
-- ⬜ Notion Deal Tracker + Broker Directory sync (not just meeting notes).
+- ⬜ More state license boards (AZ OPM, GA, NC, SC, TN, FL) — recon logged in
+  DECISION-LOG-integrations (GA Kelly blocked, FL = Power BI, TN empty).
 - ⬜ Login-network sync — Axial (co-pilot + CIM ingest) + DealForce (creds in .env).
 - ⬜ SELF-ITERATE: what contact data are we still missing per company? Close the gap.
 
