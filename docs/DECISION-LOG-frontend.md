@@ -74,6 +74,20 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   `@/components/ListingsTableV2`, then delete `ListingsTable.tsx`.**
   Verified against live data (443 rows; view-filtered export = 66-line CSV).
 
+## 2026-07-10 — Dashboard v2 (`/dashboard-v2`)
+
+- **New route: `/dashboard-v2`** — everything live, replacing the mock-data
+  dashboard: newest Tier-1 feed (cash flow, ask + implied multiple, outbound
+  links), per-source health table (status dot from last_run_status, last run,
+  dedup-filtered totals, +7d), market-multiples snapshot (top thesis verticals
+  from lib/analytics medians), next-steps-due list (overdue in red), pipeline-
+  by-stage chart driven by live deals.
+- **PM to wire:** promote to `/` by replacing `app/page.tsx` body with this
+  page (or re-export), then delete the temp `/dashboard-v2` route. All loaders
+  live in the new `lib/dashboard.ts`.
+- Count hygiene: all listing counts exclude `duplicate_of` mirrors so totals
+  and +7d agree (the old listingStats didn't; BizQuest showed 119 vs +1597).
+
 ## Lane B session setup
 
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch
