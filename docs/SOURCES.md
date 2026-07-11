@@ -119,10 +119,17 @@ lists API-ish XHR calls). Many "hard" JS sites are actually fed by a clean publi
 API — far better than HTML scraping. GABB, and likely other Webflow-based broker
 sites, expose structured data incl. sold comps this way.
 
-## LIVE SOURCES (9)
+## LIVE SOURCES (10)
 bizbuysell · bizquest (mirror) · businessbroker · synergy · viking ·
 sunbelt (adj. EBITDA) · gabb (API, sold comps) · businessesforsale (~16.8k) ·
-linkbusiness (SDE/sales/broker on cards).
+linkbusiness (SDE/sales/broker on cards) · **transworld** (~3,500 US listings).
+
+Transworld build note: Laravel SPA behind `POST /api/listings` (CSRF-protected,
+419 without token). Solved by loading the search page in a headless browser to
+get the XSRF-TOKEN cookie, then calling the API from inside the browser context
+(inherits cookie, sends X-XSRF-TOKEN header), paginating the JSON `pagination`
+block with per_page=48. **This CSRF-in-browser pattern likely unlocks other
+Laravel-backed broker sites.**
 
 ## BENCHED — each needs a DEDICATED build session (probed 2026-07-11, no quick win)
 | Source | Why benched | Path to build |
