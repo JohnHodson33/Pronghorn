@@ -432,3 +432,12 @@ delisting.yml with dry_run=true first.
 - Reinforces the DealRelations platform value: specialist green-industry
   brokers (not just generalists) use it. Worth periodically searching
   "<vertical> dealrelations.com/listings" for more thesis-specialist subdomains.
+
+## 2026-07-11 — loop iter: green-vertical DealRelations search (none new) + linkbusiness health
+
+- Searched landscape/pool/pest/tree "dealrelations.com/listings" — hits were on
+  subdomains already configured (sunbeltnaples) or blocked aggregators
+  (DealStream). No new specialist subdomain this round.
+- Health: linkbusiness re-run clean (482 listings, 21 pages, 0 errors).
+- No new PM tasks. System remains complete + healthy; iterations increasingly
+  confirm "all clean" — the honest state of a saturated, well-maintained prong.
