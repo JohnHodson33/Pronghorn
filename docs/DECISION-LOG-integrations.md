@@ -79,6 +79,21 @@ the anonymized Axial deal was flagged net-new but NOT imported (real-name rule).
 Platform→HubSpot push exists as a flag that refuses to run until John approves
 two-way sync. The stage map lives in one place (STAGE_MAP) for the eventual push.
 
+## 2026-07-10 — Outlook ingestion: MCP-dump mode now, Graph re-auth for cron
+
+`ingest_outlook.js` lands email activities per deal company (kind='email',
+doc_url = Outlook link, idempotent on `[msg:<internetMessageId>]` breadcrumb) and
+auto-creates contacts for unknown EXTERNAL senders (internal Pronghorn addresses
+never become contacts). Ran on today's MCP searches: 10 activities across
+Landmark (IOI process, DRL threads), BF Stonework (NDA/CIM), Gage (river-guide
+thread). Every external correspondent already existed in the directory — the
+HubSpot contact sync has real coverage. Scheduling blocker: the existing
+GRAPH_REFRESH_TOKEN carries `Mail.Send User.Read` only and scope can't be
+widened on refresh — John must run a one-time device-code re-auth with
+Mail.Read before this goes on the daily cadence. Also logged Dan Mello
+(advisor) — Tom's tree-care river-guide candidate from the 7/10 thread, the
+first Phase 6 people-channel record.
+
 ## 2026-07-10 — dotenv "vestauth" banner: false alarm
 
 `dotenv@17.4.2` prints rotating ad tips (incl. `vestauth.com`). Diffed the installed

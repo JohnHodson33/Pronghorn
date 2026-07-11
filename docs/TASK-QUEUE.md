@@ -56,7 +56,13 @@ Status keys: ⬜ open · 🔨 in-progress (add your lane) · ✅ done (PM verifi
   closed-lost reasons. Ran via MCP dump: 14 nail deals got their REAL closed-lost
   reasons. `--push` hard-refuses (guardrail). Live REST mode activates when John
   drops HUBSPOT_TOKEN into scraper/.env.
-- ⬜ Outlook email→contact/activity ingestion (Outlook MCP; extract deal correspondents).
+- 🔨 LANE C — Outlook email→contact/activity ingestion (Outlook MCP; extract deal correspondents).
+  STATUS: shipped & run. `scraper/ingest_outlook.js` — email activities per deal company
+  (idempotent on message id), unknown external senders → contacts. Ran on MCP dumps:
+  10 activities across Landmark/BF Stonework/Gage; all correspondents already in the
+  directory (good sign). BONUS: Dan Mello logged as advisor (Tom's tree-care river-guide
+  candidate, 7/10 thread). BLOCKER for scheduling: Graph token is Mail.Send-only —
+  John must re-auth once with Mail.Read added (bubble to PM).
 
 ## PM / Integrator  (this/primary session; branch `main`; owns Sidebar.tsx, shared docs, deploys)
 - Merge lane branches → main; run `npm run build` + `vercel deploy --prod`.
