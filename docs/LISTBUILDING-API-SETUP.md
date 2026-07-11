@@ -44,11 +44,38 @@ No action from John. These run without keys:
 - **Steps:** **parallel.ai** → Sign up → API keys → add billing.
 - **Put in .env:** `PARALLEL_API_KEY=...`
 
-## Recommendation
-Do **Serper (#1) + Google Places (#2)** first — that's the 80/20 (Google
-coverage for ~$50/mo all-in, Places effectively free). Add Exa/Parallel only if
-thin-market rescue is needed. The free Phase-1 sources run regardless and give
-the license-board/SoS owner data that's uniquely valuable for outreach.
+## Phase 3 — ENRICHMENT (company → owner email/phone/LinkedIn)
+### 5. Hunter.io — owner email finder + verifier  ⭐ do this
+- **Cost:** **free tier 25 searches + 50 verifications/mo**, then Starter ~$34/mo
+  (500 searches). Cheap; upgrade only when volume demands.
+- **Steps:** **hunter.io** → Sign up → Dashboard → API → copy the API key.
+- **Put in .env:** `HUNTER_API_KEY=...`
+- (Free owner NAMES already come from license boards + Secretary-of-State; Hunter
+  turns name+domain into a verified email.)
 
-After you add any key to `.env`, tell the PM session — I'll sync it to the
-worktrees and the List Building tab's sources go live.
+## Phase 4 — OUTREACH (automated cold email)
+### 6. Cold-email sender — Instantly / Smartlead / Reply.io
+- **Cost:** Instantly ~$37/mo, Smartlead ~$39/mo, Reply.io ~$60+/mo. Instantly/
+  Smartlead are built for cold-email deliverability + inbox rotation + warmup;
+  Reply.io works too (you named it). Pick one.
+- **Steps:** sign up → Settings → API key. **Put in .env:** `OUTREACH_API_KEY=...`
+  (and note which tool, e.g. `OUTREACH_TOOL=instantly`).
+- **IMPORTANT before sending real email:** cold outreach needs a **separate
+  sending domain** (NOT pronghornequity.com — protects your main domain's
+  reputation). Buy a look-alike (e.g. getpronghorn.com / pronghorncap.com),
+  add 2–3 mailboxes, and warm them up ~2 weeks. The app will build/queue the
+  sequences; SENDING waits on this + John's go (guardrail: Claude never sends).
+
+## Phase 5 — COLD CALLING (later; no key tonight)
+Phone numbers come from enrichment. A power-dialer (Nooks) is optional later.
+
+## Tonight's priority order
+1. **Serper** (list building core, ~$50/mo) — the biggest single unlock.
+2. **Hunter.io** (owner emails, free tier) — turns names into reachable contacts.
+3. **Google Places** (free $200 credit) — rescue coverage at $0.
+4. **Parallel** (in progress) + **Exa** ✅ — thin-market rescue, cents.
+5. **Instantly/Smartlead/Reply.io** — outreach sequencer (sending domain is a
+   separate ~2-week setup, so grab the account but real sends come later).
+
+After you add ANY key to `scraper\.env`, tell the PM session — I sync it to the
+worktrees and that capability goes live.
