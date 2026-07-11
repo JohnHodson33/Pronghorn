@@ -193,3 +193,15 @@ added 12 sources + broker enrichment + source-quality analytics + delisting job.
 - Next platform angles to try: regional Sunbelt sites (sunbeltmidwest.com has a
   dedicated green-industry /landscaping page; main sunbelt adapter under-scrapes
   the network — only ~36/run). Worth deeper Sunbelt-network coverage next.
+
+## 2026-07-11 — loop iter: Sunbelt Midwest (139 listings + 33 agents)
+
+- **Sunbelt Midwest** (`sunbeltmidwest.js`) — the MN/WI/IL Sunbelt group has
+  its own inventory (separate from sunbeltnetwork.com). Next.js/Sanity embeds
+  the FULL dataset in __NEXT_DATA__ — one fetch, no browser. 139 listings,
+  **137 with listing-agent names → 33 new brokers linked**, 2 T1 + 2 T2.
+- Other Sunbelt regionals probed (sunbeltsfl, sunbeltofflorida, sunbeltmd,
+  sunbeltlasvegas): listing grids are JS-widget/interaction-gated with no
+  API surfaced; each is maybe 20–50 listings — diminishing returns, skipped.
+- Re-probed GlobalBX: still Cloudflare-blocked (roster SKIP confirmed).
+- Running totals: **18,458 listings, 103 T1 + 228 T2, 25 sources** (24 enabled).
