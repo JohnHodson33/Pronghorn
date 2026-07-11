@@ -112,12 +112,17 @@
       "max_details": 200
     },
     "certifiedbb": {
-      "enabled": true,
+      "enabled": false,
       "module": "./sources/tupelo",
       "organization_id": "cmae8krad00000uvpcxogwexz",
       "broker_name": "Certified Business Brokers (Houston)",
       "broker_url": "https://certifiedbb.com",
-      "_comment": "Tupelo SMB platform instance. Add more brokers on this platform by copying this block with their organizationId (from crm.tupelosmb.com/api/public/listings)."
+      "_comment": "DISABLED — superseded by tupelomarket (platform-wide; same listing cuids). Kept as the per-org adapter template: to deep-crawl one broker, set enabled=true with their organizationId (from crm.tupelosmb.com/api/public/listings)."
+    },
+    "tupelomarket": {
+      "enabled": true,
+      "module": "./sources/tupelomarket",
+      "_comment": "Platform-wide Tupelo SMB marketplace — all brokers, 50 state SSR pages."
     },
     "thefirm": {
       "enabled": true,
