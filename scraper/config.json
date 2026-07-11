@@ -128,6 +128,16 @@
       "enabled": true,
       "module": "./sources/sunbeltmidwest"
     },
+    "dealrelations": {
+      "enabled": true,
+      "module": "./sources/dealrelations",
+      "subdomains": [
+        { "sub": "sunbeltnaples", "name": "Sunbelt Naples FL" },
+        { "sub": "angelicamichail", "name": "Sunbelt Pasadena CA" },
+        { "sub": "sunbeltatlanta", "name": "Sunbelt Atlanta GA" }
+      ],
+      "_comment": "DealRelations multi-tenant platform. Add more Sunbelt/other broker subdomains (each <sub>.dealrelations.com/listings). Detail pages carry agent name + office phone."
+    },
     "thefirm": {
       "enabled": true,
       "module": "./sources/thefirm"
