@@ -151,7 +151,9 @@
         { "sub": "tericraft", "name": "TeriCraft Business Sales" },
         { "sub": "smallbusinessdeal", "name": "Franchise Brokers Association" },
         { "sub": "seilertucker", "name": "Seiler Tucker M&A" },
-        { "sub": "businessmodificationgroup", "name": "Business Modification Group (HVAC/plumbing specialist)" }
+        { "sub": "businessmodificationgroup", "name": "Business Modification Group (HVAC/plumbing specialist)" },
+        { "sub": "kmfbusinessadvisors", "name": "KMF Business Advisors (FL)" },
+        { "sub": "crowneatlantic", "name": "Crowne Atlantic Business Brokers (FL)" }
       ],
       "_comment": "DealRelations multi-tenant platform. Add more Sunbelt/other broker subdomains (each <sub>.dealrelations.com/listings). Detail pages carry agent name + office phone."
     },

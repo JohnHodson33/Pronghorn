@@ -441,3 +441,13 @@ delisting.yml with dry_run=true first.
 - Health: linkbusiness re-run clean (482 listings, 21 pages, 0 errors).
 - No new PM tasks. System remains complete + healthy; iterations increasingly
   confirm "all clean" — the honest state of a saturated, well-maintained prong.
+
+## 2026-07-11 — loop iter: +2 DealRelations FL brokers (KMF, Crowne Atlantic)
+
+- Cheap recurring win worked: "restoration/cleaning/roofing dealrelations.com"
+  search surfaced 2 NEW subdomains — **kmfbusinessadvisors** (carpet cleaning)
+  and **crowneatlantic** (roofing), both FL, both thesis-vertical. Added → 13
+  DealRelations broker offices, 190 listings, +30 new.
+- Health: thefirm re-run clean (29, 0 errors). No new PM tasks.
+- The DealRelations subdomain-hunt continues to yield ~1-2 green-relevant
+  brokers per varied-vertical search — a reliable low-cost expansion lane.
