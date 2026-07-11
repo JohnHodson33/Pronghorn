@@ -163,3 +163,25 @@ effect starts on subsequent daily runs.
    BizBuySell mirror). Recommend disabling to cut ~1,600 junk rows + run time.
 5. Relevance-keyword gap still open (add "painting"/"restore" to Green Industry
    Default screen profile — would recover ~15-20 real targets already in DB).
+
+## 2026-07-11 — round 3: Tupelo Marketplace platform-wide (best yield of session)
+
+- Web-search-driven discovery: **Tupelo SMB has a platform-wide marketplace**
+  (tupelosmb.com/marketplace) aggregating EVERY broker on the CRM. Built
+  `tupelomarket` — 50 state SSR pages, ~335 listings. First run: **18 Tier 1 +
+  8 Tier 2** — the best thesis yield/run of the whole session. Green-industry
+  (HVAC/plumbing/landscaping) surfaces across the platform. Disabled the narrow
+  per-org `certifiedbb` (superseded; same Tupelo cuids).
+- **Lesson: web-search for the PLATFORM behind a broker.** bizmls, Tupelo, and
+  (earlier) GABB/Webflow are all multi-tenant platforms where one adapter yields
+  many brokers. Worth periodically searching "business broker CRM/marketplace".
+- Updated totals: **18,319 listings, 101 Tier 1 + 226 Tier 2, 23 sources.**
+- Broker-enrichment walls hit: remaining gap sources are blocked —
+  bizbuysell (Cloudflare on detail), fcbb (office-level only, no agent name),
+  tupelomarket (broker gated behind NDA form), bbf (bizmls, thin). The
+  well-structured broker sources (transworld, bizben, businessbroker, gabb)
+  are already enriched. Owner-level contact is the Phase-5 proprietary channel,
+  not broker sites — flagged as the real gap toward the END-STATE GOAL.
+
+**Standing:** working continuously per John's never-stop directive. This session
+added 12 sources + broker enrichment + source-quality analytics + delisting job.
