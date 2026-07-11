@@ -124,6 +124,10 @@
       "module": "./sources/tupelomarket",
       "_comment": "Platform-wide Tupelo SMB marketplace — all brokers, 50 state SSR pages."
     },
+    "sunbeltmidwest": {
+      "enabled": true,
+      "module": "./sources/sunbeltmidwest"
+    },
     "thefirm": {
       "enabled": true,
       "module": "./sources/thefirm"
