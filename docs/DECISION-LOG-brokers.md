@@ -451,3 +451,13 @@ delisting.yml with dry_run=true first.
 - Health: thefirm re-run clean (29, 0 errors). No new PM tasks.
 - The DealRelations subdomain-hunt continues to yield ~1-2 green-relevant
   brokers per varied-vertical search — a reliable low-cost expansion lane.
+
+## 2026-07-11 — loop iter: pool/pest DealRelations search (none new) + VestedBB probe
+
+- Rotated vertical search (pool/pest/septic/irrigation/fencing) — no NEW
+  DealRelations subdomain (hits were BizBuySell/DealStream, already covered/blocked).
+- Probed **VestedBB.com** (surfaced in results): NYC-focused broker,
+  listings JS-rendered (index HTML has 0 detail links), inventory skews urban
+  retail/food (bars, barber shops, restaurants). Low green-industry relevance +
+  JS-render effort → deprioritized. Noted as a probed candidate.
+- Health: hedgestone re-run clean (720, 0 errors). No new PM tasks.
