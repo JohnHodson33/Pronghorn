@@ -168,6 +168,34 @@ also executed the two swaps previously flagged as PM actions:
   profile ("asking 4.6× vs market median 2.8× → priced above market", with
   size-band median). Company-detail loader refactored onto the shared helper.
 
+## 2026-07-11 — 🔥🔥 Listing pursuit flow (LISTING-PURSUIT-FLOW.md)
+
+- **PursuitPanel on listing detail** — status stepper (new → interested →
+  info_requested → nda_signed → cim_received → passed; doc's enum, coordinated
+  with Lane C), "Request info" primary action, and the pre-drafted inquiry:
+  broker-email case = merge-fielded draft with a **mailto: one-click** ("opens
+  in YOUR mail app — you click send"; nothing ever auto-sends) + copy button;
+  no-email case = co-pilot mode (open inquiry page ↗ + copy contact block).
+  Reusable **inquiry profile** editor (name/phone/email/default note) —
+  persists to `inquiry_profiles` when Lane C's migration lands, localStorage
+  until then (`/api/inquiry-profile` reports `missing: true` pre-migration).
+- **`POST /api/listings/[id]/pursue`** — validates against the pursuit enum,
+  upserts listing_reviews.status, stamps requested_at / nda_signed_at /
+  cim_received_at when those columns exist (graceful pre-migration), and logs
+  a listing_events row (pursuit history survives into the CRM).
+- **Pipeline "Prospecting" lane** — leftmost dashed amber column showing
+  listings in info_requested / nda_signed / cim_received with status chips +
+  broker; cards link to `/listings/[id]`. Empty state prompts "Request info".
+- **Promote pre-fill** — PromoteForm shows everything carried from the listing
+  (industry/geo/ask/rev/CF/broker) + post-NDA blanks: real name (required),
+  true revenue/EBITDA, owner name/email/phone. `/api/promote` extended: real
+  financials override listing numbers, owner becomes a role=owner contact,
+  and the founding activity embeds the pursuit-history timeline.
+  **NOTE for Lane C:** promote now writes `listing_reviews.status='promoted'`
+  (doc enum) instead of legacy `pushed_to_crm` — migration should treat both.
+- Listings table now shows REAL review statuses (joined listing_reviews;
+  was hardcoded "new").
+
 ## Lane B session setup
 
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch

@@ -4,7 +4,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import PromoteForm from "@/components/PromoteForm";
+import PursuitPanel from "@/components/PursuitPanel";
 import { fetchListingDetail } from "@/lib/listing-detail";
+import { PURSUIT_LABEL } from "@/lib/pursuit";
 import { hasDb } from "@/lib/db";
 import { money, margin, multiple } from "@/lib/mock";
 
@@ -52,6 +54,11 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            {l.reviewStatus && l.reviewStatus !== "new" && (
+              <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-800">
+                {PURSUIT_LABEL[l.reviewStatus] ?? l.reviewStatus}
+              </span>
+            )}
             {l.tier !== null && (
               <span className={`rounded px-2.5 py-1 text-sm font-semibold ${tierBadge[l.tier] ?? "bg-zinc-100 text-zinc-600"}`}>
                 Tier {l.tier}
@@ -97,7 +104,33 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
           </Link>
         </div>
       ) : (
-        !l.delistedAt && <PromoteForm listingId={l.id} />
+        !l.delistedAt && (
+          <>
+            <PursuitPanel
+              listingId={l.id}
+              listingName={l.name}
+              sourceId={l.sourceId}
+              sourceUrl={l.url}
+              status={l.reviewStatus}
+              brokerName={l.broker?.name ?? null}
+              brokerEmail={l.broker?.email ?? null}
+            />
+            <PromoteForm
+              listingId={l.id}
+              known={{
+                listingName: l.name,
+                industry: l.industry ?? l.industryRaw,
+                city: l.city,
+                state: l.state,
+                asking: l.asking,
+                revenue: l.revenue,
+                cashFlow: l.cashFlow,
+                cashFlowType: l.cashFlowType,
+                brokerName: l.broker?.name ?? null,
+              }}
+            />
+          </>
+        )
       )}
 
       {l.tierReasoning && (

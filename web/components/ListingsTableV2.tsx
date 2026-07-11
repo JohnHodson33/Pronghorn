@@ -20,7 +20,13 @@ const tierBadge: Record<number, string> = {
 const statusStyle: Record<UiListing["status"], string> = {
   new: "bg-blue-50 text-blue-700",
   reviewed: "bg-zinc-100 text-zinc-600",
+  interested: "bg-emerald-50 text-emerald-700",
   pursuing: "bg-emerald-100 text-emerald-800",
+  info_requested: "bg-amber-100 text-amber-800",
+  nda_signed: "bg-sky-100 text-sky-800",
+  cim_received: "bg-violet-100 text-violet-800",
+  promoted: "bg-emerald-100 text-emerald-800",
+  pushed_to_crm: "bg-emerald-100 text-emerald-800",
   passed: "bg-zinc-100 text-zinc-400 line-through",
 };
 
@@ -329,7 +335,9 @@ export default function ListingsTableV2({ rows: allRows, live }: { rows: UiListi
             {rows.map((l) => (
               <tr key={l.id} className="hover:bg-zinc-50" title={l.tierReasoning}>
                 <td className="px-4 py-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle[l.status]}`}>{l.status}</span>
+                  <span className={`whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle[l.status]}`}>
+                    {l.status.replace(/_/g, " ")}
+                  </span>
                 </td>
                 <td className="px-4 py-3">
                   {l.tier !== null ? (
