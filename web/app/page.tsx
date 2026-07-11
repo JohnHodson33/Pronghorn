@@ -1,262 +1,200 @@
-// Dashboard v2 — all live data: real Tier-1 feed, source health, market-
-// multiples snapshot, upcoming deadlines, and the pipeline chart driven by
-// live deals (replaces the mock-data dashboard). PM promotes this to `/`.
+// Dashboard V3 — the visual command center (DASHBOARD-VISION.md §1):
+// Key Actions (the human-attention queue) on top, the total pipeline funnel
+// across both prongs, and the per-subsector broker vs proprietary readiness
+// matrix that informs the "commit to one vertical" decision.
 import Link from "next/link";
-import { fetchDashboard } from "@/lib/dashboard";
-import { money, STAGES } from "@/lib/mock";
-
-// Chart palette — validated (dataviz six checks, light surface):
-const C_EBITDA = "#047857";
-const C_REVENUE = "#3b82f6";
+import { fetchDashboardV3 } from "@/lib/dashboard-v3";
 
 export const dynamic = "force-dynamic";
 
-const mult = (asking: number | null, cf: number | null) =>
-  asking !== null && cf !== null && cf > 0 ? `${(asking / cf).toFixed(1)}×` : null;
+const actionIcon: Record<string, string> = {
+  promote: "🚀",
+  send_inquiry: "✉️",
+  nda: "✍️",
+  stale: "⏳",
+  deadline: "📅",
+};
+
+// Chart palette — validated (dataviz six checks, light surface):
+const C_BROKER = "#047857"; // emerald-700
+const C_PROP = "#3b82f6"; // blue-500
 
 export default async function Dashboard() {
-  const data = await fetchDashboard();
+  const data = await fetchDashboardV3();
   if (!data) return <div className="p-8 text-sm text-zinc-400">Database not connected.</div>;
 
-  const today = new Date().toISOString().slice(0, 10);
-  const active = data.deals.filter((d) => d.stage !== "Closed");
-  const pipeEbitda = active.reduce((s, d) => s + (d.ebitda ?? 0), 0);
-  const deadlines = data.deals
-    .filter((d) => d.nextStepDue)
-    .sort((a, b) => (a.nextStepDue! < b.nextStepDue! ? -1 : 1))
-    .slice(0, 5);
-
-  const byStage = STAGES.map((stage) => {
-    const inStage = active.filter((d) => d.stage === stage);
-    return {
-      stage,
-      count: inStage.length,
-      revenue: inStage.reduce((s, d) => s + (d.revenue ?? 0), 0),
-      ebitda: inStage.reduce((s, d) => s + (d.ebitda ?? 0), 0),
-    };
-  });
-  const maxStageVal = Math.max(...byStage.map((r) => r.revenue), 1);
-
-  const stats = [
-    { label: "Active deals", value: String(active.length), sub: "live pipeline" },
-    { label: "Pipeline EBITDA", value: money(pipeEbitda), sub: "active stages" },
-    { label: "Tier-1 listings", value: String(data.tier1Count), sub: "screened, live" },
-    {
-      label: "Next deadline",
-      value: deadlines[0]?.nextStepDue?.slice(5).replace("-", "/") ?? "—",
-      sub: deadlines[0] ? `${deadlines[0].nextStep ?? "next step"} — ${deadlines[0].company}` : "nothing scheduled",
-    },
-  ];
+  const maxFunnel = Math.max(...data.funnel.map((f) => f.count), 1);
+  const maxSub = Math.max(
+    ...data.subsectors.map((s) => Math.max(s.brokerListings, s.propTargets)),
+    1
+  );
 
   return (
     <div className="p-4 md:p-8 space-y-6">
-      <header className="flex items-end justify-between">
+      <header className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Sourcing Dashboard</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Command Center</h1>
           <p className="text-sm text-zinc-500">
-            Live: {data.totalListings.toLocaleString()} listings in database · {data.tier1Count} Tier 1
+            {data.totals.listings.toLocaleString()} listings scraped · {data.totals.tier12} thesis-fit ·{" "}
+            {data.totals.leads} proprietary targets · {data.totals.deals} active deals
           </p>
         </div>
-        <Link href="/listings" className="text-sm font-medium text-emerald-700 hover:underline">
-          {data.newThisWeek} new listings this week →
-        </Link>
+        <div className="flex gap-3 text-sm">
+          <Link href="/listings" className="font-medium text-emerald-700 hover:underline">Broker Listings →</Link>
+          <Link href="/list-building" className="font-medium text-emerald-700 hover:underline">Proprietary Deal Flow →</Link>
+        </div>
       </header>
 
-      <section className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-        {stats.map((s) => (
-          <div key={s.label} className="rounded-xl border border-zinc-200 bg-white p-5">
-            <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">{s.label}</div>
-            <div className="mt-1 text-3xl font-bold tabular-nums">{s.value}</div>
-            <div className="mt-1 truncate text-xs text-zinc-500">{s.sub}</div>
+      {/* ---- Key Actions: the human-attention queue ---- */}
+      <section className="rounded-xl border-2 border-emerald-700/20 bg-white">
+        <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-3">
+          <h2 className="font-semibold">Key actions — needs John or Tom</h2>
+          <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 tabular-nums">
+            {data.actions.length}
+          </span>
+        </div>
+        {data.actions.length === 0 ? (
+          <div className="px-5 py-10 text-center text-sm text-zinc-400">
+            Queue is clear — nothing needs a human right now.
           </div>
-        ))}
+        ) : (
+          <ul className="divide-y divide-zinc-100">
+            {data.actions.slice(0, 8).map((a, i) => (
+              <li key={i}>
+                <Link href={a.href} className="flex items-center gap-3 px-5 py-3 hover:bg-emerald-50/50">
+                  <span className="text-lg">{actionIcon[a.kind]}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium">{a.label}</span>
+                    <span className="block truncate text-xs text-zinc-500">{a.detail}</span>
+                  </span>
+                  {a.urgent && (
+                    <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-700">
+                      action
+                    </span>
+                  )}
+                  <span className="shrink-0 text-zinc-300">→</span>
+                </Link>
+              </li>
+            ))}
+            {data.actions.length > 8 && (
+              <li className="px-5 py-2 text-center text-xs text-zinc-400">
+                +{data.actions.length - 8} more
+              </li>
+            )}
+          </ul>
+        )}
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        {/* Real Tier-1 feed */}
-        <section className="rounded-xl border border-zinc-200 bg-white p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Newest Tier-1 listings</h2>
-            <Link href="/listings" className="text-sm font-medium text-emerald-700 hover:underline">
-              All listings →
-            </Link>
-          </div>
-          <ul className="mt-3 divide-y divide-zinc-100">
-            {data.tier1.map((l) => (
-              <li key={l.id} className="flex items-center justify-between gap-3 py-2.5">
-                <div className="min-w-0">
-                  {l.url ? (
-                    <a href={l.url} target="_blank" rel="noopener noreferrer" className="block truncate text-sm font-medium hover:text-emerald-700 hover:underline">
-                      {l.name} ↗
-                    </a>
-                  ) : (
-                    <div className="truncate text-sm font-medium">{l.name}</div>
-                  )}
-                  <div className="text-xs text-zinc-500">
-                    {[l.city, l.state].filter(Boolean).join(", ") || "—"}
-                    {l.priorityState && <span className="ml-1 text-emerald-700">★</span>}
-                    {" · "}{l.sourceId} · {l.firstSeen}
-                  </div>
-                </div>
-                <div className="shrink-0 text-right text-sm tabular-nums">
-                  <div className="font-semibold text-emerald-800">
-                    {money(l.cashFlow)}
-                    {l.cashFlowType && <span className="ml-1 text-xs font-normal text-zinc-500">{l.cashFlowType}</span>}
-                  </div>
-                  <div className="text-xs text-zinc-500">
-                    ask {money(l.asking)}{mult(l.asking, l.cashFlow) ? ` (${mult(l.asking, l.cashFlow)})` : ""}
-                  </div>
-                </div>
-              </li>
-            ))}
-            {data.tier1.length === 0 && (
-              <li className="py-8 text-center text-sm text-zinc-400">No live Tier-1 listings right now.</li>
-            )}
-          </ul>
-        </section>
-
-        {/* Source health */}
-        <section className="rounded-xl border border-zinc-200 bg-white p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Source health</h2>
-            <Link href="/sources" className="text-sm font-medium text-emerald-700 hover:underline">
-              Manage sources →
-            </Link>
-          </div>
-          <table className="mt-3 w-full text-sm">
-            <thead>
-              <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500">
-                <th className="py-2 font-medium">Source</th>
-                <th className="py-2 font-medium">Last run</th>
-                <th className="py-2 text-right font-medium">Listings</th>
-                <th className="py-2 text-right font-medium">+7d</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-100">
-              {data.sources.map((s) => {
-                const ok = s.lastRunStatus === "ok" || s.lastRunStatus === "success";
-                return (
-                  <tr key={s.id}>
-                    <td className="py-2 font-medium">
-                      <span
-                        className={`mr-2 inline-block h-2 w-2 rounded-full ${
-                          !s.lastRunStatus ? "bg-zinc-300" : ok ? "bg-emerald-500" : "bg-red-500"
-                        }`}
-                        title={s.lastRunStatus ?? "never run"}
-                      />
-                      {s.name}
-                    </td>
-                    <td className="py-2 text-xs text-zinc-500">
-                      {s.lastRunAt ? s.lastRunAt.slice(0, 16).replace("T", " ") : "—"}
-                    </td>
-                    <td className="py-2 text-right tabular-nums">{s.total.toLocaleString()}</td>
-                    <td className={`py-2 text-right tabular-nums ${s.newThisWeek > 0 ? "font-semibold text-emerald-700" : "text-zinc-400"}`}>
-                      {s.newThisWeek > 0 ? `+${s.newThisWeek}` : "0"}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </section>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-2">
-        {/* Market multiples snapshot */}
-        <section className="rounded-xl border border-zinc-200 bg-white p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Market multiples — thesis verticals</h2>
-            <Link href="/analytics" className="text-sm font-medium text-emerald-700 hover:underline">
-              Full analysis →
-            </Link>
-          </div>
-          <ul className="mt-3 divide-y divide-zinc-100 text-sm">
-            {data.multiples.map((m) => (
-              <li key={m.industry} className="flex items-center justify-between py-2.5">
-                <span className="font-medium">{m.industry}</span>
-                <span className="tabular-nums text-zinc-600">
-                  <span className="font-bold text-zinc-900">{m.medMultiple === null ? "—" : `${m.medMultiple.toFixed(1)}×`}</span>
-                  {" median"}
-                  <span className="ml-2 text-xs text-zinc-400">n={m.nMultiple}</span>
-                </span>
-              </li>
-            ))}
-            {data.multiples.length === 0 && (
-              <li className="py-8 text-center text-sm text-zinc-400">Not enough observations yet.</li>
-            )}
-          </ul>
-        </section>
-
-        {/* Upcoming deadlines */}
-        <section className="rounded-xl border border-zinc-200 bg-white p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Next steps due</h2>
-            <Link href="/pipeline" className="text-sm font-medium text-emerald-700 hover:underline">
-              Open pipeline →
-            </Link>
-          </div>
-          <ul className="mt-3 divide-y divide-zinc-100 text-sm">
-            {deadlines.map((d) => {
-              const overdue = d.nextStepDue! < today;
-              return (
-                <li key={d.id} className="flex items-center justify-between gap-3 py-2.5">
-                  <div className="min-w-0">
-                    <div className="truncate font-medium">{d.company}</div>
-                    <div className="truncate text-xs text-zinc-500">{d.nextStep ?? "next step"} · {d.stage}</div>
-                  </div>
-                  <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold tabular-nums ${
-                    overdue ? "bg-red-100 text-red-700" : "bg-amber-50 text-amber-800"
-                  }`}>
-                    {overdue ? "overdue " : ""}{d.nextStepDue!.slice(5).replace("-", "/")}
-                  </span>
-                </li>
-              );
-            })}
-            {deadlines.length === 0 && (
-              <li className="py-8 text-center text-sm text-zinc-400">
-                No next-step dates set — add them from a deal page.
-              </li>
-            )}
-          </ul>
-        </section>
-      </div>
-
-      {/* Pipeline value by stage — now live deals */}
+      {/* ---- Total pipeline funnel (both prongs) ---- */}
       <section className="rounded-xl border border-zinc-200 bg-white p-5">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="font-semibold">Pipeline value by stage</h2>
-            <p className="text-xs text-zinc-500">Live deals. Hover a stage for detail; deal count below each stage.</p>
+            <h2 className="font-semibold">Total pipeline</h2>
+            <p className="text-xs text-zinc-500">
+              Prospecting (anonymized listings in pursuit) flows into the deal stages.
+            </p>
           </div>
-          <div className="flex items-center gap-4 text-xs text-zinc-600">
-            <span className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-sm" style={{ background: C_REVENUE }} />
-              Revenue
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-sm" style={{ background: C_EBITDA }} />
-              EBITDA
-            </span>
-          </div>
+          <Link href="/pipeline" className="text-sm font-medium text-emerald-700 hover:underline">
+            Open board →
+          </Link>
         </div>
-        <div className="flex items-end gap-2 overflow-x-auto">
-          {byStage.map((r) => (
-            <div key={r.stage} className="group relative flex min-w-24 flex-1 flex-col items-center">
-              <div className="pointer-events-none absolute -top-2 z-10 hidden -translate-y-full whitespace-nowrap rounded-md bg-zinc-900 px-2.5 py-1.5 text-xs text-white shadow group-hover:block">
-                <div className="font-semibold">{r.stage} · {r.count} deal{r.count === 1 ? "" : "s"}</div>
-                <div className="tabular-nums">Revenue {money(r.revenue)} · EBITDA {money(r.ebitda)}</div>
+        <div className="flex items-end gap-1.5 overflow-x-auto pb-1">
+          {data.funnel.map((f) => (
+            <div key={f.label} className="flex min-w-20 flex-1 flex-col items-center gap-1">
+              <div className="text-sm font-bold tabular-nums">{f.count}</div>
+              <div className="flex h-32 w-full items-end justify-center">
+                <div
+                  className={`w-3/4 rounded-t ${f.kind === "prospecting" ? "opacity-70" : ""}`}
+                  style={{
+                    background: f.kind === "prospecting" ? "#f59e0b" : C_BROKER,
+                    height: `${Math.max((f.count / maxFunnel) * 100, f.count > 0 ? 6 : 2)}%`,
+                  }}
+                />
               </div>
-              <div className="flex h-40 w-full items-end justify-center gap-0.5 rounded-md px-2 group-hover:bg-zinc-50">
-                <div className="w-5 rounded-t" style={{ background: C_REVENUE, height: `${(r.revenue / maxStageVal) * 100}%` }} />
-                <div className="w-5 rounded-t" style={{ background: C_EBITDA, height: `${(r.ebitda / maxStageVal) * 100}%` }} />
-              </div>
-              <div className="mt-2 w-full border-t border-zinc-200 pt-1.5 text-center">
-                <div className="truncate text-xs font-medium text-zinc-700">{r.stage}</div>
-                <div className="text-xs text-zinc-400 tabular-nums">{r.count}</div>
+              <div className="w-full border-t border-zinc-200 pt-1 text-center text-[11px] leading-tight text-zinc-600">
+                {f.label}
               </div>
             </div>
           ))}
         </div>
+        <div className="mt-3 flex items-center gap-4 text-xs text-zinc-600">
+          <span className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-sm bg-amber-500 opacity-70" /> Prospecting (pre-NDA)
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-sm" style={{ background: C_BROKER }} /> CRM deals
+          </span>
+        </div>
+      </section>
+
+      {/* ---- Subsector matrix: broker vs proprietary readiness ---- */}
+      <section className="rounded-xl border border-zinc-200 bg-white p-5">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h2 className="font-semibold">Deal flow by subsector</h2>
+            <p className="text-xs text-zinc-500">
+              Broker pipeline vs proprietary targets — the picture behind the &quot;commit to one vertical&quot; call.
+            </p>
+          </div>
+          <div className="flex items-center gap-4 text-xs text-zinc-600">
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-sm" style={{ background: C_BROKER }} /> Broker (thesis-fit live)
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-sm" style={{ background: C_PROP }} /> Proprietary targets
+            </span>
+          </div>
+        </div>
+        <div className="space-y-4">
+          {data.subsectors.map((s) => (
+            <div key={s.key}>
+              <div className="mb-1 flex items-baseline justify-between">
+                <span className="text-sm font-semibold">{s.key}</span>
+                <span className="text-xs text-zinc-500 tabular-nums">
+                  {s.brokerDeals > 0 && (
+                    <span className="mr-3 font-semibold text-emerald-800">{s.brokerDeals} in CRM</span>
+                  )}
+                  {s.propReady > 0 && (
+                    <span className="font-semibold text-blue-700">{s.propReady} outreach-ready</span>
+                  )}
+                </span>
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <div className="h-4 flex-1 rounded-sm bg-zinc-50">
+                    <div
+                      className="h-4 rounded-r-sm"
+                      style={{ background: C_BROKER, width: `${(s.brokerListings / maxSub) * 100}%` }}
+                      title={`${s.brokerListings} live thesis-fit broker listings`}
+                    />
+                  </div>
+                  <span className="w-10 shrink-0 text-right text-xs tabular-nums text-zinc-600">{s.brokerListings}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-4 flex-1 rounded-sm bg-zinc-50">
+                    <div
+                      className="relative h-4 rounded-r-sm"
+                      style={{ background: C_PROP, width: `${(s.propTargets / maxSub) * 100}%` }}
+                      title={`${s.propTargets} proprietary targets (${s.propReady} outreach-ready)`}
+                    >
+                      {s.propTargets > 0 && (
+                        <div
+                          className="absolute inset-y-0 left-0 rounded-r-sm bg-blue-800"
+                          style={{ width: `${(s.propReady / Math.max(s.propTargets, 1)) * 100}%` }}
+                        />
+                      )}
+                    </div>
+                  </div>
+                  <span className="w-10 shrink-0 text-right text-xs tabular-nums text-zinc-600">{s.propTargets}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-[11px] text-zinc-400">
+          Darker blue segment = targets fully enriched (owner name + email/phone). Interim aggregates —
+          swaps to Lane C&apos;s SQL views when they land.
+        </p>
       </section>
     </div>
   );
