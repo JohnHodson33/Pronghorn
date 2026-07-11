@@ -21,9 +21,7 @@ p.use(S());
       let j = null; try { j = JSON.parse(t); } catch {}
       return {
         status: r.status,
-        keys: j ? Object.keys(j) : null,
-        meta: j && (j.meta || j.total || j.last_page) ? JSON.stringify({ total: j.total, last_page: j.last_page, per_page: j.per_page, current: j.current_page, meta: j.meta }).slice(0, 200) : null,
-        first: j && j.data ? JSON.stringify(j.data[0]).slice(0, 500) : t.slice(0, 300),
+        itemKeys: j && j.data && j.data[0] ? Object.keys(j.data[0]) : null,
       };
     });
     console.log(JSON.stringify(out, null, 2));

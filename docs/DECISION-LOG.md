@@ -6,6 +6,14 @@
 
 ## 2026-07-11 (evening autonomous session)
 
+0. **Built a Broker catalog (new /brokers page + DB persistence).**
+   Why: your feedback — capture broker names/contact + what industries & deals
+   they cover, before we have company names. Scraper now dedupes brokers into the
+   `brokers` table and links listings; the page shows each broker's listing count,
+   industries, and states. Broker names currently come from GABB + LINK Business
+   (Transworld's list API has no broker field; it's detail-page only — deferred).
+   Populates fully on the next GABB/LINK run. Reverse: sidebar "Brokers" → hide.
+
 1. **Market Multiples now leads with thesis verticals; everything else is a
    collapsed "Other industries — reference only" section.**
    Why: John said seeing Retail first was confusing; prioritize industries we
