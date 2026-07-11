@@ -135,7 +135,8 @@ Laravel-backed broker sites.**
 | Source | Why benched | Path to build |
 |---|---|---|
 | Transworld | 3,529 US listings behind a JS app (GorillaDash/Salesforce backend); URL filter serves global inventory; pagination needs in-page routing | Drive click-pagination or reverse the listings GraphQL/XHR |
-| Murphy Business | Listings render via JS; no clean API found | Headless render + DOM scrape of the loaded grid |
+| Murphy Business | "View listings" page contains NO listing links or API — likely a syndicated widget (BizBuySell-powered). Probed 2x, dead end | Identify the embedded widget/iframe source |
+| Sun Acquisitions | SSR page but no listing links/API surfaced on featured page | Find the paginated full-listings URL |
 | BizBen | 5,000+ CA listings but postings not exposed as simple URLs; interaction-gated | Reverse the search POST / render flow |
 | Sun Acquisitions | SSR w/ EBITDA text but listing links not on featured page | Find full listings URL + card parse |
 | VR Business Brokers | Listings on per-franchise domains (vrmiamicenter.com etc.); homepage had suspicious injected scripts | Enumerate franchise domains, scrape each |
