@@ -1,5 +1,24 @@
 # Running multiple Claude Code sessions in parallel
 
+## ACTUAL SETUP (2026-07-11) — git worktrees, one per session
+Claude Code auto-creates a **git worktree per session** (separate directory,
+separate branch, shared `.git`), so sessions ARE isolated on disk:
+- `C:\Users\johnd\Pronghorn`               → Brokers worker (branch `lane/brokers`)
+- `C:\Users\johnd\Pronghorn-frontend`      → Frontend worker (`lane/frontend`)
+- `C:\Users\johnd\Pronghorn-integrations`  → CRM/Data worker (`lane/integrations`)
+- `C:\Users\johnd\Pronghorn-pm`            → PM/Integrator (branch `main`)
+
+**Gotcha we hit & fixed:** worktrees do NOT get the gitignored `.env` files.
+The PM copied `scraper/.env` + `web/.env.local` into every worktree so each
+session can reach Supabase/HubSpot. New worktree → copy those two files in.
+
+**Merge flow:** workers commit to their lane branch + push. PM (in Pronghorn-pm on
+main) runs `git merge origin/lane/<x>`, resolves shared-file conflicts
+(TASK-QUEUE.md, Sidebar.tsx), builds, and deploys. Only PM merges + deploys.
+
+---
+
+
 Yes, this works and is worth doing to use spare capacity — **2–3 sessions is the
 sweet spot; 5–6 gets coordination-heavy for little extra gain.** The constraints
 aren't compute (each session is independent) — they're the three *shared
