@@ -82,6 +82,12 @@
       "module": "./sources/bizben",
       "limit": 100,
       "max_pages": 80
+    },
+    "fcbb": {
+      "enabled": true,
+      "module": "./sources/fcbb",
+      "page_size": 100,
+      "max_pages": 20
     }
   },
   "relevance": {
