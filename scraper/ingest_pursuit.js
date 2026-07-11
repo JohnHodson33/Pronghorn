@@ -39,9 +39,18 @@ const DOMAIN_SOURCES = {
 
 const SIGNALS = [
   { re: /nda is in process/i, status: 'info_requested', note: 'NDA signed by us; broker countersign pending' },
-  { re: /(copy of (the|your) signed nda|nda (fully )?(executed|complete[d]?)|completed:.*nda|nda.*has been (signed|executed) by all)/i, status: 'nda_signed' },
-  { re: /(confidential information memorandum|offering memorandum|\bcim\b.*(attached|available|access|enclosed)|(attached|access to).*\bcim\b|data ?room (access|invite|invitation)|access to the (listing information|data ?room))/i, status: 'cim_received' },
+  { re: /(copy of (the|your) signed nda|nda (fully )?(executed|complete[d]?)|completed:.*nda|nda.*has been (signed|executed) by all|thank you for your nda)/i, status: 'nda_signed' },
+  // "Confidential Business Profile" is FCBB's post-NDA info package — treat as CIM
+  { re: /(confidential (information memorandum|business profile)|offering memorandum|\bcim\b.*(attached|available|access|enclosed)|(attached|access to).*\bcim\b|data ?room (access|invite|invitation)|access to the (listing information|data ?room))/i, status: 'cim_received' },
 ];
+
+/** A message can match several signals (e.g. "thank you for your NDA … download
+ * the Confidential Business Profile") — the HIGHEST stage wins. */
+function bestSignal(text) {
+  const hits = SIGNALS.filter((s) => s.re.test(text));
+  if (!hits.length) return null;
+  return hits.reduce((a, b) => (STAGE_ORDER.indexOf(b.status) > STAGE_ORDER.indexOf(a.status) ? b : a));
+}
 
 const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
@@ -123,7 +132,7 @@ async function main() {
     if (seen?.length) { skipped++; continue; }
 
     const text = `${m.subject || ''} ${m.summary || ''}`;
-    const signal = SIGNALS.find((s) => s.re.test(text));
+    const signal = bestSignal(text);
     if (!signal) continue;
 
     const domain = (m.sender || '').split('@')[1]?.toLowerCase() || '';

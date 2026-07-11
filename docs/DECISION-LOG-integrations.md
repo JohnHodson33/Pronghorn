@@ -223,6 +223,18 @@ provisions himself. Drafting activates when John adds ANTHROPIC_API_KEY to
 web/.env.local; until then the route 503s with instructions and the scraper CLI
 covers drafting.
 
+## 2026-07-11 — First full pursuit cycle closed in production
+
+FCBB Tree Service (327-24860): John signed the NDA ~06:05 → detector logged
+info_requested (countersign pending) → broker countersigned ~10:53 and sent the
+"Confidential Business Profile Level 1" → detector advanced to **cim_received**.
+Two detector generalizations from the live mail: (1) FCBB's "Confidential
+Business Profile" is their CIM — added to the CIM signal; (2) one email can
+match multiple signals ("thank you for your NDA … download the profile") — the
+HIGHEST stage now wins (bestSignal). Tree Service is the first row in the
+ready_to_promote queue; John fills the real name/financials from the CBP and
+promotes. The aquatic-contractor pursuit (226-24809) still awaits countersign.
+
 ## 2026-07-10 — dotenv "vestauth" banner: false alarm
 
 `dotenv@17.4.2` prints rotating ad tips (incl. `vestauth.com`). Diffed the installed
