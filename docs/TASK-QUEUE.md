@@ -52,6 +52,13 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
   company → owner contact, broker, stage, asking/valuation, fit score; rows →
   /deals/[id]. Passed deals must be findable here forever (deals fall out of
   the pipeline and may fall back in). PM wires "Deals" into Sidebar on merge.
+- 🔥 **List-building key-status honesty (John 7/11):** the "needs key" badge is
+  STATIC — it names the required env var without checking it, so live sources
+  (Serper/Places/Hunter/Exa all have keys) still look unconfigured. Add a
+  server check (`/api/sources/status` or extend lead-lists GET) that reports
+  which keys exist; badge becomes "connected ✓" / "needs key" truthfully.
+  Show honest build statuses too (pending = "queued, runs on next worker
+  pass/nightly" until the Lane C runner ships).
 - 🔥 **Contacts ↔ Brokers rationalization (John's MECE point 7/11):** Brokers
   tab = auto-scraped directory (hundreds, cold); Contacts = curated CRM people
   (only 18 broker-contacts promoted so far) — the UI never explains this.
@@ -118,6 +125,30 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+- 🔥🔥 **LEAD → COMPANY PROMOTION (John 7/11 ~12:15 — "very important"):** the
+  proprietary funnel must POPULATE THE COMPANIES TAB. (a) Auto-promote: when a
+  lead reaches enrichment bar (owner name + ≥1 contact channel), upsert a
+  company (dedup on website/name+geo), create the owner as a contact
+  (role=owner, linked), carry revenue/employee/size estimates when present,
+  tag origin='proprietary', link lead→company_id. Idempotent backfill for
+  already-enriched leads. (b) Companies→deals conversion already exists — the
+  chain becomes scrape → enrich → company+owner → outreach → deal → pipeline.
+  (c) Lane B surface: "Add to Companies" button per lead + bulk action on the
+  enrichment tab; enriched leads show their company link.
+- 🔥🔥 **LEAD-LIST RUNNER — make /list-building actually self-serve (John
+  7/11):** POSTed builds sit at status 'pending' until a worker manually runs
+  run_leadgen. Build the runner: a scheduled/loop job (extend GH Actions +
+  local loop) that picks up pending lead_lists → runs leadgen with enabled
+  sources → chains enrichment → flips status pending→running→complete with
+  leads_found. Target: John clicks Build List and it just happens.
+- 🔥 **OUTREACH TRACKING ROBUSTNESS (John 7/11, design w/ Lane B):** cold
+  outreach needs more than the pipeline's Prospecting column: per-owner/company
+  outreach state (not_started/contacted/replied/meeting/nurture), last touch,
+  **next follow-up due date** surfaced in Dashboard Key Actions when due,
+  channel history (email/call/linkedin), notes. Everything still rolls into
+  the single pipeline view, but outreach gets its own working surface (extend
+  Outreach + Cold Calling tabs into a real workspace). Draft the model, then
+  build with Lane B.
 - 🔥 **DATA FIX for Passed stage (w/ Lane B, John 7/11):** deals currently at
   stage 'Closed' (nail post-mortem imports etc.) are passes, not closes —
   migrate them to 'Passed' (preserve any closed_lost_reason as the pass
