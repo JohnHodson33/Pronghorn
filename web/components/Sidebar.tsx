@@ -33,6 +33,7 @@ const nav: { section: string; items: { label: string; href: string | null }[] }[
     section: "CRM",
     items: [
       { label: "Pipeline", href: "/pipeline" },
+      { label: "Deals", href: "/deals" },
       { label: "Companies", href: "/companies" },
       { label: "Contacts", href: "/contacts" },
       { label: "Brokers", href: "/brokers" },
