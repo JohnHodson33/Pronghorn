@@ -256,3 +256,24 @@ added 12 sources + broker enrichment + source-quality analytics + delisting job.
   well-covered by the aggregators + networks already live. Net-new source yield
   is diminishing; the higher-leverage frontier is now Phase 5 (proprietary
   owner list-building) — a Lane C/PM concern, not broker scraping.
+
+## 2026-07-11 — loop iter: source health + dropped bizquest + build-vs-buy flag
+
+- **Self-iterate health check**: re-ran synergy (20), viking (45), sunbelt (36)
+  — all parse cleanly, 0 errors. No silent breakage. All 25 enabled sources
+  healthy in source_quality.js (18,603 listings, 105 T1 + 229 T2).
+- **Dropped bizquest** (source-quality "drop low-value"): pure BizBuySell mirror,
+  1,597 listings, 0 thesis-fit, 0 CF, 100% mirror-dedup → disabled in config +
+  DB. Saves ~30 pages/day for zero lost value.
+- ⭐ **DECISION FOR JOHN — build vs. buy:** Kumo (withkumo.com) and BizScout
+  aggregate **100,000+ / 20,000+** broker listings respectively — AI-deduped,
+  CSV export, daily alerts — but are **paid, login-gated** (I did NOT attempt to
+  scrape; credentials boundary). Our scraper now covers ~18.6k listings across
+  27 sources for $0. A Kumo subscription would ~5x coverage instantly and dedupe
+  across everything. Worth pricing out vs. the maintenance cost of 27 adapters.
+  If John subscribes, Kumo's CSV export could feed the same Supabase pipeline.
+- **Assessment:** free-broker-source discovery is effectively saturated. The
+  green-industry verticals and all major aggregators/networks/associations/
+  platforms are live. Further Lane A value is now (a) maintenance/health of
+  existing adapters, (b) the Kumo build-vs-buy call, (c) shifting effort to
+  Phase 5 proprietary owner list-building (Lane C).
