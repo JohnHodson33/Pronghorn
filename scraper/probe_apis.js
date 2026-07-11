@@ -6,15 +6,10 @@ const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 puppeteerExtra.use(StealthPlugin());
 
 const TARGETS = [
-  ['cvbba', 'https://cvbba.com/business-listings/'],
-  ['cvbba_alt', 'https://cvbba.com/listings/'],
-  ['tabb', 'https://www.tabb.org/businesses-for-sale'],
-  ['tabb_alt', 'https://www.tabb.org/listings'],
-  ['azbba', 'https://azbba.org/businesses-for-sale/'],
-  ['azbba_alt', 'https://azbba.org/business-listings/'],
-  ['bbf', 'https://www.bbfmls.com/businesses-for-sale/'],
-  ['mbbi', 'https://www.mbbi.org/businesses-for-sale/'],
-  ['cabb', 'https://cabb.org/businesses-for-sale/'],
+  ['transworld', 'https://www.tworld.com/buy-a-business/business-listing-search'],
+  ['murphy', 'https://murphybusiness.com/business-brokerage/view-our-listings/'],
+  ['vr', 'https://www.vrbusinessbrokers.com/businesses-for-sale/'],
+  ['bizben', 'https://www.bizben.com/business-for-sale/california'],
 ];
 
 (async () => {

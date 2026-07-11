@@ -119,11 +119,32 @@ lists API-ish XHR calls). Many "hard" JS sites are actually fed by a clean publi
 API — far better than HTML scraping. GABB, and likely other Webflow-based broker
 sites, expose structured data incl. sold comps this way.
 
-## Live sources (8): bizbuysell, bizquest (mirror), businessbroker, synergy,
-## viking, sunbelt, gabb (API), businessesforsale (~16.8k listings).
-##
-## Benched / needs work:
-## - Transworld (JS routing), AZBBA + BBF Florida (JS/Akamai MLS platforms),
-##   TABB (just embeds BizBuySell — skip), GlobalBX + DealStream + LoopNet
-##   (Cloudflare/DataDome), Murphy (JS app), VR (per-franchise domains).
-## Next tractable: BusinessMart (HTML), other state-assoc Webflow APIs.
+## LIVE SOURCES (9)
+bizbuysell · bizquest (mirror) · businessbroker · synergy · viking ·
+sunbelt (adj. EBITDA) · gabb (API, sold comps) · businessesforsale (~16.8k) ·
+linkbusiness (SDE/sales/broker on cards).
+
+## BENCHED — each needs a DEDICATED build session (probed 2026-07-11, no quick win)
+| Source | Why benched | Path to build |
+|---|---|---|
+| Transworld | 3,529 US listings behind a JS app (GorillaDash/Salesforce backend); URL filter serves global inventory; pagination needs in-page routing | Drive click-pagination or reverse the listings GraphQL/XHR |
+| Murphy Business | Listings render via JS; no clean API found | Headless render + DOM scrape of the loaded grid |
+| BizBen | 5,000+ CA listings but postings not exposed as simple URLs; interaction-gated | Reverse the search POST / render flow |
+| Sun Acquisitions | SSR w/ EBITDA text but listing links not on featured page | Find full listings URL + card parse |
+| VR Business Brokers | Listings on per-franchise domains (vrmiamicenter.com etc.); homepage had suspicious injected scripts | Enumerate franchise domains, scrape each |
+| FCBB | Duda CMS (multiscreensite), JS-rendered | Headless render + DOM scrape |
+| BBF Florida MLS / AZBBA | Embedded bizmls.com ASP + Akamai-protected MLS platforms | Reverse the MLS form-POST flow (highest broker count) |
+
+## SKIP (no incremental value or hard-blocked)
+- TABB — just re-embeds BizBuySell (already have it)
+- WebsiteClosers — online/e-commerce businesses only (off green-industry thesis)
+- BusinessMart — FSBO-by-owner, financials off-index (low quality)
+- Raincatcher — listings behind login wall
+- GlobalBX / DealStream / LoopNet — Cloudflare / DataDome captcha
+- Calder, Peterson, Benchmark, Woodbridge — M&A advisors, no public listings grid
+
+## Assessment
+Rapid-adapter phase is done: the major aggregators + several networks are live,
+giving ~2k priced observations for the multiples engine (the broker channel's
+job per sourcing strategy). Remaining sources are a different class of work
+(dedicated JS-scraping sessions) with diminishing thesis-relevant yield.
