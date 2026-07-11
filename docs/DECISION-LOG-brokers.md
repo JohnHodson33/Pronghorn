@@ -237,3 +237,22 @@ added 12 sources + broker enrichment + source-quality analytics + delisting job.
   (search surfaces them). Agent-name parsing works on template A (Sunbelt) only;
   template B has no agent block on the page.
 - Totals: **18,574 listings, 105 T1 + 229 T2, 27 sources.** All parses healthy.
+
+## 2026-07-11 — loop iter: DealRelations +2, vertical-coverage verification
+
+- DealRelations expanded to **10 broker offices** (added Franchise Brokers
+  Association, Seiler Tucker) = 145 listings. Platform is now near-exhausted:
+  each broker caps ~15 listings (no pagination), so further subdomains yield
+  ~15 each — low marginal value. Adapter supports both page templates.
+- **Verified thesis-vertical coverage** (rather than build redundant sources):
+  - Pool routes: dedicated route-broker sites (poolroutesales.com etc.) are
+    inquiry-only marketing pages; National Pool Route Sales actually lists its
+    ~110 routes on businessesforsale.com (already scraped). **86 pool listings
+    already in DB** across 11 sources. No net-new source needed.
+  - Pest control: specialist M&A firms (Cetane, PCO Bookkeepers, Preferred,
+    Capstone) are sell-side ADVISORS with no public buy-side grids. Pest flows
+    through aggregators. **31 pest listings already in DB.**
+- Takeaway for PM: the green-industry verticals (pool/pest/HVAC/landscape) are
+  well-covered by the aggregators + networks already live. Net-new source yield
+  is diminishing; the higher-leverage frontier is now Phase 5 (proprietary
+  owner list-building) — a Lane C/PM concern, not broker scraping.
