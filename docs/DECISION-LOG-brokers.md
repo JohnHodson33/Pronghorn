@@ -461,3 +461,11 @@ delisting.yml with dry_run=true first.
   retail/food (bars, barber shops, restaurants). Low green-industry relevance +
   JS-render effort → deprioritized. Noted as a probed candidate.
 - Health: hedgestone re-run clean (720, 0 errors). No new PM tasks.
+
+## 2026-07-11 — loop iter (terse): health clean, no new source
+- Health: businessesforsale re-run clean (595, 40 pages, 0 errors). No new PM tasks.
+- Vertical search (electrical/tree/painting/concrete/paving): only DealStream
+  (DataDome-blocked) + BizBuySell (covered). No new DealRelations subdomain.
+- Note: DealStream recurs with strong green-industry inventory (paving/electrical/
+  pest) but stays captcha-walled — a standing "worth a paid/manual approach?"
+  question for John if he wants that inventory (can't scrape unattended).
