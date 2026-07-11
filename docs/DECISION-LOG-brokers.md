@@ -483,3 +483,8 @@ delisting.yml with dry_run=true first.
   broker (not just DealRelations subdomains) — worth probing those too, not only
   the platform subdomains.
 - Source count now ~29 (empire added).
+
+## 2026-07-11 — loop iter (terse): health clean, no new source
+- Health: tupelomarket clean (335, 0 errors). No new PM tasks.
+- Cleaning/janitorial vertical: only DealStream (blocked) + BizBuySell/BizQuest
+  (covered/mirror). No new DealRelations subdomain or standalone broker.
