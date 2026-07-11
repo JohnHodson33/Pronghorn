@@ -179,6 +179,16 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 ---
 
 ## Decisions bubbled to John (non-blocking)
+- 🔔 **GitHub Actions are FAILING on schedule (7/11 ~07:20+ AM):** Nightly Scrape
+  + Delisting Pass red — the repo secrets aren't set yet. Add in GitHub →
+  Settings → Secrets and variables → Actions: `SUPABASE_URL`,
+  `SUPABASE_SERVICE_KEY`, `ANTHROPIC_API_KEY`, `EXA_API_KEY`, `HUNTER_API_KEY`,
+  `SERPER_API_KEY` (values = scraper/.env). Until then the scheduled runs will
+  keep failing with a missing-SUPABASE_URL error. (Lane C noted; workflows are
+  Lane A's.)
+- ℹ️ FYI: Jack Williams (William Blair IB, jwilliams@williamblair.com) added to
+  contacts as a broker/deal-flow relationship from this morning's intro thread —
+  he proposed Tue 3–4pm CT.
 - 🔔 **One-click SEND route — needs your direct go.** Lane C shipped the full
   outbox (Claude drafting verified excellent, queueing, edit, cancel,
   `POST /api/outbox {listingId}` advances pursuit + logs events). The SEND
