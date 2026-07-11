@@ -32,11 +32,13 @@ export default async function Pipeline() {
   const [live, prospecting] = await Promise.all([fetchDeals(), fetchProspecting()]);
   const isLive = live !== null && live.length > 0;
   const cards: Card[] = isLive
-    ? live!
+    ? live!.filter((d) => d.stage !== "Passed") // Passed leaves the board; findable on /deals
     : mockDeals
         .filter((d) => !d.passed)
         .map((d) => ({ ...d, industry: d.industry as string | null, city: d.city, state: d.state }));
-  const passedCount = isLive ? 0 : mockDeals.filter((d) => d.passed).length;
+  const passedCount = isLive
+    ? live!.filter((d) => d.stage === "Passed").length
+    : mockDeals.filter((d) => d.passed).length;
 
   return (
     <div className="flex h-full flex-col p-4 md:p-8">
@@ -55,9 +57,12 @@ export default async function Pipeline() {
           >
             {isLive ? "● LIVE DATA" : "sample data — promote a listing to go live"}
           </span>
-          <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-500">
-            Passed deals: {passedCount}
-          </span>
+          <Link
+            href="/deals?stage=Passed"
+            className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-500 hover:bg-zinc-200"
+          >
+            Passed deals: {passedCount} →
+          </Link>
         </div>
       </header>
 
