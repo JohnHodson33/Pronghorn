@@ -5,6 +5,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ActivityForm from "@/components/ActivityForm";
+import CompanyEditor from "@/components/CompanyEditor";
+import DealControls from "@/components/DealControls";
 import { fetchCompanyDetail } from "@/lib/company-detail";
 import { money } from "@/lib/mock";
 
@@ -55,17 +57,40 @@ export default async function CompanyDetailV2({ id }: { id: string }) {
               )}
             </p>
           </div>
-          {deal && (
-            <Link
-              href={`/deals/${deal.id}`}
-              className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800 hover:bg-emerald-200"
-              title="Open deal working view"
-            >
-              {deal.stage} →
-            </Link>
-          )}
+          <div className="flex items-center gap-2">
+            <CompanyEditor
+              companyId={c.id}
+              name={c.name}
+              industry={c.industry}
+              city={c.city}
+              state={c.state}
+              website={c.website}
+              revenue={c.revenue}
+              ebitda={c.ebitda}
+              ebitdaType={c.ebitdaType}
+            />
+            {deal && (
+              <Link
+                href={`/deals/${deal.id}`}
+                className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800 hover:bg-emerald-200"
+                title="Open deal working view"
+              >
+                {deal.stage} →
+              </Link>
+            )}
+          </div>
         </div>
       </header>
+
+      {deal && (
+        <DealControls
+          dealId={deal.id}
+          stage={deal.stage}
+          nextStep={deal.nextStep}
+          nextStepDue={deal.nextStepDue}
+          closedLostReason={deal.closedLostReason}
+        />
+      )}
 
       <section className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {[

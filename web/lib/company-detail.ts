@@ -55,6 +55,7 @@ export type CompanyDetail = {
     asking: number | null;
     nextStep: string | null;
     nextStepDue: string | null;
+    closedLostReason: string | null;
   } | null;
   contacts: {
     id: string;
@@ -91,7 +92,7 @@ export async function fetchCompanyDetail(id: string): Promise<CompanyDetail | nu
     await Promise.all([
       db
         .from("deals")
-        .select("id, name, stage, asking_price, next_step, next_step_due")
+        .select("id, name, stage, asking_price, next_step, next_step_due, closed_lost_reason")
         .eq("company_id", id)
         .order("created_at", { ascending: false })
         .limit(1),
@@ -162,6 +163,7 @@ export async function fetchCompanyDetail(id: string): Promise<CompanyDetail | nu
         asking: num(dealRows[0].asking_price),
         nextStep: dealRows[0].next_step,
         nextStepDue: dealRows[0].next_step_due,
+        closedLostReason: dealRows[0].closed_lost_reason,
       }
     : null;
 

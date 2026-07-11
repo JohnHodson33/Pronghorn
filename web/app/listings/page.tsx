@@ -1,4 +1,4 @@
-import ListingsTable from "@/components/ListingsTable";
+import ListingsTable from "@/components/ListingsTableV2";
 import { listings as mockListings } from "@/lib/mock";
 import { fetchListings } from "@/lib/listings";
 import type { UiListing } from "@/lib/types";
