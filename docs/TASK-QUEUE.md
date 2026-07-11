@@ -33,24 +33,31 @@ Status keys: ⬜ open · 🔨 in-progress (add your lane) · ✅ done (PM verifi
 - ⬜ Company detail: add contacts section, listing history, market-multiple comparison.
 
 ## Lane C — CRM & Data / Integrations  (branch `lane/integrations`; owns `scraper/` integration scripts, `web/app/api/*` for data)
-- ⬜ **Notion sync — UNBLOCKED (no token needed): Notion is connected via MCP**
-  (mcp__b6bc9fca__notion-*, workspace "Pronghorn Equity"). Build Notion → CRM:
-  pull meeting notes + Deal Tracker + Broker Directory into activities/companies/
-  contacts. READ-ONLY from Notion.
-- ⬜ **HubSpot TWO-WAY sync — APPROVED by John (2026-07-11).** Build it: net-new
-  records logged in the CRM push to HubSpot; new HubSpot records import in.
-  Respect no-blind-teaser rule + stage mapping (Closed-Lost custom id 3939497680).
-  Deprioritize if it blocks other work (HubSpot may sunset later).
-- ⬜ Free-source list-building scraper (OSM Overpass, state license boards, SoS,
-  BBB, trade assocs) — NO API keys needed; wires List Building to produce leads NOW.
-- ⬜ Paid-source list-building workers (Serper/Google Places/Exa/Parallel) — code
-  them to read keys from .env; they activate when John adds keys (see
-  LISTBUILDING-API-SETUP.md). Serper + Places first.
-- ⬜ Full HubSpot contact-directory sync (130 contacts) — role inference; filter
-  system/noise (docusign, microsoft, gusto, calendar, etc.).
-- ⬜ Outlook email→contact/activity ingestion (Outlook MCP; extract deal correspondents).
+### Shipped by Lane C (PM: verify + action items below)
+- ✅ HubSpot 130-contact directory sync — 109 live (noise/internal filtered, deduped,
+  idempotent). `scraper/import_hubspot_contacts.js`. **PM ACTION: apply
+  `supabase/migrations/0004_contact_directory.sql` via Supabase SQL editor.**
+- ✅ Free-source list-building — `scraper/leadgen/run_leadgen.js` (OSM Overpass + TX
+  TDLR licenses w/ owner names; merge+dedupe+cap). Live: HVAC/Dallas 150 leads.
+  Route `web/app/api/leads`. **PM ACTION: add `node leadgen/run_leadgen.js` to daily run.**
+- ✅ Notion meeting-notes ingestion — `scraper/ingest_notion_meetings.js` (MCP, no
+  token for manual runs). Ran Landmark/Oliver + Gage/Ron calls onto company feeds.
+  Token needed only for UNATTENDED scheduled sync.
+- ✅ HubSpot one-way refresh — `scraper/sync_hubspot.js` (real stage IDs; labels are
+  booby-trapped). `--push` hard-refuses. Live REST mode needs HUBSPOT_TOKEN in .env.
+- ✅ Outlook email→activity ingestion — `scraper/ingest_outlook.js`. 10 activities
+  logged; Dan Mello captured as a tree-care river-guide advisor. **BLOCKER: Graph
+  token is Mail.Send-only — John must re-auth with Mail.Read for scheduling.**
+
+### Lane C — next
+- ⬜ **HubSpot TWO-WAY push — APPROVED by John (2026-07-11).** Wire `sync_hubspot.js
+  --push` to write net-new CRM records to HubSpot (needs HUBSPOT_TOKEN). Respect
+  no-blind-teaser + real stage IDs. Deprioritize if it blocks (HubSpot may sunset).
+- ⬜ Paid list-building workers (Serper first, then Google Places; Exa/Parallel
+  rescue) — read keys from .env, activate on key arrival. See LISTBUILDING-API-SETUP.md.
+- ⬜ More state license boards (AZ OPM, GA, NC, SC, TN, FL) for list-building.
 - ⬜ Login-network sync (Axial co-pilot + CIM ingestion; SMB.co/SMBmarket/DealForce
-  headless-login scrape) — pending John's credentials in .env (CREDENTIALS-INTAKE.md).
+  headless login) — pending John's credentials in .env (CREDENTIALS-INTAKE.md).
 
 ## PM / Integrator  (this/primary session; branch `main`; owns Sidebar.tsx, shared docs, deploys)
 - Merge lane branches → main; run `npm run build` + `vercel deploy --prod`.
