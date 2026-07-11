@@ -139,7 +139,9 @@
         { "sub": "vrbiztriangle", "name": "VR Business Brokers Triangle NC" },
         { "sub": "sagbrokerage", "name": "Sofranko Advisory Group PA" },
         { "sub": "thevalleybusinessbroker", "name": "The Valley Business Broker" },
-        { "sub": "tericraft", "name": "TeriCraft Business Sales" }
+        { "sub": "tericraft", "name": "TeriCraft Business Sales" },
+        { "sub": "smallbusinessdeal", "name": "Franchise Brokers Association" },
+        { "sub": "seilertucker", "name": "Seiler Tucker M&A" }
       ],
       "_comment": "DealRelations multi-tenant platform. Add more Sunbelt/other broker subdomains (each <sub>.dealrelations.com/listings). Detail pages carry agent name + office phone."
     },
