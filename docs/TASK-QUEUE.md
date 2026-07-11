@@ -22,8 +22,17 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 ---
 
 ## Lane A — Brokers  (`scraper/sources/*`, `scraper/config.json`)
+- 🔥 **OPS AUTOMATION (PM refill 7/11 — Lane A's own recon says free-source
+  discovery is saturated; shift to keeping the machine running itself):**
+  GitHub Actions workflows (`.github/workflows/`, Lane A owns) for (a) nightly
+  scrape-all + mirror dedup, (b) delisting/freshness pass, (c) source_quality
+  report artifact, (d) pursuit ingest + enrichment ticks. Needs SUPABASE/API
+  secrets as GH repo secrets — LIST the exact names for John in Decisions; he
+  adds them in GitHub settings. Until then, workflows land dormant
+  (workflow_dispatch only).
 - ⬜ Keep hunting + building NEW broker sources (regional, niche green-industry
-  intermediaries, more bizmls org codes for state associations). Never "done."
+  intermediaries, more bizmls org codes for state associations) — per 7/11 recon
+  this is now opportunistic, not primary.
 - ⬜ Broker-contact enrichment: scrape broker phone/email/office from source
   broker pages → brokers table (brokers are outreach targets too).
 - ⬜ Delisting/freshness: mark listings delisted after 2 missed full scrapes;
@@ -175,6 +184,12 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
   web/.env.local + Vercel yourself. Everything else is ready and waiting.
 - ✅ Serper, Google Places, Hunter, Exa keys all LIVE in `scraper/.env` (verified 7/11).
 - ⏳ Parallel key — John setting up.
+- 🆕 **Build-vs-buy: Kumo (withkumo.com) / BizScout** (Lane A recon, details in
+  DECISION-LOG-brokers.md 7/11): paid aggregators with 100k+/20k+ AI-deduped
+  listings + CSV export vs our free 18.6k/27-source scraper. A subscription
+  would ~5x coverage instantly; CSV could feed our same pipeline. Worth pricing
+  out — free-source discovery is now saturated, so this is the main coverage
+  lever left on the broker prong.
 - ⏳ **Apply migrations `0004_contact_directory.sql` + `0005_pursuit_flow.sql` +
   `0006_dashboard_aggregates.sql` in the Supabase SQL editor** (run in order) —
   PM verified 0005 is NOT applied (inquiry_profiles missing); no exec path
