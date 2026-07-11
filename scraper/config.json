@@ -129,6 +129,14 @@
       "enabled": true,
       "module": "./sources/sunbeltmidwest"
     },
+    "wpbdp": {
+      "enabled": true,
+      "module": "./sources/wpbdp",
+      "directories": [
+        { "url": "https://www.baystatebusinessbrokers.com/businesses-for-sale-ma-nh-ct-ri/", "name": "BayState Business Brokers (New England)" }
+      ],
+      "_comment": "WordPress business-directory-plugin (wpbdp) — reusable across brokers on this plugin. Add directory URLs (each site's businesses-for-sale page). Detail pages carry Revenue/CashFlow/Asking + broker name."
+    },
     "dealrelations": {
       "enabled": true,
       "module": "./sources/dealrelations",
