@@ -66,6 +66,12 @@
       "entry": "https://bizmls.com/business-search.asp",
       "exclude_states": ["FL"],
       "_comment": "National bizmls member search — non-FL inventory (TX-heavy). FL excluded: bbf source is authoritative there."
+    },
+    "murphy": {
+      "enabled": true,
+      "module": "./sources/murphy",
+      "per_page": 200,
+      "max_pages": 10
     }
   },
   "relevance": {
