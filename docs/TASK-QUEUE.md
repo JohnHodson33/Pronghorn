@@ -157,6 +157,12 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ More state license boards (AZ OPM, GA, NC, SC, TN, FL) — recon logged in
   DECISION-LOG-integrations (GA Kelly blocked, FL = Power BI, TN empty).
 - ⬜ Login-network sync — Axial (co-pilot + CIM ingest) + DealForce (creds in .env).
+- 📝 COORDINATION NOTE for Lane A (enrichment.yml): contract verified — the
+  workflow's `node enrich/run_enrichment.js --limit N` + env vars match Lane C's
+  CLI exactly and will run clean in CI. One gap: HUNTER_API_KEY is passed but
+  never used — Hunter is the SEPARATE `node enrich/find_emails.js --limit 5`
+  step (quota-capped by design). Add it as a second step after enrichment, or
+  drop the unused secret from that workflow.
 - ⬜ SELF-ITERATE: what contact data are we still missing per company? Close the gap.
   COVERAGE CHECKPOINT (2026-07-11 ~03:00, after full enrichment + Hunter passes):
   **255 leads · 122 owner names · 21 owner emails · 23 outreach-ready.**
