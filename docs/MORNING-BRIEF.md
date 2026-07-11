@@ -38,8 +38,11 @@ Outlook and advanced in the pipeline).
 ## Your decision queue (full detail in TASK-QUEUE.md → Decisions)
 1. **Apply migrations 0004 + 0005 + 0006** in Supabase SQL editor, in order —
    unlocks outbox queueing, pursuit timestamps, dashboard views. 5 minutes.
-2. **Add GitHub Actions secrets** (5 names listed in TASK-QUEUE) — turns on
-   nightly automation. 5 minutes.
+2. **Add GitHub Actions secrets — scheduled runs are already FAILING red
+   without them** (since ~07:20): GitHub → Settings → Secrets and variables →
+   Actions → add `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `ANTHROPIC_API_KEY`,
+   `EXA_API_KEY`, `HUNTER_API_KEY`, `SERPER_API_KEY` (values = scraper/.env).
+   5 minutes; the red X emails stop and nightly automation turns on.
 3. **Kumo/BizScout build-vs-buy** — paid aggregators (100k+ listings) vs our
    free 18.6k scraper; the main remaining coverage lever on the broker prong.
 4. **Graph send route** — say the word and Lane C builds true one-click send
