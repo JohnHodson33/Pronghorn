@@ -351,3 +351,19 @@ delisting.yml with dry_run=true first.
   error is the first suspect — the source_quality report will surface it.
 - **This is the value of the maintenance loop:** a silent data-loss bug that
   only surfaces under load, caught by rotating health sweeps.
+
+## 2026-07-11 — loop iter: systematic resilience pass (fcbb + murphy)
+
+- Health-swept businessesforsale (595), tupelomarket (335), sunbeltmidwest
+  (139) — all clean, 0 errors, matching prior counts.
+- Applied the bizben transient-500 fix to the other two paginated-API adapters
+  with the same break-on-first-error pattern:
+  - **fcbb** — `postJson()` retry/backoff; page-numbered pagination means a
+    failed page is now skipped (up to a 4-error cap), not fatal.
+  - **murphy** — `postText()` retry/backoff; same skip-not-fatal behavior.
+  Both re-verified: fcbb 825, murphy 456, 0 errors.
+- All paginated-API broker sources (bizben, fcbb, murphy) now survive transient
+  429/5xx + network blips. SSR sources (sun, hedgestone, vr, calder, thefirm)
+  are single-request or naturally page-independent; transworld/tupelomarket/
+  dealrelations already tolerate multiple errors before stopping. The
+  break-on-first-error data-loss class is now closed across the roster.
