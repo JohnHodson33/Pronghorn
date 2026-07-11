@@ -88,6 +88,11 @@
       "module": "./sources/fcbb",
       "page_size": 100,
       "max_pages": 20
+    },
+    "hedgestone": {
+      "enabled": true,
+      "module": "./sources/hedgestone",
+      "max_pages": 25
     }
   },
   "relevance": {
