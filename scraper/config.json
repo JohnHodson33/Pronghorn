@@ -44,6 +44,11 @@
       "enabled": true,
       "module": "./sources/businessesforsale",
       "max_pages": 40
+    },
+    "linkbusiness": {
+      "enabled": true,
+      "module": "./sources/linkbusiness",
+      "max_pages": 25
     }
   },
   "relevance": {

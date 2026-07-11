@@ -7,16 +7,16 @@ const cheerio = require('cheerio');
 puppeteerExtra.use(StealthPlugin());
 
 const TARGETS = [
-  ['sunbelt', 'https://www.sunbeltnetwork.com/business-search/'],
-  ['transworld', 'https://www.tworld.com/'],
-  ['murphy', 'https://murphybusiness.com/'],
-  ['vr_brokers', 'https://www.vrbusinessbrokers.com/'],
-  ['viking', 'https://vikingmergers.com/'],
-  ['businessesforsale', 'https://us.businessesforsale.com/us'],
-  ['gabb_georgia', 'https://gabb.org/'],
-  ['cvbba_carolinas', 'https://cvbba.com/'],
-  ['azbba_arizona', 'https://azbba.org/'],
-  ['tabb_texas', 'https://www.tabb.org/'],
+  ['calder', 'https://www.caldercapital.com/'],
+  ['peterson', 'https://petersonacquisitions.com/'],
+  ['raincatcher', 'https://raincatcher.com/'],
+  ['benchmark', 'https://www.benchmarkintl.com/'],
+  ['sunacq', 'https://sunacquisitions.com/'],
+  ['websiteclosers', 'https://www.websiteclosers.com/'],
+  ['woodbridge', 'https://www.woodbridgegrp.com/'],
+  ['bizben', 'https://www.bizben.com/'],
+  ['linkbusiness', 'https://linkbusiness.com/'],
+  ['dealstream', 'https://dealstream.com/'],
 ];
 
 const NAV_RE = /(listing|business.{0,15}(for.{0,3})?sale|buy.{0,5}(a.{0,3})?business|search|opportunit)/i;
