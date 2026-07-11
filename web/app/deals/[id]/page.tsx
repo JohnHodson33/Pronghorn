@@ -29,7 +29,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
       : null;
 
   return (
-    <div className="max-w-4xl p-8 space-y-6">
+    <div className="max-w-4xl p-4 md:p-8 space-y-6">
       <header>
         <Link href="/pipeline" className="text-sm text-emerald-700 hover:underline">← Pipeline</Link>
         <div className="mt-2 flex items-end justify-between gap-4">

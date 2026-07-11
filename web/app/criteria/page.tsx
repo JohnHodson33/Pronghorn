@@ -104,7 +104,7 @@ export default function CriteriaPage() {
   const input = "w-full rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-600";
 
   return (
-    <div className="max-w-4xl p-8 space-y-6">
+    <div className="max-w-4xl p-4 md:p-8 space-y-6">
       <header className="flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Screen Criteria</h1>

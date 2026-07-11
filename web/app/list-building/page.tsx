@@ -69,7 +69,7 @@ export default function ListBuilding() {
   const anyKeyNeeded = LEADGEN_SOURCES.some((s) => s.needsKey && enabled.has(s.id));
 
   return (
-    <div className="max-w-5xl p-8 space-y-6">
+    <div className="max-w-5xl p-4 md:p-8 space-y-6">
       <header className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">List Building</h1>

@@ -41,7 +41,7 @@ export default async function Contacts() {
   }
 
   return (
-    <div className="p-8 space-y-5">
+    <div className="p-4 md:p-8 space-y-5">
       <header>
         <h1 className="text-2xl font-bold tracking-tight">Contacts</h1>
         <p className="text-sm text-zinc-500">

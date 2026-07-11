@@ -217,7 +217,7 @@ export default function ListingsTableV2({ rows: allRows, live }: { rows: UiListi
   const inputCls = "rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-600";
 
   return (
-    <div className="p-8 space-y-5">
+    <div className="p-4 md:p-8 space-y-5">
       <header className="flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Broker Listings</h1>

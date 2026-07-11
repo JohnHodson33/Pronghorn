@@ -32,7 +32,7 @@ export default async function Enrichment({
   const total = Object.values(data.counts).reduce((a, b) => a + b, 0);
 
   return (
-    <div className="max-w-6xl p-8 space-y-6">
+    <div className="max-w-6xl p-4 md:p-8 space-y-6">
       <header>
         <h1 className="text-2xl font-bold tracking-tight">Enrichment</h1>
         <p className="text-sm text-zinc-500">

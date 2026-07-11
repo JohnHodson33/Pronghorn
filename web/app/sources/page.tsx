@@ -56,7 +56,7 @@ export default function SourcesPage() {
   const enabled = sources.filter((s) => s.enabled).length;
 
   return (
-    <div className="max-w-5xl p-8 space-y-6">
+    <div className="max-w-5xl p-4 md:p-8 space-y-6">
       <header>
         <h1 className="text-2xl font-bold tracking-tight">Scrape Sources</h1>
         <p className="text-sm text-zinc-500">

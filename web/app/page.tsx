@@ -49,7 +49,7 @@ export default async function Dashboard() {
   ];
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <header className="flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Sourcing Dashboard</h1>

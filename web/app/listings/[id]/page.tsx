@@ -32,7 +32,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   if (!l) notFound();
 
   return (
-    <div className="max-w-4xl p-8 space-y-6">
+    <div className="max-w-4xl p-4 md:p-8 space-y-6">
       <header>
         <Link href="/listings" className="text-sm text-emerald-700 hover:underline">← Broker Listings</Link>
         <div className="mt-2 flex items-start justify-between gap-4">
