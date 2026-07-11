@@ -5,6 +5,7 @@
 // Export writes the CURRENT filtered+sorted rows client-side (no extra fetch);
 // saved views keep name → full filter/sort state in localStorage.
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { margin, money, multiple } from "@/lib/mock";
 import type { UiListing } from "@/lib/types";
@@ -338,14 +339,20 @@ export default function ListingsTableV2({ rows: allRows, live }: { rows: UiListi
                   )}
                 </td>
                 <td className="max-w-md px-4 py-3">
-                  {l.url ? (
-                    <a href={l.url} target="_blank" rel="noopener noreferrer" className="block truncate font-medium hover:text-emerald-700 hover:underline">
-                      {l.name} ↗
-                    </a>
-                  ) : (
-                    <div className="truncate font-medium">{l.name}</div>
-                  )}
-                  <div className="text-xs text-zinc-500">{l.industry} · {l.source}</div>
+                  <Link href={`/listings/${l.id}`} className="block truncate font-medium hover:text-emerald-700 hover:underline">
+                    {l.name}
+                  </Link>
+                  <div className="text-xs text-zinc-500">
+                    {l.industry} · {l.source}
+                    {l.url && (
+                      <>
+                        {" · "}
+                        <a href={l.url} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline">
+                          source ↗
+                        </a>
+                      </>
+                    )}
+                  </div>
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">
                   {l.city ? `${l.city}, ` : ""}{l.state ?? "—"}
