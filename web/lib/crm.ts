@@ -11,9 +11,13 @@ export type LiveDeal = {
   ebitda: number | null;
   ebitdaType: string;
   asking: number | null;
+  ourValuation: number | null;
+  fitScore: number | null;
   stage: string;
   broker?: string;
   brokerage?: string;
+  owner?: string;
+  passReason: string | null;
   nextStep: string | null;
   nextStepDue: string | null;
 };
@@ -23,6 +27,9 @@ type DealRow = {
   name: string;
   stage: string;
   asking_price: number | string | null;
+  our_valuation: number | string | null;
+  fit_score: number | string | null;
+  closed_lost_reason: string | null;
   next_step: string | null;
   next_step_due: string | null;
   companies: {
@@ -48,7 +55,7 @@ export async function fetchDeals(): Promise<LiveDeal[] | null> {
   const { data, error } = await serverDb()
     .from("deals")
     .select(
-      "id, name, stage, asking_price, next_step, next_step_due, " +
+      "id, name, stage, asking_price, our_valuation, fit_score, closed_lost_reason, next_step, next_step_due, " +
         "companies(name, industry, city, state, revenue, ebitda, ebitda_type, contacts(role, name), " +
         "origin_listing:listings!companies_listing_id_fkey(brokers(name, brokerage)))"
     )
@@ -60,6 +67,7 @@ export async function fetchDeals(): Promise<LiveDeal[] | null> {
   return (data as unknown as DealRow[]).map((d) => {
     // Broker: the company's role=broker contact first, listing broker fallback.
     const contactBroker = d.companies?.contacts?.find((c) => c.role === "broker")?.name ?? undefined;
+    const owner = d.companies?.contacts?.find((c) => c.role === "owner" || c.role === "seller")?.name ?? undefined;
     const ol = Array.isArray(d.companies?.origin_listing) ? d.companies?.origin_listing[0] : d.companies?.origin_listing;
     const lb = Array.isArray(ol?.brokers) ? ol?.brokers[0] : ol?.brokers;
     return {
@@ -72,9 +80,13 @@ export async function fetchDeals(): Promise<LiveDeal[] | null> {
       ebitda: num(d.companies?.ebitda ?? null),
       ebitdaType: d.companies?.ebitda_type === "SDE" ? "SDE" : "EBITDA",
       asking: num(d.asking_price),
+      ourValuation: num(d.our_valuation),
+      fitScore: num(d.fit_score),
       stage: d.stage,
       broker: contactBroker ?? lb?.name ?? undefined,
       brokerage: lb?.brokerage ?? undefined,
+      owner,
+      passReason: d.closed_lost_reason,
       nextStep: d.next_step,
       nextStepDue: d.next_step_due,
     };

@@ -22,6 +22,8 @@ export default function DealControls({ dealId, stage, nextStep, nextStepDue, clo
   const [due, setDue] = useState(nextStepDue ?? "");
   const [reason, setReason] = useState(closedLostReason ?? "");
   const [showClosed, setShowClosed] = useState(stage === "Closed");
+  const [passing, setPassing] = useState(false);
+  const [passReason, setPassReason] = useState("");
 
   async function patch(body: Record<string, unknown>) {
     setBusy(true);
@@ -52,15 +54,64 @@ export default function DealControls({ dealId, stage, nextStep, nextStepDue, clo
           className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold outline-none focus:border-emerald-600"
         >
           {/* keep a legacy/unknown stage selectable rather than silently remapping it */}
-          {!(STAGES as readonly string[]).includes(stage) && <option value={stage}>{stage}</option>}
+          {![...STAGES, "Passed"].includes(stage) && <option value={stage}>{stage}</option>}
           {STAGES.map((s) => (
             <option key={s} value={s}>
               {s}
             </option>
           ))}
+          {/* selectable so a Passed deal can be re-activated by picking a stage */}
+          <option value="Passed">Passed</option>
         </select>
         {busy && <span className="text-xs text-zinc-400">Saving…</span>}
+        {stage !== "Passed" && !passing && (
+          <button
+            onClick={() => setPassing(true)}
+            disabled={busy}
+            className="ml-auto rounded-md px-2.5 py-1 text-xs font-semibold text-zinc-400 hover:bg-red-50 hover:text-red-700"
+            title="Pass on this deal — removes it from the pipeline board (stays on /deals)"
+          >
+            Pass on deal
+          </button>
+        )}
       </div>
+
+      {stage === "Passed" && (
+        <div className="rounded-md bg-zinc-100 px-3 py-2 text-sm text-zinc-600">
+          <span className="font-semibold">Passed.</span> Off the pipeline board, still searchable in Deals.
+          {closedLostReason && <span> Reason: {closedLostReason}</span>}
+          <span className="ml-1 text-xs text-zinc-400">(pick a stage above to re-activate)</span>
+        </div>
+      )}
+
+      {passing && (
+        <div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50/50 p-2">
+          <input
+            value={passReason}
+            onChange={(e) => setPassReason(e.target.value)}
+            autoFocus
+            placeholder="Pass reason (price, financials, geography, seller went dark…)"
+            className="flex-1 rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-red-400"
+          />
+          <button
+            onClick={async () => {
+              const ok = await patch({ stage: "Passed", closedLostReason: passReason });
+              if (ok) setPassing(false);
+            }}
+            disabled={busy}
+            className="rounded-lg bg-red-700 px-4 py-1.5 text-sm font-semibold text-white hover:bg-red-800 disabled:opacity-50"
+          >
+            Pass
+          </button>
+          <button
+            onClick={() => setPassing(false)}
+            disabled={busy}
+            className="rounded-lg px-2.5 py-1.5 text-sm font-medium text-zinc-500 hover:bg-zinc-100"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
 
       {showClosed && (
         <div className="flex items-center gap-2">

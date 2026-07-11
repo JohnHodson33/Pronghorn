@@ -11,7 +11,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const update: Record<string, unknown> = {};
   if (body.stage !== undefined) {
-    if (!(STAGES as readonly string[]).includes(body.stage))
+    // "Passed" is a real stage but not a board column — passing removes the
+    // deal from the pipeline; it stays findable on /deals forever.
+    if (![...STAGES, "Passed"].includes(body.stage))
       return NextResponse.json({ error: `invalid stage: ${body.stage}` }, { status: 400 });
     update.stage = body.stage;
   }

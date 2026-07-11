@@ -235,6 +235,23 @@ also executed the two swaps previously flagged as PM actions:
   (needs John's own machine/Chrome), NDA-required-source pre-flagging (needs
   per-source metadata — Lane A/C).
 
+## 2026-07-12 — Passed stage + /deals index (John's 11:45 feedback)
+
+- **Pass action** (DealControls, on deal detail + company profile): "Pass on
+  deal" → reason input → PATCH stage="Passed" (reuses closed_lost_reason).
+  Passed is a real stage but NOT a board column — the pipeline filters it
+  out; a Passed banner shows on the deal with the reason, and re-activating
+  = picking any stage from the dropdown. PATCH whitelist now STAGES+Passed.
+- **/deals index** — shared list pattern across ALL deals incl. Passed:
+  search (company/owner/broker/reason), data-driven stage chips w/ counts,
+  CSV export, rows → /deals/[id]; Passed rows dimmed with inline reason.
+  Deep-linkable via /deals?stage=Passed (pipeline's "Passed deals: N →"
+  points there). Owner column = role=owner/seller contact via fetchDeals
+  (which now also carries our_valuation, fit_score, pass reason).
+- **PM:** wire "Deals" into Sidebar (CRM section, above Companies). The 14
+  nail-salon deals show under "Closed" until Lane C's data fix moves them to
+  Passed — the chips are data-driven, so no UI change needed when that runs.
+
 ## Lane B session setup
 
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch
