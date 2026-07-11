@@ -35,6 +35,20 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 - **PM to wire:** Sidebar "Enrichment (soon)" placeholder → live link to
   `/enrichment`.
 
+## 2026-07-10 — Outreach Library tab (`/outreach`)
+
+- **New route: `/outreach`** — sequence editor (multi-step emails with delay
+  days), variable chips ({{first_name}}, {{company}}, {{city}}, {{industry}},
+  {{personalized_line}}, {{sender_name}}), live preview with a sample enriched
+  lead, seeded "Owner cold outreach v1" 3-email starter sequence.
+- **Scaffold decisions:** sequences persist to localStorage only — there is no
+  outreach table in the schema and migrations aren't Lane B's. **PM/Lane C:
+  add `outreach_sequences` table** (id, name, steps jsonb, updated_at) + a
+  /api/outreach route; the page's storage layer is isolated so the swap is
+  small. Export button present but disabled — needs a reply.io (or similar)
+  account + API key → **add to John's bubbled decisions**.
+- **PM to wire:** Sidebar "Outreach Library (soon)" → `/outreach`.
+
 ## Lane B session setup
 
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch
