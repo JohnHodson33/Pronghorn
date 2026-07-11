@@ -124,6 +124,15 @@ Per PM directive, Lane B now edits the existing pipeline/companies pages
   shows company + broker + owner + notes with links (verified live —
   Landmark reads IOI Submitted from Lane C's Outlook ingest).
 
+## 2026-07-11 — Pending PM swaps executed by Lane B
+
+Since the PM delegated existing-file edits for the feedback round, Lane B
+also executed the two swaps previously flagged as PM actions:
+- `app/listings/page.tsx` now imports `ListingsTableV2`; old
+  `ListingsTable.tsx` deleted.
+- Dashboard v2 promoted to `/` (`app/page.tsx`); temp `/dashboard-v2` route
+  deleted. Sidebar needs no change.
+
 ## Lane B session setup
 
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch
