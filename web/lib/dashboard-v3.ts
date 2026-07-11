@@ -22,7 +22,7 @@ function subsectorOf(industry: string | null): string | null {
 }
 
 export type KeyAction = {
-  kind: "promote" | "send_inquiry" | "nda" | "stale" | "deadline";
+  kind: "promote" | "send_inquiry" | "nda" | "stale" | "deadline" | "queued_email";
   label: string;
   detail: string;
   href: string;
@@ -63,7 +63,7 @@ export async function fetchDashboardV3(): Promise<DashboardV3 | null> {
       )
       .in("status", [...PROSPECTING_STATUSES]);
 
-  const [reviewsRes, dealsRes, leadsRes, listingCounts, tier12Res] = await Promise.all([
+  const [reviewsRes, dealsRes, leadsRes, listingCounts, tier12Res, outboxRes] = await Promise.all([
     reviewsQuery(true).then(async (res) => (res.error ? await reviewsQuery(false) : res)),
     db
       .from("deals")
@@ -77,6 +77,8 @@ export async function fetchDashboardV3(): Promise<DashboardV3 | null> {
       .in("tier", [1, 2])
       .is("delisted_at", null)
       .is("duplicate_of", null),
+    // outbox_emails lands with migration 0006 — error tolerated below
+    db.from("outbox_emails").select("id, subject, to_email").eq("status", "queued").limit(20),
   ]);
 
   type Review = {
@@ -124,6 +126,18 @@ export async function fetchDashboardV3(): Promise<DashboardV3 | null> {
 
   // ---------- key actions (the human-attention queue)
   const actions: KeyAction[] = [];
+  // Queued inquiry drafts awaiting John's one-click send (Outbox)
+  if (!outboxRes.error) {
+    for (const o of (outboxRes.data ?? []) as { id: string; subject: string; to_email: string }[]) {
+      actions.push({
+        kind: "queued_email",
+        label: `Inquiry awaiting your send: ${o.subject}`,
+        detail: `To ${o.to_email} — one click in the Outbox`,
+        href: "/outbox",
+        urgent: true,
+      });
+    }
+  }
   for (const r of reviews) {
     const broker = Array.isArray(r.listings.brokers) ? r.listings.brokers[0] : r.listings.brokers;
     const name = r.listings.name ?? "(unnamed listing)";

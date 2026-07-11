@@ -31,6 +31,7 @@ export type ListingDetail = {
   company: { id: string; name: string } | null;
   events: { event_type: string; detail: Record<string, unknown> | null; created_at: string }[];
   reviewStatus: string | null; // pursuit lifecycle (listing_reviews.status)
+  queuedEmail: { id: string; subject: string } | null; // outbox draft awaiting John's send
 };
 
 export async function fetchListingDetail(id: string): Promise<ListingDetail | null> {
@@ -66,7 +67,7 @@ export async function fetchListingDetail(id: string): Promise<ListingDetail | nu
     companies: { id: string; name: string } | { id: string; name: string }[] | null;
   };
 
-  const [{ data: events }, { data: review }] = await Promise.all([
+  const [{ data: events }, { data: review }, outboxRes] = await Promise.all([
     db
       .from("listing_events")
       .select("event_type, detail, created_at")
@@ -74,6 +75,8 @@ export async function fetchListingDetail(id: string): Promise<ListingDetail | nu
       .order("created_at", { ascending: false })
       .limit(50),
     db.from("listing_reviews").select("status").eq("listing_id", id).maybeSingle(),
+    // outbox_emails lands with migration 0006 — tolerate its absence
+    db.from("outbox_emails").select("id, subject").eq("listing_id", id).eq("status", "queued").limit(1).maybeSingle(),
   ]);
 
   const broker = Array.isArray(l.brokers) ? l.brokers[0] : l.brokers;
@@ -105,5 +108,6 @@ export async function fetchListingDetail(id: string): Promise<ListingDetail | nu
     company: company ?? null,
     events: (events ?? []) as ListingDetail["events"],
     reviewStatus: review?.status ?? null,
+    queuedEmail: outboxRes.error ? null : (outboxRes.data as { id: string; subject: string } | null),
   };
 }

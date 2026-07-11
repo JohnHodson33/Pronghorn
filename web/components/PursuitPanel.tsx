@@ -30,6 +30,7 @@ type Props = {
   status: string | null;
   brokerName: string | null;
   brokerEmail: string | null;
+  queuedEmail?: { id: string; subject: string } | null;
 };
 
 export default function PursuitPanel({
@@ -40,10 +41,12 @@ export default function PursuitPanel({
   status,
   brokerName,
   brokerEmail,
+  queuedEmail,
 }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE);
   const [dbProfile, setDbProfile] = useState(false);
   const [editProfile, setEditProfile] = useState(false);
@@ -94,6 +97,30 @@ export default function PursuitPanel({
     else setErr((await res.json()).error ?? "update failed");
   }
 
+  // Request info — best path first: Claude-drafts + queues in the Outbox
+  // (/api/outbox flips the status itself). Falls back to the plain status
+  // flip + mailto/co-pilot surface when drafting isn't available (no broker
+  // email, no API key, or migration 0006 not applied).
+  async function requestInfo() {
+    setBusy(true);
+    setErr(null);
+    setNotice(null);
+    try {
+      const res = await fetch("/api/outbox", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ listingId }),
+      });
+      if (res.ok) {
+        setNotice("Inquiry drafted & queued — review and send it from the Outbox.");
+        router.refresh();
+        return;
+      }
+    } catch {}
+    setBusy(false);
+    await setStatus("info_requested");
+  }
+
   const subject = `Inquiry — ${listingName}`;
   const body = useMemo(
     () =>
@@ -134,16 +161,32 @@ export default function PursuitPanel({
 
       {!requested && (
         <button
-          onClick={() => setStatus("info_requested")}
+          onClick={requestInfo}
           disabled={busy}
           className="rounded-lg bg-emerald-700 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
         >
-          {busy ? "Saving…" : "Request info →"}
+          {busy ? "Drafting…" : "Request info →"}
         </button>
       )}
       {err && <div className="text-xs text-red-600">{err}</div>}
+      {notice && <div className="rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-800">{notice}</div>}
 
-      {requested && (
+      {queuedEmail && (
+        <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50/60 px-4 py-3">
+          <div className="min-w-0 text-sm">
+            <span className="font-semibold">Inquiry queued: </span>
+            <span className="text-zinc-700">{queuedEmail.subject}</span>
+          </div>
+          <a
+            href="/outbox"
+            className="ml-3 shrink-0 rounded-lg bg-emerald-700 px-4 py-1.5 text-sm font-semibold text-white hover:bg-emerald-800"
+          >
+            Review & send in Outbox →
+          </a>
+        </div>
+      )}
+
+      {requested && !queuedEmail && (
         <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 space-y-3">
           {brokerEmail ? (
             <>

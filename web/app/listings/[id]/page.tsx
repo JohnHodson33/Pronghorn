@@ -114,6 +114,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
               status={l.reviewStatus}
               brokerName={l.broker?.name ?? null}
               brokerEmail={l.broker?.email ?? null}
+              queuedEmail={l.queuedEmail}
             />
             <PromoteForm
               listingId={l.id}
