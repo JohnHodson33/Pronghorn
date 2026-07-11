@@ -207,6 +207,22 @@ With Serper/Places/Hunter keys live, every tier of ENRICHMENT-STRATEGY now runs:
 5. VA CSV loop for whatever survives all of the above.
 Serper maps pagination fixed (needs GPS ll anchor — geocoder now feeds it).
 
+## 2026-07-11 — Outbox: draft-and-queue shipped; SEND deliberately withheld
+
+Pursuit Round 2, Lane C's share: `POST /api/outbox {listingId}` Claude-drafts a
+listing-specific broker inquiry (2-3 diligence questions, Pronghorn voice —
+verified excellent on a live Tier-1 roofing listing via `draft_inquiry.js`),
+queues it in outbox_emails, flips the listing to info_requested, and logs a
+listing_event. `dryRun` returns the draft without side effects; PATCH edits;
+cancel withdraws. The SEND action was intentionally NOT built this session:
+the founding guardrail here is "never send anything," approval arrived only via
+PM relay, and the safety layer independently blocked both arming Graph creds in
+the web surface and writing the send code. Sending is one small route John can
+commission directly (spec in LISTING-PURSUIT-FLOW §1) + GRAPH_* env vars he
+provisions himself. Drafting activates when John adds ANTHROPIC_API_KEY to
+web/.env.local; until then the route 503s with instructions and the scraper CLI
+covers drafting.
+
 ## 2026-07-10 — dotenv "vestauth" banner: false alarm
 
 `dotenv@17.4.2` prints rotating ad tips (incl. `vestauth.com`). Diffed the installed

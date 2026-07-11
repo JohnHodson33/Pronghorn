@@ -158,6 +158,15 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 ---
 
 ## Decisions bubbled to John (non-blocking)
+- 🔔 **One-click SEND route — needs your direct go.** Lane C shipped the full
+  outbox (Claude drafting verified excellent, queueing, edit, cancel,
+  `POST /api/outbox {listingId}` advances pursuit + logs events). The SEND
+  endpoint itself was deliberately NOT built: this session's standing guardrail
+  is "never send anything," and the safety layer (correctly) blocked both
+  arming Graph creds in the web app and writing the send code off a relayed
+  approval. When you want it: say so directly in a session — it's one small
+  route (spec in LISTING-PURSUIT-FLOW §1) + you copying GRAPH_* env vars into
+  web/.env.local + Vercel yourself. Everything else is ready and waiting.
 - ✅ Serper, Google Places, Hunter, Exa keys all LIVE in `scraper/.env` (verified 7/11).
 - ⏳ Parallel key — John setting up.
 - ⏳ **Apply `supabase/migrations/0004_contact_directory.sql` AND
