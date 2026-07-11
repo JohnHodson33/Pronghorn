@@ -41,3 +41,28 @@ benched for dedicated JS sessions turned out to have clean data feeds:
   BizBen, FCBB — PM should move them to LIVE (adapter count 10 → 15, incl.
   `bizmls`). ~4k of the new listings are CA/other market-multiples data;
   ~40 new relevant thesis-fit listings, 15 Tier 1.
+
+## 2026-07-10 — new-source hunt: HedgeStone built; recon of ~18 candidates
+
+Built **HedgeStone** (`hedgestone.js`) — first net-new source beyond the
+roster. SSR WordPress SAE-listings plugin, 720 listings, 3 Tier 1 + 8 Tier 2.
+
+Recon on the rest (two `probe_new_sources` batches), all NOT built:
+- **We Sell Restaurants** — clean public API
+  (`api.wesellrestaurants.com/wsr-rebuild-prod/api/restaurants/business-for-sale`),
+  would be a ~1hr adapter. OFF-THESIS (restaurants) but the strategy note says
+  brokers = max-coverage multiples intel at min cost. ⬆️ **DECISION FOR JOHN/PM:**
+  build it for restaurant-vertical multiples data, or skip to keep the DB
+  thesis-focused? I left it unbuilt pending that call.
+- **Morgan & Westfield** — clean `.business-for-sale` SSR cards, thesis-sized
+  deals ($1–6M, disclosed revenue/cash flow) BUT only 7 public listings (M&A
+  advisor, most deals confidential). Too low-volume to justify an adapter now;
+  revisit if they grow their public board.
+- **Peterson Acquisitions** — big $ figures on page ($15M–$68M) but listings
+  aren't exposed as crawlable links/API (JS-embedded). Needs a dedicated
+  session; deal sizes skew above thesis. Benched.
+- **Calhoun, Benchmark, Principium, Empire, Neumann, CBC, Certified BB** — no
+  public listings grid (404s, advisor landing pages, or dead host). Confirmed
+  no-go, matching roster's "M&A advisors, no public grid" note.
+- Sunbelt Atlanta uses per-city subdomains w/ callrail widgets — the national
+  `sunbelt` adapter already covers this network; no incremental value.
