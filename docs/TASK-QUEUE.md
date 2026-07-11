@@ -84,8 +84,12 @@ Status keys: ⬜ open · 🔨 in-progress (add your lane) · ✅ done (PM verifi
 - ⬜ Paid list-building workers (Serper first, then Google Places; Exa/Parallel
   rescue) — read keys from .env, activate on key arrival. See LISTBUILDING-API-SETUP.md.
 - ⬜ More state license boards (AZ OPM, GA, NC, SC, TN, FL) for list-building.
-- ⬜ Login-network sync (Axial co-pilot + CIM ingestion; SMB.co/SMBmarket/DealForce
-  headless login) — pending John's credentials in .env (CREDENTIALS-INTAKE.md).
+- 🔥 Login-network sync — **Axial + DealForce credentials ARE NOW in scraper/.env**
+  (AXIAL_EMAIL/PASSWORD, DEALFORCE_EMAIL/PASSWORD). Build: (1) Axial — probe behind
+  login; SPA blocks headless, so likely co-pilot (browser MCP against John's logged-in
+  Chrome) to pull ACTIVE/NDA'd deals + download CIMs → activities/companies. (2)
+  DealForce — probe behind login, headless scrape if possible. SMB.co/SMBmarket/
+  PrivSource pending John's accounts. READ-ONLY.
 
 ## PM / Integrator  (this/primary session; branch `main`; owns Sidebar.tsx, shared docs, deploys)
 - Merge lane branches → main; run `npm run build` + `vercel deploy --prod`.
