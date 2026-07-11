@@ -469,3 +469,17 @@ delisting.yml with dry_run=true first.
 - Note: DealStream recurs with strong green-industry inventory (paving/electrical/
   pest) but stays captcha-walled — a standing "worth a paid/manual approach?"
   question for John if he wants that inventory (can't scrape unattended).
+
+## 2026-07-11 — loop iter: NEW source Empire Business Brokers (NC)
+
+- Restoration-vertical search surfaced a NEW platform: **Empire Business
+  Brokers** (empirebizbroker.com, NC). Built `empire.js` — SSR PHP, index →
+  detail pages with clean .detail-label/.detail-value pairs. 26 active listings
+  (8 sold skipped), full financials (Asking/Gross/CashFlow/RealEstate), LMM
+  sizes. **3 relevant, 2 Tier 1** (incl. niche electrical contractor). Good hit
+  rate for a single independent broker.
+- Health: gabb re-run clean (200). No new PM tasks.
+- Reminder for the hunt: vertical searches occasionally surface a NEW standalone
+  broker (not just DealRelations subdomains) — worth probing those too, not only
+  the platform subdomains.
+- Source count now ~29 (empire added).
