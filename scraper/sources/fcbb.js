@@ -36,9 +36,7 @@ class FcbbScraper extends SourceScraper {
           choicetodisplay: '', selleractive: '', assetsale: '',
           pagesize: String(pageSize), page, category: [''],
         };
-        const res = await fetch(API, { method: 'POST', headers: HEADERS, body: JSON.stringify(body) });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
+        const data = await this.postJson(body);
         if (totalPages == null) {
           totalPages = data.TotalPages;
           this.info(`${data.TotalItems} total listings across ${totalPages} page(s)`);
@@ -58,14 +56,37 @@ class FcbbScraper extends SourceScraper {
         if (items.length === 0 || (totalPages && page >= totalPages)) break;
         await this.sleep(800);
       } catch (err) {
-        this.error(`Page ${page} failed: ${err.message}`);
+        // Pages are number-indexed (not token-chained), so a failed page after
+        // retries doesn't break the rest — skip it and keep going.
+        this.error(`Page ${page} failed after retries: ${err.message} — skipping`);
         pageErrors++;
-        break;
+        if (pageErrors >= 4) { this.warn('Too many page errors, stopping'); break; }
       }
     }
 
     this.info(`Scrape complete — ${listings.length} listings (${pageErrors} errors)`);
     return { listings, stats: { pagesOk, pageErrors } };
+  }
+
+  // POST with retry + exponential backoff on transient 429/5xx + network errors.
+  async postJson(body, tries = 4) {
+    let lastErr;
+    for (let attempt = 1; attempt <= tries; attempt++) {
+      try {
+        const res = await fetch(API, { method: 'POST', headers: HEADERS, body: JSON.stringify(body) });
+        if (res.status === 429 || res.status >= 500) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } catch (err) {
+        lastErr = err;
+        const transient = /HTTP (429|5\d\d)/.test(err.message) || /fetch failed|ECONN|ETIMEDOUT|socket/i.test(err.message);
+        if (!transient || attempt === tries) break;
+        const backoff = 1500 * 2 ** (attempt - 1);
+        this.warn(`fcbb POST ${err.message} — retry ${attempt}/${tries - 1} in ${backoff}ms`);
+        await this.sleep(backoff);
+      }
+    }
+    throw lastErr;
   }
 
   map(it) {

@@ -46,27 +46,50 @@ class MurphyScraper extends SourceScraper {
           per_page: String(perPage),
           page_number: String(pageNum),
         });
-        const res = await fetch(AJAX_URL, {
-          method: 'POST',
-          headers: { 'User-Agent': UA, 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: body.toString(),
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const cards = this.parse(await res.text(), seen);
+        const html = await this.postText(body.toString());
+        const cards = this.parse(html, seen);
         if (cards.length === 0) break;
         listings.push(...cards);
         pagesOk++;
         this.info(`Page ${pageNum}: ${cards.length} listings (total ${listings.length})`);
         await this.sleep(1200);
       } catch (err) {
-        this.error(`Page ${pageNum} failed: ${err.message}`);
+        // page_number pagination is independent — skip a failed page rather than
+        // abandoning the rest.
+        this.error(`Page ${pageNum} failed after retries: ${err.message} — skipping`);
         pageErrors++;
-        break;
+        if (pageErrors >= 4) { this.warn('Too many page errors, stopping'); break; }
       }
     }
 
     this.info(`Scrape complete — ${listings.length} listings (${pageErrors} errors)`);
     return { listings, stats: { pagesOk, pageErrors } };
+  }
+
+  // POST the admin-ajax form with retry + backoff on transient 429/5xx + network
+  // errors; returns the HTML body.
+  async postText(bodyStr, tries = 4) {
+    let lastErr;
+    for (let attempt = 1; attempt <= tries; attempt++) {
+      try {
+        const res = await fetch(AJAX_URL, {
+          method: 'POST',
+          headers: { 'User-Agent': UA, 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: bodyStr,
+        });
+        if (res.status === 429 || res.status >= 500) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.text();
+      } catch (err) {
+        lastErr = err;
+        const transient = /HTTP (429|5\d\d)/.test(err.message) || /fetch failed|ECONN|ETIMEDOUT|socket/i.test(err.message);
+        if (!transient || attempt === tries) break;
+        const backoff = 1500 * 2 ** (attempt - 1);
+        this.warn(`murphy POST ${err.message} — retry ${attempt}/${tries - 1} in ${backoff}ms`);
+        await this.sleep(backoff);
+      }
+    }
+    throw lastErr;
   }
 
   parse(html, seen) {
