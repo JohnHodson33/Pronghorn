@@ -280,6 +280,60 @@ async function loadSourceToggles() {
   return new Map(data.map((r) => [r.id, r.enabled]));
 }
 
+/**
+ * Persist broker contacts scraped from listings into the `brokers` table and
+ * link each listing to its broker (listings.broker_id). Dedupes on normalized
+ * name + brokerage. Broker deal/industry coverage is derived at read time from
+ * the listings relationship, so we only store identity here.
+ */
+async function syncBrokers(listings, idMap) {
+  const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const withBroker = listings.filter((l) => l.broker && l.broker.name && idMap.has(l.id));
+  if (withBroker.length === 0) return 0;
+
+  // Unique brokers this run
+  const uniq = new Map(); // key -> {name, brokerage, phone, email}
+  for (const l of withBroker) {
+    const b = l.broker;
+    const key = `${norm(b.name)}|${norm(b.company)}`;
+    if (!uniq.has(key)) uniq.set(key, { name: b.name.trim(), brokerage: (b.company || '').trim() || null, phone: b.phone || null, email: b.email || null });
+  }
+
+  // Existing brokers (table is small relative to listings)
+  const existing = new Map(); // key -> id
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await supabase.from('brokers').select('id, name, brokerage').range(from, from + 999);
+    if (error) { log.error(`Broker load failed: ${error.message}`); break; }
+    for (const r of data) existing.set(`${norm(r.name)}|${norm(r.brokerage)}`, r.id);
+    if (data.length < 1000) break;
+  }
+
+  // Insert missing
+  const toInsert = [...uniq.entries()].filter(([k]) => !existing.has(k));
+  for (const c of chunks(toInsert, CHUNK)) {
+    const { data, error } = await supabase
+      .from('brokers')
+      .insert(c.map(([, b]) => ({ name: b.name, brokerage: b.brokerage, phone: b.phone, email: b.email })))
+      .select('id, name, brokerage');
+    if (error) { log.error(`Broker insert failed: ${error.message}`); continue; }
+    for (const r of data) existing.set(`${norm(r.name)}|${norm(r.brokerage)}`, r.id);
+  }
+
+  // Link listings → broker_id
+  let linked = 0;
+  for (const c of chunks(withBroker, 20)) {
+    await Promise.all(c.map(async (l) => {
+      const key = `${norm(l.broker.name)}|${norm(l.broker.company)}`;
+      const bid = existing.get(key);
+      if (!bid) return;
+      const { error } = await supabase.from('listings').update({ broker_id: bid }).eq('id', idMap.get(l.id));
+      if (!error) linked++;
+    }));
+  }
+  log.info(`Broker sync: ${uniq.size} unique, ${toInsert.length} new; ${linked} listings linked`);
+  return linked;
+}
+
 /** Stamp the source's last run. */
 async function touchSource(sourceId, status) {
   const { error } = await supabase
@@ -289,4 +343,4 @@ async function touchSource(sourceId, status) {
   if (error) log.error(`touchSource(${sourceId}) failed: ${error.message}`);
 }
 
-module.exports = { loadRelevanceFromDb, loadSourceToggles, syncListings, applyScreeningResults, applyDuplicateLinks, applyMirrorDuplicates, touchSource };
+module.exports = { loadRelevanceFromDb, loadSourceToggles, syncListings, applyScreeningResults, applyDuplicateLinks, applyMirrorDuplicates, syncBrokers, touchSource };

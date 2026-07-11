@@ -78,6 +78,67 @@ export type CompanyRow = {
   deals: { stage: string }[];
 };
 
+export type BrokerRow = {
+  id: string;
+  name: string;
+  brokerage: string | null;
+  phone: string | null;
+  email: string | null;
+  listingCount: number;
+  industries: string[];
+  states: string[];
+  sources: string[];
+};
+
+// Broker catalog: identities from `brokers`, coverage derived from their linked
+// listings (what industries/states/how many deals each broker represents).
+export async function fetchBrokers(): Promise<BrokerRow[] | null> {
+  if (!hasDb()) return null;
+  const db = serverDb();
+
+  const brokers: { id: string; name: string; brokerage: string | null; phone: string | null; email: string | null }[] = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await db.from("brokers").select("id, name, brokerage, phone, email").range(from, from + 999);
+    if (error) { console.error("fetchBrokers failed:", error.message); return null; }
+    brokers.push(...data);
+    if (data.length < 1000) break;
+  }
+  if (brokers.length === 0) return [];
+
+  // Coverage from linked listings
+  const agg = new Map<string, { n: number; ind: Set<string>; st: Set<string>; src: Set<string> }>();
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await db
+      .from("listings")
+      .select("broker_id, industry, state, source_id")
+      .not("broker_id", "is", null)
+      .range(from, from + 999);
+    if (error) { console.error("fetchBrokers listings failed:", error.message); break; }
+    for (const r of data as { broker_id: string; industry: string | null; state: string | null; source_id: string | null }[]) {
+      if (!agg.has(r.broker_id)) agg.set(r.broker_id, { n: 0, ind: new Set(), st: new Set(), src: new Set() });
+      const a = agg.get(r.broker_id)!;
+      a.n++;
+      if (r.industry) a.ind.add(r.industry);
+      if (r.state) a.st.add(r.state);
+      if (r.source_id) a.src.add(r.source_id);
+    }
+    if (data.length < 1000) break;
+  }
+
+  return brokers
+    .map((b) => {
+      const a = agg.get(b.id);
+      return {
+        ...b,
+        listingCount: a?.n ?? 0,
+        industries: a ? [...a.ind].sort() : [],
+        states: a ? [...a.st].sort() : [],
+        sources: a ? [...a.src].sort() : [],
+      };
+    })
+    .sort((x, y) => y.listingCount - x.listingCount);
+}
+
 export async function fetchCompanies(): Promise<CompanyRow[] | null> {
   if (!hasDb()) return null;
   const { data, error } = await serverDb()

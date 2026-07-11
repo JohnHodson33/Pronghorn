@@ -17,7 +17,7 @@ const { applyRelevanceFilters } = require('./core/filters');
 const { screenListings } = require('./screener/claude_screener');
 const {
   loadRelevanceFromDb, loadSourceToggles, syncListings, applyScreeningResults,
-  applyDuplicateLinks, applyMirrorDuplicates, touchSource,
+  applyDuplicateLinks, applyMirrorDuplicates, syncBrokers, touchSource,
 } = require('./core/db_output');
 const log = require('./utils/logger');
 const baseConfig = require('./config.json');
@@ -106,6 +106,7 @@ async function main() {
   }
 
   await applyDuplicateLinks(listings, idMap);
+  await syncBrokers(listings, idMap);
 
   for (const [name, s] of Object.entries(sourceStats)) {
     await touchSource(name, s.error ? `failed: ${s.error}` : `ok: ${s.listings} listings`);
