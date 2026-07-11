@@ -48,6 +48,14 @@
       "enabled": true,
       "module": "./sources/linkbusiness",
       "max_pages": 25
+    },
+    "bbf": {
+      "enabled": true,
+      "module": "./sources/bbf",
+      "org": "bbf",
+      "folder": "bbfnew",
+      "state": "Florida",
+      "entry": "https://bizmls.com/bbf/businesses"
     }
   },
   "relevance": {
