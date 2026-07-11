@@ -51,16 +51,19 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
   per subsector, broker-pipeline deal count vs proprietary targets fully
   enriched & outreach-ready; (d) visual — bars/funnels/stage columns, not rows.
   Use Lane C's aggregate views once they land; interim compute from tables.
-- 🔥🔥 **PURSUIT AUTOMATION ROUND 2** (John re-hit the gap live 7/11 overnight —
-  read the ADDENDUM in docs/LISTING-PURSUIT-FLOW.md): (b) Claude-drafted
-  per-listing inquiry note — ✅ SHIPPED by Lane C (`/api/outbox` POST drafts via
-  Haiku + queues + flips info_requested). (a) one-click send surface — 🔨 **PM
-  took this** (Lane B silent 3 cycles): `/outbox` page shipped (edit/cancel/
-  send-with-explanation; send returns Lane C's deliberate 501 until John asks
-  for the Graph send route + provisions env). REMAINING for Lane B: listing
-  detail + rows need a "Request info" hook into POST /api/outbox, and Dashboard
-  Key Actions `queued_email` items should link to /outbox. (c) **NDA action
-  queue** still open — NDA-required sources as a Key Action with the NDA link.
+- 🔥🔥 **PURSUIT AUTOMATION ROUND 3 — JOHN DECIDED 7/11 AM (supersedes the
+  "send route" idea):** John does NOT want auto-send; he wants **drafts in his
+  Outlook** for review. (1) LANE C: replace the outbox "send" 501 with a
+  **"Create Outlook draft" action** — Graph `POST /me/messages` (Mail.ReadWrite
+  scope, NOT Mail.Send) puts the Claude-drafted inquiry in John's Outlook
+  Drafts folder addressed to the broker; he reviews + hits send in Outlook
+  himself. Outbox status → 'drafted_to_outlook'. (2) **BizBuySell-style form
+  inquiries: APPROVED to automate behind one button, BUT gated** — John must
+  see sample outputs for the first several; build preview-first (show filled
+  form values → John clicks submit). (3) Fuller automation may come as trust
+  builds — keep the audit trail. Round-2 leftovers still open for Lane B:
+  "Request info" hooks on listing rows; Key Actions queued_email → /outbox
+  links; NDA action queue.
 - 🔥 **Inquiry Co-pilot for form-based sources** (Lane C w/ Lane B surface, see
   ADDENDUM): BizBuySell-style listings where inquiry = a login+form. Build the
   co-pilot path — "Request info" opens the listing's inquiry page with a
@@ -205,12 +208,12 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
   variables → Actions): `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`,
   `ANTHROPIC_API_KEY`, `EXA_API_KEY`, `HUNTER_API_KEY` — same values as
   scraper/.env. Until then, run them manually via workflow_dispatch.
-- 🆕 **Build-vs-buy: Kumo (withkumo.com) / BizScout** (Lane A recon, details in
-  DECISION-LOG-brokers.md 7/11): paid aggregators with 100k+/20k+ AI-deduped
-  listings + CSV export vs our free 18.6k/27-source scraper. A subscription
-  would ~5x coverage instantly; CSV could feed our same pipeline. Worth pricing
-  out — free-source discovery is now saturated, so this is the main coverage
-  lever left on the broker prong.
+- ⏳ **Build-vs-buy: Kumo / BizScout — PRICED (7/11, John asked):** Kumo Pro =
+  **$30/mo or $288/yr recurring** (100k+ deals, daily updates, saved-search
+  alerts, 30-day money-back; free tier only shows listings 30+ days old).
+  BizScout Pro = **$83/mo or $996/yr recurring** (promo). PM recommendation:
+  Kumo Pro monthly — cheap vs 27-adapter maintenance, cancel anytime; skip
+  BizScout initially (pricier, smaller). Awaiting John's go/no-go.
 - ⏳ **Apply migrations `0004_contact_directory.sql` + `0005_pursuit_flow.sql` +
   `0006_dashboard_aggregates.sql` in the Supabase SQL editor** (run in order) —
   PM verified 0005 is NOT applied (inquiry_profiles missing); no exec path

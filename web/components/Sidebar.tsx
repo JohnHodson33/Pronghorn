@@ -25,7 +25,7 @@ const nav: { section: string; items: { label: string; href: string | null }[] }[
   {
     section: "Proprietary Sourcing",
     items: [
-      { label: "Proprietary Deal Flow", href: "/list-building" },
+      { label: "Proprietary Outreach", href: "/list-building" },
       { label: "Enrichment", href: "/enrichment" },
     ],
   },
