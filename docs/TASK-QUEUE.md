@@ -63,7 +63,14 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
   (post-mortem gold), 6 brokers got phones/full names, 2 OWNER contacts added
   (Thomas Trujilo; Jason Ly w/ cell). Idempotent.
 - ⬜ Email-finder integration (Hunter free tier to start) for verified owner emails.
-- ⬜ Upwork VA loop: CSV export of shortlist (blank owner cell/LinkedIn) → re-import.
+- ✅ Upwork VA loop — `scraper/va_export.js` (shortlist CSV: enrichment-skipped +
+  fewest-known-fields first) + `va_import.js` (fill-blanks-only, --overwrite flag,
+  va audit trail in enrichment jsonb). Round-trip tested. PM: draft the VA job post
+  when John's ready — the CSV spec is the export header.
+- ⬜ SELF-ITERATE ADD (from live enrichment run): **website-discovery step** — 34/50
+  skipped leads are TDLR rows w/ owner NAME but no website; an Exa/search
+  website-finder pass before enrichment would unlock them (owner coverage 112/227,
+  email coverage only 5/227 — email-finder key is the other lever).
 - ⬜ More state license boards (AZ OPM, GA, NC, SC, TN, FL) — recon logged in
   DECISION-LOG-integrations (GA Kelly blocked, FL = Power BI, TN empty).
 - ⬜ Login-network sync — Axial (co-pilot + CIM ingest) + DealForce (creds in .env).
