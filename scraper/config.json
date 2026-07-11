@@ -28,7 +28,10 @@
     "transworld": {
       "enabled": true,
       "module": "./sources/transworld",
-      "max_pages": 80
+      "max_pages": 80,
+      "enrich_details": true,
+      "enrich_min_cash_flow": 300000,
+      "max_detail_enrich": 150
     },
     "sunbelt": {
       "enabled": true,
