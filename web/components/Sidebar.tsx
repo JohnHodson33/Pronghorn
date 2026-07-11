@@ -12,7 +12,7 @@ const nav: { section: string; items: { label: string; href: string | null }[] }[
       { label: "Screen Criteria", href: "/criteria" },
       { label: "Scrape Sources", href: "/sources" },
       { label: "Market Multiples", href: "/analytics" },
-      { label: "List Building", href: null },
+      { label: "List Building", href: "/list-building" },
     ],
   },
   {
