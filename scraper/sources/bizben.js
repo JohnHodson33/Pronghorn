@@ -30,9 +30,7 @@ class BizbenScraper extends SourceScraper {
         try {
           let url = `${API}?posting_types=forSale&limit=${limit}&fast_track=${fastTrack}`;
           if (token) url += `&pagination_token=${encodeURIComponent(JSON.stringify(token))}`;
-          const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const data = await res.json();
+          const data = await this.fetchPage(url);
           const batch = data.businesses || [];
 
           let added = 0;
@@ -51,7 +49,12 @@ class BizbenScraper extends SourceScraper {
           if (!token || batch.length === 0) break;
           await this.sleep(1000);
         } catch (err) {
-          this.error(`fast_track=${fastTrack} page ${pageNum} failed: ${err.message}`);
+          // The AWS API Gateway throws intermittent 500s under rapid pagination.
+          // fetchPage already retried with backoff; if it still failed we can't
+          // continue this pool (pagination is token-chained, so a lost page
+          // breaks the chain) — but keep everything collected so far and move to
+          // the next pool rather than aborting the whole source.
+          this.error(`fast_track=${fastTrack} page ${pageNum} failed after retries: ${err.message}`);
           pageErrors++;
           break;
         }
@@ -60,6 +63,28 @@ class BizbenScraper extends SourceScraper {
 
     this.info(`Scrape complete — ${listings.length} listings (${pageErrors} errors)`);
     return { listings, stats: { pagesOk, pageErrors } };
+  }
+
+  // Fetch one page with retry + exponential backoff on transient failures
+  // (429 rate-limit, 5xx). Returns parsed JSON or throws after exhausting tries.
+  async fetchPage(url, tries = 4) {
+    let lastErr;
+    for (let attempt = 1; attempt <= tries; attempt++) {
+      try {
+        const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } });
+        if (res.status === 429 || res.status >= 500) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } catch (err) {
+        lastErr = err;
+        const transient = /HTTP (429|5\d\d)/.test(err.message) || /fetch failed|ECONN|ETIMEDOUT|socket/i.test(err.message);
+        if (!transient || attempt === tries) break;
+        const backoff = 1500 * 2 ** (attempt - 1); // 1.5s, 3s, 6s
+        this.warn(`fetch ${err.message} — retry ${attempt}/${tries - 1} in ${backoff}ms`);
+        await this.sleep(backoff);
+      }
+    }
+    throw lastErr;
   }
 
   map(b) {
