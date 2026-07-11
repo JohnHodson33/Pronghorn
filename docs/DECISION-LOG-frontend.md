@@ -61,6 +61,19 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   dialer.
 - **PM to wire:** Sidebar "Cold Calling (soon)" → `/cold-calling`.
 
+## 2026-07-10 — Listings CSV export + saved views (`ListingsTableV2.tsx`)
+
+- **New component: `components/ListingsTableV2.tsx`** — the existing
+  ListingsTable plus (a) **Export CSV** of exactly the filtered+sorted rows
+  (client-side Blob, filename includes date + active view name; columns incl.
+  margin %, implied multiple, tier reasoning) and (b) **saved filter views**
+  (name → full filter/sort state, localStorage, chips above the filter bar).
+- Filters live in the table component's client state, and Lane B can't edit
+  the existing ListingsTable.tsx — so this is a superseding copy. **PM: in
+  `app/listings/page.tsx` change the import to
+  `@/components/ListingsTableV2`, then delete `ListingsTable.tsx`.**
+  Verified against live data (443 rows; view-filtered export = 66-line CSV).
+
 ## Lane B session setup
 
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch
