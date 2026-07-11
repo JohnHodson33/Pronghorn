@@ -9,6 +9,34 @@ Status keys: ⬜ open · 🔨 in-progress (add your lane) · ✅ done (PM verifi
 
 ---
 
+## 🔥 TOP PRIORITY — John's live CRM feedback (2026-07-11) — Lane B + Lane C
+
+**The data model John wants (get the SQL relationships right):**
+- **Pipeline shows DEALS** (not bare company squares). A deal has ONE company;
+  a company has contacts; contact roles: **owner → company**, **broker →
+  deal+company**, so owner is reachable from the deal via its company.
+- Clicking a pipeline card → **deal detail** showing the company, the broker, the
+  owner, and all deal notes/activities; from there, links into the company and
+  the owner/broker contacts.
+
+**Lane B (Frontend) — do these first:**
+- 🔥 Pipeline cards must LINK to `/deals/[id]` (the detail page already exists).
+  Make each card a click-through; show broker on the card.
+- 🔥 Deal detail: ensure it shows company + broker + owner + notes, each linking
+  out; stage is editable there (DealControls exists — verify it's on the page).
+- 🔥 Companies tab: add **Industry as its own column** (not "—" in the name cell),
+  a **search bar**, and an **industry filter** (toggle e.g. Nail Salon / Tree Care)
+  + other filters. Rows link to the company profile.
+- 🔥 Company profile: make it **editable** — stage (via its deal), key fields.
+  John needs to move a company/deal between phases manually from the profile.
+
+**Lane C (Data) — do these first:**
+- 🔥 Ingest John's RECENT Outlook mail NOW (`ingest_outlook.js` on latest): he
+  submitted the **Landmark Pest IOI today** — auto-move Landmark to "IOI Submitted"
+  and log the broker correspondence as activities. Wire recent-mail → stage updates.
+- 🔥 Verify/repair the contact relationships: owner↔company, broker↔deal+company
+  for the 4 active deals; make sure the frontend can read them.
+
 ## Lane A — Brokers  (branch `lane/brokers`; owns `scraper/sources/*`, `scraper/config.json`)
 - ⬜ Apply the bizmls crack (`sources/bbf.js`) to other state associations — find
   their bizmls org/folder codes (many broker assocs use bizmls). Start: try common
