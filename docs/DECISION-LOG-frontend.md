@@ -156,6 +156,18 @@ also executed the two swaps previously flagged as PM actions:
   CompaniesTable. Every list page — Listings, Companies, Contacts, Brokers,
   Leads — is now searchable + filterable + exportable.
 
+## 2026-07-11 — Mobile pass + shared market check
+
+- **Mobile-responsive pass**: new `MobileNav` drawer that *reuses* the
+  untouched Sidebar component (hamburger < md, overlay drawer, closes on
+  navigation); desktop sidebar hidden on small screens via a layout wrapper;
+  page padding `p-4 md:p-8` everywhere. Verified at 375px — no horizontal
+  overflow; tables scroll in their containers.
+- **Market-check widget shared**: `lib/market-check.ts` +
+  `components/MarketCheckCard.tsx`; now on BOTH deal detail and company
+  profile ("asking 4.6× vs market median 2.8× → priced above market", with
+  size-band median). Company-detail loader refactored onto the shared helper.
+
 ## Lane B session setup
 
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch

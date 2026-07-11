@@ -5,7 +5,9 @@ import { notFound } from "next/navigation";
 import ActivityForm from "@/components/ActivityForm";
 import ContactsSection from "@/components/ContactsSection";
 import DealControls from "@/components/DealControls";
+import MarketCheckCard from "@/components/MarketCheckCard";
 import { fetchDealDetail } from "@/lib/deal-detail";
+import { computeMarketCheck } from "@/lib/market-check";
 import { hasDb } from "@/lib/db";
 import { money } from "@/lib/mock";
 
@@ -22,6 +24,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
   const deal = await fetchDealDetail(id);
   if (!deal) notFound();
   const c = deal.company;
+  const marketCheck = await computeMarketCheck(c.industry, c.ebitda, deal.asking);
 
   const multiple =
     deal.asking !== null && c.ebitda !== null && c.ebitda > 0
@@ -84,6 +87,8 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
           </div>
         ))}
       </section>
+
+      <MarketCheckCard check={marketCheck} />
 
       {deal.listing && (
         <div className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm">

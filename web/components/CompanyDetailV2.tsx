@@ -8,6 +8,7 @@ import ActivityForm from "@/components/ActivityForm";
 import CompanyEditor from "@/components/CompanyEditor";
 import ContactsSection from "@/components/ContactsSection";
 import DealControls from "@/components/DealControls";
+import MarketCheckCard from "@/components/MarketCheckCard";
 import { fetchCompanyDetail } from "@/lib/company-detail";
 import { money } from "@/lib/mock";
 
@@ -26,11 +27,6 @@ export default async function CompanyDetailV2({ id }: { id: string }) {
   const data = await fetchCompanyDetail(id);
   if (!data) notFound();
   const { company: c, deal, contacts, activities, listings, comparison } = data;
-
-  const rich =
-    comparison?.companyMultiple != null && comparison?.industryMedian != null
-      ? comparison.companyMultiple > comparison.industryMedian
-      : null;
 
   return (
     <div className="max-w-4xl p-4 md:p-8 space-y-6">
@@ -100,50 +96,7 @@ export default async function CompanyDetailV2({ id }: { id: string }) {
         ))}
       </section>
 
-      {comparison && (
-        <section className="rounded-xl border border-zinc-200 bg-white p-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="text-sm">
-              <span className="font-semibold">Market check — {comparison.industry}: </span>
-              {comparison.companyMultiple !== null ? (
-                <>
-                  asking{" "}
-                  <span className={`font-bold ${rich ? "text-red-700" : "text-emerald-700"}`}>
-                    {comparison.companyMultiple.toFixed(1)}×
-                  </span>{" "}
-                  vs market median{" "}
-                  <span className="font-bold">
-                    {comparison.industryMedian === null ? "—" : `${comparison.industryMedian.toFixed(1)}×`}
-                  </span>
-                  {rich !== null && (
-                    <span className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                      rich ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-800"
-                    }`}>
-                      {rich ? "priced above market" : "at/below market"}
-                    </span>
-                  )}
-                </>
-              ) : (
-                <>
-                  market median{" "}
-                  <span className="font-bold">
-                    {comparison.industryMedian === null ? "—" : `${comparison.industryMedian.toFixed(1)}×`}
-                  </span>{" "}
-                  (no asking price on the deal yet)
-                </>
-              )}
-            </div>
-            <div className="text-xs text-zinc-500 tabular-nums">
-              n={comparison.industryN}
-              {comparison.bandKey && comparison.bandMedian !== null && (
-                <> · {comparison.bandKey} band: {comparison.bandMedian.toFixed(1)}× (n={comparison.bandN})</>
-              )}
-              {" · "}
-              <Link href="/analytics" className="text-emerald-700 hover:underline">Market Multiples →</Link>
-            </div>
-          </div>
-        </section>
-      )}
+      <MarketCheckCard check={comparison} />
 
       <ContactsSection companyId={c.id} contacts={contacts} />
 

@@ -2,7 +2,7 @@
 // activities, every linked listing with its event history, and a market-
 // multiple comparison against the company's industry.
 import { hasDb, serverDb } from "./db";
-import { fetchMarketStats, SIZE_BANDS, type IndustryStats } from "./analytics";
+import { computeMarketCheck, type MarketCheck } from "./market-check";
 
 const num = (v: number | string | null | undefined) =>
   v === null || v === undefined ? null : Number(v);
@@ -22,15 +22,7 @@ export type CompanyListing = {
   events: { event_type: string; detail: Record<string, unknown> | null; created_at: string }[];
 };
 
-export type MultipleComparison = {
-  industry: string;
-  companyMultiple: number | null; // deal asking / company ebitda
-  industryMedian: number | null;
-  industryN: number;
-  bandKey: string | null;
-  bandMedian: number | null;
-  bandN: number;
-};
+export type MultipleComparison = MarketCheck;
 
 export type CompanyDetail = {
   company: {
@@ -169,25 +161,8 @@ export async function fetchCompanyDetail(id: string): Promise<CompanyDetail | nu
 
   // Market-multiple comparison: the deal's asking over company cash flow vs the
   // industry median (and the matching EBITDA size band).
-  let comparison: MultipleComparison | null = null;
   const ebitda = num(c.ebitda);
-  if (c.industry) {
-    const market = await fetchMarketStats();
-    const stat: IndustryStats | undefined = market?.stats.find((s) => s.industry === c.industry);
-    if (stat) {
-      const band = ebitda !== null ? SIZE_BANDS.find((b) => ebitda >= b.min && ebitda < b.max) : undefined;
-      comparison = {
-        industry: c.industry,
-        companyMultiple:
-          deal?.asking != null && ebitda !== null && ebitda > 0 ? deal.asking / ebitda : null,
-        industryMedian: stat.medMultiple,
-        industryN: stat.nMultiple,
-        bandKey: band?.key ?? null,
-        bandMedian: band ? stat.bands[band.key]?.med ?? null : null,
-        bandN: band ? stat.bands[band.key]?.n ?? 0 : 0,
-      };
-    }
-  }
+  const comparison = await computeMarketCheck(c.industry, ebitda, deal?.asking ?? null);
 
   return {
     company: {
