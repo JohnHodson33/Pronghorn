@@ -119,6 +119,10 @@
     "thefirm": {
       "enabled": true,
       "module": "./sources/thefirm"
+    },
+    "calder": {
+      "enabled": true,
+      "module": "./sources/calder"
     }
   },
   "relevance": {
