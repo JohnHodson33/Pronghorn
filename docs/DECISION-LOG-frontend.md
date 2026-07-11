@@ -88,6 +88,21 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 - Count hygiene: all listing counts exclude `duplicate_of` mirrors so totals
   and +7d agree (the old listingStats didn't; BizQuest showed 119 vs +1597).
 
+## 2026-07-10 — Company detail v2 (`components/CompanyDetailV2.tsx`)
+
+- **New server component `CompanyDetailV2`** (+ `lib/company-detail.ts`)
+  upgrading the company profile with the three queue items: contacts section
+  (role badges, mailto/LinkedIn), listing history (origin + identity-linked
+  listings, live/delisted chips, seen-range, listing_events timeline), and a
+  market-multiple check (deal asking ÷ EBITDA vs industry median + matching
+  size band, priced-rich/at-market chip). Stage chip now links to /deals/[id].
+- **PM swap:** `app/companies/[id]/page.tsx` body becomes
+  `return <CompanyDetailV2 id={id} />` (imports: the component + notFound
+  handling stays inside it). Existing page untouched by Lane B.
+- Dev note: Turbopack on this Windows worktree did NOT hot-register a new
+  route dir created while `next dev` ran — restart the dev server if a brand-
+  new route 404s.
+
 ## Lane B session setup
 
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch
