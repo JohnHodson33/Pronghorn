@@ -129,6 +129,10 @@
       "enabled": true,
       "module": "./sources/sunbeltmidwest"
     },
+    "empire": {
+      "enabled": true,
+      "module": "./sources/empire"
+    },
     "wpbdp": {
       "enabled": true,
       "module": "./sources/wpbdp",
