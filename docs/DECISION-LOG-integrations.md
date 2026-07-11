@@ -107,6 +107,91 @@ questions + MSO/rollover seller posture; Gage owner seeks full exit, mgmt comp
 flags, tree-care consolidator map (Tree Guardians, SavATree, Cannopy/Alpine,
 Tree Care Partners/CPS).
 
+## 2026-07-11 — Landmark IOI + mail→stage automation
+
+John submitted the Landmark IOI 7/10 23:24 (Pronghorn - Landmark IOI_07.10.2026_vF.pdf
+to Oliver Bogner): $41M–$45M, 10x–11x on $4.1M LTM Apr-2026 Adj. EBITDA. Platform
+updated: deal → "IOI Submitted", our_valuation $43M (range midpoint), next step =
+management presentations wk of Jul 13 & 20 (LOIs due after). Rich IOI activity
+logged with the Outlook link. Generalized in `ingest_outlook.js`: IOI/LOI submission
+language in OUR OWN sent mail auto-advances the deal stage — forward-only (replies
+quoting the phrase can't regress or re-trigger), with an [auto] audit note. Both
+paths verified on throwaway data. Relationship audit: all 4 active deals have
+owner+broker contacts on company_id, matching the deal-detail loader — no repair.
+
+## 2026-07-11 — Two-way push: built, gated on John's own .env flip
+
+PM relayed John's approval for the HubSpot push. Built `--push` fully (net-new
+company+deal creation, internal stage ids, blind-teaser exclusion, two-way
+hubspot_id breadcrumbs, --dry-run) but kept it gated on HUBSPOT_TOKEN +
+HUBSPOT_PUSH_ENABLED=true. Reasoning: this session's standing guardrail is
+import-only; a relayed approval shouldn't be the thing that flips a write-back
+loop. John adds the token himself anyway — setting the flag beside it is zero
+friction and makes the enablement unambiguous. Dry-run: 0 candidates today
+(everything originated in HubSpot), so nothing is waiting on the gate.
+
+## 2026-07-11 — Paid list-building + external-source recon (what's buildable free)
+
+Serper + Google Places workers built and key-activated (skip cleanly with a
+setup pointer when the key is absent; verified live on a no-key run). Serper is
+the paid primary (per-engine toggles, credit→cost_actual accounting); Places is
+rescue-tier (fires only when primaries miss target). ratings/review_count now
+flow into leads for the review-velocity size proxy.
+
+State license boards beyond TX — recon (so nobody re-walks this):
+- **TX TDLR** — shipped, Socrata JSON, owner names. The gold standard.
+- **TN** (data.tn.gov Socrata) — no pest/contractor licensee dataset. Dead end.
+- **GA Kelly Solutions** — 403 to curl, 404 on guessed paths. Needs a real
+  browser session to find the correct GA pestcontrol path; headless build later.
+- **FL FDACS** — the company-license search is an embedded **Power BI report**
+  (aeslicensing.fdacs.gov/Reports/PBI---Company-License). Not HTTP-scrapable
+  without driving Power BI's query protocol — deprioritize vs. easier states.
+- Net: TX was the easy Socrata win; other states each need bespoke work. Best
+  next free source is SoS registries (owner names) — separate build.
+
+DealForce (login network) recon: public `/opportunities` renders a Vue SPA
+backed by **Azure Cognitive Search**; the featured deals are **blind teasers**
+(no company names — "Manufacturer of industrial-grade power solutions", rev/
+EBITDA/region only). Under the firm real-name rule these CANNOT become deal/
+company records; they could feed Market Multiples (rev×EBITDA×industry) like
+other unnamed listings, but that's Lane A's multiples table. Full/named access
+is login-gated → the co-pilot path (John's live browser) per CREDENTIALS-INTAKE,
+not a headless scrape. No adapter built; recon logged.
+
+## 2026-07-11 — Enrichment worker live: the ~free owner-contact tier works
+
+`enrich/run_enrichment.js` implements ENRICHMENT-STRATEGY steps 1–2: scrape the
+lead's website (home/about/contact via cheerio), fall back to Exa web+LinkedIn
+snippets when the site is missing/thin, then Claude Haiku extracts owner name/
+title/email/phone/LinkedIn + acquisition signals into a strict JSON schema
+(explicitly forbidden from inventing contact data; license-board owner names are
+never overwritten). Live results: HIGH-confidence owner names on most of the
+Dallas HVAC batch (e.g. real owners for Xtreme Air, BIMS, Vent-One, Copeland,
+Texaire) at ~$0.01/lead all-in. Leads with no website AND thin search results
+are marked skipped — that's the VA shortlist, exactly as the strategy intends.
+Exa also verified in the list-building rescue path (Lake Mgmt/Tucson: 0 free →
+20 real companies incl. SOLitude). Notion Deal Tracker + Broker Directory
+synced via `ingest_notion_tracker.js`: nail-thesis financials (revenue/EBITDA/
+employees/LOI prices) backfilled onto all 14 companies, 6 broker contacts got
+phones, and 2 OWNER contacts landed (Jason Ly with a cell number).
+
+## 2026-07-11 — Pursuit auto-detect: the self-regulating loop is live
+
+`ingest_pursuit.js` turns broker emails into listing pursuit-state changes
+(LISTING-PURSUIT-FLOW §2). Design choices worth keeping: (1) "NDA is in
+Process" (FCBB pattern — buyer signed, agent countersign pending) maps to
+info_requested with an explanatory note, NOT nda_signed — the executed-copy
+email advances it, so state never overstates reality. (2) Matching requires the
+listing's exact normalized name in the email text, narrowed by sender domain →
+source; names under 12 chars additionally need the broker's ref-number anchor
+(guards "Tree Service" against false matches). Ambiguous emails are logged for
+review, never guessed. (3) Forward-only ladder; promoted/passed are terminal.
+(4) Idempotent via listing_events.detail.msg. Backfill found John's two FCBB
+NDA submissions from TODAY and matched both to scraped fcbb listings by exact
+name. Migration 0005 adds the timestamps + inquiry_profiles + ready_to_promote
+view (Lane B's contract for the Prospecting lane); detector degrades to notes
+until it's applied. Guardrail: detection only — sending/signing is John's click.
+
 ## 2026-07-10 — dotenv "vestauth" banner: false alarm
 
 `dotenv@17.4.2` prints rotating ad tips (incl. `vestauth.com`). Diffed the installed

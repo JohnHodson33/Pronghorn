@@ -56,26 +56,43 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
-- 🔗 **COORDINATION (from Lane B, pursuit flow now LIVE):** your listing_reviews
-  migration must (a) support status='promoted' AND legacy 'pushed_to_crm' (both
-  are written); (b) add columns requested_at / nda_signed_at / cim_received_at
-  (the pursue API stamps them once they exist); (c) create inquiry_profiles
-  (singleton; /api/inquiry-profile falls back to localStorage until then).
-- 🔥🔥 **PURSUIT AUTO-DETECT from Outlook** (docs/LISTING-PURSUIT-FLOW.md): extend
-  Outlook ingestion to detect NDA-executed/DocuSign-complete → matching listing
-  `nda_signed`; CIM/offering-memo/data-room → `cim_received` + attach doc; match by
-  broker email/domain + fuzzy business name. BACKFILL John's existing NDA
-  confirmations now. Build the listing_reviews status enum + timestamps migration
-  + "ready to promote" queue. The self-regulating loop. Coordinate migration w/ Lane B.
-- 🔥 **Enrichment worker** (see ENRICHMENT-STRATEGY.md): per lead/company, scrape
-  website + Google + LinkedIn snippet, Claude-extract owner name/email/signals.
-  ~Free. Write to leads/companies + activities. This is the core of the vision.
-- 🔥 **Exa is LIVE (key in .env)** — wire Exa into the list-building rescue path now.
-- 🔥 HubSpot TWO-WAY push (approved) — `sync_hubspot.js --push` for net-new CRM records.
+- 🔨 LANE C — 🔥🔥 **PURSUIT AUTO-DETECT from Outlook** — SHIPPED + BACKFILLED.
+  `scraper/ingest_pursuit.js`: NDA-in-process → info_requested (+countersign-pending
+  note), executed-NDA/DocuSign-complete → nda_signed, CIM/data-room → cim_received
+  (+doc link). Sender-domain → source narrowing, exact-name match w/ short-name
+  ref-anchor guard, forward-only, idempotent per message id, listing_events audit.
+  BACKFILL RAN: John's two FCBB NDAs from TODAY detected & advanced (Aquatic
+  contractor 226-24809 + Tree Service 327-24860 → info_requested; auto-flips to
+  nda_signed when the countersigned copies arrive). DETECTION ONLY — never sends.
+  LANE B CONTRACT: `supabase/migrations/0005_pursuit_flow.sql` = status values +
+  requested_at/nda_signed_at/cim_received_at/doc_url + inquiry_profiles table +
+  ready_to_promote view. **PM ACTION: apply 0005 (and 0004) in SQL editor** —
+  detector works pre-migration via notes fallback.
+- 🔨 LANE C — **Enrichment worker** — SHIPPED & RUNNING. `scraper/enrich/run_enrichment.js`:
+  website scrape (home/about/contact) + Exa web/LinkedIn snippets → Claude Haiku
+  extracts owner name/title/email/phone/LinkedIn + signals → leads.owner_* (fill-
+  blanks-only; license-board names are ground truth) + enrichment jsonb, status→
+  enriched. Live: owner names at HIGH confidence on most Dallas HVAC leads
+  (~$0.01/lead incl. Exa). `--limit/--list` flags; ready for the daily schedule.
+- ✅ **Exa wired into rescue path** — verified live: Lake Mgmt/Tucson list produced
+  20 real companies (SOLitude, Johnson Lake Mgmt…) where free sources had 0.
+- 🔨 LANE C — HubSpot TWO-WAY push — built + gated; fires once John sets
+  HUBSPOT_TOKEN + HUBSPOT_PUSH_ENABLED=true in scraper/.env.
+- ✅ Notion Deal Tracker + Broker Directory sync — `scraper/ingest_notion_tracker.js`.
+  Ran: 14 nail companies got revenue/EBITDA/employees/listing URLs + LOI prices
+  (post-mortem gold), 6 brokers got phones/full names, 2 OWNER contacts added
+  (Thomas Trujilo; Jason Ly w/ cell). Idempotent.
 - ⬜ Email-finder integration (Hunter free tier to start) for verified owner emails.
-- ⬜ Upwork VA loop: CSV export of shortlist (blank owner cell/LinkedIn) → re-import.
-- ⬜ More state license boards (AZ OPM, GA, NC, SC, TN, FL).
-- ⬜ Notion Deal Tracker + Broker Directory sync (not just meeting notes).
+- ✅ Upwork VA loop — `scraper/va_export.js` (shortlist CSV: enrichment-skipped +
+  fewest-known-fields first) + `va_import.js` (fill-blanks-only, --overwrite flag,
+  va audit trail in enrichment jsonb). Round-trip tested. PM: draft the VA job post
+  when John's ready — the CSV spec is the export header.
+- ⬜ SELF-ITERATE ADD (from live enrichment run): **website-discovery step** — 34/50
+  skipped leads are TDLR rows w/ owner NAME but no website; an Exa/search
+  website-finder pass before enrichment would unlock them (owner coverage 112/227,
+  email coverage only 5/227 — email-finder key is the other lever).
+- ⬜ More state license boards (AZ OPM, GA, NC, SC, TN, FL) — recon logged in
+  DECISION-LOG-integrations (GA Kelly blocked, FL = Power BI, TN empty).
 - ⬜ Login-network sync — Axial (co-pilot + CIM ingest) + DealForce (creds in .env).
 - ⬜ SELF-ITERATE: what contact data are we still missing per company? Close the gap.
 

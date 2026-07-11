@@ -1,16 +1,19 @@
-// HubSpot → Supabase one-way deal/company refresh (docs/HUBSPOT-SYNC-DESIGN.md).
-// Keeps the imported deals current: stage moves, amounts, closed-lost reasons.
-// READ-ONLY on HubSpot. The reverse direction (platform → HubSpot push) is
-// designed in the doc but DISABLED here on purpose — John has not approved
-// enabling the write-back loop. Do not "fix" that without his say-so.
+// HubSpot ↔ Supabase sync (docs/HUBSPOT-SYNC-DESIGN.md).
+// Pull (default): HubSpot → Supabase refresh — stage moves, amounts,
+// closed-lost reasons. Always safe; read-only on HubSpot.
+// Push (--push): platform → HubSpot for NET-NEW records only (deals promoted
+// from scraped listings/leads). PM relayed John's approval (2026-07-11), but
+// the write-back stays gated on BOTH env vars below so the loop can only go
+// live when John himself flips it — this session's standing guardrail is
+// import-only, and a relayed approval doesn't override it:
+//   HUBSPOT_TOKEN=<private app token>   (Settings → Integrations → Private Apps)
+//   HUBSPOT_PUSH_ENABLED=true           (John sets deliberately)
 //
 // Usage:
 //   node sync_hubspot.js --file <deals.json>   # refresh from an MCP/REST dump
-//   node sync_hubspot.js                       # fetch live via HUBSPOT_TOKEN
-//   node sync_hubspot.js --push                # refuses (guardrail)
-//
-// HUBSPOT_TOKEN (scraper/.env) is a HubSpot Private App token — still awaited
-// from John. Until then the --file path keeps the data current from MCP dumps.
+//   node sync_hubspot.js                       # refresh live via HUBSPOT_TOKEN
+//   node sync_hubspot.js --push [--dry-run]    # net-new push (gated as above);
+//                                              # --dry-run prints the plan only
 
 const fs = require('fs');
 const { supabase } = require('./core/db');
@@ -54,10 +57,99 @@ async function fetchViaRest(token) {
   return out;
 }
 
+// Platform stage → HubSpot INTERNAL stage id (reverse of STAGE_MAP; several
+// platform stages collapse — chosen conservatively). 'Closed' needs the deal's
+// closed_lost_reason to pick won vs lost.
+const PUSH_STAGE = {
+  'Sourced': 'appointmentscheduled',
+  'Info Requested': 'presentationscheduled',
+  'Under Screening': 'decisionmakerboughtin',
+  'IOI Submitted': 'decisionmakerboughtin', // HubSpot pipeline has no IOI stage
+  'Diligence': 'contractsent',
+  'LOI': 'closedwon',
+};
+// Firm rule: nothing anonymized crosses systems in either direction.
+const BLIND_NAME = /axial|regional .{0,30}operator|^unnamed|blind teaser/i;
+
+async function pushNetNew(token, dryRun) {
+  const axios = require('axios');
+  const hs = axios.create({
+    baseURL: 'https://api.hubapi.com',
+    headers: { Authorization: `Bearer ${token}` },
+    timeout: 30000,
+  });
+
+  // Net-new = platform-origin companies with a deal and no hubspot_id yet.
+  const { data: companies, error } = await supabase
+    .from('companies')
+    .select('id, name, website, industry, city, state, notes, hubspot_id, origin, deals(id, name, stage, asking_price, closed_lost_reason)')
+    .is('hubspot_id', null)
+    .not('origin', 'eq', 'hubspot');
+  if (error) throw new Error(error.message);
+
+  const candidates = (companies || []).filter((c) => c.deals?.length && !BLIND_NAME.test(c.name));
+  const excluded = (companies || []).filter((c) => c.deals?.length && BLIND_NAME.test(c.name));
+  for (const c of excluded) log.warn(`  push: "${c.name}" excluded (real-name rule)`);
+  log.info(`Push candidates (net-new, named, with deals): ${candidates.length}`);
+  if (dryRun) {
+    for (const c of candidates) {
+      const d = c.deals[0];
+      log.info(`  DRY RUN would create: company "${c.name}" + deal "${d.name}" @ ${d.stage} → ${PUSH_STAGE[d.stage] || '3939497680'}`);
+    }
+    return;
+  }
+
+  for (const c of candidates) {
+    try {
+      const { data: hsCompany } = await hs.post('/crm/v3/objects/companies', {
+        properties: {
+          name: c.name,
+          domain: (c.website || '').replace(/^https?:\/\/(www\.)?/, '').split('/')[0] || undefined,
+          industry: c.industry || undefined,
+          city: c.city || undefined,
+          state: c.state || undefined,
+          description: `Pronghorn platform record ${c.id} (origin: ${c.origin || 'platform'})`,
+        },
+      });
+      const d = c.deals[0];
+      const stageId = d.stage === 'Closed'
+        ? (d.closed_lost_reason ? '3939497680' : 'closedlost')
+        : (PUSH_STAGE[d.stage] || 'appointmentscheduled');
+      const { data: hsDeal } = await hs.post('/crm/v3/objects/deals', {
+        properties: {
+          dealname: d.name, pipeline: 'default', dealstage: stageId,
+          amount: d.asking_price || undefined,
+          closed_lost_reason: d.closed_lost_reason || undefined,
+        },
+        associations: [{
+          to: { id: hsCompany.id },
+          types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 5 }], // deal → company
+        }],
+      });
+      // breadcrumb both directions for idempotency
+      await supabase.from('companies').update({ hubspot_id: String(hsDeal.id) }).eq('id', c.id);
+      await supabase.from('activities').insert({
+        company_id: c.id, deal_id: d.id, kind: 'note',
+        body: `[auto] Pushed to HubSpot (company ${hsCompany.id}, deal ${hsDeal.id}) — net-new sync`,
+      });
+      log.info(`  pushed: ${c.name} (deal ${hsDeal.id}, stage ${stageId})`);
+    } catch (e) {
+      log.error(`  push ${c.name}: ${e.response?.data?.message || e.message}`);
+    }
+  }
+}
+
 async function main() {
   if (process.argv.includes('--push')) {
-    console.error('Platform → HubSpot push is DISABLED (guardrail: import-only until John approves two-way).');
-    process.exit(1);
+    const token = process.env.HUBSPOT_TOKEN;
+    const enabled = process.env.HUBSPOT_PUSH_ENABLED === 'true';
+    if (!token || !enabled) {
+      console.error('Push is gated: set HUBSPOT_TOKEN and HUBSPOT_PUSH_ENABLED=true in scraper/.env.');
+      console.error('(PM relayed approval 2026-07-11; John flips the flag himself — see file header.)');
+      process.exit(1);
+    }
+    await pushNetNew(token, process.argv.includes('--dry-run'));
+    return;
   }
   const fileIdx = process.argv.indexOf('--file');
   let dump;
