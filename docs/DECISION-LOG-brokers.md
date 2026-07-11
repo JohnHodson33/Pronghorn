@@ -223,3 +223,17 @@ added 12 sources + broker enrichment + source-quality analytics + delisting job.
   regionals (sunbeltsfl/md — JS widgets, no feed).
 - **Three reusable platforms now cracked: bizmls, Tupelo, DealRelations** — the
   highest-leverage pattern for adding many brokers per adapter.
+
+## 2026-07-11 — loop iter: DealRelations expanded 3→8 brokers (+2nd template)
+
+- `site:dealrelations.com` search revealed the platform serves independent
+  brokers beyond Sunbelt. Added IAG Merger, VR Triangle NC, Sofranko PA, Valley,
+  TeriCraft (+ existing 3 Sunbelt offices) = **8 offices, 116 listings, 72 new**.
+- These non-Sunbelt brokers use a 2nd detail template (`.top-text`: Price/
+  Revenue/Adjusted Cash Flow/Location) — added a fallback parse + humanized-slug
+  names. Now handles both DealRelations layouts. 14/27 non-Sunbelt listings had
+  disclosed financials (rest confidential); 2 Tier 1 incl. $3.1M-CF landscaping.
+- ➡️ Easy future expansion: keep adding <office>.dealrelations.com subdomains
+  (search surfaces them). Agent-name parsing works on template A (Sunbelt) only;
+  template B has no agent block on the page.
+- Totals: **18,574 listings, 105 T1 + 229 T2, 27 sources.** All parses healthy.
