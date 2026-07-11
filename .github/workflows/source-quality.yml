@@ -1,0 +1,40 @@
+# Source-quality report (Lane A ops automation).
+# Runs scraper/source_quality.js and uploads the ranked yield table as a build
+# artifact so the PM/John can review per-source thesis-fit, coverage, and
+# broker-contact gaps without a local checkout. Read-only (no DB writes).
+#
+# REQUIRED REPO SECRETS: SUPABASE_URL, SUPABASE_SERVICE_KEY
+
+name: Source Quality Report
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 14 * * *" # 07:30 America/Phoenix — after the delisting pass
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: scraper
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: scraper/package-lock.json
+      - run: npm ci
+      - name: Generate report
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node source_quality.js | tee source_quality_report.txt
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-quality-report
+          path: scraper/source_quality_report.txt
+          retention-days: 30

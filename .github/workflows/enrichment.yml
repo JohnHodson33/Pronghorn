@@ -1,0 +1,52 @@
+# Enrichment ticks (Lane A ops automation; drives Lane C's enrichment worker).
+# Periodically enriches new leads/companies toward OWNER contact info
+# (scraper/enrich/run_enrichment.js — website + Exa + Hunter + Claude extract).
+# This is the automated "tick"; ad-hoc pursuit-list ingest
+# (scraper/ingest_pursuit.js <file>) stays a local/manual step because it needs
+# a file argument, so it's intentionally not scheduled here.
+#
+# REQUIRED REPO SECRETS:
+#   SUPABASE_URL, SUPABASE_SERVICE_KEY  — DB
+#   ANTHROPIC_API_KEY                   — Claude owner/signal extraction
+#   EXA_API_KEY                         — Exa web search (rescue)
+#   HUNTER_API_KEY                      — Hunter email finder (free tier)
+
+name: Enrichment Tick
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Max leads to enrich this run (default 25)"
+        required: false
+        default: "25"
+  schedule:
+    - cron: "0 15,21 * * *" # 08:00 & 14:00 America/Phoenix
+
+concurrency:
+  group: enrichment
+  cancel-in-progress: false
+
+jobs:
+  enrich:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: scraper
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: scraper/package-lock.json
+      - run: npm ci
+      - name: Run enrichment
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
+          HUNTER_API_KEY: ${{ secrets.HUNTER_API_KEY }}
+        run: node enrich/run_enrichment.js --limit ${{ github.event.inputs.limit || '25' }}

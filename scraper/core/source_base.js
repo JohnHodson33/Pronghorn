@@ -41,7 +41,7 @@ class SourceScraper {
   async withBrowser(fn) {
     this.info('Launching Chrome (stealth mode)');
     const browser = await puppeteerExtra.launch({
-      executablePath: this.globalConfig.chrome_path || DEFAULT_CHROME_PATH,
+      executablePath: this.globalConfig.chrome_path || process.env.CHROME_PATH || DEFAULT_CHROME_PATH,
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });

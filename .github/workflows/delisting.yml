@@ -1,0 +1,51 @@
+# Delisting / freshness pass (Lane A ops automation).
+# Marks listings delisted after ~2 missed full crawls (see scraper/mark_delisted.js)
+# and emits 'delisted' events. Scheduled an hour after Nightly Scrape so the
+# sources' last_run_at is fresh; the job self-guards (only delists for sources
+# that ran successfully and recently), so ordering slop is safe.
+#
+# REQUIRED REPO SECRETS: SUPABASE_URL, SUPABASE_SERVICE_KEY
+
+name: Delisting Pass
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Preview only, don't write (true/false)"
+        required: false
+        default: "false"
+      grace_hours:
+        description: "Hours since last_seen before delisting (default 42)"
+        required: false
+        default: "42"
+  schedule:
+    - cron: "0 14 * * *" # 07:00 America/Phoenix — ~1h after Nightly Scrape
+
+concurrency:
+  group: scrape-pipeline
+  cancel-in-progress: false
+
+jobs:
+  delist:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: scraper
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: scraper/package-lock.json
+      - run: npm ci
+      - name: Mark delisted
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          ARGS="--grace-hours ${{ github.event.inputs.grace_hours || '42' }}"
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          node mark_delisted.js $ARGS
