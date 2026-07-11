@@ -115,6 +115,10 @@
       "broker_name": "Certified Business Brokers (Houston)",
       "broker_url": "https://certifiedbb.com",
       "_comment": "Tupelo SMB platform instance. Add more brokers on this platform by copying this block with their organizationId (from crm.tupelosmb.com/api/public/listings)."
+    },
+    "thefirm": {
+      "enabled": true,
+      "module": "./sources/thefirm"
     }
   },
   "relevance": {
