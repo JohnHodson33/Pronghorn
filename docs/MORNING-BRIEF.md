@@ -1,5 +1,13 @@
 # Morning brief — overnight of 2026-07-11 (PM session, rewritten nightly)
 
+## 🎉 Milestone: FIRST FULL PURSUIT CYCLE CLOSED, hands-free
+Your Tree Service pursuit (FCBB 327-24860) went info_requested → NDA
+countersigned (~10:53) → broker sent the Confidential Business Profile →
+detector advanced it to **cim_received**, all detected from Outlook
+automatically. It's now first in the ready-to-promote queue: open it, fill the
+real name/financials from the CBP, click Promote. (The aquatic contractor
+226-24809 still awaits the broker's countersign.)
+
 ## TL;DR
 All three lanes + PM shipped continuously overnight. 7 integration cycles, 6
 prod deploys, zero broken builds. The site now matches your two overnight
