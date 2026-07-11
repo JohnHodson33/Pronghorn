@@ -419,3 +419,16 @@ delisting.yml with dry_run=true first.
 - Health: bbf re-verified clean (2,102, 0 errors) this iter.
 - **4 reusable platforms now live** (bizmls, Tupelo, DealRelations, wpbdp) +
   ~28 sources.
+
+## 2026-07-11 — loop iter: HVAC-specialist broker added to DealRelations
+
+- Health: vr (366) + calder (37) re-run clean, 0 errors.
+- Opportunistic win: **Business Modification Group** (HVAC/plumbing-exclusive
+  M&A specialist) lists on DealRelations → added as an 11th subdomain. All 15
+  listings are thesis-vertical (HVAC/heating-and-air/plumbing by region).
+  Financials confidential (a 3rd DealRelations detail template with no public
+  $ values), so no tier hits, but they lifted the source's thesis-relevant
+  count 12→27 — captured as green-industry leads.
+- Reinforces the DealRelations platform value: specialist green-industry
+  brokers (not just generalists) use it. Worth periodically searching
+  "<vertical> dealrelations.com/listings" for more thesis-specialist subdomains.
