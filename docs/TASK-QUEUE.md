@@ -42,6 +42,21 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
   per subsector, broker-pipeline deal count vs proprietary targets fully
   enriched & outreach-ready; (d) visual — bars/funnels/stage columns, not rows.
   Use Lane C's aggregate views once they land; interim compute from tables.
+- 🔥🔥 **PURSUIT AUTOMATION ROUND 2** (John re-hit the gap live 7/11 overnight —
+  read the ADDENDUM in docs/LISTING-PURSUIT-FLOW.md): (a) **one-click send
+  surface**: queued inquiry emails visible + sendable in ONE click from listing
+  detail AND the Dashboard Key Actions widget (Outlook send fires only on
+  John's click); (b) **Claude-drafted per-listing inquiry note** — reference
+  listing specifics + 2–3 smart diligence questions, editable before queue;
+  (c) **NDA action queue**: NDA-required sources surface as a Key Action with
+  the NDA link, auto-advance via existing Outlook detector. Lane C owns the
+  send API + drafting; Lane B owns the surfaces.
+- 🔥 **Inquiry Co-pilot for form-based sources** (Lane C w/ Lane B surface, see
+  ADDENDUM): BizBuySell-style listings where inquiry = a login+form. Build the
+  co-pilot path — "Request info" opens the listing's inquiry page with a
+  copy-ready pre-filled contact block + note from inquiry_profiles (and, where
+  possible, a browser-automation prefill John triggers from his own machine).
+  John reviews + clicks submit; status flips to info_requested on click.
 - 🔥 **Unified Screening Criteria UX** (DASHBOARD-VISION §2.1): ONE criteria set
   with sliding-scale controls (EBITDA/revenue range, geography, subsector
   toggles) consumed by BOTH funnels — listings filtering AND list-building
