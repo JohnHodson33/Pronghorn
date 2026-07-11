@@ -8,7 +8,10 @@
     "businessbroker": {
       "enabled": true,
       "module": "./sources/businessbroker",
-      "max_pages_per_path": 5
+      "max_pages_per_path": 5,
+      "enrich_details": true,
+      "enrich_min_cash_flow": 300000,
+      "max_detail_enrich": 150
     },
     "bizquest": {
       "enabled": true,

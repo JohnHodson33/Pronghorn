@@ -81,10 +81,74 @@ class BusinessBrokerScraper extends SourceScraper {
           await this.sleep(DELAY_MS);
         }
       }
+
+      // Detail-page broker enrichment (name/email/phone) for outreach targets.
+      if (this.config.enrich_details !== false) {
+        await this.enrichBrokers(page, listings);
+      }
     });
 
     this.info(`Scrape complete — ${listings.length} unique listings (${pagesOk} pages ok, ${pageErrors} errors)`);
     return { listings, stats: { pagesOk, pageErrors } };
+  }
+
+  // The listing detail page embeds a JSON-LD Organization whose `founder.name`
+  // is the listing broker, `email` the broker/brokerage email, and `telephone`
+  // the phone (often "Not Disclosed"). Enrich a bounded subset — the listings
+  // most worth an outreach contact (cash flow ≥ floor) — to avoid fetching all
+  // ~700 detail pages every run. brokerage is inferred from the email domain.
+  async enrichBrokers(page, listings) {
+    const minCash = this.config.enrich_min_cash_flow ?? 300000;
+    const cap = this.config.max_detail_enrich ?? 150;
+    const targets = listings
+      .filter((l) => l.cash_flow != null && l.cash_flow >= minCash)
+      .slice(0, cap);
+    if (targets.length === 0) { this.info('Broker enrichment: no listings meet threshold'); return; }
+    this.info(`Broker enrichment: ${targets.length} listing(s) (cash flow ≥ ${minCash}, cap ${cap})`);
+
+    let enriched = 0;
+    let errors = 0;
+    for (const l of targets) {
+      try {
+        await page.goto(l.url, { waitUntil: 'domcontentloaded', timeout: 40000 });
+        const contact = await page.evaluate(() => {
+          const clean = (v) => (v && !/not\s*disclosed|undisclosed|confidential|n\/?a/i.test(v) ? String(v).trim() : null);
+          for (const s of document.querySelectorAll('script[type="application/ld+json"]')) {
+            try {
+              const j = JSON.parse(s.textContent);
+              if (j && j['@type'] === 'Organization') {
+                return {
+                  name: clean(j.founder && j.founder.name),
+                  email: clean(j.email),
+                  phone: clean(j.telephone),
+                };
+              }
+            } catch { /* skip */ }
+          }
+          return null;
+        });
+        if (contact && (contact.name || contact.email || contact.phone)) {
+          const domain = contact.email ? (contact.email.split('@')[1] || null) : null;
+          const genericInbox = domain && /^(gmail|yahoo|outlook|hotmail|aol|icloud|comcast|me)\./i.test(domain);
+          // Only seed the brokers table when there's a real person name — avoid
+          // rows named after an email domain. Raw contact is always kept below.
+          if (contact.name) {
+            l.broker = {
+              name: contact.name,
+              company: genericInbox ? null : domain, // brokerage domain, not a personal inbox
+              phone: contact.phone || null,
+              email: contact.email || null,
+            };
+          }
+          l.raw = { ...l.raw, detail_contact: { name: contact.name, email: contact.email, phone: contact.phone } };
+          enriched++;
+        }
+        await this.sleep(1200);
+      } catch (err) {
+        if (++errors >= 6) { this.warn('Broker enrichment: too many errors, stopping'); break; }
+      }
+    }
+    this.info(`Broker enrichment complete — ${enriched} enriched, ${errors} errors`);
   }
 
   parsePage(html, path) {
