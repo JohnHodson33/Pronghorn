@@ -6,19 +6,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ActivityForm from "@/components/ActivityForm";
 import CompanyEditor from "@/components/CompanyEditor";
+import ContactsSection from "@/components/ContactsSection";
 import DealControls from "@/components/DealControls";
+import MarketCheckCard from "@/components/MarketCheckCard";
 import { fetchCompanyDetail } from "@/lib/company-detail";
 import { money } from "@/lib/mock";
 
 const kindIcon: Record<string, string> = {
   meeting: "🗓", call: "📞", email: "✉️", note: "📝", task: "☑", doc: "📄",
-};
-
-const roleBadge: Record<string, string> = {
-  owner: "bg-emerald-100 text-emerald-800",
-  seller: "bg-emerald-100 text-emerald-800",
-  broker: "bg-sky-100 text-sky-800",
-  advisor: "bg-violet-100 text-violet-800",
 };
 
 const eventLabel: Record<string, string> = {
@@ -33,13 +28,8 @@ export default async function CompanyDetailV2({ id }: { id: string }) {
   if (!data) notFound();
   const { company: c, deal, contacts, activities, listings, comparison } = data;
 
-  const rich =
-    comparison?.companyMultiple != null && comparison?.industryMedian != null
-      ? comparison.companyMultiple > comparison.industryMedian
-      : null;
-
   return (
-    <div className="max-w-4xl p-8 space-y-6">
+    <div className="max-w-4xl p-4 md:p-8 space-y-6">
       <header>
         <Link href="/companies" className="text-sm text-emerald-700 hover:underline">← Companies</Link>
         <div className="mt-2 flex items-end justify-between">
@@ -106,87 +96,9 @@ export default async function CompanyDetailV2({ id }: { id: string }) {
         ))}
       </section>
 
-      {comparison && (
-        <section className="rounded-xl border border-zinc-200 bg-white p-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="text-sm">
-              <span className="font-semibold">Market check — {comparison.industry}: </span>
-              {comparison.companyMultiple !== null ? (
-                <>
-                  asking{" "}
-                  <span className={`font-bold ${rich ? "text-red-700" : "text-emerald-700"}`}>
-                    {comparison.companyMultiple.toFixed(1)}×
-                  </span>{" "}
-                  vs market median{" "}
-                  <span className="font-bold">
-                    {comparison.industryMedian === null ? "—" : `${comparison.industryMedian.toFixed(1)}×`}
-                  </span>
-                  {rich !== null && (
-                    <span className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                      rich ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-800"
-                    }`}>
-                      {rich ? "priced above market" : "at/below market"}
-                    </span>
-                  )}
-                </>
-              ) : (
-                <>
-                  market median{" "}
-                  <span className="font-bold">
-                    {comparison.industryMedian === null ? "—" : `${comparison.industryMedian.toFixed(1)}×`}
-                  </span>{" "}
-                  (no asking price on the deal yet)
-                </>
-              )}
-            </div>
-            <div className="text-xs text-zinc-500 tabular-nums">
-              n={comparison.industryN}
-              {comparison.bandKey && comparison.bandMedian !== null && (
-                <> · {comparison.bandKey} band: {comparison.bandMedian.toFixed(1)}× (n={comparison.bandN})</>
-              )}
-              {" · "}
-              <Link href="/analytics" className="text-emerald-700 hover:underline">Market Multiples →</Link>
-            </div>
-          </div>
-        </section>
-      )}
+      <MarketCheckCard check={comparison} />
 
-      <section className="space-y-3">
-        <h2 className="font-semibold">Contacts</h2>
-        <div className="grid gap-3 md:grid-cols-2">
-          {contacts.map((p) => (
-            <div key={p.id} className="rounded-xl border border-zinc-200 bg-white p-4">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold">{p.name ?? "Unnamed"}</span>
-                {p.role && (
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${roleBadge[p.role] ?? "bg-zinc-100 text-zinc-600"}`}>
-                    {p.role}
-                  </span>
-                )}
-              </div>
-              <div className="mt-2 space-y-0.5 text-sm">
-                {p.phone && <div>📞 {p.phone}</div>}
-                {p.email && (
-                  <div>
-                    ✉️ <a href={`mailto:${p.email}`} className="text-emerald-700 hover:underline">{p.email}</a>
-                  </div>
-                )}
-                {p.linkedin && (
-                  <div>
-                    <a href={p.linkedin} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline">LinkedIn ↗</a>
-                  </div>
-                )}
-                {p.notes && <p className="pt-1 text-xs text-zinc-500">{p.notes}</p>}
-              </div>
-            </div>
-          ))}
-          {contacts.length === 0 && (
-            <div className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-xs text-zinc-400 md:col-span-2">
-              No contacts on record yet.
-            </div>
-          )}
-        </div>
-      </section>
+      <ContactsSection companyId={c.id} contacts={contacts} />
 
       <section className="space-y-3">
         <h2 className="font-semibold">Listing history</h2>

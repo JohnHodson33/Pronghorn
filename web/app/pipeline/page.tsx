@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { deals as mockDeals, money, STAGES } from "@/lib/mock";
 import { fetchDeals } from "@/lib/crm";
+import { fetchProspecting, PURSUIT_LABEL } from "@/lib/pursuit";
 
 export const dynamic = "force-dynamic";
 
@@ -21,8 +22,14 @@ type Card = {
   nextStepDue: string | null;
 };
 
+const pursuitChip: Record<string, string> = {
+  info_requested: "bg-amber-100 text-amber-800",
+  nda_signed: "bg-sky-100 text-sky-800",
+  cim_received: "bg-violet-100 text-violet-800",
+};
+
 export default async function Pipeline() {
-  const live = await fetchDeals();
+  const [live, prospecting] = await Promise.all([fetchDeals(), fetchProspecting()]);
   const isLive = live !== null && live.length > 0;
   const cards: Card[] = isLive
     ? live!
@@ -32,7 +39,7 @@ export default async function Pipeline() {
   const passedCount = isLive ? 0 : mockDeals.filter((d) => d.passed).length;
 
   return (
-    <div className="flex h-screen flex-col p-8">
+    <div className="flex h-full flex-col p-4 md:p-8">
       <header className="mb-6 flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Deal Pipeline</h1>
@@ -55,6 +62,63 @@ export default async function Pipeline() {
       </header>
 
       <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto pb-4">
+        {/* Pre-company "Prospecting" lane — anonymized listings being pursued
+            (info_requested → nda_signed → cim_received), before promote. */}
+        <div className="flex w-72 shrink-0 flex-col rounded-xl border border-dashed border-amber-300 bg-amber-50/50">
+          <div className="px-4 py-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-amber-900">Prospecting</span>
+              <span className="rounded-full bg-white px-2 py-0.5 text-xs font-medium text-zinc-600">
+                {prospecting.length}
+              </span>
+            </div>
+            <div className="mt-1 text-xs text-amber-800/70">
+              Listings we&apos;re pursuing — pre-NDA, still anonymized
+            </div>
+          </div>
+          <div className="flex-1 space-y-3 overflow-y-auto px-3 pb-3">
+            {prospecting.map((p) => (
+              <Link
+                key={p.id}
+                href={`/listings/${p.id}`}
+                className="block rounded-lg border border-zinc-200 bg-white p-4 shadow-sm transition hover:border-emerald-500 hover:shadow-md"
+              >
+                <div className="line-clamp-2 text-sm font-semibold leading-snug">{p.name}</div>
+                <div className="mt-0.5 text-xs text-zinc-500">
+                  {[p.industry, [p.city, p.state].filter(Boolean).join(", "), p.sourceId]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </div>
+                <div className="mt-2 flex items-center justify-between text-sm tabular-nums">
+                  <span className="font-bold text-emerald-800">
+                    {money(p.cashFlow)}
+                    {p.cashFlowType && p.cashFlowType !== "unknown" && (
+                      <span className="ml-1 text-xs font-normal text-zinc-500">{p.cashFlowType}</span>
+                    )}
+                  </span>
+                  <span className="text-zinc-500">ask {money(p.asking)}</span>
+                </div>
+                <div className="mt-2 flex items-center justify-between">
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${pursuitChip[p.status] ?? "bg-zinc-100 text-zinc-600"}`}>
+                    {PURSUIT_LABEL[p.status] ?? p.status}
+                  </span>
+                  {p.statusSince && <span className="text-[10px] text-zinc-400">{p.statusSince}</span>}
+                </div>
+                {p.brokerName && (
+                  <div className="mt-2 border-t border-zinc-100 pt-1.5 text-xs text-zinc-600">
+                    <span className="font-medium text-zinc-400">Broker · </span>
+                    {p.brokerName}
+                  </div>
+                )}
+              </Link>
+            ))}
+            {prospecting.length === 0 && (
+              <div className="rounded-lg border border-dashed border-amber-300 px-3 py-6 text-center text-xs text-amber-800/60">
+                Nothing in pursuit — hit &quot;Request info&quot; on a listing
+              </div>
+            )}
+          </div>
+        </div>
         {STAGES.map((stage) => {
           const inStage = cards.filter((d) => d.stage === stage);
           const totRev = inStage.reduce((s, d) => s + (d.revenue ?? 0), 0);
