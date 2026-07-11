@@ -17,6 +17,8 @@ const log = require('../utils/logger');
 const { geocode } = require('./geocode');
 const { fetchOsmLeads } = require('./sources/osm');
 const { fetchTdlrLeads } = require('./sources/tdlr');
+const { fetchSerperLeads, COST_PER_CREDIT } = require('./sources/serper');
+const { fetchPlacesLeads } = require('./sources/places');
 
 const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
@@ -52,6 +54,18 @@ async function runList(list, dbKeys) {
     if (list.query_geography && !geo) log.warn(`Geocode failed for "${list.query_geography}" — OSM will be skipped`);
 
     const candidates = [];
+    let costActual = 0;
+
+    // Paid primary: Serper (Google Local/Maps/Web) — activates on key arrival
+    const serperEngines = ['serper_local', 'serper_maps', 'serper_web'].filter(on);
+    if (serperEngines.length) {
+      const { leads: sl, credits } = await fetchSerperLeads(
+        list.query_industry, list.query_geography, { engines: serperEngines }, log);
+      costActual += credits * COST_PER_CREDIT;
+      if (sl.length) log.info(`  serper: ${sl.length} candidates (${credits} credits)`);
+      candidates.push(...sl);
+    }
+
     if (on('osm')) {
       const osm = await fetchOsmLeads(list.query_industry, geo, list.radius_miles || 70, log);
       log.info(`  osm: ${osm.length} candidates`);
@@ -68,6 +82,13 @@ async function runList(list, dbKeys) {
       }
     }
 
+    // Rescue tier: official Google Places fires only when primaries miss target
+    if (on('google_places') && candidates.length < (list.target_count || 50)) {
+      const pl = await fetchPlacesLeads(list.query_industry, list.query_geography, log);
+      if (pl.length) log.info(`  places (rescue): ${pl.length} candidates`);
+      candidates.push(...pl);
+    }
+
     // Dedupe (merge source_tags/fields when two sources found the same company)
     const seen = new Map();
     for (const c of candidates) {
@@ -75,7 +96,7 @@ async function runList(list, dbKeys) {
       const prev = seen.get(key);
       if (prev) {
         prev.source_tags = [...new Set([...prev.source_tags, ...c.source_tags])];
-        for (const k of ['phone', 'website', 'address', 'city', 'state', 'owner_name']) prev[k] = prev[k] || c[k];
+        for (const k of ['phone', 'website', 'address', 'city', 'state', 'owner_name', 'rating', 'review_count']) prev[k] = prev[k] || c[k];
         if (c.license_ids) prev.license_ids = [...new Set([...(prev.license_ids || []), ...c.license_ids])];
       } else if (!dbKeys.has(key)) {
         seen.set(key, { ...c });
@@ -96,6 +117,8 @@ async function runList(list, dbKeys) {
         name: c.name, phone: c.phone, website: c.website,
         address: c.address, city: c.city, state: c.state,
         owner_name: c.owner_name || null,
+        rating: c.rating ?? null,
+        review_count: c.review_count ?? null,
         license_ids: c.license_ids || [],
         source_tags: c.source_tags,
         status: 'new',
@@ -107,7 +130,7 @@ async function runList(list, dbKeys) {
     }
 
     await supabase.from('lead_lists').update({
-      status: 'complete', leads_found: inserted, cost_actual: 0,
+      status: 'complete', leads_found: inserted, cost_actual: costActual,
     }).eq('id', list.id);
     log.info(`  → ${inserted} leads inserted (${ranked.length} unique candidates found)`);
     return inserted;
