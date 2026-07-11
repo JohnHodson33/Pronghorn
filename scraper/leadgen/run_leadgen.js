@@ -19,6 +19,20 @@ const { fetchOsmLeads } = require('./sources/osm');
 const { fetchTdlrLeads } = require('./sources/tdlr');
 const { fetchSerperLeads, COST_PER_CREDIT } = require('./sources/serper');
 const { fetchPlacesLeads } = require('./sources/places');
+const { fetchExaLeads, COST_PER_SEARCH: EXA_COST } = require('./sources/exa');
+const { fetchParallelLeads, COST_PER_SEARCH: PARALLEL_COST } = require('./sources/parallel');
+
+// Count only usable (as-yet-unseen vs DB) candidates toward the target, so
+// rescue tiers fire when we're genuinely short — not when raw counts look full
+// but dedupe would gut them.
+const usableCount = (cands, dbKeys) => {
+  const s = new Set();
+  for (const c of cands) {
+    const k = `${norm(c.name)}|${(c.state || '').toUpperCase()}`;
+    if (!dbKeys.has(k)) s.add(k);
+  }
+  return s.size;
+};
 
 const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
@@ -82,11 +96,26 @@ async function runList(list, dbKeys) {
       }
     }
 
-    // Rescue tier: official Google Places fires only when primaries miss target
-    if (on('google_places') && candidates.length < (list.target_count || 50)) {
+    // Rescue tiers fire in order, each only while we're still short of target.
+    const target = list.target_count || 50;
+    if (on('google_places') && usableCount(candidates, dbKeys) < target) {
       const pl = await fetchPlacesLeads(list.query_industry, list.query_geography, log);
       if (pl.length) log.info(`  places (rescue): ${pl.length} candidates`);
       candidates.push(...pl);
+    }
+    if (on('exa') && usableCount(candidates, dbKeys) < target) {
+      const need = target - usableCount(candidates, dbKeys);
+      const { leads: el, searches } = await fetchExaLeads(list.query_industry, list.query_geography, need, log);
+      costActual += searches * EXA_COST;
+      if (el.length) log.info(`  exa (rescue): ${el.length} candidates`);
+      candidates.push(...el);
+    }
+    if (on('parallel') && usableCount(candidates, dbKeys) < target) {
+      const need = target - usableCount(candidates, dbKeys);
+      const { leads: pl2, searches } = await fetchParallelLeads(list.query_industry, list.query_geography, need, log);
+      costActual += searches * PARALLEL_COST;
+      if (pl2.length) log.info(`  parallel (rescue): ${pl2.length} candidates`);
+      candidates.push(...pl2);
     }
 
     // Dedupe (merge source_tags/fields when two sources found the same company)
