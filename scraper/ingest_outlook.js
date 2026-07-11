@@ -23,6 +23,32 @@ const log = require('./utils/logger');
 
 const INTERNAL = /pronghornequity\.com|mba2026\.hbs\.edu|^\/O=EXCHANGELABS/i;
 
+// Mail → stage signals (John's ask 2026-07-11: "submitted the IOI" moves the
+// deal). Only OUR OWN sent mail can advance a stage, and stages only move
+// FORWARD — a reply quoting "attached IOI" can't regress or re-trigger anything
+// because the advance is skipped unless the new stage outranks the current one.
+const STAGE_ORDER = ['Sourced', 'Info Requested', 'Under Screening', 'IOI Submitted', 'LOI', 'Diligence', 'Closed'];
+const STAGE_SIGNALS = [
+  { re: /attached\s+(final\s+)?IOI|present .{0,40}IOI|IOI\s+(is\s+)?(attached|submitted|enclosed)/i, stage: 'IOI Submitted' },
+  { re: /attached\s+(final\s+)?LOI|signed\s+LOI|LOI\s+(is\s+)?(attached|submitted|enclosed)/i, stage: 'LOI' },
+];
+
+async function maybeAdvanceStage(company, deal, m, log) {
+  if (!deal || !INTERNAL.test(m.sender || '')) return; // only our own sent mail
+  const text = `${m.subject || ''} ${m.summary || ''}`;
+  const hit = STAGE_SIGNALS.find((s) => s.re.test(text));
+  if (!hit) return;
+  const { data: cur } = await supabase.from('deals').select('stage').eq('id', deal.id).single();
+  if (STAGE_ORDER.indexOf(hit.stage) <= STAGE_ORDER.indexOf(cur.stage)) return; // forward only
+  const { error } = await supabase.from('deals').update({ stage: hit.stage }).eq('id', deal.id);
+  if (error) { log.error(`stage advance ${company.name}: ${error.message}`); return; }
+  await supabase.from('activities').insert({
+    company_id: company.id, deal_id: deal.id, kind: 'note',
+    body: `[auto] Stage advanced ${cur.stage} → ${hit.stage} — detected from sent mail "${m.subject}" (${(m.receivedDateTime || '').slice(0, 10)})`,
+  });
+  log.info(`  ${company.name}: stage ${cur.stage} → ${hit.stage} (mail signal)`);
+}
+
 async function main() {
   const file = process.argv[2];
   if (!file || !fs.existsSync(file)) {
@@ -60,6 +86,7 @@ async function main() {
       });
       if (error) { log.error(`${company.name} / ${m.subject}: ${error.message}`); continue; }
       acts++;
+      await maybeAdvanceStage(company, deal, m, log);
 
       // unknown external sender → contact
       const email = (m.sender || '').toLowerCase();
