@@ -101,6 +101,12 @@
       "enabled": true,
       "module": "./sources/vr",
       "max_pages": 25
+    },
+    "franchiseresales": {
+      "enabled": true,
+      "module": "./sources/franchiseresales",
+      "green_only": true,
+      "max_details": 200
     }
   },
   "relevance": {
