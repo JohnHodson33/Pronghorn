@@ -32,6 +32,14 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 🔥🔥 **LISTING PURSUIT FLOW** (see docs/LISTING-PURSUIT-FLOW.md — John's core ask):
+  On listing detail/rows add **"Request info"** → sets listing_reviews.status
+  `info_requested`, logs activity, and (if broker email known) pre-drafts an
+  inquiry email QUEUED for John's one-click send (NEVER auto-send). Add a
+  **"Prospecting" lane to the pipeline** showing listings in info_requested /
+  nda_signed / cim_received (pre-company). Promote form pre-fills all known
+  listing data + blanks for post-NDA name/financials. Coordinate the status
+  enum + migration with Lane C.
 - 🔥 Listing detail `/listings/[id]`: tier reasoning, event history, promote action.
 - 🔥 Global search bar (companies+contacts+listings+deals).
 - 🔥 Contacts editable/linkable (role, attach to company + deal).
@@ -48,6 +56,12 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+- 🔥🔥 **PURSUIT AUTO-DETECT from Outlook** (docs/LISTING-PURSUIT-FLOW.md): extend
+  Outlook ingestion to detect NDA-executed/DocuSign-complete → matching listing
+  `nda_signed`; CIM/offering-memo/data-room → `cim_received` + attach doc; match by
+  broker email/domain + fuzzy business name. BACKFILL John's existing NDA
+  confirmations now. Build the listing_reviews status enum + timestamps migration
+  + "ready to promote" queue. The self-regulating loop. Coordinate migration w/ Lane B.
 - 🔥 **Enrichment worker** (see ENRICHMENT-STRATEGY.md): per lead/company, scrape
   website + Google + LinkedIn snippet, Claude-extract owner name/email/signals.
   ~Free. Write to leads/companies + activities. This is the core of the vision.
