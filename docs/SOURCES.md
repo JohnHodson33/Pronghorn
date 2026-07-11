@@ -89,7 +89,7 @@ browser sessions only).
 |---|---|---|
 | Synergy | ✅ **LIVE** | Clean cards; 20 listings |
 | Viking Mergers | ✅ **LIVE** | 45 listings, EBITDA-forward, Southeast priority states; 1 Tier 1 on first run |
-| Sunbelt | 🟢 buildable next | `/business-search/business-results/` has cards + financials; multi-office URLs |
+| Sunbelt | ✅ **LIVE** | Two-level crawl: category pages → detail pages for full financials incl. Adjusted EBITDA. Not login-gated. 36 listings/run (cap 120), 33 with clean cash flow |
 | Transworld | 🟡 WIP (adapter drafted, disabled) | Client-side app: `listing=` filter param cold-loads GLOBAL inventory (junk); pagination needs in-page JS routing (click next / intercept XHR) not URL loads; cards render post-JSON-LD so financial walk found nothing. 3,529 US listings behind it — worth a dedicated session. Junk test rows deleted |
 | VR Business Brokers | 🟡 medium | Corporate page aggregates, but listings live on per-franchise domains (vrmiamicenter.com etc.) — crawl fan-out needed |
 | Murphy Business | 🟡 medium | Listings page is a JS search app — needs network-request probe |

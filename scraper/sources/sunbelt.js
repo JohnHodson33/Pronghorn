@@ -138,8 +138,10 @@ class SunbeltScraper extends SourceScraper {
     });
     const urlLoc = card.url.match(/sunbeltnetwork\.com\/([a-z-]+)-([a-z]{2})\/buy-a-business/i);
     const state = stateFromText(stateName) || (urlLoc ? urlLoc[2].toUpperCase() : null);
-    // "South Florida" etc. aren't real cities — keep only if it looks like one
-    const cleanCity = city && !/^n\/a$/i.test(city) ? city : (urlLoc ? this.slugToName(urlLoc[1]) : null);
+    // Placeholder "cities" (Confidential / N/A / broad regions) aren't real —
+    // fall back to the URL-slug city, else leave null.
+    const isPlaceholder = (v) => !v || /^(n\/a|confidential|undisclosed|various|multiple|see description)$/i.test(v.trim());
+    const cleanCity = !isPlaceholder(city) ? city.trim() : (urlLoc ? this.slugToName(urlLoc[1]) : null);
 
     const title = ($('h1').first().text() || card.name || '').trim() || null;
     const bodyText = $('body').text().replace(/\s+/g, ' ');
