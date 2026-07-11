@@ -43,6 +43,30 @@ is a junction to the main checkout (fine for Node, NOT fine for Next/Turbopack �
   notes breadcrumbs until then; re-running it after 0004 migrates the fields
   into the proper columns.
 
+## 2026-07-10 — Free-source lead-gen: what actually works
+
+- **Overpass performance:** tag-VALUE queries (`craft=hvac`) are indexed and fast;
+  key-existence and name-regex filters scan globally and time out at metro scale
+  on public servers. The OSM source therefore always runs exact-tag clauses and
+  only adds a name-regex clause for city-scale searches (≤25 mi, nodes only).
+  Consequence: OSM is strong for tagged trades (HVAC/plumber/electrician/
+  gardener), weak for tree care/pest (no OSM tag) — Serper/Places remain the
+  name-search workhorses once John adds keys. bbox beats `around:` at radius.
+- **TDLR (data.texas.gov, Socrata, no key)** is the first license-board adapter:
+  complete active-operator lists for TX A/C + electrical contractors **including
+  owner names** (cuts VA-enrichment cost per LEADGEN-SOURCES). TX pest control
+  is under TX Dept of Agriculture with no open dataset — needs its own scraper.
+  Other Socrata states can reuse this adapter shape.
+- **Cross-source merge:** leads found by 2+ sources merge fields (OSM phone +
+  TDLR owner name) and rank first — multi-source = more likely real/established.
+  Dedupe key: normalized name + state, within-run and against existing leads.
+- **Ranking under target cap:** source count desc, then contact-info richness.
+- Verified live: HVAC/Dallas → 150 leads (59 OSM + 1,635 TDLR, capped at target);
+  Tree Care/Phoenix → 3 (honest OSM coverage); Scottsdale rerun → 0 new (dedupe
+  against Phoenix run worked).
+- PM: add `node leadgen/run_leadgen.js` to the daily schedule so pending lists
+  from the UI actually run.
+
 ## 2026-07-10 — dotenv "vestauth" banner: false alarm
 
 `dotenv@17.4.2` prints rotating ad tips (incl. `vestauth.com`). Diffed the installed

@@ -41,6 +41,12 @@ Status keys: ⬜ open · 🔨 in-progress (add your lane) · ✅ done (PM verifi
   editor (importer uses notes breadcrumbs until then).
 - 🔨 LANE C — Free-source list-building scraper (OSM Overpass, state license boards, SoS) — NO
   API keys needed; wires the List Building tab to actually produce leads.
+  STATUS: shipped & verified. `scraper/leadgen/run_leadgen.js` processes pending
+  lead_lists (OSM bbox-tag queries + TX TDLR license registry w/ owner names;
+  cross-source merge + dedupe + target cap). Test runs live: HVAC/Dallas 150 leads,
+  Tree Care/Phoenix 3. New data route `web/app/api/leads` (GET ?list=). PM ACTION:
+  add `node leadgen/run_leadgen.js` to the daily scheduled run so UI-created lists
+  get processed. Other state boards (AZ OPM, GA, NC…) are follow-on adapters.
 - ⬜ Notion meeting-notes ingestion (per MEETING-NOTES-DESIGN.md; needs John's token —
   bubble to PM if blocked).
 - ⬜ HubSpot one-way deal/company refresh (keep imported deals current); design the
