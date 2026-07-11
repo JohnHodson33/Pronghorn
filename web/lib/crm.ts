@@ -12,6 +12,8 @@ export type LiveDeal = {
   ebitdaType: string;
   asking: number | null;
   stage: string;
+  broker?: string;
+  brokerage?: string;
   nextStep: string | null;
   nextStepDue: string | null;
 };
@@ -31,6 +33,11 @@ type DealRow = {
     revenue: number | string | null;
     ebitda: number | string | null;
     ebitda_type: string | null;
+    contacts: { role: string | null; name: string | null }[] | null;
+    origin_listing:
+      | { brokers: { name: string | null; brokerage: string | null } | { name: string | null; brokerage: string | null }[] | null }
+      | { brokers: { name: string | null; brokerage: string | null } | { name: string | null; brokerage: string | null }[] | null }[]
+      | null;
   } | null;
 };
 
@@ -41,27 +48,37 @@ export async function fetchDeals(): Promise<LiveDeal[] | null> {
   const { data, error } = await serverDb()
     .from("deals")
     .select(
-      "id, name, stage, asking_price, next_step, next_step_due, companies(name, industry, city, state, revenue, ebitda, ebitda_type)"
+      "id, name, stage, asking_price, next_step, next_step_due, " +
+        "companies(name, industry, city, state, revenue, ebitda, ebitda_type, contacts(role, name), " +
+        "origin_listing:listings!companies_listing_id_fkey(brokers(name, brokerage)))"
     )
     .order("created_at", { ascending: false });
   if (error) {
     console.error("fetchDeals failed:", error.message);
     return null;
   }
-  return (data as unknown as DealRow[]).map((d) => ({
-    id: d.id,
-    company: d.companies?.name ?? d.name,
-    industry: d.companies?.industry ?? null,
-    city: d.companies?.city ?? null,
-    state: d.companies?.state ?? null,
-    revenue: num(d.companies?.revenue ?? null),
-    ebitda: num(d.companies?.ebitda ?? null),
-    ebitdaType: d.companies?.ebitda_type === "SDE" ? "SDE" : "EBITDA",
-    asking: num(d.asking_price),
-    stage: d.stage,
-    nextStep: d.next_step,
-    nextStepDue: d.next_step_due,
-  }));
+  return (data as unknown as DealRow[]).map((d) => {
+    // Broker: the company's role=broker contact first, listing broker fallback.
+    const contactBroker = d.companies?.contacts?.find((c) => c.role === "broker")?.name ?? undefined;
+    const ol = Array.isArray(d.companies?.origin_listing) ? d.companies?.origin_listing[0] : d.companies?.origin_listing;
+    const lb = Array.isArray(ol?.brokers) ? ol?.brokers[0] : ol?.brokers;
+    return {
+      id: d.id,
+      company: d.companies?.name ?? d.name,
+      industry: d.companies?.industry ?? null,
+      city: d.companies?.city ?? null,
+      state: d.companies?.state ?? null,
+      revenue: num(d.companies?.revenue ?? null),
+      ebitda: num(d.companies?.ebitda ?? null),
+      ebitdaType: d.companies?.ebitda_type === "SDE" ? "SDE" : "EBITDA",
+      asking: num(d.asking_price),
+      stage: d.stage,
+      broker: contactBroker ?? lb?.name ?? undefined,
+      brokerage: lb?.brokerage ?? undefined,
+      nextStep: d.next_step,
+      nextStepDue: d.next_step_due,
+    };
+  });
 }
 
 export type CompanyRow = {

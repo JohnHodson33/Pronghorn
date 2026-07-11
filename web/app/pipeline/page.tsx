@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { deals as mockDeals, money, STAGES } from "@/lib/mock";
 import { fetchDeals } from "@/lib/crm";
 
@@ -73,7 +74,11 @@ export default async function Pipeline() {
               </div>
               <div className="flex-1 space-y-3 overflow-y-auto px-3 pb-3">
                 {inStage.map((d) => (
-                  <div key={d.id} className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+                  <Link
+                    key={d.id}
+                    href={isLive ? `/deals/${d.id}` : "#"}
+                    className="block rounded-lg border border-zinc-200 bg-white p-4 shadow-sm transition hover:border-emerald-500 hover:shadow-md"
+                  >
                     <div className="font-semibold leading-snug">{d.company}</div>
                     <div className="mt-0.5 text-xs text-zinc-500">
                       {[d.industry, [d.city, d.state].filter(Boolean).join(", ")].filter(Boolean).join(" · ")}
@@ -111,7 +116,7 @@ export default async function Pipeline() {
                         )}
                       </div>
                     )}
-                  </div>
+                  </Link>
                 ))}
                 {inStage.length === 0 && (
                   <div className="rounded-lg border border-dashed border-zinc-300 px-3 py-6 text-center text-xs text-zinc-400">
