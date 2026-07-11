@@ -133,6 +133,29 @@ also executed the two swaps previously flagged as PM actions:
 - Dashboard v2 promoted to `/` (`app/page.tsx`); temp `/dashboard-v2` route
   deleted. Sidebar needs no change.
 
+## 2026-07-11 — Refill wave 2: listing detail, global search, contacts, unified lists
+
+- **`/listings/[id]`** — in-app listing detail: financials + implied multiple,
+  Claude screener tier + reasoning, price/event timeline (listing_events),
+  broker card, promote-to-CRM (existing /api/promote; real-name rule; shows
+  CRM link if already promoted). Listing names in the table open it; the
+  broker-site link is a small "source ↗" anchor.
+- **Global search** — `/api/search` (grouped ilike over deals/companies/
+  contacts/listings) + GlobalSearch top bar in `layout.tsx` (⌘K, debounced
+  dropdown, Enter = first hit). Layout now gives `main` the scroll so the
+  pipeline board fits (pipeline h-screen → h-full). NOTE: layout.tsx edited
+  (only Sidebar.tsx is reserved); flag if PM wants it back.
+- **Editable contacts** — ContactsSection on company profile + deal detail;
+  POST `/api/contacts`, PATCH `/api/contacts/[id]` (role whitelist; falls back
+  gracefully when migration 0004's firm/title columns aren't applied). Deal
+  attach derives via company; contact↔deal join table = Lane C call if wanted.
+- **Unified list pattern (John's callout)** — shared `lib/csv.ts`;
+  BrokersTable (search, industry/state/min-listings/has-contact filters, CSV),
+  ContactsTable (search, role chips, has-email/phone, row → company, CSV),
+  LeadsTable on Enrichment (search + CSV = the VA handoff file), CSV added to
+  CompaniesTable. Every list page — Listings, Companies, Contacts, Brokers,
+  Leads — is now searchable + filterable + exportable.
+
 ## Lane B session setup
 
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch

@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { money } from "@/lib/mock";
 import type { CompanyRow } from "@/lib/crm";
+import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 
 export default function CompaniesTable({ companies }: { companies: CompanyRow[] }) {
   const router = useRouter();
@@ -63,8 +64,36 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
           />
           Has deal
         </label>
-        <span className="ml-auto text-sm text-zinc-500 tabular-nums">
-          {rows.length} of {companies.length}
+        <span className="ml-auto flex items-center gap-3">
+          <span className="text-sm text-zinc-500 tabular-nums">
+            {rows.length} of {companies.length}
+          </span>
+          <button
+            onClick={() =>
+              downloadCsv(
+                `pronghorn-companies-${csvDate()}.csv`,
+                buildCsv(
+                  ["name", "industry", "city", "state", "revenue", "ebitda", "ebitda_type", "stage", "origin", "added"],
+                  rows.map((c) => [
+                    c.name,
+                    c.industry,
+                    c.city,
+                    c.state,
+                    c.revenue === null ? null : Number(c.revenue),
+                    c.ebitda === null ? null : Number(c.ebitda),
+                    c.ebitda_type,
+                    c.deals?.[0]?.stage ?? null,
+                    c.origin,
+                    c.created_at.slice(0, 10),
+                  ])
+                )
+              )
+            }
+            disabled={rows.length === 0}
+            className="rounded-lg bg-emerald-700 px-4 py-1.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
+          >
+            Export CSV ({rows.length})
+          </button>
         </span>
       </div>
 
