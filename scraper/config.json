@@ -76,6 +76,12 @@
     "sunacquisitions": {
       "enabled": true,
       "module": "./sources/sun"
+    },
+    "bizben": {
+      "enabled": true,
+      "module": "./sources/bizben",
+      "limit": 100,
+      "max_pages": 80
     }
   },
   "relevance": {
