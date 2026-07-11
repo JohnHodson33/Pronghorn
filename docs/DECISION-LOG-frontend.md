@@ -49,6 +49,18 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   account + API key → **add to John's bubbled decisions**.
 - **PM to wire:** Sidebar "Outreach Library (soon)" → `/outreach`.
 
+## 2026-07-10 — Cold Calling tab (`/cold-calling`)
+
+- **New route: `/cold-calling`** — one-screen call block: dialable-lead list
+  (any phone on record, not dead), selected company's info/signals/tel: link,
+  and the script auto-filled with that company's real data (falls back to a
+  review-count personalized line when AI enrichment hasn't run). Script edits
+  persist to localStorage.
+- **Next build (not in scaffold):** call-outcome logging (→ lead status +
+  activities) and reply.io call-task sync; **John decision:** Nooks parallel
+  dialer.
+- **PM to wire:** Sidebar "Cold Calling (soon)" → `/cold-calling`.
+
 ## Lane B session setup
 
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch
