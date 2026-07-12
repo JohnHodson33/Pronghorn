@@ -41,6 +41,15 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 🔥🔥🔥 **ENRICHMENT UX (John 7/11 23:40 — "the most important part"; read
+  docs/ENRICHMENT-UX.md FIRST, it's the design contract):** (a) typeahead on
+  industry + geography in the list-build form (suggest-as-you-type, select
+  from suggestions); (b) **checkbox selection + "Enrich selected (est. $X)"
+  button** on the Enrichment tab and list detail → POST /api/enrich; (c)
+  replace the List column with a verified **Industry column** (list becomes a
+  filter); (d) off-target flag chip + filter + discard action; (e) live
+  enriching→enriched status updates. John currently CANNOT operate this flow
+  at all — this outranks everything else in your lane.
 - 🔥🔥 **PASSED STAGE + DEALS TAB (John live feedback 7/11 ~11:45).** (a) Add a
   **"Passed"** deal stage: the deals now sitting in the pipeline's "Closed"
   column are deals we PASSED on (we have closed zero) — move them to Passed
@@ -125,6 +134,17 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+- 🔥🔥🔥 **ENRICHMENT BACKEND (John 7/11 23:40 — read docs/ENRICHMENT-UX.md;
+  outranks everything):** (a) **persist address/city/state at leadgen ingest**
+  (Serper/Places already return it — we drop it today; that's why John's 66
+  tree-care leads have no location. Backfill where possible); (b) **free-pass
+  enrichment chained automatically onto every list build** (website capture,
+  location fill, license cross-ref, dedupe — never ask, costs nothing); (c)
+  `enrichment_jobs` + **POST /api/enrich** (leadIds|listId) + runner so the UI
+  button actually works with no CLI; (d) **industry_verified classification**
+  during enrichment (Claude, actual business ≠ list intent; off_target flag
+  for catchy-name mismatches) + backfill existing enriched leads; (e) industry
+  taxonomy table + /api/taxonomy for Lane B's typeahead.
 - 🔨 LANE C — 🔥🔥 **LEAD → COMPANY PROMOTION — SHIPPED + BACKFILL RAN.**
   `scraper/promote_leads.js` (batch, --dry-run, idempotent) + `POST
   /api/leads/promote {leadId}` for Lane B's button (returns {companyId,
@@ -288,12 +308,11 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
   variables → Actions): `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`,
   `ANTHROPIC_API_KEY`, `EXA_API_KEY`, `HUNTER_API_KEY` — same values as
   scraper/.env. Until then, run them manually via workflow_dispatch.
-- ⏳ **Build-vs-buy: Kumo / BizScout — PRICED (7/11, John asked):** Kumo Pro =
-  **$30/mo or $288/yr recurring** (100k+ deals, daily updates, saved-search
-  alerts, 30-day money-back; free tier only shows listings 30+ days old).
-  BizScout Pro = **$83/mo or $996/yr recurring** (promo). PM recommendation:
-  Kumo Pro monthly — cheap vs 27-adapter maintenance, cancel anytime; skip
-  BizScout initially (pricier, smaller). Awaiting John's go/no-go.
+- ✅ **Kumo / BizScout: JOHN DECIDED 7/11 PM — NO for now, revisit later.**
+  (Kumo Pro $30/mo, BizScout $83/mo, both recurring.) Stay free-scraper-only;
+  revisit when proprietary prong is humming or coverage feels thin.
+- ✅ **Closed→Passed migration: DONE 7/11 PM** — John explicitly authorized;
+  PM ran it (14 deals now 'Passed', 0 'Closed'; verified). Pipeline board clean.
 - ⏳ **Apply migrations `0004_contact_directory.sql` + `0005_pursuit_flow.sql` +
   `0006_dashboard_aggregates.sql` in the Supabase SQL editor** (run in order) —
   PM verified 0005 is NOT applied (inquiry_profiles missing); no exec path
