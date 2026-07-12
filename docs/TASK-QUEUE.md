@@ -165,8 +165,15 @@ in MORNING-BRIEF.
   pipeline (horizontal scroll snap per stage column); (c) tables collapse to
   card layouts under ~640px instead of tiny columns; (d) MobileNav already
   reuses Sidebar — verify cost badge + new entries render in the drawer.
-  Test target: iPhone Safari. This unblocks John's daily mobile usage —
-  outranks Contacts↔Brokers.
+  Test target: iPhone Safari. This unblocks John's daily mobile usage.
+  **SCOPE CLARIFIED (John 7/12 ~13:45): mobile = FULL PARITY, not
+  triage-only.** Everything doable on desktop must be doable on mobile —
+  reviewing/approving outreach campaigns, building lists, working the CRM.
+  Desktop correctness stays priority #1; mobile ships in tandem, never
+  restricts scope. STANDING RULE for Lane B from now on: every new feature
+  ships with a mobile-usable view in the same unit (responsive by default,
+  card layouts under 640px) — mobile is not a later pass, it's part of done.
+  The on-the-go workflows above are simply the first wave to polish.
 - ⬜ Deal detail: market-multiple comparison widget (deal vs industry×size peers).
 - ⬜ Lead-list detail page: view a built list's leads + enrichment status; export CSV.
 - ⬜ Enrichment tab → functional: per-lead enrichment status, trigger enrichment.
