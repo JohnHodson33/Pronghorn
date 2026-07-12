@@ -622,3 +622,8 @@ network blip during the nightly run.
 - Angle B (NV green-industry): no clean standalone broker w/ public grid —
   results were BizBuySell/BMG (covered), Sunbelt Las Vegas (covered), IBBA/Procore
   directories. NV is Sunbelt+aggregator-dominated. No new source.
+
+## 2026-07-12 — loop iter (terse): hedgestone clean, no new source (pool/gutter)
+- Health: hedgestone clean (720, 0 errors). No new PM tasks.
+- Pool/gutter/chimney DealRelations search: hits on already-configured subdomains
+  (smallbusinessdeal, crowneatlantic) + covered aggregators. No new subdomain.
