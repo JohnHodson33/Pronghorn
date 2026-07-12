@@ -488,3 +488,10 @@ delisting.yml with dry_run=true first.
 - Health: tupelomarket clean (335, 0 errors). No new PM tasks.
 - Cleaning/janitorial vertical: only DealStream (blocked) + BizBuySell/BizQuest
   (covered/mirror). No new DealRelations subdomain or standalone broker.
+
+## 2026-07-11 — loop iter (terse): dealrelations health (resilient to 404), no new source
+- Health: dealrelations 190 listings; 1 detail 404 (a listing removed between
+  index+detail fetch on seilertucker) — adapter tolerated + continued (working
+  as designed). No new PM tasks.
+- Tree/arborist/nursery/irrigation vertical: only covered aggregators + blocked
+  DealStream. No new subdomain/broker.
