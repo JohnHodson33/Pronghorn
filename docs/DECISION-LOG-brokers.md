@@ -637,3 +637,8 @@ network blip during the nightly run.
   wp-views AJAX listings (the $ figures were a price-range FILTER, not listings);
   no SSR grid. Small NM market → not worth wp-views AJAX reverse-engineering.
   Synergy ABQ already covered. NM effectively covered/aggregator-dominated.
+
+## 2026-07-12 — loop iter (terse): health checks clean (viking, azbb)
+- Health: viking clean (45, 0 errors); azbb clean (20/20 — retry absorbed 429s
+  to 0 net errors, resilience confirmed under real Squarespace rate-limiting).
+  No new PM tasks. No new-source probe this iter (frontier explored; maintenance-weighted).
