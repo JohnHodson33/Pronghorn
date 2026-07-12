@@ -53,6 +53,18 @@ in MORNING-BRIEF.
   (submitted→triaged→building→shipped) so Tom sees ideas move; agent
   self-review + roadmap panel (PM curates). PM wires sidebar entry on merge.
   Ship the basic version TODAY — the Haiku refine-chat step is v2.
+- 🔥🔥🔥 **ENRICHMENT COMPLETENESS LEVELS replace binary "enriched" (John 7/12
+  ~16:05 — "enriched next to a lead with no owner info feels like nothing
+  happened"):** status stays lifecycle-only (new/enriching/…); ADD a computed
+  **completeness level** shown as the primary demarcation on every lead:
+  ● FULL = owner name + email + phone/LinkedIn · ◕ CONTACTABLE = owner name
+  + ≥1 channel · ◑ IDENTIFIED = owner name, no channel · ◔ BASIC = website/
+  location only · ○ RAW = nothing yet. (Lane B) level chips column w/ filter
+  + counts header ("80 leads: 12 full · 18 contactable · 25 identified…");
+  **default sort = most-complete first**, and after a run finishes the list
+  re-sorts so results float to the top; (Lane C) compute level server-side
+  (single source of truth, reuse for the dots + KPI). The run receipt (below)
+  reports in these terms: "80 processed → 45 now contactable or better."
 - 🔥🔥🔥 **ENRICHMENT PROGRESS VISIBILITY (John 7/12 ~15:50 — "needs to be a
   really well baked process"):** clicking Enrich must NEVER feel like nothing
   happened. (Lane C) enrichment_jobs gets progress fields — total, processed,
