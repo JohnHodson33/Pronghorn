@@ -12,7 +12,10 @@ const TENANT_ID      = process.env.GRAPH_TENANT_ID || 'common';
 const TOKEN_URL      = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`;
 const AUTH_URL       = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/authorize`;
 const GRAPH_SEND_URL = 'https://graph.microsoft.com/v1.0/me/sendMail';
-const SCOPES         = 'Mail.Send User.Read offline_access';
+// Mail.Read = scheduled pursuit auto-detect; Mail.ReadWrite = create drafts
+// in John's Drafts folder (his chosen review-then-send flow, 7/11). One
+// consent must capture everything — John should never re-auth twice.
+const SCOPES         = 'Mail.Send Mail.Read Mail.ReadWrite User.Read offline_access';
 const REDIRECT_URI   = 'http://localhost:3000/callback';
 
 // ---------------------------------------------------------------------------
