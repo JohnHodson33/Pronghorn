@@ -19,6 +19,12 @@ don't have, SENDING outreach, destructive actions). Bias hard to shipping.
 
 Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 
+**⚙️ HANDOFF READINESS (PM rule, 7/12):** every worker keeps a short
+"HANDOFF" section current at the TOP of its DECISION-LOG-<lane>.md (current
+task, next 2, gotchas). Sessions die at context limits — a replacement session
+must resume from one paste. PM watches lane commit recency and flags stalls
+in MORNING-BRIEF.
+
 ---
 
 ## Lane A — Brokers  (`scraper/sources/*`, `scraper/config.json`)
