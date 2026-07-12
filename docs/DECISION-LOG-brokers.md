@@ -507,3 +507,12 @@ delisting.yml with dry_run=true first.
   Asking/Owner-Benefit but only 5 listings → deprioritized (too small; noted as
   candidate if it grows).
 - Health: bizmls clean (143). No new PM tasks. Source count ~30.
+
+## 2026-07-11 — loop iter (terse): painting/concrete vertical — Canadian subdomain skipped
+- Health: empire clean (26, 0 errors). No new PM tasks.
+- Painting/concrete/paving search: 1 new DealRelations subdomain **scottmckenzie**
+  but it's a BC/Canada broker (Fraser Valley) — all 15 listings off US thesis
+  (no US state). SKIPPED to avoid geo-filtered clutter. Rest were DealStream
+  (blocked) + BizBuySell/bizben (covered).
+- Note: DealRelations includes Canadian brokers; dedupe-check geography before
+  adding (US-thesis only).
