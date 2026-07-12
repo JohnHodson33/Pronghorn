@@ -21,7 +21,7 @@ class SunAcquisitionsScraper extends SourceScraper {
 
     let links;
     try {
-      const res = await fetch(INDEX_URL, { headers: { 'User-Agent': UA } });
+      const res = await this.fetchRetry(INDEX_URL, { headers: { 'User-Agent': UA } });
       if (!res.ok) throw new Error(`HTTP ${res.status} on index`);
       const $ = cheerio.load(await res.text());
       links = [...new Set(

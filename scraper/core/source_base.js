@@ -31,6 +31,32 @@ class SourceScraper {
 
   parseMoney(val) { return parseMoney(val); }
 
+  /**
+   * fetch() with retry + exponential backoff on transient failures (429, 5xx,
+   * and socket/TLS/network errors like undici's "fetch failed"). Returns the
+   * Response. Shared so single-request SSR adapters don't silently drop a
+   * source on a momentary network blip during the nightly run.
+   */
+  async fetchRetry(url, opts = {}, tries = 4) {
+    let lastErr;
+    for (let attempt = 1; attempt <= tries; attempt++) {
+      try {
+        const res = await fetch(url, opts);
+        if (res.status === 429 || res.status >= 500) throw new Error(`HTTP ${res.status}`);
+        return res;
+      } catch (err) {
+        lastErr = err;
+        const msg = `${err.message} ${err.cause ? err.cause.code || err.cause.message || '' : ''}`;
+        const transient = /HTTP (429|5\d\d)|fetch failed|ECONN|ETIMEDOUT|EAI_AGAIN|socket|network|TLS|UND_ERR/i.test(msg);
+        if (!transient || attempt === tries) break;
+        const backoff = 1500 * 2 ** (attempt - 1); // 1.5s, 3s, 6s
+        this.warn(`fetch ${err.message} — retry ${attempt}/${tries - 1} in ${backoff}ms`);
+        await this.sleep(backoff);
+      }
+    }
+    throw lastErr;
+  }
+
   /** Build a canonical Listing tagged with this source's name. */
   listing(fields) { return createListing(this.name, fields); }
 

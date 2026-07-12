@@ -18,11 +18,11 @@ class CalderScraper extends SourceScraper {
   async scrape() {
     let html;
     try {
-      const res = await fetch(INDEX_URL, { headers: { 'User-Agent': UA } });
+      const res = await this.fetchRetry(INDEX_URL, { headers: { 'User-Agent': UA } });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       html = await res.text();
     } catch (err) {
-      this.error(`Fetch failed: ${err.message}`);
+      this.error(`Fetch failed after retries: ${err.message}`);
       return { listings: [], stats: { pagesOk: 0, pageErrors: 1 } };
     }
 
