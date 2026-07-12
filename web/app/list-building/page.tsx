@@ -35,9 +35,14 @@ export default function ListBuilding() {
   const [enabled, setEnabled] = useState<Set<string>>(new Set(LEADGEN_SOURCES.filter((s) => s.defaultOn).map((s) => s.id)));
   const [recent, setRecent] = useState<LeadList[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
+  const [keyStatus, setKeyStatus] = useState<Record<string, boolean> | null>(null);
 
   useEffect(() => {
     fetch("/api/lead-lists").then((r) => (r.ok ? r.json() : [])).then(setRecent).catch(() => {});
+    fetch("/api/leadgen-keys")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => setKeyStatus(j?.keys ?? null))
+      .catch(() => {});
   }, []);
 
   // Industry typeahead: canonical taxonomy from /api/taxonomy (objects with
@@ -163,20 +168,40 @@ export default function ListBuilding() {
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{s.name}</span>
                   <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${costBadge[s.cost]}`}>{s.cost}</span>
-                  {s.needsKey && <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] text-zinc-500">needs key</span>}
+                  {s.needsKey &&
+                    (keyStatus === null ? (
+                      <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] text-zinc-400">checking key…</span>
+                    ) : keyStatus[s.needsKey] ? (
+                      <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-800">connected ✓</span>
+                    ) : (
+                      <span className="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-700">key missing</span>
+                    ))}
                 </div>
                 <div className="text-xs text-zinc-500">{s.desc}</div>
               </div>
             </label>
           ))}
         </div>
-        {anyKeyNeeded && (
-          <p className="mt-4 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
-            Paid/rescue sources need API keys (Serper, Google Places, Parallel, Exa) before they run.
-            Free sources (OpenStreetMap, BBB, license boards, associations, SoS) run without keys — the
-            free-source scraper is the next build. Queued lists wait until a source worker is connected.
-          </p>
-        )}
+        {anyKeyNeeded && keyStatus !== null && (() => {
+          const missing = [
+            ...new Set(
+              LEADGEN_SOURCES.filter((s) => s.needsKey && enabled.has(s.id) && !keyStatus[s.needsKey!]).map(
+                (s) => s.needsKey!
+              )
+            ),
+          ];
+          return missing.length > 0 ? (
+            <p className="mt-4 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              Missing keys for enabled sources: <span className="font-semibold">{missing.join(", ")}</span> —
+              add them to <code>scraper/.env</code> (and Vercel env). Sources with keys and all free sources
+              run normally.
+            </p>
+          ) : (
+            <p className="mt-4 rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+              All enabled sources are connected ✓ — builds run end to end.
+            </p>
+          );
+        })()}
       </section>
 
       <section className="rounded-xl border border-zinc-200 bg-white">
