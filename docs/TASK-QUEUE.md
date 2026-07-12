@@ -143,6 +143,14 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+- 🔥 **STAGE OUTLOOK RE-AUTH FOR JOHN'S MORNING (7/12):** John will approve
+  the expanded permissions first thing tomorrow. BEFORE he does: extend the
+  device-code scopes in `scraper/delivery/outlook.js` (or the auth path
+  `auth_email.js` uses) to include **Mail.Read + Mail.ReadWrite** alongside
+  the existing send/offline scopes, verify the refresh token saves with the
+  new scopes, and leave a one-line "READY — run `node auth_email.js`" note
+  here. His approval must capture ALL needed scopes in one pass — he should
+  never have to re-auth twice.
 - 🔥🔥 **COST METERING (John 7/12 — read docs/COST-TRACKING.md):** usage_events
   table (migration 0007) + instrument every paid call site (enrich, leadgen,
   draft) with cost_usd inserts + subscriptions table + **GET /api/costs**
