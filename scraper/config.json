@@ -145,6 +145,10 @@
       "enabled": true,
       "module": "./sources/alliant"
     },
+    "intermountain": {
+      "enabled": true,
+      "module": "./sources/intermountain"
+    },
     "wpbdp": {
       "enabled": true,
       "module": "./sources/wpbdp",
