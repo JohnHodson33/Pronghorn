@@ -583,3 +583,9 @@ network blip during the nightly run.
 - Health: empire clean (26, 0 errors). No new PM tasks.
 - Priority-state broker searches (angle B) now yielding: BBAZ (AZ), Alliant (TN),
   Empire (NC), Southern Mergers (NC/SC) — home-turf standalone brokers w/ grids.
+
+## 2026-07-12 — loop iter (terse): GA broker search — none usable; alliant clean
+- Health: alliant clean (11, 0 errors). No new PM tasks.
+- Angle B (GA green-industry): North Atlanta Business Brokers = JS marketing
+  page, no listings feed (only census/analytics XHR). FCBB Atlanta already
+  covered via fcbb API; BMG already a DealRelations subdomain. No new source.
