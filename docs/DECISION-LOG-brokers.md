@@ -662,3 +662,11 @@ network blip during the nightly run.
 - **For PM/John:** if browser-run cost (puppeteer, ~25 pages nightly) ever needs
   trimming, linkbusiness is the first comps-only source to cut — but only if the
   multiples engine doesn't want the extra US comps. No action taken.
+
+## 2026-07-12 — loop iter (terse): dealrelations + calder clean; merged PM enrichment
+- Merged origin/main (PM's one-click cascading enrichment + graph_mail.js — other
+  lanes, no Lane A change). No new Lane A tasks.
+- Health: dealrelations 190 across all 13 subdomains (10 w/ agent contacts),
+  calder 37 — clean. One `cannabinoid` detail 404 = benign listing-level
+  delisting churn (a slug on an index whose detail page is gone), not a
+  subdomain/config issue; cannabis listing, non-thesis regardless.
