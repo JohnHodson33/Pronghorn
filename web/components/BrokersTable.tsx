@@ -1,17 +1,28 @@
 "use client";
 
-// Brokers as a searchable/filterable/exportable table — same pattern as
-// Broker Listings (John's callout). Coverage-derived filters: industry,
-// state, min listings; search hits name/brokerage.
+// Broker Directory — the scraped universe of brokers (cold), distinct from
+// Contacts (curated relationships). Same searchable/filterable/exportable
+// pattern as Broker Listings; "Add to Contacts" promotes a row into the CRM.
+import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { BrokerRow } from "@/lib/crm";
 import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 
 const inputCls = "rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-600";
 
 export default function BrokersTable({ brokers }: { brokers: BrokerRow[] }) {
+  const router = useRouter();
+  const [busy, setBusy] = useState<string | null>(null);
   const industries = useMemo(() => [...new Set(brokers.flatMap((b) => b.industries))].sort(), [brokers]);
   const states = useMemo(() => [...new Set(brokers.flatMap((b) => b.states))].sort(), [brokers]);
+
+  async function addToContacts(id: string) {
+    setBusy(id);
+    const res = await fetch(`/api/brokers/${id}/add-to-contacts`, { method: "POST" });
+    setBusy(null);
+    if (res.ok) router.refresh();
+  }
 
   const [q, setQ] = useState("");
   const [industry, setIndustry] = useState("all");
@@ -94,12 +105,17 @@ export default function BrokersTable({ brokers }: { brokers: BrokerRow[] }) {
               <th className="px-4 py-3">Industries covered</th>
               <th className="px-4 py-3">States</th>
               <th className="px-4 py-3">Contact</th>
+              <th className="px-4 py-3 text-right">CRM</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
             {rows.map((b) => (
               <tr key={b.id} className="align-top hover:bg-zinc-50">
-                <td className="px-4 py-3 font-medium">{b.name}</td>
+                <td className="px-4 py-3 font-medium">
+                  <Link href={`/brokers/${b.id}`} className="hover:text-emerald-700 hover:underline">
+                    {b.name}
+                  </Link>
+                </td>
                 <td className="px-4 py-3 text-zinc-600">{b.brokerage ?? "—"}</td>
                 <td className="px-4 py-3 text-right font-semibold tabular-nums">{b.listingCount}</td>
                 <td className="max-w-md px-4 py-3">
@@ -124,11 +140,27 @@ export default function BrokersTable({ brokers }: { brokers: BrokerRow[] }) {
                     "—"
                   )}
                 </td>
+                <td className="whitespace-nowrap px-4 py-3 text-right">
+                  {b.contactId ? (
+                    <Link href="/contacts" className="text-xs font-semibold text-emerald-700 hover:underline">
+                      in Contacts ✓
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => addToContacts(b.id)}
+                      disabled={busy === b.id}
+                      className="rounded-md border border-zinc-300 px-2.5 py-1 text-xs font-semibold text-zinc-600 hover:border-emerald-600 hover:text-emerald-700 disabled:opacity-50"
+                      title="Promote into the curated Contacts CRM"
+                    >
+                      {busy === b.id ? "…" : "+ Contacts"}
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-sm text-zinc-400">
+                <td colSpan={7} className="px-4 py-10 text-center text-sm text-zinc-400">
                   No brokers match the current filters.
                 </td>
               </tr>

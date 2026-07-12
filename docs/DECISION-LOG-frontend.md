@@ -273,6 +273,25 @@ also executed the two swaps previously flagged as PM actions:
 - All new-column selects (industry_verified/off_target) use the tolerant
   retry pattern until Lane C's classification migration lands.
 
+## 2026-07-12 — Contacts↔Brokers rationalization + taxonomy alignment
+
+- **Broker Directory reframe**: /brokers retitled with the explainer John
+  asked for (directory = scraped universe, Contacts = curated relationships);
+  per-row **"+ Contacts"** promotes a broker into the CRM via new idempotent
+  `POST /api/brokers/[id]/add-to-contacts` (role=broker, broker_id link,
+  firm/origin when 0004 is applied); promoted rows show "in Contacts ✓".
+- **`/brokers/[id]` detail page**: reachability, specialties, and every
+  listing they represent (live/delisted, tier, multiple) linking into
+  /listings/[id]. Broker names in the directory table link here.
+- **Contacts**: broker-linked rows show "directory →" back to their
+  /brokers/[id] record. Note: the 18 HubSpot-imported broker contacts carry
+  no broker_id yet — they'll get the directory link when Lane C's
+  relationship repair matches them.
+- **Taxonomy typeahead aligned to Lane C's real /api/taxonomy**: it returns
+  {industries:[{label, aliases,…}]} and ignores ?q= — the client now fetches
+  once and filters labels+aliases locally ("exterminator" finds Pest
+  Control); static fallback kept.
+
 ## Lane B session setup
 
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch
