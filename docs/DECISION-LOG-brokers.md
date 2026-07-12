@@ -604,3 +604,15 @@ network blip during the nightly run.
 - Health: fcbb clean (825, 0 errors). No new PM tasks.
 - Angle B priority-state tally: BBAZ(AZ), Alliant(TN), Empire(NC), Southern
   Mergers(NC/SC), InterMountain(CO) — 5 home-turf brokers built this session.
+
+## 2026-07-12 — loop iter: NEW source Zion Business Brokers (UT — Wix-cracked)
+- Angle B (UT green-industry) → **Zion Business Brokers** (Utah priority state,
+  HVAC/landscaping focus). Wix site — cracked by parsing the SSR'd
+  .wixui-rich-text blocks (Price/Revenues/SDE/Location/Title), grouping at
+  "Price:" markers. 4 listings, all full financials + thesis (roofing/window,
+  commercial landscaping, window cleaning). 1 Tier 1 (commercial landscaping).
+  Source count ~34. Note: Wix rich-text parsing is a new reusable technique for
+  other Wix broker sites.
+- Health: intermountain clean (8, 0 errors). No new PM tasks.
+- Angle B priority-state tally now 6: BBAZ(AZ), Alliant(TN), Empire(NC),
+  Southern Mergers(NC/SC), InterMountain(CO), Zion(UT).
