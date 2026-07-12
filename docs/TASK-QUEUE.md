@@ -143,14 +143,23 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
   adding (+`SERPER_API_KEY`, `GOOGLE_PLACES_API_KEY`). Until secrets land,
   runs also happen on any local worker pass (`node leadgen/run_leadgen.js`).
   Enrichment chaining stays in Lane A's enrichment.yml (2x daily).
-- 🔥 **OUTREACH TRACKING ROBUSTNESS (John 7/11, design w/ Lane B):** cold
-  outreach needs more than the pipeline's Prospecting column: per-owner/company
-  outreach state (not_started/contacted/replied/meeting/nurture), last touch,
-  **next follow-up due date** surfaced in Dashboard Key Actions when due,
-  channel history (email/call/linkedin), notes. Everything still rolls into
-  the single pipeline view, but outreach gets its own working surface (extend
-  Outreach + Cold Calling tabs into a real workspace). Draft the model, then
-  build with Lane B.
+- 🔨 LANE C — 🔥 **OUTREACH TRACKING — MODEL + API SHIPPED.** Migration
+  `0007_outreach_tracking.sql`: `outreach_tracks` (company_id PK, state
+  not_started|contacted|replied|meeting|nurture|dead, channel_last,
+  last_touch_at, next_followup_due, owner_contact_id, notes). API
+  `/api/outreach-tracks`: GET (?state=, ?due=1, joined w/ company+owner) +
+  POST upsert — recording a touch also mirrors an activity onto the company
+  feed. Dashboard Key Actions gains kind **followup_due** (due ≤ tomorrow,
+  dead excluded). Degrades with apply-0007 message until migration lands
+  (verified). LANE B: build the Outreach/Cold Calling surfaces on this.
+- 🔨 LANE C — 🔥 **FORM-INQUIRY CO-PILOT BACKEND — SHIPPED (preview-first, per
+  John's review gate).** `POST /api/inquiry-copilot {listingId}` → preview
+  payload: listing's inquiry URL + copy-ready fields (name/email/phone from
+  inquiry_profiles, Claude-drafted 60-100w form note; graceful fallback until
+  ANTHROPIC_API_KEY is in web env). NOTHING is ever submitted by the API.
+  `{confirm:true}` after John submits → info_requested + audit event
+  (inquiry_form_submitted). Verified live against a BizBuySell Tier-1 listing.
+  LANE B: render the preview + confirm flow on listing rows/detail.
 - 🔨 LANE C — 🔥 **DATA FIX for Passed stage — PREPARED, PM EXECUTES.**
   `scraper/fix_passed_stage.js` (idempotent; moves stage Closed→Passed only
   where a pass reason exists). Lane C's safety layer correctly blocked running
