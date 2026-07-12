@@ -698,3 +698,11 @@ network blip during the nightly run.
   "Five Star Painters", "ServiceMaster Restore", "CertaPro" all now KEEP (would
   have dropped pre-7/12); generic control DROPs; "Downtown Restaurant" DROPs —
   confirming bare `restore` does NOT false-match `restaurant` (whole-word bound).
+
+## 2026-07-12 — loop iter (terse): TABB probed → BizBuySell mirror, skipped
+- Up to date, no new PM tasks. New-source probe (angle: TX state broker assoc).
+- **Texas Assoc of Business Brokers (tabb.org)** — TX priority state, oldest US
+  broker assoc (1979). Listings page (/bizbuysell.php) is an `<iframe src=
+  bizbuysell.com/search/tabb/...>` — a broker-filtered subset of BizBuySell,
+  which we already scrape in full. Zero unique inventory → SKIP (mirror, same
+  call as disabled bizquest). Other assoc MLS (WA CommercialMLS) = non-priority.
