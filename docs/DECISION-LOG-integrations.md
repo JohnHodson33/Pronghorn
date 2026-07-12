@@ -2,21 +2,25 @@
 
 ## 🤝 HANDOFF (keep current — replacement session resumes from this)
 
-**State (2026-07-12 ~01:15):** Worktree `C:\Users\johnd\Pronghorn-integrations`,
+**State (2026-07-12 ~16:45):** Worktree `C:\Users\johnd\Pronghorn-integrations`,
 branch `lane/integrations` (push after each unit; PM merges). Env files copied
-from main checkout; scraper/node_modules is a junction; web/node_modules is a
-real install. Everything shipped + verified; queue statuses in TASK-QUEUE.md
-are accurate.
+from main checkout; scraper/node_modules junction; web/node_modules real
+install. Migrations now 0004–0010 pending John/PM in Supabase SQL editor.
 
-**Current task:** none in flight — loop is in monitor mode (pursuit re-scans,
-enrichment/promotion ticks on new leads, respond to PM relays).
+**Current task:** loop in build+monitor mode. Just shipped cascading enrichment
+(tier2.js), completeness levels, job progress, Outlook drafts (John-authorized
+in chat), Graph live ingestion, feedback pipeline.
 
-**Next 2:** (1) `/api/criteria/keywords` is live but gated on ANTHROPIC_API_KEY
-in web env (PM/John adds to Vercel); verify once keyed. (2) After John's
-morning re-auth + migrations 0004–0009: re-run `import_hubspot_contacts.js`
-(moves breadcrumbs into real columns), run `backfill_costs.js` once, PM runs
-`fix_passed_stage.js` if not already, then schedule `ingest_pursuit.js` +
-`enrich/run_jobs.js` on the workflows.
+**Next 2:** (1) Feedback-poll standing rule — each loop iteration, GET
+/api/feedback?status=submitted, triage Lane-C items into TASK-QUEUE, flip
+'triaged' (needs 0010 applied to have data). (2) Location-pollution cleanup
+pass (Lane A owns the parser fix; Lane C re-derives city/state for polluted
+rows once parsers fixed).
+
+**Post-migration (0004–0010) checklist:** re-run `import_hubspot_contacts.js`
+(breadcrumbs→columns), `backfill_costs.js` once, `backfill_industry.js` for the
+rest, verify `/api/enrich` `/api/feedback` `/api/costs` `/api/outreach-tracks`
+light up, schedule the 3 GH workflows (leadgen/enrichment-jobs/pursuit-live).
 
 **Gotchas a replacement MUST know:**
 - **Outlook write-back (drafts/sends/scopes) is HARD-BLOCKED in sessions

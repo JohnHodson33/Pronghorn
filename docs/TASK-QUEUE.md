@@ -218,16 +218,28 @@ in MORNING-BRIEF.
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
-- 🔥🔥 **RUNNER MUST SELF-DRAIN + RE-ENRICH NO-OP BUG (John hit both 7/12
-  ~15:20):** John queued 80 leads via the UI button; the job sat unprocessed
-  (nothing runs run_jobs.js continuously) and when PM drained it manually the
-  runner NO-OPed ("No un-enriched leads") because all 80 were already
-  status='enriched' from tier 1. Fix: (a) run_jobs on a tight schedule (every
-  loop iteration + a GH workflow every 15min); (b) jobs on already-enriched
-  leads must CASCADE to tier 2 / fill-missing-fields, never no-op — this is
-  the one-click cascade contract; ship the cascade path FIRST. (c) build the
-  website-discovery pass (many skips = no website stored; find via Exa/Serper
-  then re-run tier 1).
+- 🔨 LANE C — 🔥🔥 **RUNNER SELF-DRAIN + CASCADE NO-OP — FIXED + SHIPPED.**
+  (a) `.github/workflows/enrichment-jobs.yml` drains the queue every 15 min +
+  every worker loop pass. (b) `run_jobs.js` now CASCADES: tier-1 for new leads,
+  then `enrich/tier2.js` (Hunter email + Exa LinkedIn, early exit when owner
+  complete, quota-budgeted, no company-line phones) for enriched-but-incomplete
+  — never no-ops. Live test: 10/15 LinkedIn URLs found. (c) website-discovery
+  already exists in run_enrichment.js (Exa, --retry-skipped). `/api/enrich`
+  estimate is now cascade-aware (tier1+tier2, verified: 21+7 → $0.28); job
+  progress counts update live for the UI banner.
+- 🔨 LANE C — 🔥🔥🔥 **COMPLETENESS LEVELS — SHIPPED.** `web/lib/completeness.ts`
+  (FULL/CONTACTABLE/IDENTIFIED/BASIC/RAW, single source of truth) + `/api/leads`
+  computes level server-side, sorts most-complete-first, returns per-level
+  counts. Live: 451 leads = 14 full / 62 contactable / 128 identified / 239
+  basic / 8 raw. Lane B: render dots + filter + counts header off this.
+- 🔨 LANE C — 🔥🔥 **FEEDBACK PIPELINE — SHIPPED (Tom joins today).**
+  `0010_feedback.sql` + `/api/feedback` GET/POST/PATCH (author John|Tom, type,
+  page, lifecycle submitted→triaged→building→shipped→verified, per-status
+  counts). Degrades w/ apply-0010 note (verified). Lane B builds /improvements
+  on this. STANDING RULE now active for Lane C: each loop polls
+  ?status=submitted, triages Lane-C items, flips 'triaged'.
+- ✅ Contact-carry (Sage Tree Care) + Hunter $49 / Vercel Pro $20 planned subs
+  — done in promote_leads.js + migrations 0009/0010.
 - 🔥 **LOCATION DATA POLLUTION (Lane A parsers + Lane C cleanup, John 7/12):**
   tupelomarket + businessbroker adapters write description text into
   listings.city (e.g. "HVAC BusinessesHVAC Businesses…Bellingham"). Fix both
