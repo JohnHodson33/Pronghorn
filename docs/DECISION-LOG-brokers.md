@@ -642,3 +642,23 @@ network blip during the nightly run.
 - Health: viking clean (45, 0 errors); azbb clean (20/20 — retry absorbed 429s
   to 0 net errors, resilience confirmed under real Squarespace rate-limiting).
   No new PM tasks. No new-source probe this iter (frontier explored; maintenance-weighted).
+
+## 2026-07-12 — loop iter: linkbusiness low-fit flag investigated (RESOLVED, keep as comps)
+- **Full source-quality audit run:** 19,271 listings, 113 T1 + 234 T2, all
+  enabled sources re-scraped 07-12 (nightly path healthy). Only linkbusiness +
+  (disabled) bizquest carry the low-value flag.
+- **Ran down the linkbusiness 0-thesis-fit flag** (483 active, 0 T1/T2). Probed
+  the DB: parse is HEALTHY — 0 null industries, well-categorized, 204/483 w/ CF.
+  The 0-fit is GENUINE, not a bug: LINK-US inventory skews restaurant/food (128),
+  retail (89), professional services (38), manufacturing (31), hospitality (24),
+  healthcare (22). Green tail is real but thin (~22: cleaning×8, property
+  maint×5, plumbing×2, tree care×2, hvac×2, restoration/pool/fence×1) AND those
+  are small sub-$300K-SDE shops that can't clear the screen.
+- **Decision: KEEP (do not disable).** Unlike bizquest (pure BizBuySell mirror),
+  linkbusiness is 483 UNIQUE US listings w/ 204 CF-bearing comps across many
+  industries — real denominator value for the market-multiples engine + broker
+  contacts. Cutting unique comp data is a PM call, not a lane cleanup. Reclassify
+  mentally as a comps-only source, not a deal-surfacing one.
+- **For PM/John:** if browser-run cost (puppeteer, ~25 pages nightly) ever needs
+  trimming, linkbusiness is the first comps-only source to cut — but only if the
+  multiples engine doesn't want the extra US comps. No action taken.
