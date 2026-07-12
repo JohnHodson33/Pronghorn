@@ -24,6 +24,12 @@ everything awaiting you or recently decided. I keep it current; ask me
   ~2 min). 🅿️ HubSpot token PARKED per John (Pronghorn is the system of
   record; reactivate only if Tom still works in HubSpot). Parallel key +
   Vercel env keys remain optional/no-rush.
+- 🆕 **TWO NEW MIGRATIONS FOR THE MORNING: 0008 + 0009** (same SQL-editor
+  routine as yesterday, run in order): 0008 = enrichment job queue +
+  industry_verified columns + editable taxonomy (activates the UI Enrich
+  button end-to-end); 0009 = usage_events + subscriptions (activates dollar
+  metering — the Sidebar spend badge is live and waiting; PM runs the July
+  cost backfill right after). ~3 minutes total.
 
 ---
 
