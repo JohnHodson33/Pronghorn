@@ -157,11 +157,11 @@ in MORNING-BRIEF.
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
-- 🔥🔥🔥 **TIERED ENRICHMENT ESCALATION (John 7/12 ~12:15 — ENRICHMENT-UX.md
-  "ROUND 2"; owner contacts ARE the product):** (a) re-enrich = NEXT tier,
-  not a repeat — Tier 2 deep dive: Hunter email (name+domain), Exa LinkedIn
-  hunt for the owner, phone hunting; track tier in enrichment jsonb; /api/
-  enrich estimates per-tier cost. (b) **Contact-carry bug:** promotion drops
+- 🔥🔥🔥 **ONE-CLICK CASCADING ENRICHMENT (John DECIDED 7/12 ~12:45 — ENRICHMENT-UX.md
+  "ROUND 2" item 1 is the contract; owner contacts ARE the product):** (a) ONE
+  button cascades tier 1 → tier 2 with EARLY EXIT when owner name+email+phone+
+  LinkedIn complete; tier 2 = Hunter email (name+domain), Exa LinkedIn, phone
+  hunt; /api/enrich previews MAX cascade cost. (b) **Contact-carry bug:** promotion drops
   owner channels when owner_name is missing (Sage Tree Care case) — carry
   orphaned channels to the company (notes or Unknown-owner contact). (c)
   **Audit owner_phone attribution** — company phones must not count as owner

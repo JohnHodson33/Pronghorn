@@ -53,15 +53,17 @@ Direct quote: "this is the most important part." Every lane prioritizes this.
 
 ## ROUND 2 — John's live feedback 7/12 ~12:15 ("close, but not there yet")
 
-1. **ENRICHMENT MUST ESCALATE, NOT REPEAT (Lane C, top).** Most enriched leads
-   still lack owner contacts — and owner contact info IS the product. Build
-   tiered escalation: FREE pass (runs automatically) → PAID TIER 1 (website +
-   Exa + Claude extract — today's pass) → PAID TIER 2 "deep dive" on
-   re-enrich: Hunter email lookup by name+domain, Exa LinkedIn search for the
-   owner, phone hunting from site/GBP. Clicking "Enrich" on an
-   already-enriched lead runs the NEXT tier (with cost preview), not a
-   repeat of the same pass. Track tier in enrichment jsonb. Goal: the most
-   cost-effective consistent path to owner name + email/phone/LinkedIn.
+1. **ONE-CLICK CASCADING ENRICHMENT (Lane C, top — JOHN DECIDED 7/12 ~12:45,
+   supersedes the two-click tier design):** ONE "Enrich" button runs the full
+   cascade with early exit — Tier 1 (website + Exa + Claude extract); if
+   owner name + email + phone + LinkedIn are complete, STOP; otherwise Tier 2
+   fills only the gaps (Hunter email by name+domain, Exa LinkedIn hunt,
+   phone hunting from site/GBP). Cost preview = "up to $X max" (worst case);
+   actual spend is usually lower via early exit + fill-blanks-only. Track
+   tiers-run in enrichment jsonb for the audit trail. Rationale: full-cascade
+   worst case is ~5–15¢/company vs a ~$10k/yr data subscription — the two-
+   click friction isn't worth the pennies saved. Re-clicking Enrich on an
+   already-cascaded lead re-runs only still-empty fields.
 2. **ROW CLICK → COMPANY PROFILE, not website (Lane B).** On the Enrichment
    tab, clicking a promoted lead (e.g., Hummingbird Tree Care) must open its
    CRM company profile (/companies/[id]) where the owner (Johnny Lopez)
