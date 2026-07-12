@@ -573,3 +573,13 @@ network blip during the nightly run.
 - Health: bizben 4,396 listings, 0 errors (retry resilience holding). No new PM tasks.
 - Septic/sewer/waste vertical: only DealStream (blocked) + BizQuest (disabled) +
   BizBuySell (covered). No new DealRelations subdomain or standalone broker.
+
+## 2026-07-12 — loop iter: NEW source Alliant/Nashville Business Brokers (TN)
+- Angle B (TN/GA green-industry search) → **Alliant Brokers** (Nashville TN,
+  priority state). Built alliant.js: WP custom listing post type, /listing/<slug>/
+  detail w/ h1 name + body-text Asking/CashFlow/GrossRevenue, status-suffix strip,
+  shared fetchRetry. 11 listings, 2 relevant (electrical/generator installer +
+  TN Valley fencing co). Source count ~32.
+- Health: empire clean (26, 0 errors). No new PM tasks.
+- Priority-state broker searches (angle B) now yielding: BBAZ (AZ), Alliant (TN),
+  Empire (NC), Southern Mergers (NC/SC) — home-turf standalone brokers w/ grids.
