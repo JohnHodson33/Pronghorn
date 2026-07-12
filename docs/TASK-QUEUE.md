@@ -47,6 +47,14 @@ in MORNING-BRIEF.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 🔥🔥🔥 **ENRICHMENT ROUND 2 (John 7/12 ~12:15 — ENRICHMENT-UX.md "ROUND 2"
+  section is the contract):** (a) row click on promoted leads → CRM company
+  profile (/companies/[id]), website demoted to a ↗ icon; (b) contact-dots
+  honesty: dots = usable owner channels only, and the company profile must
+  show orphaned channels ("owner phone — name unknown"); (c) surface
+  enrichment TIER on each lead + "Enrich (tier 2, est. $X)" labeling.
+  Acceptance: click row → profile → owner contact + channels visible →
+  Enrich escalates. This outranks Contacts↔Brokers.
 - 🔥🔥🔥 **ENRICHMENT UX (John 7/11 23:40 — "the most important part"; read
   docs/ENRICHMENT-UX.md FIRST, it's the design contract):** (a) typeahead on
   industry + geography in the list-build form (suggest-as-you-type, select
@@ -149,6 +157,15 @@ in MORNING-BRIEF.
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+- 🔥🔥🔥 **TIERED ENRICHMENT ESCALATION (John 7/12 ~12:15 — ENRICHMENT-UX.md
+  "ROUND 2"; owner contacts ARE the product):** (a) re-enrich = NEXT tier,
+  not a repeat — Tier 2 deep dive: Hunter email (name+domain), Exa LinkedIn
+  hunt for the owner, phone hunting; track tier in enrichment jsonb; /api/
+  enrich estimates per-tier cost. (b) **Contact-carry bug:** promotion drops
+  owner channels when owner_name is missing (Sage Tree Care case) — carry
+  orphaned channels to the company (notes or Unknown-owner contact). (c)
+  **Audit owner_phone attribution** — company phones must not count as owner
+  channels. (d) Push owner-contact coverage % as the lane's KPI.
 - ✅ **OUTLOOK RE-AUTH: READY (PM staged the scopes 7/12 ~01:25).**
   `scraper/delivery/outlook.js` SCOPES = Mail.Send + Mail.Read +
   Mail.ReadWrite + User.Read + offline_access. MORNING STEP FOR JOHN

@@ -51,6 +51,36 @@ Direct quote: "this is the most important part." Every lane prioritizes this.
 - **PM:** Vercel env keys so API routes can enrich server-side; merges,
   deploys, and this doc.
 
+## ROUND 2 — John's live feedback 7/12 ~12:15 ("close, but not there yet")
+
+1. **ENRICHMENT MUST ESCALATE, NOT REPEAT (Lane C, top).** Most enriched leads
+   still lack owner contacts — and owner contact info IS the product. Build
+   tiered escalation: FREE pass (runs automatically) → PAID TIER 1 (website +
+   Exa + Claude extract — today's pass) → PAID TIER 2 "deep dive" on
+   re-enrich: Hunter email lookup by name+domain, Exa LinkedIn search for the
+   owner, phone hunting from site/GBP. Clicking "Enrich" on an
+   already-enriched lead runs the NEXT tier (with cost preview), not a
+   repeat of the same pass. Track tier in enrichment jsonb. Goal: the most
+   cost-effective consistent path to owner name + email/phone/LinkedIn.
+2. **ROW CLICK → COMPANY PROFILE, not website (Lane B).** On the Enrichment
+   tab, clicking a promoted lead (e.g., Hummingbird Tree Care) must open its
+   CRM company profile (/companies/[id]) where the owner (Johnny Lopez)
+   appears as a linked contact with whatever channels we hold. Website
+   becomes a secondary ↗ icon. The company profile is the source of truth;
+   the list is just the working surface.
+3. **CONTACT-DOTS HONESTY BUG (Lane C data + Lane B display).** Sage Tree
+   Care shows 1/3 owner-contact dots with NO owner name, and its CRM page
+   shows no contact info. Two defects: (a) promotion only creates a contact
+   row when owner_name exists — orphaned channels (e.g., a license-board
+   phone with no name) vanish from the CRM view; surface them on the company
+   profile as "owner phone (name unknown)" or create an Unknown-owner
+   contact. (b) audit what fills owner_phone — if it's the COMPANY phone
+   misattributed, stop counting it as an owner-contact dot. Dots must mean
+   "usable owner channel," nothing less.
+4. Acceptance test (John's own words): click a row → company profile →
+   see the owner as a contact → see exactly which channels we have →
+   "Enrich" escalates to fill the gaps at a previewed cost.
+
 ## Cost policy (John, verbatim intent)
 Free sources: always, automatically, every list. Paid (~$0.01/lead incl. Exa
 + Haiku): only for selected lists/companies via the explicit button. Hunter
