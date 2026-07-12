@@ -594,3 +594,13 @@ network blip during the nightly run.
 - Health: vr clean (366, 0 errors). No new PM tasks.
 - Electrical vertical DealRelations search: only DealStream (blocked) +
   BizBuySell/BizQuest/BusinessBroker/Synergy (covered). No new subdomain.
+
+## 2026-07-12 — loop iter: NEW source InterMountain Business Brokers (CO)
+- Angle B (CO green-industry) → **InterMountain Business Brokers** (Denver CO,
+  priority state). Built intermountain.js: WP /businesses-for-sale-2 (the -1
+  index 500s) → /business/<slug>; h1 name + K/M-aware PROSE financial parsing.
+  8 listings, 3 relevant, **1 Tier 1 + 1 Tier 2** (home-based plumbing w/ full
+  financials, residential HVAC). Source count ~33.
+- Health: fcbb clean (825, 0 errors). No new PM tasks.
+- Angle B priority-state tally: BBAZ(AZ), Alliant(TN), Empire(NC), Southern
+  Mergers(NC/SC), InterMountain(CO) — 5 home-turf brokers built this session.
