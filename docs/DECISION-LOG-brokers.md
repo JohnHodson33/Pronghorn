@@ -589,3 +589,8 @@ network blip during the nightly run.
 - Angle B (GA green-industry): North Atlanta Business Brokers = JS marketing
   page, no listings feed (only census/analytics XHR). FCBB Atlanta already
   covered via fcbb API; BMG already a DealRelations subdomain. No new source.
+
+## 2026-07-12 — loop iter (terse): vr clean, no new source (electrical vertical)
+- Health: vr clean (366, 0 errors). No new PM tasks.
+- Electrical vertical DealRelations search: only DealStream (blocked) +
+  BizBuySell/BizQuest/BusinessBroker/Synergy (covered). No new subdomain.
