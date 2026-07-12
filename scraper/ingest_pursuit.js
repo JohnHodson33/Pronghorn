@@ -126,9 +126,21 @@ async function advance(listing, signal, m) {
 }
 
 async function main() {
-  const file = process.argv[2];
-  if (!file || !fs.existsSync(file)) { console.error('Usage: node ingest_pursuit.js <dump.json>'); process.exit(1); }
-  const messages = JSON.parse(fs.readFileSync(file, 'utf8'));
+  let messages;
+  if (process.argv.includes('--live')) {
+    // scheduled mode: read recent mail via Graph (Mail.Read — activates after
+    // John's one-time re-auth; clear error until then)
+    const { fetchRecentMail } = require('./graph_mail');
+    const hoursIdx = process.argv.indexOf('--hours');
+    const hours = hoursIdx > -1 ? Number(process.argv[hoursIdx + 1]) : 24;
+    const since = new Date(Date.now() - hours * 3600e3).toISOString();
+    messages = await fetchRecentMail(since);
+    log.info(`Live mode: ${messages.length} messages since ${since}`);
+  } else {
+    const file = process.argv[2];
+    if (!file || !fs.existsSync(file)) { console.error('Usage: node ingest_pursuit.js <dump.json> | --live [--hours 24]'); process.exit(1); }
+    messages = JSON.parse(fs.readFileSync(file, 'utf8'));
+  }
 
   let advanced = 0, unmatched = 0, skipped = 0;
   const cache = {};
