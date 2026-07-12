@@ -12,10 +12,12 @@ export default async function Brokers() {
   return (
     <div className="p-4 md:p-8 space-y-5">
       <header>
-        <h1 className="text-2xl font-bold tracking-tight">Brokers</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Broker Directory</h1>
         <p className="text-sm text-zinc-500">
-          Brokers scraped from listings, with the coverage they represent. As deals get pursued and
-          enriched, brokers tag to the companies and deals they source.
+          The auto-scraped <span className="font-medium">universe</span> of brokers and the coverage they
+          represent — hundreds of names, mostly cold. The people we actually work live in{" "}
+          <a href="/contacts" className="text-emerald-700 hover:underline">Contacts</a>; use{" "}
+          <span className="font-medium">+ Contacts</span> on a row to promote a broker into the CRM.
         </p>
       </header>
 

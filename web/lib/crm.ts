@@ -117,6 +117,7 @@ export type BrokerRow = {
   industries: string[];
   states: string[];
   sources: string[];
+  contactId: string | null; // set once promoted into the Contacts CRM
 };
 
 // Broker catalog: identities from `brokers`, coverage derived from their linked
@@ -125,11 +126,18 @@ export async function fetchBrokers(): Promise<BrokerRow[] | null> {
   if (!hasDb()) return null;
   const db = serverDb();
 
-  const brokers: { id: string; name: string; brokerage: string | null; phone: string | null; email: string | null }[] = [];
+  type BRaw = {
+    id: string; name: string; brokerage: string | null; phone: string | null; email: string | null;
+    contacts: { id: string } | { id: string }[] | null;
+  };
+  const brokers: BRaw[] = [];
   for (let from = 0; ; from += 1000) {
-    const { data, error } = await db.from("brokers").select("id, name, brokerage, phone, email").range(from, from + 999);
+    const { data, error } = await db
+      .from("brokers")
+      .select("id, name, brokerage, phone, email, contacts(id)")
+      .range(from, from + 999);
     if (error) { console.error("fetchBrokers failed:", error.message); return null; }
-    brokers.push(...data);
+    brokers.push(...(data as unknown as BRaw[]));
     if (data.length < 1000) break;
   }
   if (brokers.length === 0) return [];
@@ -157,12 +165,18 @@ export async function fetchBrokers(): Promise<BrokerRow[] | null> {
   return brokers
     .map((b) => {
       const a = agg.get(b.id);
+      const c = Array.isArray(b.contacts) ? b.contacts[0] : b.contacts;
       return {
-        ...b,
+        id: b.id,
+        name: b.name,
+        brokerage: b.brokerage,
+        phone: b.phone,
+        email: b.email,
         listingCount: a?.n ?? 0,
         industries: a ? [...a.ind].sort() : [],
         states: a ? [...a.st].sort() : [],
         sources: a ? [...a.src].sort() : [],
+        contactId: c?.id ?? null,
       };
     })
     .sort((x, y) => y.listingCount - x.listingCount);

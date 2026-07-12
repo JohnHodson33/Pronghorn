@@ -14,6 +14,7 @@ export type DirectoryContact = {
   phone: string | null;
   notes: string | null;
   company_id: string | null;
+  broker_id: string | null; // links back to the Broker Directory record
   companyName: string | null;
 };
 
@@ -134,13 +135,23 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
                 title={c.company_id ? "Open company profile" : undefined}
               >
                 <td className="px-4 py-3 font-medium">{c.name ?? "—"}</td>
-                <td className="px-4 py-3">
+                <td className="whitespace-nowrap px-4 py-3">
                   {c.role ? (
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${roleStyle[c.role] ?? "bg-zinc-100 text-zinc-600"}`}>
                       {c.role}
                     </span>
                   ) : (
                     "—"
+                  )}
+                  {c.broker_id && (
+                    <a
+                      href={`/brokers/${c.broker_id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="ml-1.5 text-xs text-emerald-700 hover:underline"
+                      title="Open the Broker Directory record (coverage + listings)"
+                    >
+                      directory →
+                    </a>
                   )}
                 </td>
                 <td className="px-4 py-3 text-zinc-700">

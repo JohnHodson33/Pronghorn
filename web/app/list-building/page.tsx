@@ -5,7 +5,7 @@
 // build a lead list. Scraping runs once data-source keys are connected; this
 // UI + persistence is live now so John can react to the design and queue lists.
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { LEADGEN_SOURCES } from "@/lib/leadgen-sources";
 import TypeaheadInput from "@/components/TypeaheadInput";
 import { suggestGeo, suggestIndustryFallback } from "@/lib/geo-suggest";
@@ -40,17 +40,28 @@ export default function ListBuilding() {
     fetch("/api/lead-lists").then((r) => (r.ok ? r.json() : [])).then(setRecent).catch(() => {});
   }, []);
 
-  // Industry typeahead: canonical taxonomy from Lane C's /api/taxonomy when it
-  // exists; static trade list until then. Geography is fully static.
+  // Industry typeahead: canonical taxonomy from /api/taxonomy (objects with
+  // label + aliases; fetched once, filtered client-side), static fallback.
+  const taxonomyRef = useRef<{ label: string; aliases: string[] }[] | null>(null);
   const suggestIndustry = useCallback(async (q: string) => {
-    if (q.trim().length < 2) return [];
+    const t = q.trim().toLowerCase();
+    if (t.length < 2) return [];
     try {
-      const res = await fetch(`/api/taxonomy?q=${encodeURIComponent(q.trim())}`);
-      if (res.ok) {
-        const j = await res.json();
-        const items: string[] = j.suggestions ?? j.industries ?? [];
-        if (items.length > 0) return items.slice(0, 8);
+      if (!taxonomyRef.current) {
+        const res = await fetch("/api/taxonomy");
+        if (res.ok) {
+          const j = await res.json();
+          taxonomyRef.current = (j.industries ?? []).map((i: { label: string; aliases?: string[] }) => ({
+            label: i.label,
+            aliases: i.aliases ?? [],
+          }));
+        }
       }
+      const tax = taxonomyRef.current ?? [];
+      const hits = tax
+        .filter((i) => i.label.toLowerCase().includes(t) || i.aliases.some((a) => a.toLowerCase().includes(t)))
+        .map((i) => i.label);
+      if (hits.length > 0) return hits.slice(0, 8);
     } catch {}
     return suggestIndustryFallback(q);
   }, []);
