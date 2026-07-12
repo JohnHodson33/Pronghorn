@@ -516,3 +516,19 @@ delisting.yml with dry_run=true first.
   (blocked) + BizBuySell/bizben (covered).
 - Note: DealRelations includes Canadian brokers; dedupe-check geography before
   adding (US-thesis only).
+
+## 2026-07-11 — loop iter: NEW source Business Brokers of Arizona (HOME priority state!)
+
+- Switched search angle from DealRelations-verticals to "AZ green-industry
+  broker" → found **Business Brokers of Arizona (BBAZ)**, azbusinessbrokers.com.
+  Built azbb.js: Squarespace /search-listings, og:title name + body-text
+  financials. 20 listings, **2 Tier 1** — AZ commercial electrical contractor
+  ($1.3M CF) + 22yr AZ commercial plumbing co ($725K CF), plus pool construction.
+  AZ = John's HOME priority state → high-value coverage.
+- Hit Squarespace 429 rate-limiting → added retry/backoff (2.5/5/10s) + 1.5s
+  delay; clean full run (20/20, 2 Tier 1).
+- Health: wpbdp clean (13). No new PM tasks. Source count ~31.
+- Lesson: priority-state + vertical searches ("<state> <vertical> broker
+  listings") find home-turf brokers the DealRelations-only search misses.
+  Other AZ candidates seen: cgkbusinesssales (outdoor/home-services LMM focus),
+  businessbrokers-az, Cox Business Brokers AZ — probe next iters.
