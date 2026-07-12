@@ -10,8 +10,10 @@
    verified-industry columns + editable taxonomy); 0009 activates **dollar
    metering** (the spend badge is live and waiting). I run the July cost
    backfill right after you confirm.
-3. **Check your GitHub emails:** if any workflow failure arrived overnight
-   after you added the secrets, forward it; otherwise nightly automation is on.
+3. ~~Check your GitHub emails~~ ✅ **CONFIRMED WORKING: the nightly cloud
+   scrape fired at 06:00 and refreshed all 30 sources from GitHub's servers**
+   — your secrets are correct and the platform now updates itself daily with
+   no laptop or session involved. The failure emails are over.
 
 ## What shipped overnight (all live on pronghorn-green.vercel.app)
 1. **ENRICHMENT FLOW — your 23:40 feedback, built end-to-end overnight:**
