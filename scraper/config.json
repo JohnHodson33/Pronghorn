@@ -141,6 +141,10 @@
       "enabled": true,
       "module": "./sources/azbb"
     },
+    "alliant": {
+      "enabled": true,
+      "module": "./sources/alliant"
+    },
     "wpbdp": {
       "enabled": true,
       "module": "./sources/wpbdp",
