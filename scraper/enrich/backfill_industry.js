@@ -64,6 +64,8 @@ async function main() {
   }
   const cost = tokIn * 0.8e-6 + tokOut * 4e-6;
   log.info(`Industry backfill: ${done} classified, ${offTarget} off-target flagged. Cost ≈ $${cost.toFixed(3)}`);
+  const { recordUsage } = require('../core/usage');
+  if (tokIn) await recordUsage('claude', 'classification', tokIn + tokOut, cost, { leads: done });
 }
 
 main().catch((e) => { console.error(e.message); process.exit(1); });

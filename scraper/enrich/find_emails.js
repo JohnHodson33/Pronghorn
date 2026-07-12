@@ -80,6 +80,8 @@ async function main() {
     }
   }
   log.info(`Email finder: ${found}/${targets.length} verified emails${quota != null ? ` (Hunter quota remaining: ${quota})` : ''}`);
+  const { recordUsage } = require('../core/usage');
+  await recordUsage('hunter', 'email_finding', targets.length, 0, { found, tier: 'free', quota_remaining: quota });
 }
 
 main().catch((e) => { console.error(e.message); process.exit(1); });

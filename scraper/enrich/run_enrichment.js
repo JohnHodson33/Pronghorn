@@ -232,6 +232,9 @@ async function main() {
 
   const cost = totals.tokIn * COST_IN + totals.tokOut * COST_OUT + totals.exa * EXA_COST;
   log.info(`Enrichment: ${enriched} enriched, ${skipped} skipped (no context). Cost ≈ $${cost.toFixed(3)} (Claude ${totals.tokIn}/${totals.tokOut} tok, Exa ${totals.exa})`);
+  const { recordUsage } = require('../core/usage');
+  if (totals.tokIn) await recordUsage('claude', 'enrichment', totals.tokIn + totals.tokOut, totals.tokIn * COST_IN + totals.tokOut * COST_OUT, { leads: enriched });
+  if (totals.exa) await recordUsage('exa', 'enrichment', totals.exa, totals.exa * EXA_COST, { leads: enriched });
 }
 
 main().catch((e) => { console.error(e.message); process.exit(1); });
