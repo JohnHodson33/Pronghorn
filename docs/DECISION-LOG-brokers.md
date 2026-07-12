@@ -539,3 +539,9 @@ delisting.yml with dry_run=true first.
 - Probed next AZ candidates (angle B): cgkbusinesssales (buy-side advisory, no
   public listings grid) + businessbrokers-az (confidential, no grid). Neither
   is a scrapeable source. Cox Business Brokers AZ still untried.
+
+## 2026-07-11 — loop iter (terse): TX green-trade brokers — none usable
+- Health: southernmergers clean (21, 0 errors). No new PM tasks.
+- Angle B (TX green-trade specialists): Maverick Business Advisors (txmaverick.com)
+  = DNS-fails/unresolvable; Lion Business Brokers = sell-side (no buy-side grid);
+  rest DealStream (blocked) + BizBuySell/BizQuest (covered). No new source.
