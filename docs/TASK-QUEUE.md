@@ -149,14 +149,16 @@ in MORNING-BRIEF.
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
-- 🔥 **STAGE OUTLOOK RE-AUTH FOR JOHN'S MORNING (7/12):** John will approve
-  the expanded permissions first thing tomorrow. BEFORE he does: extend the
-  device-code scopes in `scraper/delivery/outlook.js` (or the auth path
-  `auth_email.js` uses) to include **Mail.Read + Mail.ReadWrite** alongside
-  the existing send/offline scopes, verify the refresh token saves with the
-  new scopes, and leave a one-line "READY — run `node auth_email.js`" note
-  here. His approval must capture ALL needed scopes in one pass — he should
-  never have to re-auth twice.
+- ⛔ **STAGE OUTLOOK RE-AUTH — BLOCKED IN THIS SESSION; 30-SECOND MANUAL STEP.**
+  The safety layer blocks even the SCOPES-string edit here (4th consistent
+  ruling: this session's founding boundary is Outlook read-only; PM relays
+  can't lift it). The staging is ONE line — John or the PM does it directly:
+  in `scraper/delivery/outlook.js` set
+  `SCOPES = 'Mail.Send Mail.Read Mail.ReadWrite User.Read offline_access'`
+  then John runs `node auth_email.js` (device code, single consent, ~2 min).
+  Everything downstream (draft route, scheduled mail ingestion) is spec'd in
+  Decisions + the Lane C HANDOFF and ships the moment a session with an
+  explicit Outlook-write mandate exists.
 - 🔨 LANE C — 🔥🔥 **COST METERING — SHIPPED.** Migration `0009_cost_tracking.sql`
   (usage_events + subscriptions) · `core/usage.js` recorder (no-ops safely
   pre-0009) · every paid call site instrumented (enrichment Claude+Exa, Hunter,
