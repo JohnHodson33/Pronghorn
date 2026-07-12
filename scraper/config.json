@@ -137,6 +137,10 @@
       "enabled": true,
       "module": "./sources/southernmergers"
     },
+    "azbb": {
+      "enabled": true,
+      "module": "./sources/azbb"
+    },
     "wpbdp": {
       "enabled": true,
       "module": "./sources/wpbdp",
