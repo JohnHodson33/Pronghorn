@@ -58,14 +58,21 @@ async function main() {
       created++;
     } else linked++;
 
-    // owner contact when we have a name (skip if one already exists)
-    const { data: exOwner } = l.owner_name ? await supabase.from('contacts')
+    // owner contact when we have a name (skip if one already exists).
+    // CONTACT-CARRY (John 7/12, Sage Tree Care case): orphaned owner CHANNELS
+    // without a name must still reach the company — as an Unknown-owner
+    // contact, never dropped.
+    const hasChannels = l.owner_email || l.owner_phone || l.owner_linkedin;
+    const { data: exOwner } = (l.owner_name || hasChannels) ? await supabase.from('contacts')
       .select('id').eq('company_id', companyId).eq('role', 'owner').maybeSingle() : { data: true };
     if (!exOwner) {
       const { error: ctErr } = await supabase.from('contacts').insert({
-        company_id: companyId, role: 'owner', name: l.owner_name,
+        company_id: companyId, role: 'owner',
+        name: l.owner_name || `Unknown owner (${l.name})`,
         email: l.owner_email, phone: l.owner_phone, linkedin: l.owner_linkedin,
-        notes: `Owner of ${l.name} · from proprietary list-building enrichment`,
+        notes: l.owner_name
+          ? `Owner of ${l.name} · from proprietary list-building enrichment`
+          : `Owner channels found for ${l.name} but name unknown — VA/tier-2 fills the name`,
       });
       if (!ctErr) contacts++;
     }

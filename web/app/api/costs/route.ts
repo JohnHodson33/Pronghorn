@@ -16,7 +16,7 @@ export async function GET() {
 
   const [eventsRes, subsRes, ownersRes] = await Promise.all([
     db.from("usage_events").select("service, activity, units, cost_usd").gte("at", since).limit(10000),
-    db.from("subscriptions").select("name, monthly_usd").eq("active", true),
+    db.from("subscriptions").select("name, monthly_usd, planned").eq("active", true),
     db.from("contacts").select("id", { count: "exact", head: true }).eq("role", "owner").gte("created_at", since),
   ]);
 
@@ -37,6 +37,7 @@ export async function GET() {
     byService.set(e.service, (byService.get(e.service) ?? 0) + c);
     byActivity.set(e.activity, (byActivity.get(e.activity) ?? 0) + c);
   }
+  // planned subs count toward the honest monthly floor (flagged for the UI)
   const subsMonthly = (subsRes.data ?? []).reduce((s, r) => s + Number(r.monthly_usd), 0);
   const owners = ownersRes.count ?? 0;
   const round = (n: number) => Number(n.toFixed(2));

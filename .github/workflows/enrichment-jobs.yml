@@ -1,0 +1,39 @@
+# Enrichment-job drain (Lane C) — the UI's Enrich button queues jobs; this
+# picks them up within 15 minutes (John 7/12: the runner must self-drain).
+# Cascade contract: tier 1 for new leads, tier 2 channel-hunt for enriched-
+# but-incomplete ones — never a no-op. Same secrets as the other workflows.
+
+name: Enrichment Jobs
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+
+concurrency:
+  group: enrichment-jobs
+  cancel-in-progress: false
+
+jobs:
+  drain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: scraper
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: scraper/package-lock.json
+      - run: npm ci
+      - name: Drain enrichment jobs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
+          HUNTER_API_KEY: ${{ secrets.HUNTER_API_KEY }}
+        run: node enrich/run_jobs.js

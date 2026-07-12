@@ -195,6 +195,9 @@ async function main() {
   const anthropic = new Anthropic();
   const totals = { tokIn: 0, tokOut: 0, exa: 0 };
   let enriched = 0, skipped = 0;
+  const jobIdx = process.argv.indexOf('--job');
+  const jobId = jobIdx > -1 ? process.argv[jobIdx + 1] : null;
+  let processed = 0, foundOwner = 0, foundEmail = 0;
 
   for (const lead of leads) {
     try {
@@ -224,6 +227,15 @@ async function main() {
       if (uErr) { log.error(`  ${lead.name}: ${uErr.message}`); continue; }
       enriched++;
       log.info(`  ${lead.name}: owner=${patch.owner_name || lead.owner_name || '—'} email=${patch.owner_email || '—'} (${out.confidence})`);
+      // live progress for the UI (John: clicking Enrich must never feel dead)
+      processed++;
+      if (patch.owner_name || lead.owner_name) foundOwner++;
+      if (patch.owner_email) foundEmail++;
+      if (jobId && processed % 3 === 0) {
+        await supabase.from('enrichment_jobs').update({
+          counts: { total: leads.length, processed, found_owner: foundOwner, found_email: foundEmail, phase: 'tier1' },
+        }).eq('id', jobId);
+      }
       await sleep(300);
     } catch (e) {
       log.error(`  ${lead.name}: ${e.message}`);
