@@ -53,7 +53,21 @@ in MORNING-BRIEF.
   (submitted→triaged→building→shipped) so Tom sees ideas move; agent
   self-review + roadmap panel (PM curates). PM wires sidebar entry on merge.
   Ship the basic version TODAY — the Haiku refine-chat step is v2.
-- 🔥🔥 **CONTACTS: INDUSTRY COLUMN + FILTERS (John 7/12 ~15:20):** owner
+- 🔥🔥🔥 **ENRICHMENT PROGRESS VISIBILITY (John 7/12 ~15:50 — "needs to be a
+  really well baked process"):** clicking Enrich must NEVER feel like nothing
+  happened. (Lane C) enrichment_jobs gets progress fields — total, processed,
+  found_owner/found_email counts, per-job state queued|running|done — updated
+  as the runner works; GET /api/enrich/jobs/[id] (or extend /api/enrich)
+  serves it. (Lane B) UI: (a) sticky **progress bar/banner** on the
+  Enrichment tab the moment a job queues ("Enriching 34/80 — 12 owners, 7
+  emails found…"), live via the existing polling; (b) a small global
+  indicator (sidebar, near the cost badge) while any job runs so you can
+  navigate away and still see it; (c) **completion summary toast/banner**:
+  "Done: 80 processed — 22 owners, 15 emails, 43 queued for tier 2" with a
+  'view results' filter link; (d) if the runner hasn't picked the job up in
+  60s, say so honestly ("queued — runner picks this up within 15 min") rather
+  than showing silence. Acceptance: John clicks Enrich, watches numbers move,
+  and is TOLD when to come back and what he got. owner
   contacts must show their company's verified industry beside the company
   name, with filter chips on top ("show me every Tree Care owner we have a
   contact for") + counts per industry. Pull industry through the
