@@ -568,3 +568,8 @@ network blip during the nightly run.
    (NC), Southern Mergers (NC/SC), BBAZ (AZ home state, 2 Tier1), wpbdp platform,
    Tupelo marketplace (18 Tier1). DealRelations grown to 13 broker subdomains.
    All committed to lane/brokers awaiting PM merge.
+
+## 2026-07-12 — loop iter (terse): bizben resilient-clean, no new source (septic vertical)
+- Health: bizben 4,396 listings, 0 errors (retry resilience holding). No new PM tasks.
+- Septic/sewer/waste vertical: only DealStream (blocked) + BizQuest (disabled) +
+  BizBuySell (covered). No new DealRelations subdomain or standalone broker.
