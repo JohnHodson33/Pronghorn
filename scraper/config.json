@@ -133,6 +133,10 @@
       "enabled": true,
       "module": "./sources/empire"
     },
+    "southernmergers": {
+      "enabled": true,
+      "module": "./sources/southernmergers"
+    },
     "wpbdp": {
       "enabled": true,
       "module": "./sources/wpbdp",
