@@ -22,18 +22,23 @@ export async function fetchLeadList(id: string): Promise<LeadListDetail | null> 
   if (!hasDb()) return null;
   const db = serverDb();
 
-  const [{ data: list, error }, { data: leads }] = await Promise.all([
-    db.from("lead_lists").select("*").eq("id", id).maybeSingle(),
+  const leadsQuery = (withVerified: boolean) =>
     db
       .from("leads")
       .select(
         "id, name, website, phone, city, state, rating, review_count, source_tags, bbb_grade, enrichment, " +
-          "owner_name, owner_email, owner_phone, owner_linkedin, status, created_at"
+          "owner_name, owner_email, owner_phone, owner_linkedin, status, created_at, company_id" +
+          (withVerified ? ", industry_verified, off_target" : "")
       )
       .eq("lead_list_id", id)
       .order("created_at", { ascending: false })
-      .limit(500),
+      .limit(500);
+
+  const [{ data: list, error }, leadsRes] = await Promise.all([
+    db.from("lead_lists").select("*").eq("id", id).maybeSingle(),
+    leadsQuery(true).then(async (res) => (res.error ? await leadsQuery(false) : res)),
   ]);
+  const leads = leadsRes.data;
   if (error) {
     console.error("fetchLeadList failed:", error.message);
     return null;
@@ -59,12 +64,16 @@ export async function fetchLeadList(id: string): Promise<LeadListDetail | null> 
     costEstimate: l.cost_estimate === null ? null : Number(l.cost_estimate),
     costActual: l.cost_actual === null ? null : Number(l.cost_actual),
     createdAt: l.created_at,
-    leads: ((leads ?? []) as unknown as (Omit<EnrichmentLead, "list" | "rating"> & { rating: number | string | null })[]).map(
-      (r) => ({
-        ...r,
-        rating: r.rating === null ? null : Number(r.rating),
-        list: { industry: l.query_industry, geography: l.query_geography },
-      })
-    ),
+    leads: ((leads ?? []) as unknown as (Omit<EnrichmentLead, "list" | "rating" | "industry_verified" | "off_target"> & {
+      rating: number | string | null;
+      industry_verified?: string | null;
+      off_target?: boolean | null;
+    })[]).map((r) => ({
+      ...r,
+      rating: r.rating === null ? null : Number(r.rating),
+      industry_verified: r.industry_verified ?? null,
+      off_target: !!r.off_target,
+      list: { industry: l.query_industry, geography: l.query_geography },
+    })),
   };
 }

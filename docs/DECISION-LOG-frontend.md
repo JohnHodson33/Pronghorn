@@ -252,6 +252,27 @@ also executed the two swaps previously flagged as PM actions:
   nail-salon deals show under "Closed" until Lane C's data fix moves them to
   Passed — the chips are data-driven, so no UI change needed when that runs.
 
+## 2026-07-12 — 🔥🔥 Enrichment UX (ENRICHMENT-UX.md contract, all 5 Lane B items)
+
+- **LeadsTable rebuilt** (shared by Enrichment tab + list detail, so both
+  surfaces got everything at once): row checkboxes + select-all-visible →
+  **"Enrich selected (est. $X)"** ($0.01/lead) → POST `/api/enrich`
+  {leadIds}; degrades with a clear notice + selection kept until Lane C's
+  endpoint lands (verified). **Verified Industry column** replaces List
+  (industry_verified when present, list-inherited shown with "?" and grey
+  until verified; list is now a filter). **Off-target** chip + toggle filter
+  (hidden by default per contract) + discard (new PATCH `/api/leads/[id]`,
+  status→dead, no deletes). **Filters**: search, industry, state, list,
+  owner-found, email-found. **Add to Companies** per outreach-ready row via
+  Lane C's live `/api/leads/promote` (→ company page); promoted rows show
+  "in CRM →". **Live updates**: polls every 5s while any lead is enriching.
+- **Typeahead** on the list-build form: industry suggests from
+  `/api/taxonomy` (Lane C) with a static 26-trade fallback; geography from a
+  static Sun-Belt-first metro/state list (lib/geo-suggest.ts). Arrow keys +
+  Enter or click; free text allowed. Verified: "phoe" → "Phoenix, AZ" picks.
+- All new-column selects (industry_verified/off_target) use the tolerant
+  retry pattern until Lane C's classification migration lands.
+
 ## Lane B session setup
 
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch
