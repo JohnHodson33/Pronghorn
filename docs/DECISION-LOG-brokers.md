@@ -495,3 +495,15 @@ delisting.yml with dry_run=true first.
   as designed). No new PM tasks.
 - Tree/arborist/nursery/irrigation vertical: only covered aggregators + blocked
   DealStream. No new subdomain/broker.
+
+## 2026-07-11 — loop iter: NEW source Southern Mergers (NC/SC priority states)
+
+- Fencing-vertical search surfaced 2 new standalone brokers. Built the better
+  one: **Southern Mergers** (southernmergers.com) — Carolinas (NC/SC priority) +
+  FL. ASP LID pages; detail markup entity-escaped (decode→parse resultsBusiness
+  template). 21 listings, 2 relevant (fence co + handyman franchise). Most
+  listings keep financials confidential — names captured as priority-state leads.
+- Also probed **CIBB** (SW FL, cibb.com) — clean /listings/<slug>/ with
+  Asking/Owner-Benefit but only 5 listings → deprioritized (too small; noted as
+  candidate if it grows).
+- Health: bizmls clean (143). No new PM tasks. Source count ~30.
