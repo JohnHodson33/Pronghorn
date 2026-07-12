@@ -627,3 +627,13 @@ network blip during the nightly run.
 - Health: hedgestone clean (720, 0 errors). No new PM tasks.
 - Pool/gutter/chimney DealRelations search: hits on already-configured subdomains
   (smallbusinessdeal, crowneatlantic) + covered aggregators. No new subdomain.
+
+## 2026-07-12 — loop iter: full audit healthy (19,271 listings, 113 T1); NM probed
+- **Full source-quality audit:** 19,271 listings, **113 Tier 1 + 234 Tier 2**
+  across ~34 sources (up ~670 from the 6 new priority-state brokers this
+  session). All sources present w/ data, no broken parses. bizquest (disabled,
+  stale rows) + linkbusiness still the only low-fit flags.
+- Angle B (NM): **Sam Goldenberg & Associates** (Santa Fe/ABQ, NM priority) —
+  wp-views AJAX listings (the $ figures were a price-range FILTER, not listings);
+  no SSR grid. Small NM market → not worth wp-views AJAX reverse-engineering.
+  Synergy ABQ already covered. NM effectively covered/aggregator-dominated.
