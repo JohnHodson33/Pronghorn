@@ -690,3 +690,11 @@ network blip during the nightly run.
   profile (UI-editable, shared DB) also lacks painting/restore → even recovered
   intake won't be Tier-1/2'd until John adds them via the Screen Criteria editor.
   Intake (mine) is now fixed; tiering (PM) still pending.
+
+## 2026-07-12 — loop iter (terse): verified painting/restore intake fix; PM merged it to main
+- PM fast-forwarded lane/brokers → my painting/restore config commit is now on
+  main. PM also added docs/OUTREACH-STRATEGY.md (sending-side; no Lane A action).
+- **Verified the intake fix** via unit test against live config: painting-only,
+  "Five Star Painters", "ServiceMaster Restore", "CertaPro" all now KEEP (would
+  have dropped pre-7/12); generic control DROPs; "Downtown Restaurant" DROPs —
+  confirming bare `restore` does NOT false-match `restaurant` (whole-word bound).
