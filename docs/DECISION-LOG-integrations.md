@@ -1,6 +1,44 @@
 # Decision log — Lane C (CRM & Data / Integrations)
 
-Per-lane log; the PM/integrator concatenates into docs/DECISION-LOG.md at merge time.
+## 🤝 HANDOFF (keep current — replacement session resumes from this)
+
+**State (2026-07-12 ~01:15):** Worktree `C:\Users\johnd\Pronghorn-integrations`,
+branch `lane/integrations` (push after each unit; PM merges). Env files copied
+from main checkout; scraper/node_modules is a junction; web/node_modules is a
+real install. Everything shipped + verified; queue statuses in TASK-QUEUE.md
+are accurate.
+
+**Current task:** none in flight — loop is in monitor mode (pursuit re-scans,
+enrichment/promotion ticks on new leads, respond to PM relays).
+
+**Next 2:** (1) `/api/criteria/keywords` is live but gated on ANTHROPIC_API_KEY
+in web env (PM/John adds to Vercel); verify once keyed. (2) After John's
+morning re-auth + migrations 0004–0009: re-run `import_hubspot_contacts.js`
+(moves breadcrumbs into real columns), run `backfill_costs.js` once, PM runs
+`fix_passed_stage.js` if not already, then schedule `ingest_pursuit.js` +
+`enrich/run_jobs.js` on the workflows.
+
+**Gotchas a replacement MUST know:**
+- **Outlook write-back (drafts/sends/scopes) is HARD-BLOCKED in sessions
+  launched with the read-only guardrail** — 4 consistent safety rulings, incl.
+  mere SCOPES-string prep. Do NOT re-attempt from such a session. John's
+  morning re-auth path: HE (or a session he launches with an explicit
+  Outlook-write mandate) edits `scraper/delivery/outlook.js` SCOPES to
+  `'Mail.Send Mail.Read Mail.ReadWrite User.Read offline_access'` and runs
+  `node auth_email.js` — one consent captures everything (~2 min).
+- Bulk semantic mutations of live records on PM-relay authority also get
+  blocked (Closed→Passed was executed by the PM instead). Additive
+  imports/enrichment are fine — that's the founding mandate.
+- HubSpot stage labels are booby-trapped; ALWAYS internal ids (see STAGE_MAP
+  in sync_hubspot.js). 'Passed' = 3939497680 both directions.
+- PowerShell 5.1 mangles embedded double quotes in `git commit -m @'...'@` —
+  avoid `"` inside commit messages.
+- Overpass: tag-VALUE queries only (regex/key-existence scans time out).
+- dotenv v17 prints ad banners ("vestauth") — benign, verified against npm.
+- Coverage + per-run costs live in TASK-QUEUE checkpoints; Hunter free tier
+  ~35 credits left this month — spend only on John's call shortlist.
+
+Per-lane log below; the PM/integrator concatenates into docs/DECISION-LOG.md at merge time.
 
 ## 2026-07-10 — Worktree instead of branch-switch
 
