@@ -40,7 +40,7 @@ everything awaiting you or recently decided. I keep it current; ask me
 | 1 | "Yes migrate them" | ✅ DONE — all 14 nail-salon deals moved Closed → Passed (verified: 14 Passed, 0 Closed). Pipeline board is clean; they're searchable in the Deals tab. |
 | 4 | Kumo: no for now | ✅ Logged in the decision queue as "revisit later." No subscription. |
 | 5 | Restart workers, keep them busy | ✅ Work orders delivered to both sessions with tonight's priorities (details in Part 4). CRM/Data session is confirmed alive; Frontend session's delivery is queued — if it hasn't committed by morning it's context-dead and needs you to reopen it (I cannot create desktop sessions from here — my one hard limit). |
-| 7 | Jack Williams (William Blair) | ✅ In contacts; he proposed Tue 3–4pm CT. |
+| 7 | Jack Williams (William Blair) | ✅ MEETING SCHEDULED: "Jack <> John & Tom Intro", Tue Jul 14, 3:00–3:30 PM CT, Teams (verified in Outlook 7/12). Nothing owed. |
 
 ## PART 2 — Item #2 explained: the Supabase migrations (0004/0005/0006)
 
