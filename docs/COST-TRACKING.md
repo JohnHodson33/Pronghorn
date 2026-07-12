@@ -7,9 +7,16 @@ always know we're cost-effective vs simply buying enriched data.
 ## Design
 - **Badge (PM, in Sidebar — visible on every tab):** "This month: $X.XX".
   Click → breakdown panel:
-  - **Subscriptions** (flat, same every month): list + monthly total.
-    Currently $0/mo (Kumo declined; Supabase/Vercel on free tiers; Claude/
-    Exa/Serper/Hunter are usage-based).
+  - **Subscriptions = BASELINE, committed + planned (John 7/12 ~13:00):**
+    show the realistic monthly floor, not $0. Any tool with a free tier we
+    expect to outgrow gets listed at its paid-plan price NOW, tagged
+    "(planned)" — e.g. **Hunter Starter ~$49/mo (planned)** since we'll
+    enrich >25 contacts/month. Rationale (John): never let costs look
+    understated, and never let one pull that trips a free-tier cap read as a
+    cost explosion — the baseline absorbs it; usage stays marginal on top.
+    Currently: Hunter $49 (planned) · Supabase $0 (free tier) · Vercel $0
+    (free tier) · Kumo declined. When a planned sub activates for real, the
+    tag drops — the number doesn't jump.
   - **Variable usage** (the number that matters): month-to-date by service
     (Claude, Exa, Serper, Hunter, Places) and by activity (enrichment,
     list-building, drafting, classification).

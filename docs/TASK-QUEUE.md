@@ -165,7 +165,12 @@ in MORNING-BRIEF.
   owner channels when owner_name is missing (Sage Tree Care case) — carry
   orphaned channels to the company (notes or Unknown-owner contact). (c)
   **Audit owner_phone attribution** — company phones must not count as owner
-  channels. (d) Push owner-contact coverage % as the lane's KPI.
+  channels. (d) Push owner-contact coverage % as the lane's KPI. (e) **Subs =
+  baseline, committed + PLANNED (John 7/12 ~13:00, see COST-TRACKING.md):**
+  seed the subscriptions table with Hunter Starter ~$49/mo status='planned'
+  (we'll outgrow the 25-free cap); /api/costs includes planned subs in
+  subsMonthly with a planned flag so the badge shows the honest monthly
+  floor and one over-cap pull never reads as a cost spike.
 - ✅ **OUTLOOK RE-AUTH: READY (PM staged the scopes 7/12 ~01:25).**
   `scraper/delivery/outlook.js` SCOPES = Mail.Send + Mail.Read +
   Mail.ReadWrite + User.Read + offline_access. MORNING STEP FOR JOHN
