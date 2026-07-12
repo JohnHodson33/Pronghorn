@@ -205,9 +205,10 @@
       "roofing", "roof repair",
       "windows and doors", "window and door", "window installation", "window replacement", "door installation", "garage door",
       "gutter", "siding", "chimney", "septic", "irrigation", "sprinkler", "fencing", "fence",
+      "painting", "painters", "painting contractor",
       "pressure washing", "power washing", "window cleaning",
       "janitorial", "commercial cleaning", "cleaning service", "cleaning services", "maid service", "house cleaning", "carpet cleaning",
-      "restoration", "remediation", "mold", "water damage", "fire damage",
+      "restoration", "restore", "remediation", "mold", "water damage", "fire damage",
       "property maintenance", "facility services", "facilities maintenance", "building maintenance",
       "junk removal", "waste", "sanitation", "portable toilet",
       "home services", "handyman", "appliance repair", "locksmith"

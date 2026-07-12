@@ -670,3 +670,23 @@ network blip during the nightly run.
   calder 37 — clean. One `cannabinoid` detail 404 = benign listing-level
   delisting churn (a slug on an index whose detail page is gone), not a
   subdomain/config issue; cannabis listing, non-thesis regardless.
+
+## 2026-07-12 — loop iter: closed intake half of the painting/restore keyword gap
+- **Config intake fix (Lane A-owned):** added `painting`, `painters`,
+  `painting contractor`, and bare `restore` to
+  `relevance.industry_keywords_include`. Confirmed filters.js:60 is a HARD drop —
+  a listing matching no include-keyword never reaches the DB — so painting-only
+  listings were being discarded at intake, upstream of (and separate from) the
+  PM-owned screen_profiles tiering gap I flagged 7/11.
+- Whole-word `\b..\b` case-insensitive matcher (filters.js:14–23) → `restore`
+  won't false-match `restoration`/`restaurant`; additive change only widens
+  intake (size + geo + Haiku tiering still apply). JSON validated.
+- **Justification (not speculative):** DB already holds 50+ painting listings
+  that slipped in via adjacent keywords (Property Maintenance / Restoration /
+  Construction-Contractor), incl. an Orlando painting co at $450K+ SDE (clears
+  the $300K floor). Painting-only listings that matched nothing were lost.
+  Recovery lands on the next full scrape.
+- **Still open for PM (unchanged):** the screen_profiles "Green Industry Default"
+  profile (UI-editable, shared DB) also lacks painting/restore → even recovered
+  intake won't be Tier-1/2'd until John adds them via the Screen Criteria editor.
+  Intake (mine) is now fixed; tiering (PM) still pending.
