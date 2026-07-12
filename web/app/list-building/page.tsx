@@ -5,8 +5,10 @@
 // build a lead list. Scraping runs once data-source keys are connected; this
 // UI + persistence is live now so John can react to the design and queue lists.
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { LEADGEN_SOURCES } from "@/lib/leadgen-sources";
+import TypeaheadInput from "@/components/TypeaheadInput";
+import { suggestGeo, suggestIndustryFallback } from "@/lib/geo-suggest";
 
 type LeadList = {
   id: string;
@@ -36,6 +38,21 @@ export default function ListBuilding() {
 
   useEffect(() => {
     fetch("/api/lead-lists").then((r) => (r.ok ? r.json() : [])).then(setRecent).catch(() => {});
+  }, []);
+
+  // Industry typeahead: canonical taxonomy from Lane C's /api/taxonomy when it
+  // exists; static trade list until then. Geography is fully static.
+  const suggestIndustry = useCallback(async (q: string) => {
+    if (q.trim().length < 2) return [];
+    try {
+      const res = await fetch(`/api/taxonomy?q=${encodeURIComponent(q.trim())}`);
+      if (res.ok) {
+        const j = await res.json();
+        const items: string[] = j.suggestions ?? j.industries ?? [];
+        if (items.length > 0) return items.slice(0, 8);
+      }
+    } catch {}
+    return suggestIndustryFallback(q);
   }, []);
 
   const toggle = (id: string) =>
@@ -88,7 +105,13 @@ export default function ListBuilding() {
         <div className="grid gap-4 md:grid-cols-3">
           <div className="md:col-span-1">
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-500">Industry / service</label>
-            <input value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder="e.g. Commercial Landscaping" className={inputCls} />
+            <TypeaheadInput
+              value={industry}
+              onChange={setIndustry}
+              suggest={suggestIndustry}
+              placeholder="Start typing — e.g. pool serv…"
+              className={inputCls}
+            />
           </div>
           <div>
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-500">Target leads</label>
@@ -96,7 +119,14 @@ export default function ListBuilding() {
           </div>
           <div>
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-500">Geography</label>
-            <input value={geography} onChange={(e) => setGeography(e.target.value)} disabled={national} placeholder="e.g. Phoenix, AZ" className={`${inputCls} disabled:bg-zinc-100`} />
+            <TypeaheadInput
+              value={geography}
+              onChange={setGeography}
+              suggest={suggestGeo}
+              disabled={national}
+              placeholder="City/metro or state — e.g. Phoe…"
+              className={`${inputCls} disabled:bg-zinc-100`}
+            />
             <label className="mt-1.5 flex items-center gap-2 text-xs text-zinc-600">
               <input type="checkbox" checked={national} onChange={(e) => setNational(e.target.checked)} className="accent-emerald-700" />
               National search {!national && <span className="ml-auto text-zinc-400">· {radius}mi radius</span>}

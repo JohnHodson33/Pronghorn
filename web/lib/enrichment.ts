@@ -33,6 +33,9 @@ export type EnrichmentLead = {
   owner_linkedin: string | null;
   status: string;
   created_at: string;
+  company_id: string | null; // set once promoted to the CRM
+  industry_verified: string | null; // what the company ACTUALLY does (enrichment)
+  off_target: boolean; // classified off the list's intent
   list: { industry: string; geography: string | null } | null;
 };
 
@@ -59,25 +62,34 @@ export async function fetchEnrichmentOverview(statusFilter?: string): Promise<En
     })
   );
 
-  let q = db
-    .from("leads")
-    .select(
-      "id, name, website, phone, city, state, rating, review_count, source_tags, bbb_grade, enrichment, " +
-        "owner_name, owner_email, owner_phone, owner_linkedin, status, created_at, " +
-        "lead_lists(query_industry, query_geography)"
-    )
-    .order("created_at", { ascending: false })
-    .limit(200);
-  if (statusFilter && (LEAD_STATUSES as readonly string[]).includes(statusFilter))
-    q = q.eq("status", statusFilter);
+  // industry_verified / off_target land with Lane C's classification pass —
+  // retry without them until the columns exist.
+  const buildQuery = (withVerified: boolean) => {
+    let q = db
+      .from("leads")
+      .select(
+        "id, name, website, phone, city, state, rating, review_count, source_tags, bbb_grade, enrichment, " +
+          "owner_name, owner_email, owner_phone, owner_linkedin, status, created_at, company_id, " +
+          (withVerified ? "industry_verified, off_target, " : "") +
+          "lead_lists(query_industry, query_geography)"
+      )
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (statusFilter && (LEAD_STATUSES as readonly string[]).includes(statusFilter))
+      q = q.eq("status", statusFilter);
+    return q;
+  };
 
-  const { data, error } = await q;
+  let { data, error } = await buildQuery(true);
+  if (error) ({ data, error } = await buildQuery(false));
   if (error) {
     console.error("fetchEnrichmentOverview failed:", error.message);
     return { counts, leads: [] };
   }
 
-  type Raw = Omit<EnrichmentLead, "list"> & {
+  type Raw = Omit<EnrichmentLead, "list" | "industry_verified" | "off_target"> & {
+    industry_verified?: string | null;
+    off_target?: boolean | null;
     lead_lists: { query_industry: string; query_geography: string | null } | { query_industry: string; query_geography: string | null }[] | null;
   };
   const leads = ((data ?? []) as unknown as Raw[]).map((r) => {
@@ -85,6 +97,8 @@ export async function fetchEnrichmentOverview(statusFilter?: string): Promise<En
     return {
       ...r,
       rating: r.rating === null ? null : Number(r.rating),
+      industry_verified: r.industry_verified ?? null,
+      off_target: !!r.off_target,
       list: ll ? { industry: ll.query_industry, geography: ll.query_geography } : null,
     };
   });
