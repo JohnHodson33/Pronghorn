@@ -81,13 +81,16 @@ const nav: { section: string; items: { label: string; href: string | null }[] }[
     items: [
       { label: "Dashboard", href: "/" },
       { label: "Market Multiples", href: "/analytics" },
-      { label: "Screening Criteria", href: "/criteria" },
     ],
   },
   {
+    // Criteria lives here, not Overview: screen_profiles is consumed only by
+    // the broker-scrape tiering pipeline (confirmed 7/12) — proprietary
+    // sourcing has no financials to screen on.
     section: "Broker Sourcing",
     items: [
       { label: "Broker Listings", href: "/listings" },
+      { label: "Scrape Criteria", href: "/criteria" },
       { label: "Scrape Sources", href: "/sources" },
     ],
   },

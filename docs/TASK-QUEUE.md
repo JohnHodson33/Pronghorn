@@ -106,10 +106,19 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
   copy-ready pre-filled contact block + note from inquiry_profiles (and, where
   possible, a browser-automation prefill John triggers from his own machine).
   John reviews + clicks submit; status flips to info_requested on click.
-- 🔥 **Unified Screening Criteria UX** (DASHBOARD-VISION §2.1): ONE criteria set
-  with sliding-scale controls (EBITDA/revenue range, geography, subsector
-  toggles) consumed by BOTH funnels — listings filtering AND list-building
-  targeting read the same server-persisted criteria.
+- 🔥🔥 **SCRAPE CRITERIA REDESIGN (John 7/12 ~00:45 — supersedes the old
+  "unified criteria" idea):** PM confirmed screen_profiles feeds ONLY broker-
+  scrape tiering (proprietary has no financials to screen), and moved the tab
+  to Broker Sourcing as "Scrape Criteria". Rebuild the page LinkedIn-search
+  style: (a) **industry → auto-keywords**: John types "hydraulic repair", a
+  Claude endpoint (Lane C: POST /api/criteria/keywords) generates the full
+  keyword set as removable TAG CHIPS he can prune/extend — he never
+  brainstorms keywords himself; (b) **tag-chip UX everywhere** (include/
+  exclude keywords, industries) with visual add/remove; (c) **sliding-scale
+  bars** for guardrails (EBITDA, asking price, cash-flow ranges); (d) **state
+  typeahead** (type "Ari…" → select Arizona — never free-typed); (e) a short
+  "how this works" explainer at top: these criteria tier every scraped broker
+  listing (Tier 1/2/...), nothing else. Changes re-tier on next scrape.
 - 🔥🔥 **LISTING PURSUIT FLOW** (see docs/LISTING-PURSUIT-FLOW.md — John's core ask):
   On listing detail/rows add **"Request info"** → sets listing_reviews.status
   `info_requested`, logs activity, and (if broker email known) pre-drafts an
