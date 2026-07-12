@@ -53,6 +53,16 @@ in MORNING-BRIEF.
   (submitted→triaged→building→shipped) so Tom sees ideas move; agent
   self-review + roadmap panel (PM curates). PM wires sidebar entry on merge.
   Ship the basic version TODAY — the Haiku refine-chat step is v2.
+- 🔥🔥 **CONTACTS: INDUSTRY COLUMN + FILTERS (John 7/12 ~15:20):** owner
+  contacts must show their company's verified industry beside the company
+  name, with filter chips on top ("show me every Tree Care owner we have a
+  contact for") + counts per industry. Pull industry through the
+  contact→company join; blanks show grey.
+- 🔥🔥 **LISTINGS TABLE REGRESSION (John 7/12 ~15:20):** (a) price, implied
+  MULTIPLE, and margin columns are missing/crowded out — restore them on
+  every listing row (blank when no price; fill wherever computable);
+  (b) location column blown wide by polluted city values — truncate display
+  (ellipsis + tooltip) so columns stay usable even before the data fix.
 - 🔥🔥🔥 **ENRICHMENT ROUND 2 (John 7/12 ~12:15 — ENRICHMENT-UX.md "ROUND 2"
   section is the contract):** (a) row click on promoted leads → CRM company
   profile (/companies/[id]), website demoted to a ↗ icon; (b) contact-dots
@@ -182,6 +192,22 @@ in MORNING-BRIEF.
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+- 🔥🔥 **RUNNER MUST SELF-DRAIN + RE-ENRICH NO-OP BUG (John hit both 7/12
+  ~15:20):** John queued 80 leads via the UI button; the job sat unprocessed
+  (nothing runs run_jobs.js continuously) and when PM drained it manually the
+  runner NO-OPed ("No un-enriched leads") because all 80 were already
+  status='enriched' from tier 1. Fix: (a) run_jobs on a tight schedule (every
+  loop iteration + a GH workflow every 15min); (b) jobs on already-enriched
+  leads must CASCADE to tier 2 / fill-missing-fields, never no-op — this is
+  the one-click cascade contract; ship the cascade path FIRST. (c) build the
+  website-discovery pass (many skips = no website stored; find via Exa/Serper
+  then re-run tier 1).
+- 🔥 **LOCATION DATA POLLUTION (Lane A parsers + Lane C cleanup, John 7/12):**
+  tupelomarket + businessbroker adapters write description text into
+  listings.city (e.g. "HVAC BusinessesHVAC Businesses…Bellingham"). Fix both
+  parsers, then a cleanup pass: re-derive city/state for polluted rows (regex:
+  city ilike %business%/%serving%/%service% or length>40), null when
+  unrecoverable.
 - 🔥🔥 **FEEDBACK PIPELINE (John 7/12 ~13:15 — Tom joins TODAY; read
   docs/IMPROVEMENTS-LOOP.md):** `feedback` table (author, type, page, body,
   status, task_ref) + POST /api/feedback + PATCH status. THEN the standing
