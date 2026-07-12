@@ -19,8 +19,11 @@ everything awaiting you or recently decided. I keep it current; ask me
   lands — top of their queue). Breakdown: subscriptions (currently $0/mo) vs
   variable usage by service, plus **cost per owner-contact acquired** — the
   direct yardstick vs buying enriched data.
-- ⏳ Still on John: Outlook re-auth (Mail.Read + Mail.ReadWrite), HubSpot
-  Private App token, Parallel key (optional), Vercel env keys (optional).
+- ⏳ Still on John: **Outlook re-auth — FIRST THING TOMORROW** (Lane C stages
+  the expanded permissions overnight; John gets a login link + code in chat,
+  ~2 min). 🅿️ HubSpot token PARKED per John (Pronghorn is the system of
+  record; reactivate only if Tom still works in HubSpot). Parallel key +
+  Vercel env keys remain optional/no-rush.
 
 ---
 

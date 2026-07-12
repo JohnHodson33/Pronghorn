@@ -338,5 +338,9 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
   **"Proprietary Deal Flow"**, route unchanged), then CRM, then Outreach. Say
   the word if you want different names/grouping.
 - ⏳ Outlook re-auth with `Mail.Read` scope (for scheduled email ingestion).
-- ⏳ HubSpot Private App token in `.env` (to activate live two-way push).
+- 🅿️ **HubSpot Private App token: PARKED (John 7/12 ~01:10)** — Pronghorn is
+  now the system of record (more data than HubSpot); pushing into a platform
+  we're replacing isn't worth the sync overhead. The push code stays built +
+  gated; reactivate in ~5 min with a token IF Tom still works in HubSpot
+  during the transition (open question to Tom). Off John's action list.
 - ✅ Notion connected via MCP. ✅ HubSpot two-way approved. ✅ Exa key added.
