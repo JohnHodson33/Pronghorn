@@ -34,7 +34,7 @@ const STAGE_MAP = {
   contractsent: { stage: 'Diligence' },
   closedwon: { stage: 'LOI' },
   closedlost: { stage: 'Closed', won: true },
-  '3939497680': { stage: 'Closed', lost: true },
+  '3939497680': { stage: 'Passed', lost: true }, // platform "Passed" (7/11: Closed = real closes only)
   '3939497681': { stage: 'Sourced', note: 'HubSpot: Not Ready - Recontact' },
 };
 
@@ -67,6 +67,7 @@ const PUSH_STAGE = {
   'IOI Submitted': 'decisionmakerboughtin', // HubSpot pipeline has no IOI stage
   'Diligence': 'contractsent',
   'LOI': 'closedwon',
+  'Passed': '3939497680', // platform Passed = HubSpot custom Closed-Lost id
 };
 // Firm rule: nothing anonymized crosses systems in either direction.
 const BLIND_NAME = /axial|regional .{0,30}operator|^unnamed|blind teaser/i;

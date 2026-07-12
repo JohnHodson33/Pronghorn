@@ -35,10 +35,13 @@ const STAGE_SIGNALS = [
 
 async function maybeAdvanceStage(company, deal, m, log) {
   if (!deal || !INTERNAL.test(m.sender || '')) return; // only our own sent mail
+  // 'Passed' is out-of-band (not in STAGE_ORDER) — a mail signal must never
+  // resurrect a passed deal; un-passing is a deliberate human action.
   const text = `${m.subject || ''} ${m.summary || ''}`;
   const hit = STAGE_SIGNALS.find((s) => s.re.test(text));
   if (!hit) return;
   const { data: cur } = await supabase.from('deals').select('stage').eq('id', deal.id).single();
+  if (!STAGE_ORDER.includes(cur.stage)) return; // Passed/unknown = terminal
   if (STAGE_ORDER.indexOf(hit.stage) <= STAGE_ORDER.indexOf(cur.stage)) return; // forward only
   const { error } = await supabase.from('deals').update({ stage: hit.stage }).eq('id', deal.id);
   if (error) { log.error(`stage advance ${company.name}: ${error.message}`); return; }
