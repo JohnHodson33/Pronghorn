@@ -154,7 +154,19 @@ in MORNING-BRIEF.
   called this out). Make Brokers a searchable/filterable/exportable table.
 - 🔥 **Every list page consistent**: search + column filters + CSV export on
   Listings, Companies, Contacts, Brokers, Leads. One shared table pattern.
-- ⬜ Mobile-responsive pass (collapsible sidebar, scrollable tables) — John reviews on mobile.
+- 🔥🔥 **MOBILE PASS + PWA (John 7/12 ~13:30 — he'll work the CRM from his
+  iPhone daily):** (a) PWA install polish: `web/app/manifest.ts` (name
+  "Pronghorn", standalone display, theme color emerald) + apple-touch-icon +
+  proper viewport meta — so Add-to-Home-Screen gives an app-like icon and
+  full-screen launch; (b) mobile-first pass on the ON-THE-GO WORKFLOWS in
+  priority order: Dashboard Key Actions (tap-to-act), Enrichment tab (tap
+  row → company profile, big Enrich button, checkboxes usable by thumb),
+  list-building form (typeahead works on iOS keyboard), company profile,
+  pipeline (horizontal scroll snap per stage column); (c) tables collapse to
+  card layouts under ~640px instead of tiny columns; (d) MobileNav already
+  reuses Sidebar — verify cost badge + new entries render in the drawer.
+  Test target: iPhone Safari. This unblocks John's daily mobile usage —
+  outranks Contacts↔Brokers.
 - ⬜ Deal detail: market-multiple comparison widget (deal vs industry×size peers).
 - ⬜ Lead-list detail page: view a built list's leads + enrichment status; export CSV.
 - ⬜ Enrichment tab → functional: per-lead enrichment status, trigger enrichment.
