@@ -134,6 +134,12 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+- 🔥🔥 **COST METERING (John 7/12 — read docs/COST-TRACKING.md):** usage_events
+  table (migration 0007) + instrument every paid call site (enrich, leadgen,
+  draft) with cost_usd inserts + subscriptions table + **GET /api/costs**
+  (monthTotal, subsMonthly, variableTotal, byService, byActivity,
+  costPerContact) + best-effort July backfill. PM's Sidebar badge is already
+  deployed and lights up the moment /api/costs responds.
 - 🔥🔥🔥 **ENRICHMENT BACKEND (John 7/11 23:40 — read docs/ENRICHMENT-UX.md;
   outranks everything):** (a) **persist address/city/state at leadgen ingest**
   (Serper/Places already return it — we drop it today; that's why John's 66
