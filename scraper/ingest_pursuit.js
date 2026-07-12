@@ -45,10 +45,17 @@ const SIGNALS = [
 ];
 
 /** A message can match several signals (e.g. "thank you for your NDA … download
- * the Confidential Business Profile") — the HIGHEST stage wins. */
+ * the Confidential Business Profile") — the HIGHEST stage wins, EXCEPT:
+ * "NDA is in process" is exclusive. Those emails describe a PENDING state and
+ * their boilerplate promises future delivery ("you WILL receive … access to
+ * the listing information") — which must never read as cim_received.
+ * (Bug caught live 7/12: an FCBB reminder advanced a pursuit to cim_received
+ * off exactly that future-tense sentence.) */
 function bestSignal(text) {
   const hits = SIGNALS.filter((s) => s.re.test(text));
   if (!hits.length) return null;
+  const pending = hits.find((s) => s.status === 'info_requested');
+  if (pending) return pending;
   return hits.reduce((a, b) => (STAGE_ORDER.indexOf(b.status) > STAGE_ORDER.indexOf(a.status) ? b : a));
 }
 
