@@ -532,3 +532,10 @@ delisting.yml with dry_run=true first.
   listings") find home-turf brokers the DealRelations-only search misses.
   Other AZ candidates seen: cgkbusinesssales (outdoor/home-services LMM focus),
   businessbrokers-az, Cox Business Brokers AZ — probe next iters.
+
+## 2026-07-11 — loop iter (terse): azbb stable; AZ candidates lack public grids
+- Health: azbb re-run clean (20/20; retry absorbed a 429). Resilience confirmed
+  on the new Squarespace source. No new PM tasks.
+- Probed next AZ candidates (angle B): cgkbusinesssales (buy-side advisory, no
+  public listings grid) + businessbrokers-az (confidential, no grid). Neither
+  is a scrapeable source. Cox Business Brokers AZ still untried.
