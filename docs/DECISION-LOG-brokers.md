@@ -616,3 +616,9 @@ network blip during the nightly run.
 - Health: intermountain clean (8, 0 errors). No new PM tasks.
 - Angle B priority-state tally now 6: BBAZ(AZ), Alliant(TN), Empire(NC),
   Southern Mergers(NC/SC), InterMountain(CO), Zion(UT).
+
+## 2026-07-12 — loop iter (terse): zion clean, no new source (NV)
+- Health: zion clean (4, 0 errors). No new PM tasks.
+- Angle B (NV green-industry): no clean standalone broker w/ public grid —
+  results were BizBuySell/BMG (covered), Sunbelt Las Vegas (covered), IBBA/Procore
+  directories. NV is Sunbelt+aggregator-dominated. No new source.
