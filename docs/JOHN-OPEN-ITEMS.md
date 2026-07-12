@@ -1,7 +1,29 @@
 # Pronghorn — complete open-items & explanations for John
-_Updated 2026-07-12 ~00:10 · This file is the single source of truth for
+_Updated 2026-07-12 ~00:55 · This file is the single source of truth for
 everything awaiting you or recently decided. I keep it current; ask me
 "what's open?" anytime and I'll resend it._
+
+## ⚡ LATEST CLOSURES (7/12 ~00:55)
+- ✅ **Migrations 0004/0005/0006: APPLIED — verified by PM** (inquiry_profiles,
+  outbox_emails, ready_to_promote all live). Outbox queueing, pursuit
+  timestamps, shared inquiry profile, dashboard views: unlocked.
+- ✅ **GitHub secrets: added by John** — proof arrives when tonight's
+  scheduled runs go green (~6–7am Phoenix). If any failure email still
+  appears, forward it.
+- ✅ **Supabase key rotation: already done** at the PM handoff (7/11 ~00:43,
+  corroborated by .env timestamps). Reminder retired.
+- ✅ **134 companies + 125 owner contacts** promoted into the CRM (relaxed
+  bar per John's directive — every enriched lead becomes a company profile).
+- 🔨 **Cost tracker (John 7/12):** spec in docs/COST-TRACKING.md; Sidebar
+  month-to-date spend badge is DEPLOYED (invisible until Lane C's /api/costs
+  lands — top of their queue). Breakdown: subscriptions (currently $0/mo) vs
+  variable usage by service, plus **cost per owner-contact acquired** — the
+  direct yardstick vs buying enriched data.
+- ⏳ Still on John: **Outlook re-auth — FIRST THING TOMORROW** (Lane C stages
+  the expanded permissions overnight; John gets a login link + code in chat,
+  ~2 min). 🅿️ HubSpot token PARKED per John (Pronghorn is the system of
+  record; reactivate only if Tom still works in HubSpot). Parallel key +
+  Vercel env keys remain optional/no-rush.
 
 ---
 

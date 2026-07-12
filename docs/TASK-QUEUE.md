@@ -19,6 +19,12 @@ don't have, SENDING outreach, destructive actions). Bias hard to shipping.
 
 Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 
+**⚙️ HANDOFF READINESS (PM rule, 7/12):** every worker keeps a short
+"HANDOFF" section current at the TOP of its DECISION-LOG-<lane>.md (current
+task, next 2, gotchas). Sessions die at context limits — a replacement session
+must resume from one paste. PM watches lane commit recency and flags stalls
+in MORNING-BRIEF.
+
 ---
 
 ## Lane A — Brokers  (`scraper/sources/*`, `scraper/config.json`)
@@ -106,10 +112,19 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
   copy-ready pre-filled contact block + note from inquiry_profiles (and, where
   possible, a browser-automation prefill John triggers from his own machine).
   John reviews + clicks submit; status flips to info_requested on click.
-- 🔥 **Unified Screening Criteria UX** (DASHBOARD-VISION §2.1): ONE criteria set
-  with sliding-scale controls (EBITDA/revenue range, geography, subsector
-  toggles) consumed by BOTH funnels — listings filtering AND list-building
-  targeting read the same server-persisted criteria.
+- 🔥🔥 **SCRAPE CRITERIA REDESIGN (John 7/12 ~00:45 — supersedes the old
+  "unified criteria" idea):** PM confirmed screen_profiles feeds ONLY broker-
+  scrape tiering (proprietary has no financials to screen), and moved the tab
+  to Broker Sourcing as "Scrape Criteria". Rebuild the page LinkedIn-search
+  style: (a) **industry → auto-keywords**: John types "hydraulic repair", a
+  Claude endpoint (Lane C: POST /api/criteria/keywords) generates the full
+  keyword set as removable TAG CHIPS he can prune/extend — he never
+  brainstorms keywords himself; (b) **tag-chip UX everywhere** (include/
+  exclude keywords, industries) with visual add/remove; (c) **sliding-scale
+  bars** for guardrails (EBITDA, asking price, cash-flow ranges); (d) **state
+  typeahead** (type "Ari…" → select Arizona — never free-typed); (e) a short
+  "how this works" explainer at top: these criteria tier every scraped broker
+  listing (Tier 1/2/...), nothing else. Changes re-tier on next scrape.
 - 🔥🔥 **LISTING PURSUIT FLOW** (see docs/LISTING-PURSUIT-FLOW.md — John's core ask):
   On listing detail/rows add **"Request info"** → sets listing_reviews.status
   `info_requested`, logs activity, and (if broker email known) pre-drafts an
@@ -134,6 +149,20 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+- 🔥 **STAGE OUTLOOK RE-AUTH FOR JOHN'S MORNING (7/12):** John will approve
+  the expanded permissions first thing tomorrow. BEFORE he does: extend the
+  device-code scopes in `scraper/delivery/outlook.js` (or the auth path
+  `auth_email.js` uses) to include **Mail.Read + Mail.ReadWrite** alongside
+  the existing send/offline scopes, verify the refresh token saves with the
+  new scopes, and leave a one-line "READY — run `node auth_email.js`" note
+  here. His approval must capture ALL needed scopes in one pass — he should
+  never have to re-auth twice.
+- 🔥🔥 **COST METERING (John 7/12 — read docs/COST-TRACKING.md):** usage_events
+  table (migration 0007) + instrument every paid call site (enrich, leadgen,
+  draft) with cost_usd inserts + subscriptions table + **GET /api/costs**
+  (monthTotal, subsMonthly, variableTotal, byService, byActivity,
+  costPerContact) + best-effort July backfill. PM's Sidebar badge is already
+  deployed and lights up the moment /api/costs responds.
 - 🔥🔥🔥 **ENRICHMENT BACKEND (John 7/11 23:40 — read docs/ENRICHMENT-UX.md;
   outranks everything):** (a) **persist address/city/state at leadgen ingest**
   (Serper/Places already return it — we drop it today; that's why John's 66
@@ -315,5 +344,9 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
   **"Proprietary Deal Flow"**, route unchanged), then CRM, then Outreach. Say
   the word if you want different names/grouping.
 - ⏳ Outlook re-auth with `Mail.Read` scope (for scheduled email ingestion).
-- ⏳ HubSpot Private App token in `.env` (to activate live two-way push).
+- 🅿️ **HubSpot Private App token: PARKED (John 7/12 ~01:10)** — Pronghorn is
+  now the system of record (more data than HubSpot); pushing into a platform
+  we're replacing isn't worth the sync overhead. The push code stays built +
+  gated; reactivate in ~5 min with a token IF Tom still works in HubSpot
+  during the transition (open question to Tom). Off John's action list.
 - ✅ Notion connected via MCP. ✅ HubSpot two-way approved. ✅ Exa key added.
