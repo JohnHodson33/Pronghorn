@@ -47,6 +47,12 @@ in MORNING-BRIEF.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 🔥🔥 **IMPROVEMENTS PAGE (John 7/12 ~13:15 — Tom joins TODAY; read
+  docs/IMPROVEMENTS-LOOP.md):** /improvements page: submit form (bug/idea/
+  change, page, author John|Tom) → POST /api/feedback; status board
+  (submitted→triaged→building→shipped) so Tom sees ideas move; agent
+  self-review + roadmap panel (PM curates). PM wires sidebar entry on merge.
+  Ship the basic version TODAY — the Haiku refine-chat step is v2.
 - 🔥🔥🔥 **ENRICHMENT ROUND 2 (John 7/12 ~12:15 — ENRICHMENT-UX.md "ROUND 2"
   section is the contract):** (a) row click on promoted leads → CRM company
   profile (/companies/[id]), website demoted to a ↗ icon; (b) contact-dots
@@ -157,6 +163,14 @@ in MORNING-BRIEF.
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+- 🔥🔥 **FEEDBACK PIPELINE (John 7/12 ~13:15 — Tom joins TODAY; read
+  docs/IMPROVEMENTS-LOOP.md):** `feedback` table (author, type, page, body,
+  status, task_ref) + POST /api/feedback + PATCH status. THEN the standing
+  rule for ALL lanes: each /loop iteration polls feedback for
+  status='submitted' items touching your lane → triage into this queue
+  (tag feedback id) → flip 'triaged'; flip 'building'/'shipped' as you go so
+  the site status board stays truthful. Tom's items = John's items in
+  priority; conflicts bubble to Decisions.
 - 🔥🔥🔥 **ONE-CLICK CASCADING ENRICHMENT (John DECIDED 7/12 ~12:45 — ENRICHMENT-UX.md
   "ROUND 2" item 1 is the contract; owner contacts ARE the product):** (a) ONE
   button cascades tier 1 → tier 2 with EARLY EXIT when owner name+email+phone+
@@ -373,6 +387,12 @@ in MORNING-BRIEF.
   web/.env.local + Vercel yourself. Everything else is ready and waiting.
 - ✅ Serper, Google Places, Hunter, Exa keys all LIVE in `scraper/.env` (verified 7/11).
 - ⏳ Parallel key — John setting up.
+- 🆕 **Vercel Pro $20/mo → 'planned' subscription line (7/12):** Tom visiting
+  the site costs nothing on any tier, BUT Vercel's free Hobby tier is
+  licensed for non-commercial personal use — a two-partner business using it
+  daily is commercial. Add as a planned baseline line on the cost badge;
+  John upgrades in the Vercel dashboard when convenient (Settings →
+  Billing). Not blocking Tom's access today.
 - 🆕 **GitHub Actions secrets** (Lane A's ops workflows are landed but dormant;
   they run nightly once you add these in GitHub → repo Settings → Secrets and
   variables → Actions): `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`,
