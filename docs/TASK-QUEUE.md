@@ -230,6 +230,14 @@ in MORNING-BRIEF.
   (we'll outgrow the 25-free cap); /api/costs includes planned subs in
   subsMonthly with a planned flag so the badge shows the honest monthly
   floor and one over-cap pull never reads as a cost spike.
+- 🔨 LANE C — 🔥🔥 **OUTLOOK DRAFTS + LIVE INGESTION — BUILT (John authorized
+  drafts IN CHAT 7/12; auto-send remains forbidden — permanent 403).**
+  (a) `POST /api/outbox/[id] {action:'draft'}` → Graph creates the inquiry in
+  John's Outlook DRAFTS folder (Mail.ReadWrite only, scope-checked; status →
+  drafted_to_outlook; listing_events audit). John reviews + sends in Outlook.
+  (b) `scraper/graph_mail.js` + `ingest_pursuit.js --live [--hours N]` —
+  scheduled pursuit detection via Graph Mail.Read. Both degrade with exact
+  instructions until John's ONE consent (below) + GRAPH_* in web env.
 - ✅ **OUTLOOK RE-AUTH: READY (PM staged the scopes 7/12 ~01:25).**
   `scraper/delivery/outlook.js` SCOPES = Mail.Send + Mail.Read +
   Mail.ReadWrite + User.Read + offline_access. MORNING STEP FOR JOHN
