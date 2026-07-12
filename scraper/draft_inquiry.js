@@ -62,6 +62,9 @@ async function main() {
   });
   const raw = msg.content[0].text.trim().replace(/^```json?\s*|\s*```$/g, '');
   const draft = JSON.parse(raw);
+  const { recordUsage } = require('./core/usage');
+  await recordUsage('claude', 'drafting', msg.usage.input_tokens + msg.usage.output_tokens,
+    msg.usage.input_tokens * 0.8e-6 + msg.usage.output_tokens * 4e-6, { listing: l.id });
 
   console.log(`\nTO: ${broker?.email || '(no broker email — co-pilot path)'}  (${broker?.name || ''} ${broker?.brokerage ? '· ' + broker.brokerage : ''})`);
   console.log(`SUBJECT: ${draft.subject}\n`);

@@ -26,7 +26,13 @@ const MODEL = 'claude-haiku-4-5-20251001';
 const COST_IN = 0.80 / 1e6, COST_OUT = 4.00 / 1e6, EXA_COST = 0.006;
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
 
+const INDUSTRIES = 'Pest Control | Pool Services | Lawn Care | Lake/Pond Management | Tree Care | Landscaping | HVAC | Plumbing | Electrical | Roofing | Windows & Doors | Cleaning/Janitorial | Restoration | Property Maintenance | Irrigation | Other Essential Services | Other';
+
 const SYSTEM = `You extract owner/decision-maker contact intelligence for a small-business acquisition firm from scraped public pages. Extract ONLY what the text supports — never invent emails, phones, or names. Use null when not found.
+
+Also classify what the company ACTUALLY does — many list hits are mismatches (e.g. "Tree Musketeers Marketing LLC" on a tree-care list is a marketing firm). Classify industry_verified into exactly one of:
+${INDUSTRIES}
+Compare against target_industry: on_target=false when the real business does not belong on that list.
 
 OUTPUT — valid JSON only:
 {"owner_name": "First Last or null", "owner_title": "Owner/President/... or null",
@@ -34,6 +40,9 @@ OUTPUT — valid JSON only:
  "business_email": "general company email (info@/office@) or null",
  "owner_phone": "a phone explicitly identified as the owner's/cell, else null",
  "owner_linkedin": "linkedin.com/in/... URL if present, else null",
+ "city": "HQ city if stated, else null", "state": "2-letter state if stated, else null",
+ "industry_verified": "one value from the list", "industry_confidence": "high|medium|low",
+ "on_target": true/false,
  "years_in_business": 12 or null, "pe_backed": true/false/null,
  "overview": "1-2 sentences: what the company does, service mix, recurring-revenue signals",
  "signals": ["notable acquisition-relevant facts: owner near retirement, second location, fleet size, family-owned, hiring, awards"],
@@ -141,6 +150,7 @@ async function enrichLead(anthropic, lead, totals, log) {
 
   const user = JSON.stringify({
     company: lead.name, city: lead.city, state: lead.state,
+    target_industry: lead._target_industry || null, // the list this lead came from
     known_owner_name: lead.owner_name || null, // from license board / SoS if present
     website: lead.website, phone: lead.phone,
   }) + `\n\n=== SCRAPED CONTEXT ===\n${context.slice(0, 14000)}`;
@@ -151,9 +161,9 @@ async function enrichLead(anthropic, lead, totals, log) {
   });
   totals.tokIn += msg.usage.input_tokens;
   totals.tokOut += msg.usage.output_tokens;
-  const raw = msg.content[0].text.trim().replace(/^```json?\s*|\s*```$/g, '');
+  const jsonMatch = msg.content[0].text.match(/\{[\s\S]*\}/); // model may fence or append prose
   let out;
-  try { out = JSON.parse(raw); } catch { return { skip: 'unparseable model output' }; }
+  try { out = JSON.parse(jsonMatch ? jsonMatch[0] : ''); } catch { return { skip: 'unparseable model output' }; }
   out._sources = { website: !!lead.website, exa_searches: exaUsed, enriched_at: new Date().toISOString() };
   return { out };
 }
@@ -164,15 +174,22 @@ async function main() {
   const listId = arg('--list');
 
   const retrySkipped = process.argv.includes('--retry-skipped');
+  const idsIdx = process.argv.indexOf('--ids');
+  const ids = idsIdx > -1 ? process.argv[idsIdx + 1].split(',').filter(Boolean) : null;
   let q = supabase.from('leads')
-    .select('id, name, website, phone, city, state, owner_name, owner_email, owner_phone, owner_linkedin, enrichment, status')
+    .select('id, name, website, phone, city, state, owner_name, owner_email, owner_phone, owner_linkedin, enrichment, status, lead_list_id')
     .eq('status', 'new').order('created_at', { ascending: true }).limit(limit);
   // default: untouched leads; --retry-skipped: re-run ones that had no context
   q = retrySkipped ? q.not('enrichment->skipped', 'is', null) : q.is('enrichment', null);
+  if (ids) q = q.in('id', ids); // explicit job selection (run_jobs.js)
   if (listId) q = q.eq('lead_list_id', listId);
   const { data: leads, error } = await q;
   if (error) throw new Error(error.message);
   if (!leads.length) { log.info('No un-enriched leads.'); return; }
+  // the list a lead came from = the classification target
+  const { data: lists } = await supabase.from('lead_lists').select('id, query_industry');
+  const listIndustry = new Map((lists || []).map((l) => [l.id, l.query_industry]));
+  for (const l of leads) l._target_industry = listIndustry.get(l.lead_list_id) || null;
   log.info(`Enriching ${leads.length} leads (limit ${limit})`);
 
   const anthropic = new Anthropic();
@@ -193,6 +210,16 @@ async function main() {
       if (!lead.owner_email && (out.owner_email || out.business_email)) patch.owner_email = out.owner_email || out.business_email;
       if (!lead.owner_phone && out.owner_phone) patch.owner_phone = out.owner_phone;
       if (!lead.owner_linkedin && out.owner_linkedin) patch.owner_linkedin = out.owner_linkedin;
+      if (!lead.city && out.city) { patch.city = out.city; patch.state = lead.state || out.state; }
+      // verified industry columns are migration 0008; jsonb carries them until then
+      if (main.hasIndustryCols === undefined) {
+        const { error: probe } = await supabase.from('leads').select('industry_verified').limit(1);
+        main.hasIndustryCols = !probe;
+      }
+      if (main.hasIndustryCols && out.industry_verified) {
+        patch.industry_verified = out.industry_verified;
+        patch.off_target = out.on_target === false;
+      }
       const { error: uErr } = await supabase.from('leads').update(patch).eq('id', lead.id);
       if (uErr) { log.error(`  ${lead.name}: ${uErr.message}`); continue; }
       enriched++;
@@ -205,6 +232,9 @@ async function main() {
 
   const cost = totals.tokIn * COST_IN + totals.tokOut * COST_OUT + totals.exa * EXA_COST;
   log.info(`Enrichment: ${enriched} enriched, ${skipped} skipped (no context). Cost ≈ $${cost.toFixed(3)} (Claude ${totals.tokIn}/${totals.tokOut} tok, Exa ${totals.exa})`);
+  const { recordUsage } = require('../core/usage');
+  if (totals.tokIn) await recordUsage('claude', 'enrichment', totals.tokIn + totals.tokOut, totals.tokIn * COST_IN + totals.tokOut * COST_OUT, { leads: enriched });
+  if (totals.exa) await recordUsage('exa', 'enrichment', totals.exa, totals.exa * EXA_COST, { leads: enriched });
 }
 
 main().catch((e) => { console.error(e.message); process.exit(1); });

@@ -157,12 +157,29 @@ in MORNING-BRIEF.
   new scopes, and leave a one-line "READY — run `node auth_email.js`" note
   here. His approval must capture ALL needed scopes in one pass — he should
   never have to re-auth twice.
-- 🔥🔥 **COST METERING (John 7/12 — read docs/COST-TRACKING.md):** usage_events
-  table (migration 0007) + instrument every paid call site (enrich, leadgen,
-  draft) with cost_usd inserts + subscriptions table + **GET /api/costs**
-  (monthTotal, subsMonthly, variableTotal, byService, byActivity,
-  costPerContact) + best-effort July backfill. PM's Sidebar badge is already
-  deployed and lights up the moment /api/costs responds.
+- 🔨 LANE C — 🔥🔥 **COST METERING — SHIPPED.** Migration `0009_cost_tracking.sql`
+  (usage_events + subscriptions) · `core/usage.js` recorder (no-ops safely
+  pre-0009) · every paid call site instrumented (enrichment Claude+Exa, Hunter,
+  classification, leadgen blended, CLI + web drafting) · **GET /api/costs**
+  serves the full badge shape TODAY (verified; returns zeros + apply-0009 note
+  until migration; ownerContactsAcquired/costPerContact live already) ·
+  `scraper/backfill_costs.js` = July backfill, RUN ONCE after 0009 (idempotent).
+  **PM: apply 0009 with the rest, then run backfill_costs.js.**
+- 🔨 LANE C — 🔥🔥🔥 **ENRICHMENT UX BACKEND — ALL 5 SHIPPED** (ENRICHMENT-UX.md):
+  (1) address/city/state now PERSISTED at ingest (Serper+Places parse US
+  addresses) + **151 existing leads backfilled** — John's no-location complaint
+  fixed. (2) Free-pass auto-chained onto every build (`leadgen/free_pass.js`:
+  location fill + TX license owner-name cross-ref; zero paid credits).
+  (3) `POST /api/enrich {leadIds|listId|estimateOnly}` → cost preview
+  (verified: 21 leads → $0.21) + job queue; `enrich/run_jobs.js` drains it
+  (needs migration 0008 for the queue table; estimates work TODAY).
+  (4) Enrichment now classifies **industry_verified + on_target** (columns
+  post-0008, jsonb meanwhile); **backfill ran: 60 leads classified, 1
+  off-target caught** (Cadden Community Mgmt on the lake list → Property
+  Maintenance — John's exact example pattern). (5) `GET /api/taxonomy` — 15
+  canonical industries w/ aliases for the typeahead (works TODAY via seed;
+  0008 makes it DB-editable). **PM: apply 0008 with 0004-7.**
+
 - 🔥🔥🔥 **ENRICHMENT BACKEND (John 7/11 23:40 — read docs/ENRICHMENT-UX.md;
   outranks everything):** (a) **persist address/city/state at leadgen ingest**
   (Serper/Places already return it — we drop it today; that's why John's 66
@@ -192,14 +209,23 @@ in MORNING-BRIEF.
   adding (+`SERPER_API_KEY`, `GOOGLE_PLACES_API_KEY`). Until secrets land,
   runs also happen on any local worker pass (`node leadgen/run_leadgen.js`).
   Enrichment chaining stays in Lane A's enrichment.yml (2x daily).
-- 🔥 **OUTREACH TRACKING ROBUSTNESS (John 7/11, design w/ Lane B):** cold
-  outreach needs more than the pipeline's Prospecting column: per-owner/company
-  outreach state (not_started/contacted/replied/meeting/nurture), last touch,
-  **next follow-up due date** surfaced in Dashboard Key Actions when due,
-  channel history (email/call/linkedin), notes. Everything still rolls into
-  the single pipeline view, but outreach gets its own working surface (extend
-  Outreach + Cold Calling tabs into a real workspace). Draft the model, then
-  build with Lane B.
+- 🔨 LANE C — 🔥 **OUTREACH TRACKING — MODEL + API SHIPPED.** Migration
+  `0007_outreach_tracking.sql`: `outreach_tracks` (company_id PK, state
+  not_started|contacted|replied|meeting|nurture|dead, channel_last,
+  last_touch_at, next_followup_due, owner_contact_id, notes). API
+  `/api/outreach-tracks`: GET (?state=, ?due=1, joined w/ company+owner) +
+  POST upsert — recording a touch also mirrors an activity onto the company
+  feed. Dashboard Key Actions gains kind **followup_due** (due ≤ tomorrow,
+  dead excluded). Degrades with apply-0007 message until migration lands
+  (verified). LANE B: build the Outreach/Cold Calling surfaces on this.
+- 🔨 LANE C — 🔥 **FORM-INQUIRY CO-PILOT BACKEND — SHIPPED (preview-first, per
+  John's review gate).** `POST /api/inquiry-copilot {listingId}` → preview
+  payload: listing's inquiry URL + copy-ready fields (name/email/phone from
+  inquiry_profiles, Claude-drafted 60-100w form note; graceful fallback until
+  ANTHROPIC_API_KEY is in web env). NOTHING is ever submitted by the API.
+  `{confirm:true}` after John submits → info_requested + audit event
+  (inquiry_form_submitted). Verified live against a BizBuySell Tier-1 listing.
+  LANE B: render the preview + confirm flow on listing rows/detail.
 - 🔨 LANE C — 🔥 **DATA FIX for Passed stage — PREPARED, PM EXECUTES.**
   `scraper/fix_passed_stage.js` (idempotent; moves stage Closed→Passed only
   where a pass reason exists). Lane C's safety layer correctly blocked running
@@ -277,11 +303,12 @@ in MORNING-BRIEF.
   step (quota-capped by design). Add it as a second step after enrichment, or
   drop the unused secret from that workflow.
 - ⬜ SELF-ITERATE: what contact data are we still missing per company? Close the gap.
-  COVERAGE CHECKPOINT (2026-07-11 ~03:00, after full enrichment + Hunter passes):
-  **255 leads · 122 owner names · 21 owner emails · 23 outreach-ready.**
-  Remaining levers: owner PHONES (5 — VA shortlist is the lever, va_export.js
-  ready), LinkedIn (9 — VA), and Hunter quota pacing (~35 credits left this
-  month; spend on shortlist leads John actually wants to call first).
+  COVERAGE CHECKPOINT (2026-07-12 ~00:40, post relaxed-bar promotion + full tick):
+  **451 leads · 231 enriched · 204 owner names · 76 owner emails · 60
+  outreach-ready · 310 PROPRIETARY COMPANIES in the CRM (origin=lead) · 18
+  off-target flagged.** Remaining levers: owner phones/LinkedIn (VA shortlist,
+  va_export.js ready), Hunter quota pacing, and the ~180 no-web-presence
+  license rows (VA tier by design).
 
 ## PM / Integrator  (branch `main`; owns Sidebar.tsx, shared docs, deploys)
 - Merge lane branches → main; build + deploy; wire new routes into Sidebar.

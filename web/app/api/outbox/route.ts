@@ -41,10 +41,19 @@ async function claudeDraft(listing: ListingForDraft, profile: InquiryProfile) {
   const raw = (data.content?.[0]?.text ?? "").trim().replace(/^```json?\s*|\s*```$/g, "");
   try {
     const d = JSON.parse(raw) as { subject: string; body: string };
-    return { draft: d };
+    return { draft: d, usage: data.usage as { input_tokens: number; output_tokens: number } | undefined };
   } catch {
     return { error: "unparseable draft", status: 502 as const };
   }
+}
+
+/** Cost metering (0009) — tolerated if the table is missing. */
+async function meter(db: ReturnType<typeof serverDb>, activity: string, usage?: { input_tokens: number; output_tokens: number }, meta?: object) {
+  if (!usage) return;
+  await db.from("usage_events").insert({
+    service: "claude", activity, units: usage.input_tokens + usage.output_tokens,
+    cost_usd: Number((usage.input_tokens * 0.8e-6 + usage.output_tokens * 4e-6).toFixed(5)), meta,
+  });
 }
 
 export async function GET() {
@@ -82,6 +91,7 @@ export async function POST(req: Request) {
   const drafted = await claudeDraft(listing as unknown as ListingForDraft, profile);
   if ("error" in drafted && drafted.error) return NextResponse.json({ error: drafted.error }, { status: drafted.status });
   const draft = drafted.draft!;
+  await meter(db, "drafting", drafted.usage, { listing: listing.id });
 
   if (dryRun) return NextResponse.json({ draft, to: broker.email, broker });
 

@@ -24,7 +24,7 @@ export async function GET() {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
   const db = serverDb();
 
-  const [listingsRes, reviewsRes, dealsRes, leadsRes, listsRes, outboxRes] = await Promise.all([
+  const [listingsRes, reviewsRes, dealsRes, leadsRes, listsRes, outboxRes, outreachRes] = await Promise.all([
     db.from("listings").select("id, industry, tier").in("tier", [1, 2]),
     // NOTE: only pre-0005 columns here; cim_received_at etc. exist after the
     // migration lands — reviewed_at is the portable timestamp until then.
@@ -33,6 +33,10 @@ export async function GET() {
     db.from("leads").select("id, status, owner_name, owner_email, owner_phone, lead_list_id"),
     db.from("lead_lists").select("id, query_industry"),
     db.from("outbox_emails").select("id, subject, to_email, created_at").eq("status", "queued"),
+    db.from("outreach_tracks")
+      .select("company_id, state, next_followup_due, companies(name)")
+      .lte("next_followup_due", new Date(Date.now() + 86400e3).toISOString().slice(0, 10))
+      .not("state", "in", "(dead)"),
   ]);
 
   const funnel = new Map<string, number>();
@@ -92,6 +96,12 @@ export async function GET() {
   // queued emails (outbox may not exist pre-0006 — error tolerated)
   for (const o of (outboxRes.data ?? []) as Row[]) {
     keyActions.push({ kind: "queued_email", title: String(o.subject), detail: String(o.to_email), refId: String(o.id), at: String(o.created_at) });
+  }
+
+  // outreach follow-ups due (table may not exist pre-0007 — error tolerated)
+  for (const t of (outreachRes.data ?? []) as Row[]) {
+    const co = (Array.isArray(t.companies) ? t.companies[0] : t.companies) as Row | null;
+    keyActions.push({ kind: "followup_due", title: String(co?.name ?? "Company"), detail: String(t.state), refId: String(t.company_id), at: String(t.next_followup_due) });
   }
 
   keyActions.sort((a, b) => String(a.at ?? "").localeCompare(String(b.at ?? "")));

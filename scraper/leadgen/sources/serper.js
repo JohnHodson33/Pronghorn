@@ -16,15 +16,22 @@ function cleanName(title) {
   return (parts.length > 1 ? parts[parts.length - 1] : parts[0]).trim();
 }
 
+/** "123 E Main St, Tucson, AZ 85701" → {city, state}. US-format best effort. */
+function parseCityState(address) {
+  const m = String(address || '').match(/,\s*([^,]+?),\s*([A-Z]{2})(?:\s+\d{5}(?:-\d{4})?)?\s*(?:,\s*(?:USA|United States))?\s*$/i);
+  return m ? { city: m[1].trim(), state: m[2].toUpperCase() } : { city: null, state: null };
+}
+
 function placeToLead(p, tag) {
   if (!p.title) return null;
+  const { city, state } = parseCityState(p.address);
   return {
     name: p.title,
     phone: p.phoneNumber || null,
     website: p.website || null,
     address: p.address || null,
-    city: null, // Serper places give a single address string; city parsed downstream if needed
-    state: null,
+    city,
+    state,
     rating: p.rating ?? null,
     review_count: p.ratingCount ?? null,
     source_tags: [tag],
@@ -97,4 +104,4 @@ async function fetchSerperLeads(industry, geography, opts = {}, log) {
   return { leads, credits };
 }
 
-module.exports = { fetchSerperLeads, COST_PER_CREDIT };
+module.exports = { fetchSerperLeads, COST_PER_CREDIT, parseCityState };

@@ -26,16 +26,20 @@ async function fetchPlacesLeads(industry, geography, log) {
       { textQuery: geography ? `${industry} in ${geography}` : industry, pageSize: 20 },
       { headers: { 'X-Goog-Api-Key': key, 'X-Goog-FieldMask': FIELDS }, timeout: 30000 },
     );
-    return (data.places || []).map((p) => ({
-      name: p.displayName?.text,
-      phone: p.nationalPhoneNumber || null,
-      website: p.websiteUri || null,
-      address: p.formattedAddress || null,
-      city: null, state: null,
-      rating: p.rating ?? null,
-      review_count: p.userRatingCount ?? null,
-      source_tags: ['google_places'],
-    })).filter((l) => l.name);
+    const { parseCityState } = require('./serper');
+    return (data.places || []).map((p) => {
+      const { city, state } = parseCityState(p.formattedAddress);
+      return {
+        name: p.displayName?.text,
+        phone: p.nationalPhoneNumber || null,
+        website: p.websiteUri || null,
+        address: p.formattedAddress || null,
+        city, state,
+        rating: p.rating ?? null,
+        review_count: p.userRatingCount ?? null,
+        source_tags: ['google_places'],
+      };
+    }).filter((l) => l.name);
   } catch (e) {
     log?.error(`  places: ${e.response?.status || ''} ${e.response?.data?.error?.message || e.message}`);
     return [];

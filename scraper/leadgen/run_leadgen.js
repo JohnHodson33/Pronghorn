@@ -158,6 +158,15 @@ async function runList(list, dbKeys) {
       for (const c of chunk) dbKeys.add(`${norm(c.name)}|${(c.state || '').toUpperCase()}`);
     }
 
+    // zero-cost enrichment runs on every build, automatically (ENRICHMENT-UX)
+    const { freePass } = require('./free_pass');
+    await freePass(list.id, list.query_industry, log);
+
+    if (costActual > 0) {
+      const { recordUsage } = require('../core/usage');
+      await recordUsage('serper', 'list_building', 1, costActual, { list: list.id, industry: list.query_industry, note: 'blended serper+exa+parallel for this build' });
+    }
+
     await supabase.from('lead_lists').update({
       status: 'complete', leads_found: inserted, cost_actual: costActual,
     }).eq('id', list.id);
