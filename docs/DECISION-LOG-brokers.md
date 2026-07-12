@@ -545,3 +545,26 @@ delisting.yml with dry_run=true first.
 - Angle B (TX green-trade specialists): Maverick Business Advisors (txmaverick.com)
   = DNS-fails/unresolvable; Lion Business Brokers = sell-side (no buy-side grid);
   rest DealStream (blocked) + BizBuySell/BizQuest (covered). No new source.
+
+## 2026-07-12 — loop iter: shared fetchRetry (calder blip) + resurface open items
+
+**Resilience:** health sweep caught calder failing with undici "fetch failed"
+(transient blip; curl + retry both 200). Added SourceScraper.fetchRetry() and
+wired calder/thefirm/sun. All single-request SSR sources can now survive a
+network blip during the nightly run.
+
+### 📌 FOR PM → pull into JOHN-OPEN-ITEMS.md (Lane A items not yet surfaced there)
+1. **Screen-keyword gap (recovers ~15-25 real targets already in the DB):** the
+   Green Industry Default screen profile's include-keywords miss common trade
+   words — add **"painting"/"painters"**, **"restore"** (have "restoration" but
+   not the bare "restore" ServiceMaster/CertaPro use), and **"fence"/"fencing"**.
+   Editable in the Screen Criteria UI (screen_profiles) — a John/PM UI edit, not
+   a code change. Would re-tier home-services listings already scraped.
+2. **We Sell Restaurants (open decision):** clean public API, OFF-thesis
+   (restaurants). Build for restaurant-vertical multiples coverage, or skip to
+   keep the DB thesis-focused? Unbuilt pending John's call.
+3. **Source count refresh for JOHN-OPEN-ITEMS Part 7:** Lane A is now **~31
+   sources** (was "12 new today"). New standalone adapters this session: Empire
+   (NC), Southern Mergers (NC/SC), BBAZ (AZ home state, 2 Tier1), wpbdp platform,
+   Tupelo marketplace (18 Tier1). DealRelations grown to 13 broker subdomains.
+   All committed to lane/brokers awaiting PM merge.
