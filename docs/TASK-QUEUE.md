@@ -134,6 +134,20 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+- 🔨 LANE C — 🔥🔥🔥 **ENRICHMENT UX BACKEND — ALL 5 SHIPPED** (ENRICHMENT-UX.md):
+  (1) address/city/state now PERSISTED at ingest (Serper+Places parse US
+  addresses) + **151 existing leads backfilled** — John's no-location complaint
+  fixed. (2) Free-pass auto-chained onto every build (`leadgen/free_pass.js`:
+  location fill + TX license owner-name cross-ref; zero paid credits).
+  (3) `POST /api/enrich {leadIds|listId|estimateOnly}` → cost preview
+  (verified: 21 leads → $0.21) + job queue; `enrich/run_jobs.js` drains it
+  (needs migration 0008 for the queue table; estimates work TODAY).
+  (4) Enrichment now classifies **industry_verified + on_target** (columns
+  post-0008, jsonb meanwhile); **backfill ran: 60 leads classified, 1
+  off-target caught** (Cadden Community Mgmt on the lake list → Property
+  Maintenance — John's exact example pattern). (5) `GET /api/taxonomy` — 15
+  canonical industries w/ aliases for the typeahead (works TODAY via seed;
+  0008 makes it DB-editable). **PM: apply 0008 with 0004-7.**
 - 🔥🔥🔥 **ENRICHMENT BACKEND (John 7/11 23:40 — read docs/ENRICHMENT-UX.md;
   outranks everything):** (a) **persist address/city/state at leadgen ingest**
   (Serper/Places already return it — we drop it today; that's why John's 66

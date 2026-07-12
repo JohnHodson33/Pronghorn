@@ -158,6 +158,10 @@ async function runList(list, dbKeys) {
       for (const c of chunk) dbKeys.add(`${norm(c.name)}|${(c.state || '').toUpperCase()}`);
     }
 
+    // zero-cost enrichment runs on every build, automatically (ENRICHMENT-UX)
+    const { freePass } = require('./free_pass');
+    await freePass(list.id, list.query_industry, log);
+
     await supabase.from('lead_lists').update({
       status: 'complete', leads_found: inserted, cost_actual: costActual,
     }).eq('id', list.id);
