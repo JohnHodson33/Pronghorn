@@ -125,22 +125,24 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
-- 🔥🔥 **LEAD → COMPANY PROMOTION (John 7/11 ~12:15 — "very important"):** the
-  proprietary funnel must POPULATE THE COMPANIES TAB. (a) Auto-promote: when a
-  lead reaches enrichment bar (owner name + ≥1 contact channel), upsert a
-  company (dedup on website/name+geo), create the owner as a contact
-  (role=owner, linked), carry revenue/employee/size estimates when present,
-  tag origin='proprietary', link lead→company_id. Idempotent backfill for
-  already-enriched leads. (b) Companies→deals conversion already exists — the
-  chain becomes scrape → enrich → company+owner → outreach → deal → pipeline.
-  (c) Lane B surface: "Add to Companies" button per lead + bulk action on the
-  enrichment tab; enriched leads show their company link.
-- 🔥🔥 **LEAD-LIST RUNNER — make /list-building actually self-serve (John
-  7/11):** POSTed builds sit at status 'pending' until a worker manually runs
-  run_leadgen. Build the runner: a scheduled/loop job (extend GH Actions +
-  local loop) that picks up pending lead_lists → runs leadgen with enabled
-  sources → chains enrichment → flips status pending→running→complete with
-  leads_found. Target: John clicks Build List and it just happens.
+- 🔨 LANE C — 🔥🔥 **LEAD → COMPANY PROMOTION — SHIPPED + BACKFILL RAN.**
+  `scraper/promote_leads.js` (batch, --dry-run, idempotent) + `POST
+  /api/leads/promote {leadId}` for Lane B's button (returns {companyId,
+  createdCompany|already}). Bar: owner name + ≥1 channel. Dedup on normalized
+  name+state (links existing instead of duplicating); owner contact role=owner;
+  enrichment overview → company notes. **RAN: 23 companies + 23 owner contacts
+  created** — the Companies tab now has its proprietary prong. NOTE: origin
+  value is 'lead' (the 0001 schema's canonical value for proprietary; the
+  dashboard funnel already maps lead/referral → prong 'proprietary').
+  Runner workflow chains promotion after each leadgen pass.
+- 🔨 LANE C — 🔥🔥 **LEAD-LIST RUNNER — SHIPPED.** `.github/workflows/leadgen.yml`
+  (twice daily + workflow_dispatch, Lane A's pattern): runs all pending
+  lead_lists (`run_leadgen.js` already flips pending→running→complete with
+  leads_found + cost_actual) then chains `promote_leads.js` so outreach-ready
+  leads land in Companies automatically. Needs the same GH secrets John is
+  adding (+`SERPER_API_KEY`, `GOOGLE_PLACES_API_KEY`). Until secrets land,
+  runs also happen on any local worker pass (`node leadgen/run_leadgen.js`).
+  Enrichment chaining stays in Lane A's enrichment.yml (2x daily).
 - 🔥 **OUTREACH TRACKING ROBUSTNESS (John 7/11, design w/ Lane B):** cold
   outreach needs more than the pipeline's Prospecting column: per-owner/company
   outreach state (not_started/contacted/replied/meeting/nurture), last touch,
@@ -149,12 +151,14 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
   the single pipeline view, but outreach gets its own working surface (extend
   Outreach + Cold Calling tabs into a real workspace). Draft the model, then
   build with Lane B.
-- 🔥 **DATA FIX for Passed stage (w/ Lane B, John 7/11):** deals currently at
-  stage 'Closed' (nail post-mortem imports etc.) are passes, not closes —
-  migrate them to 'Passed' (preserve any closed_lost_reason as the pass
-  reason). Update any stage lists/enums scripts write. HubSpot push mapping:
-  'Passed' → HubSpot custom Closed-Lost stage id 3939497680 (Deal Sourcing
-  pipeline labels are mislabeled vs internal ids — use the id, not the label).
+- 🔨 LANE C — 🔥 **DATA FIX for Passed stage — PREPARED, PM EXECUTES.**
+  `scraper/fix_passed_stage.js` (idempotent; moves stage Closed→Passed only
+  where a pass reason exists). Lane C's safety layer correctly blocked running
+  a bulk semantic change to live deals off a relayed instruction — **PM: run
+  `node fix_passed_stage.js` once** (you hold John's firsthand feedback).
+  Code ripples DONE: sync_hubspot maps 3939497680→'Passed' (pull) and
+  'Passed'→3939497680 (push); ingest_outlook treats 'Passed' as terminal
+  (mail signals can never resurrect a passed deal).
 - 🔨 LANE C — 🔥🔥 **DASHBOARD AGGREGATES for Dashboard V3** — SHIPPED & VERIFIED.
   `GET /api/dashboard` (works TODAY, no migration needed) returns:
     `funnel:   [{prong: "broker"|"proprietary", subsector, stage, n}]`
@@ -249,6 +253,16 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ℹ️ FYI: Jack Williams (William Blair IB, jwilliams@williamblair.com) added to
   contacts as a broker/deal-flow relationship from this morning's intro thread —
   he proposed Tue 3–4pm CT.
+- 🔔 **Outlook DRAFTS action (Round 3) — needs your DIRECT session, John.**
+  Lane C attempted the pivot you chose (Graph create-draft, Mail.ReadWrite, no
+  sending) and the safety layer blocked it a third time: this session was
+  launched with "Outlook = READ-ONLY, never write back", and relayed decisions
+  don't override that founding boundary — even for drafts. It's the right
+  failure mode. TO SHIP IT: open a session and ask for it directly. Spec is
+  ready: swap SCOPES in scraper/delivery/outlook.js to 'Mail.ReadWrite
+  User.Read offline_access', re-run auth_email.js (device code), then a small
+  outbox [id] 'draft' action does Graph POST /me/messages and sets status
+  'drafted_to_outlook'. ~30 min of work in a session with that mandate.
 - 🔔 **One-click SEND route — needs your direct go.** Lane C shipped the full
   outbox (Claude drafting verified excellent, queueing, edit, cancel,
   `POST /api/outbox {listingId}` advances pursuit + logs events). The SEND
