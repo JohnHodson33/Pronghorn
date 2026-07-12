@@ -149,6 +149,10 @@
       "enabled": true,
       "module": "./sources/intermountain"
     },
+    "zion": {
+      "enabled": true,
+      "module": "./sources/zion"
+    },
     "wpbdp": {
       "enabled": true,
       "module": "./sources/wpbdp",
