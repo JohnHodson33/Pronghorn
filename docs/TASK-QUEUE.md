@@ -41,6 +41,15 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 🔥🔥🔥 **ENRICHMENT UX (John 7/11 23:40 — "the most important part"; read
+  docs/ENRICHMENT-UX.md FIRST, it's the design contract):** (a) typeahead on
+  industry + geography in the list-build form (suggest-as-you-type, select
+  from suggestions); (b) **checkbox selection + "Enrich selected (est. $X)"
+  button** on the Enrichment tab and list detail → POST /api/enrich; (c)
+  replace the List column with a verified **Industry column** (list becomes a
+  filter); (d) off-target flag chip + filter + discard action; (e) live
+  enriching→enriched status updates. John currently CANNOT operate this flow
+  at all — this outranks everything else in your lane.
 - 🔥🔥 **PASSED STAGE + DEALS TAB (John live feedback 7/11 ~11:45).** (a) Add a
   **"Passed"** deal stage: the deals now sitting in the pipeline's "Closed"
   column are deals we PASSED on (we have closed zero) — move them to Passed
@@ -125,6 +134,17 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+- 🔥🔥🔥 **ENRICHMENT BACKEND (John 7/11 23:40 — read docs/ENRICHMENT-UX.md;
+  outranks everything):** (a) **persist address/city/state at leadgen ingest**
+  (Serper/Places already return it — we drop it today; that's why John's 66
+  tree-care leads have no location. Backfill where possible); (b) **free-pass
+  enrichment chained automatically onto every list build** (website capture,
+  location fill, license cross-ref, dedupe — never ask, costs nothing); (c)
+  `enrichment_jobs` + **POST /api/enrich** (leadIds|listId) + runner so the UI
+  button actually works with no CLI; (d) **industry_verified classification**
+  during enrichment (Claude, actual business ≠ list intent; off_target flag
+  for catchy-name mismatches) + backfill existing enriched leads; (e) industry
+  taxonomy table + /api/taxonomy for Lane B's typeahead.
 - 🔨 LANE C — 🔥🔥 **LEAD → COMPANY PROMOTION — SHIPPED + BACKFILL RAN.**
   `scraper/promote_leads.js` (batch, --dry-run, idempotent) + `POST
   /api/leads/promote {leadId}` for Lane B's button (returns {companyId,
