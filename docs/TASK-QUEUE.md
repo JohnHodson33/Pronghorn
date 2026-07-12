@@ -279,11 +279,12 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
   step (quota-capped by design). Add it as a second step after enrichment, or
   drop the unused secret from that workflow.
 - ⬜ SELF-ITERATE: what contact data are we still missing per company? Close the gap.
-  COVERAGE CHECKPOINT (2026-07-11 ~03:00, after full enrichment + Hunter passes):
-  **255 leads · 122 owner names · 21 owner emails · 23 outreach-ready.**
-  Remaining levers: owner PHONES (5 — VA shortlist is the lever, va_export.js
-  ready), LinkedIn (9 — VA), and Hunter quota pacing (~35 credits left this
-  month; spend on shortlist leads John actually wants to call first).
+  COVERAGE CHECKPOINT (2026-07-12 ~00:40, post relaxed-bar promotion + full tick):
+  **451 leads · 231 enriched · 204 owner names · 76 owner emails · 60
+  outreach-ready · 310 PROPRIETARY COMPANIES in the CRM (origin=lead) · 18
+  off-target flagged.** Remaining levers: owner phones/LinkedIn (VA shortlist,
+  va_export.js ready), Hunter quota pacing, and the ~180 no-web-presence
+  license rows (VA tier by design).
 
 ## PM / Integrator  (branch `main`; owns Sidebar.tsx, shared docs, deploys)
 - Merge lane branches → main; build + deploy; wire new routes into Sidebar.
