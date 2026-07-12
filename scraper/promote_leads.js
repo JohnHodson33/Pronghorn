@@ -1,7 +1,10 @@
-// Lead → Company promotion (John 7/11: "very important"). An enriched lead
-// with an owner NAME + at least one contact channel (email or phone) is a
-// real proprietary target — promote it into the CRM: companies row
-// (origin='lead') + owner contact, and link the lead (leads.company_id).
+// Lead → Company promotion (John 7/11: "very important"; bar RELAXED per
+// John 7/12 ~00:00: "any company we're pulling the name for via enrichment
+// should be made into a company profile" — name + website/location is
+// enough; owner name/contact ENRICH the profile when found, never gate it).
+// Eligible: any enriched lead, or any lead with an owner name. Creates the
+// companies row (origin='lead'), an owner contact when we have one, and
+// links the lead (leads.company_id).
 //
 // Idempotent: leads already linked are skipped; companies are deduped by
 // normalized name+state (an existing company gets linked, not duplicated).
@@ -20,10 +23,9 @@ async function main() {
   const limit = limitIdx > -1 ? Number(process.argv[limitIdx + 1]) : 500;
 
   const { data: leads, error } = await supabase.from('leads')
-    .select('id, name, website, phone, address, city, state, owner_name, owner_email, owner_phone, owner_linkedin, source_tags, lead_list_id, company_id, enrichment')
+    .select('id, name, website, phone, address, city, state, status, owner_name, owner_email, owner_phone, owner_linkedin, source_tags, lead_list_id, company_id, enrichment')
     .is('company_id', null)
-    .not('owner_name', 'is', null)
-    .or('owner_email.not.is.null,owner_phone.not.is.null')
+    .or('status.eq.enriched,owner_name.not.is.null')
     .limit(limit);
   if (error) throw new Error(error.message);
   if (!leads.length) { log.info('No promotion-eligible leads.'); return; }
@@ -56,9 +58,9 @@ async function main() {
       created++;
     } else linked++;
 
-    // owner contact (skip if one already exists for this company)
-    const { data: exOwner } = await supabase.from('contacts')
-      .select('id').eq('company_id', companyId).eq('role', 'owner').maybeSingle();
+    // owner contact when we have a name (skip if one already exists)
+    const { data: exOwner } = l.owner_name ? await supabase.from('contacts')
+      .select('id').eq('company_id', companyId).eq('role', 'owner').maybeSingle() : { data: true };
     if (!exOwner) {
       const { error: ctErr } = await supabase.from('contacts').insert({
         company_id: companyId, role: 'owner', name: l.owner_name,
@@ -69,7 +71,7 @@ async function main() {
     }
 
     await supabase.from('leads').update({ company_id: companyId }).eq('id', l.id);
-    log.info(`  promoted: ${l.name} → ${l.owner_name} (${l.owner_email || l.owner_phone})`);
+    log.info(`  promoted: ${l.name}${l.owner_name ? ` → ${l.owner_name} (${l.owner_email || l.owner_phone || 'no contact yet'})` : ' (no owner yet)'}`);
   }
   log.info(`Promotion: ${created} companies created, ${linked} linked to existing, ${contacts} owner contacts added`);
 }
