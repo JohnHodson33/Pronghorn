@@ -27,6 +27,22 @@ insert into size_benchmarks (industry, revenue_per_employee, ebitda_margin_low, 
   ('Property Maintenance', 90000, 0.10, 0.18), ('default', 110000, 0.10, 0.20)
 on conflict (industry) do nothing;
 
+-- Editable tier thresholds (John amendment 3: Platform / Tuck-in / Too small
+-- boundaries in revenue AND/OR EBITDA terms — assumptions, not constants).
+-- Single row; the Size Estimation tab edits it and the math cascades.
+create table if not exists size_thresholds (
+  id boolean primary key default true check (id), -- single-row table
+  platform_min_ebitda numeric not null default 1000000,
+  platform_min_revenue numeric,          -- null = EBITDA-only test
+  toosmall_max_ebitda numeric not null default 200000,
+  toosmall_max_revenue numeric,
+  updated_at timestamptz not null default now()
+);
+alter table size_thresholds enable row level security;
+create policy "authenticated_full_access" on size_thresholds
+  for all to authenticated using (true) with check (true);
+insert into size_thresholds (id) values (true) on conflict (id) do nothing;
+
 -- Auto-enrich rules: JOHN creates these; nothing auto-enriches outside them.
 create table if not exists auto_enrich_rules (
   id uuid primary key default gen_random_uuid(),

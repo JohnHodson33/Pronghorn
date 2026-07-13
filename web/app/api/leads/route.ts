@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { hasDb, serverDb } from "@/lib/db";
 import { completeness, LEVELS, type Completeness } from "@/lib/completeness";
 import { sizeEstimate, TIERS } from "@/lib/size";
+import { loadSizeModel } from "@/lib/size-model";
 
 export async function GET(req: Request) {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
@@ -23,13 +24,21 @@ export async function GET(req: Request) {
 
   // completeness = the demarcation John reads; computed server-side once,
   // default order = most complete first (results float to the top post-run)
+  const model = await loadSizeModel();
   const rows = (data ?? []).map((l) => {
     const size = sizeEstimate(
       (l as { industry_verified?: string }).industry_verified,
       (l.enrichment as { size_signals?: Record<string, unknown> } | null)?.size_signals,
       (l as { review_count?: number }).review_count,
+      model,
     );
-    return { ...l, completeness: completeness(l), size, size_tier: size?.tier ?? "unsized" };
+    return {
+      ...l, completeness: completeness(l), size,
+      size_tier: size?.tier ?? "unsized",
+      // always-present columns (John amendment 3): ranges or null, UI renders blank
+      est_revenue: size?.revenue ?? null,
+      est_ebitda: size?.ebitda ?? null,
+    };
   });
   rows.sort((a, b) => LEVELS.indexOf(a.completeness as Completeness) - LEVELS.indexOf(b.completeness as Completeness));
   let out = rows;

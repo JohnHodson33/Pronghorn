@@ -50,10 +50,11 @@ function sizeTier(lead) {
   if (!range) return 'unsized';
   const b = BENCH[lead.industry_verified] || BENCH.default;
   const ebitdaHi = range[1] * b.revenue_per_employee * b.ebitda_margin[1];
-  return ebitdaHi >= 1_000_000 ? 'A' : ebitdaHi < 200_000 ? 'C' : 'B';
+  // mirror of web/lib/size.ts default thresholds (amendment 3 names)
+  return ebitdaHi >= 1_000_000 ? 'platform' : ebitdaHi < 200_000 ? 'toosmall' : 'tuckin';
 }
 
-const TIER_ORDER = { A: 0, B: 1, unsized: 2, C: 3 };
+const TIER_ORDER = { platform: 0, tuckin: 1, unsized: 2, toosmall: 3 };
 function ruleMatches(rule, lead) {
   const inds = (rule.industries || []).map((i) => i.toLowerCase());
   if (!inds.length || !inds.includes(String(lead.industry_verified || '').toLowerCase())) return false;
