@@ -338,8 +338,18 @@ set) into your new chips UI as a small follow-up.
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
-- 🔥🔥🔥 **FEEDBACK THREAD MODEL + AGENT-REPLY LOOP (John in chat 7/12 ~23:45 —
-  TOP OF LANE; pairs w/ Lane B's IMPROVEMENTS DIALOGUE):** (a) migration
+- 🔨 LANE C — 🔥🔥🔥 **FEEDBACK THREAD MODEL — BACKEND SHIPPED.** migration
+  `0011_feedback_comments.sql` (feedback_comments + reply_pending col) +
+  `GET/POST /api/feedback/[id]/comments` + feedback PATCH now auto-writes a
+  status_change comment (thread = audit trail). Degrades cleanly pre-0011
+  (verified). Nightly-digest [9bb9d925] correctly NOT built — John's concern
+  already answered by PM's thesis-gate amendment, card still 'suggested'
+  (awaiting his approve). Standing reply-before-build rule activates on 0011.
+  **⚠️ Lane B/PM: your Pronghorn-frontend globals.css has a duplicate mid-file
+  @import breaking that worktree's dev server — main is fine, live unaffected.**
+  Lane B builds the thread UI on this API. **PM: apply 0011.**
+  --- original card ---
+- (a) migration
   `0011_feedback_comments.sql`: `feedback_comments` (feedback_id FK, author
   John|Tom|"Agent — <lane>", body, kind comment|status_change|build_plan|
   completion_summary, created_at) + `/api/feedback/[id]/comments` GET/POST;

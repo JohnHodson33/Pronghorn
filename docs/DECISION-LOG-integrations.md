@@ -39,6 +39,17 @@ Outlook Drafts (push_drafts_to_outlook.js); ran the first `ingest_pursuit.js
 Invite for review). outlook-sync.yml schedules both every 3h (needs GRAPH_*
 repo secrets). Nothing sends. This closes the last gated Lane C feature.
 
+**PM POINTER (7/13 ~00:15):** new PM session is
+`local_1c8f3b29-e70c-4ca8-a854-70a3738332b1` — route cross-session status
+there (prior local_29b1759e is dead). Pointer acknowledged.
+
+**⚠️ FLAG for Lane B/PM:** Lane B's brand-pass `web/app/globals.css` (in the
+Pronghorn-frontend worktree, ~1623 lines) has a DUPLICATE `@import
+url(Playfair…)` MID-FILE → "CSS @import must precede all rules" → their dev
+server 500s every route. Main's globals.css is fine (29 lines, correct), so
+the live deploy is NOT affected — this only breaks Lane B's local preview
+until they dedupe that @import. Not my file; flagged only.
+
 **Current task:** loop in build+monitor mode. Just shipped cascading enrichment
 (tier2.js), completeness levels, job progress, Outlook drafts (John-authorized
 in chat), Graph live ingestion, feedback pipeline.
