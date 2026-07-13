@@ -3,6 +3,44 @@
 Per-lane log per PARALLEL-SESSIONS.md; the PM/integrator folds these into
 DECISION-LOG.md and wires routes into Sidebar.tsx.
 
+## 🔄 HANDOFF — ROLLED OVER 7/13 — successor resumes here
+
+- **State**: nothing in flight. Last commit `9cd3f33` (dead-end sweep:
+  deal→broker link, Brokers in global search, /listings?industry= deep link
+  from Market Multiples) — pushed to `lane/frontend`, build green. Everything
+  through the PM's ordered list (completeness levels, progress UI, nav fix,
+  improvements dialogue, brand sweep, PWA, dispositions, 0006-view swap,
+  badges/pills) is pushed; 5bebc58 and earlier are merged + deployed.
+- **Next (PM's order)**: (1) improvements ATTACHMENTS UI; (2) meeting-NOTES
+  input UI; (3) list-build status_detail rendering (post-0012); (4) size-tier
+  chips (blocked on tier-math approval); (5) my queued sweep items in
+  TASK-QUEUE (sources health table, broker→filtered-contacts deep link,
+  click-to-filter industry chips).
+- **Environment**: work in the git worktree `C:\Users\johnd\Pronghorn-frontend`
+  (NEVER the main checkout — other lanes live there); dev server = launch
+  config `pronghorn-web-laneB`, port 3311; copy web/.env.local if recreating.
+- **Gotchas (bite in this order)**:
+  · Migration 0011 is NOT applied — comments API + reply_pending are dormant;
+    the /improvements threads run on the pseudo-thread fallback by design.
+    0006 IS applied (dashboard views live). Verify columns before trusting
+    any "shipped" API — route code existing ≠ table existing.
+  · Turbopack: new route dirs need a dev-server restart (404 otherwise);
+    never run `next build` while dev runs in this worktree (corrupts
+    .next/dev/types → rm -rf .next/dev); any `@import url(...)` in
+    globals.css must precede `@import "tailwindcss"`.
+  · Tier-2 enrich rate: server prices it; do NOT reintroduce the old $0.11
+    tooltip constant (PM hot-fixed once already).
+  · Brand: the emerald token scale IS the brand palette now (globals.css
+    @theme) — keep using emerald-* classes, they render brand greens.
+  · Guardrails honored all session: no test writes to shared prod data (the
+    permission classifier blocks them anyway), no live enrichment test-fires
+    (~$14), nothing ever auto-sends (mailto/outbox = John's click).
+  · PM session: local_b552862b-… ("Pronghorn PM loop"); two earlier PM
+    sessions are dead — verify with list_sessions before messaging; one PM
+    pointer previously named a nonexistent session id.
+- All shipped work is browser-verified except paths requiring live paid runs
+  or prod-data mutation; those verify on John's first real use.
+
 ## 2026-07-10 — Deal detail page (`/deals/[id]`)
 
 - **New route: `/deals/[id]`** — deal working view: stage dropdown (live PATCH),
