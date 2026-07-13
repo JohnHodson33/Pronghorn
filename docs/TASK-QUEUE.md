@@ -419,6 +419,32 @@ set) into your new chips UI as a small follow-up.
   off_target), new lists start HELD (one activation decision per list),
   nightly $ + Hunter caps, digest = receipt + tonight's plan w/ pause. Do
   NOT start the digest build until John approves the amended card.
+- 🔥🔥🔥 **MEETING-NOTES PIPELINE — LIVE SWEEP + INPUT UI (John in chat 7/13
+  ~10:20 — "the CRM includes all of the notes very easily… automated fashion…
+  scrape Tom's Notion too… tag it to the right company or deal"; builds on
+  docs/MEETING-NOTES-DESIGN.md + ingest_notion_meetings.js which already
+  exists for curated dumps; PM hand-cataloged today's Dan Mello advisor note
+  as the pattern exemplar — see contact 7b39286a + its meeting activity):**
+  (Lane C) (a) LIVE SWEEP: extend ingest_notion_meetings.js with --live —
+  poll the Notion API for new/edited AI meeting notes since last run (needs
+  NOTION_TOKEN internal-integration secret from John; degrade w/ exact
+  instructions until set); (b) AUTO-TAG: Claude matches each note against
+  CRM companies/contacts/deals (names, domains, attendee emails) → writes
+  kind='meeting' activity w/ doc_url provenance (idempotent per URL) +
+  confidence; ALSO auto-detect advisor/broker/owner people mentioned w/
+  contact info → create/enrich contacts (Dan Mello pattern); (c) LOW
+  CONFIDENCE → 'needs tagging' review queue surfaced in dashboard Key
+  Actions, never silent-dropped; (d) wire into an existing 15-min/nightly
+  workflow. TOM: same integration token pattern — Tom shares his workspace
+  (or his notes teamspace) with the integration once; document the 2-min
+  step for John to send him. (Lane B) (e) NOTES INPUT UI: "+ Add note"
+  (global + on company/deal/contact pages): paste a Notion link OR raw
+  text → server suggests tags as chips w/ confidence (company/deal/contact,
+  editable) → user validates → saves as activity; (f) 'needs tagging'
+  review list for sweep leftovers; (g) mobile parity per standing rule.
+  Acceptance: John finishes a meeting, does NOTHING, and the note appears
+  on the right company/contact feed within the sweep interval — or pastes
+  a link and confirms tags in two clicks.
 - 🔥🔥🔥 **LIST-BUILD RUN VISIBILITY + FASTER DRAIN (John in chat 7/13 ~00:50 —
   his Lawn Care National list sat "queued · 0 found" 15 min and read as
   BROKEN; "this is a very core functionality"):** (Lane C) (a) shorten
