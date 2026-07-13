@@ -1,12 +1,15 @@
-# Outlook sync (Lane C) — activates now that John has consented (Mail.Read +
-# Mail.ReadWrite). Two mail-dependent jobs on a schedule:
+# Outlook + Notion sync (Lane C) — the "external inboxes" schedule:
 #   1. live pursuit detection (Graph Mail.Read) — advance broker listings on
 #      NDA/CIM signals; pure read.
 #   2. push queued owner/inquiry drafts → John's Outlook Drafts (Mail.ReadWrite)
 #      — DRAFTS ONLY, never sends. John reviews + sends in Outlook.
+#   3. Notion meeting-notes live sweep (John 7/13) — auto-tag AI meeting notes
+#      to companies/deals/contacts; unmatched notes surface as needs-tagging.
+#      READ-ONLY on Notion.
 #
 # REQUIRED REPO SECRETS (+ the usual SUPABASE_*):
-#   GRAPH_CLIENT_ID, GRAPH_TENANT_ID, GRAPH_REFRESH_TOKEN
+#   GRAPH_CLIENT_ID, GRAPH_TENANT_ID, GRAPH_REFRESH_TOKEN,
+#   NOTION_TOKEN (+ NOTION_TOKEN_TOM when Tom connects), ANTHROPIC_API_KEY
 
 name: Outlook Sync
 
@@ -58,3 +61,11 @@ jobs:
           GRAPH_TENANT_ID: ${{ secrets.GRAPH_TENANT_ID }}
           GRAPH_REFRESH_TOKEN: ${{ secrets.GRAPH_REFRESH_TOKEN }}
         run: node push_drafts_to_outlook.js --limit 50
+      - name: Notion meeting-notes live sweep (read-only on Notion)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_TOKEN_TOM: ${{ secrets.NOTION_TOKEN_TOM }}
+        run: node ingest_notion_meetings.js --live --hours 4

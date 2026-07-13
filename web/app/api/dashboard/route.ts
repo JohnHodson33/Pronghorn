@@ -24,7 +24,7 @@ export async function GET() {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
   const db = serverDb();
 
-  const [listingsRes, reviewsRes, dealsRes, leadsRes, listsRes, outboxRes, outreachRes] = await Promise.all([
+  const [listingsRes, reviewsRes, dealsRes, leadsRes, listsRes, outboxRes, outreachRes, untaggedNotesRes] = await Promise.all([
     db.from("listings").select("id, industry, tier").in("tier", [1, 2]),
     // NOTE: only pre-0005 columns here; cim_received_at etc. exist after the
     // migration lands — reviewed_at is the portable timestamp until then.
@@ -37,6 +37,12 @@ export async function GET() {
       .select("company_id, state, next_followup_due, companies(name)")
       .lte("next_followup_due", new Date(Date.now() + 86400e3).toISOString().slice(0, 10))
       .not("state", "in", "(dead)"),
+    // meeting notes the Notion sweep couldn't confidently attach — a human
+    // decision, so it belongs in the attention queue (never silently dropped)
+    db.from("activities").select("id, body, doc_url, created_at")
+      .eq("kind", "meeting").is("company_id", null).is("contact_id", null)
+      .not("doc_url", "is", null)
+      .order("created_at", { ascending: false }).limit(10),
   ]);
 
   const funnel = new Map<string, number>();
@@ -102,6 +108,12 @@ export async function GET() {
   for (const t of (outreachRes.data ?? []) as Row[]) {
     const co = (Array.isArray(t.companies) ? t.companies[0] : t.companies) as Row | null;
     keyActions.push({ kind: "followup_due", title: String(co?.name ?? "Company"), detail: String(t.state), refId: String(t.company_id), at: String(t.next_followup_due) });
+  }
+
+  // meeting notes needing a company tag (Notion sweep, low confidence)
+  for (const n of (untaggedNotesRes.data ?? []) as Row[]) {
+    const firstLine = String(n.body ?? "").split("\n")[0].replace(/^\[Notion meeting [^\]]*\]\s*/, "");
+    keyActions.push({ kind: "note_needs_tagging", title: firstLine || "Meeting note", detail: "attach to a company/deal", refId: String(n.id), at: String(n.created_at) });
   }
 
   keyActions.sort((a, b) => String(a.at ?? "").localeCompare(String(b.at ?? "")));
