@@ -79,12 +79,21 @@ async function exaLinkedin(lead, budget, log) {
  * @returns { processed, emails, linkedins }
  */
 async function runTier2(leads, budget, log, onProgress) {
-  let processed = 0, emails = 0, linkedins = 0;
+  const { resolveOwnerName } = require('./sos_lookup');
+  let processed = 0, emails = 0, linkedins = 0, names = 0;
   for (const l of leads) {
     processed++;
-    if (isComplete(l) || !l.owner_name) { onProgress?.(processed, false); continue; } // early exit / needs tier 1 first
+    if (isComplete(l)) { onProgress?.(processed, false); continue; } // early exit — nothing to add
     const patch = {};
     const enrich = { ...(l.enrichment || {}) };
+
+    // Free owner-name resolve (SoS/Socrata registry) — no-ops until a resolver
+    // for this state exists. A found name unlocks Hunter/LinkedIn below.
+    if (!l.owner_name) {
+      const owner = await resolveOwnerName(l);
+      if (owner) { l.owner_name = owner; patch.owner_name = owner; names++; }
+      else { onProgress?.(processed, false); continue; } // still no name → tier 2 channels can't run
+    }
 
     if (!l.owner_email) {
       const r = await hunterEmail(l, budget, log);
@@ -98,10 +107,10 @@ async function runTier2(leads, budget, log, onProgress) {
     patch.enrichment = enrich;
     const { error } = await supabase.from('leads').update(patch).eq('id', l.id);
     if (error) log?.error(`    ${l.name}: ${error.message}`);
-    else if (patch.owner_email || patch.owner_linkedin) log?.info(`    tier2 ${l.name}: ${[patch.owner_email, patch.owner_linkedin].filter(Boolean).join(' · ')}`);
+    else if (patch.owner_name || patch.owner_email || patch.owner_linkedin) log?.info(`    tier2 ${l.name}: ${[patch.owner_name && `name ${patch.owner_name}`, patch.owner_email, patch.owner_linkedin].filter(Boolean).join(' · ')}`);
     onProgress?.(processed, true);
   }
-  return { processed, emails, linkedins };
+  return { processed, emails, linkedins, names };
 }
 
 module.exports = { runTier2, isComplete };

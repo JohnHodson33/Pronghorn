@@ -53,13 +53,17 @@ in MORNING-BRIEF.
   (submitted→triaged→building→shipped) so Tom sees ideas move; agent
   self-review + roadmap panel (PM curates). PM wires sidebar entry on merge.
   Ship the basic version TODAY — the Haiku refine-chat step is v2.
-- 🔥 **FREE OWNER-NAME UNLOCKS (PM add 7/12, from John's fill-rate question):**
-  (Lane C) add **Secretary of State / state corp registry lookups** to the
-  cascade — registered agents/officers/members for LLCs give owner NAMES at
-  high accuracy for $0 (we already do TX license boards; extend the pattern:
-  AZ CC, CO SoS, WA SoS, FL Sunbiz have searchable/free endpoints). Combined
-  w/ website discovery this is the biggest lift from ◔BASIC → ◑IDENTIFIED,
-  and names are the key that unlocks Hunter + skip-tracing downstream.
+- 🔨 LANE C — 🔥 **FREE OWNER-NAME UNLOCKS — SHAPE SHIPPED + RECON (7/12).**
+  `enrich/sos_lookup.js`: per-state resolver registry wired into the tier-2
+  cascade (resolved name → unlocks Hunter/LinkedIn); TX resolver LIVE via
+  Socrata TDLR (verified). RECON (don't re-walk): AZ eCorp = SPA/won't resolve
+  for scripted GET · FL Sunbiz = hard 403 to bots · OpenCorporates open API =
+  401 (now token-gated). The public SoS SPAs are NOT cleanly scriptable.
+  **DECISION FOR JOHN (bubbled):** other states unblock via one of — (a) extend
+  the free Socrata pattern to states w/ a licensee open-dataset carrying owner
+  names (proven, $0); (b) a cheap keyed API (OpenCorporates / skip-trace vendor,
+  ~cents/lookup); (c) headless-browser resolver per priority state. Plumbing is
+  live; each resolver activates the instant it's registered.
 - 🔥🔥🔥 **ENRICHMENT COMPLETENESS LEVELS replace binary "enriched" (John 7/12
   ~16:05 — "enriched next to a lead with no owner info feels like nothing
   happened"):** status stays lifecycle-only (new/enriching/…); ADD a computed
@@ -454,6 +458,14 @@ in MORNING-BRIEF.
 ---
 
 ## Decisions bubbled to John (non-blocking)
+- 🔔 **Owner-name lookups beyond TX need a small call (Lane C, 7/12):** free
+  public SoS registries (AZ/FL/etc.) are bot-hostile SPAs and OpenCorporates
+  went token-gated — none scriptable free at scale. Pick the path: (a) I extend
+  the free Socrata license-dataset pattern state-by-state (proven, $0, but only
+  states that publish licensee data w/ owner names); (b) buy a cheap keyed
+  lookup (OpenCorporates or a skip-trace vendor, ~cents/lead) and I wire it into
+  the resolver registry that's already live; (c) headless-browser resolvers per
+  priority state (bigger build). TX already resolves names for $0 today.
 - 🔔 **GitHub Actions are FAILING on schedule (7/11 ~07:20+ AM):** Nightly Scrape
   + Delisting Pass red — the repo secrets aren't set yet. Add in GitHub →
   Settings → Secrets and variables → Actions: `SUPABASE_URL`,

@@ -200,6 +200,24 @@ other unnamed listings, but that's Lane A's multiples table. Full/named access
 is login-gated → the co-pilot path (John's live browser) per CREDENTIALS-INTAKE,
 not a headless scrape. No adapter built; recon logged.
 
+## 2026-07-12 — SoS owner-name lookups: recon + the honest path
+
+PM asked for free Secretary-of-State/corp-registry owner-name lookups (biggest
+BASIC→IDENTIFIED lift). Recon: the public registries are bot-hostile — AZ eCorp
+(ecorp.azcc.gov) is an SPA whose host won't resolve for scripted GET; FL Sunbiz
+hard-403s bots; OpenCorporates' open API now 401s (token required). None are
+cleanly scriptable at scale. Shipped the CORRECT SHAPE instead of a stub:
+`enrich/sos_lookup.js` = a per-state resolver registry that no-ops cleanly until
+a resolver exists, wired into the tier-2 cascade (a resolved name unlocks
+Hunter/LinkedIn). Registered the ONE genuinely-free working resolver — TX via
+the Socrata TDLR licensee dataset (verified: resolves "Xtreme Air Services" →
+its owner). The real unblock for other states is one of: (a) extend the Socrata
+pattern to states with a licensee open-dataset carrying owner/officer names
+(free, proven — same as TDLR); (b) a cheap keyed API (OpenCorporates or a
+skip-trace vendor, ~cents/lookup — bubble the cost to John); (c) a
+headless-browser resolver per priority state (bigger build). Plumbing is live
+now; each resolver activates the instant it's registered.
+
 ## 2026-07-11 — Enrichment worker live: the ~free owner-contact tier works
 
 `enrich/run_enrichment.js` implements ENRICHMENT-STRATEGY steps 1–2: scrape the
