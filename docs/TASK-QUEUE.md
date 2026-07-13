@@ -264,12 +264,19 @@ in MORNING-BRIEF.
   ?status=submitted, triages Lane-C items, flips 'triaged'.
 - ✅ Contact-carry (Sage Tree Care) + Hunter $49 / Vercel Pro $20 planned subs
   — done in promote_leads.js + migrations 0009/0010.
-- 🔥 **LOCATION DATA POLLUTION (Lane A parsers + Lane C cleanup, John 7/12):**
-  tupelomarket + businessbroker adapters write description text into
-  listings.city (e.g. "HVAC BusinessesHVAC Businesses…Bellingham"). Fix both
-  parsers, then a cleanup pass: re-derive city/state for polluted rows (regex:
-  city ilike %business%/%serving%/%service% or length>40), null when
-  unrecoverable.
+- 🔨 LANE C — 🔥 **LOCATION POLLUTION — CLEANUP DONE (Lane C half).**
+  `scraper/cleanup_locations.js` re-derived city/state for all 49 polluted rows:
+  5 recovered a clean city (Portland/Pittsburgh/Cleveland + 2 counties w/ state
+  prefix), 44 nulled as unrecoverable (case-glue/dedupe validator rejects junk
+  like "LouisvilleLouisville"). **0 polluted rows remain.** ⬜ LANE A STILL OWES:
+  fix the tupelomarket + businessbroker parsers so description text stops
+  landing in listings.city at source (re-run cleanup_locations.js after).
+- ✅ LANE C — **owner_phone attribution audit (John 7/12 ROUND 2 item c) — DONE.**
+  Found 11/25 owner_phones were the company MAIN LINE (inflating "contactable").
+  Demoted all 11 to enrichment.business_phone (owner-contactable dropped to the
+  honest 75). Prevention: extraction prompt now separates owner cell vs
+  business_phone, and the write path demotes any owner_phone that equals the
+  lead's company phone. Won't recur.
 - 🔥🔥 **FEEDBACK PIPELINE (John 7/12 ~13:15 — Tom joins TODAY; read
   docs/IMPROVEMENTS-LOOP.md):** `feedback` table (author, type, page, body,
   status, task_ref) + POST /api/feedback + PATCH status. THEN the standing

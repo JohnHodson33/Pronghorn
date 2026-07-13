@@ -38,7 +38,8 @@ OUTPUT — valid JSON only:
 {"owner_name": "First Last or null", "owner_title": "Owner/President/... or null",
  "owner_email": "explicitly shown email of the owner or null",
  "business_email": "general company email (info@/office@) or null",
- "owner_phone": "a phone explicitly identified as the owner's/cell, else null",
+ "owner_phone": "ONLY a phone explicitly identified as the OWNER's personal/cell/direct line — NEVER the company main/office number (that goes in business_phone). null if unsure.",
+ "business_phone": "the company's general/office phone if shown, else null",
  "owner_linkedin": "linkedin.com/in/... URL if present, else null",
  "city": "HQ city if stated, else null", "state": "2-letter state if stated, else null",
  "industry_verified": "one value from the list", "industry_confidence": "high|medium|low",
@@ -211,7 +212,13 @@ async function main() {
       // fill blanks only — license-board owner names are ground truth
       if (!lead.owner_name && out.owner_name) patch.owner_name = out.owner_name;
       if (!lead.owner_email && (out.owner_email || out.business_email)) patch.owner_email = out.owner_email || out.business_email;
-      if (!lead.owner_phone && out.owner_phone) patch.owner_phone = out.owner_phone;
+      // owner_phone attribution guard (John 7/12): never store the company
+      // main line as an owner channel — demote a match to business_phone.
+      const digits = (p) => String(p || '').replace(/[^0-9]/g, '').replace(/^1/, '');
+      if (!lead.owner_phone && out.owner_phone) {
+        if (lead.phone && digits(out.owner_phone) === digits(lead.phone)) out.business_phone = out.business_phone || out.owner_phone;
+        else patch.owner_phone = out.owner_phone;
+      }
       if (!lead.owner_linkedin && out.owner_linkedin) patch.owner_linkedin = out.owner_linkedin;
       if (!lead.city && out.city) { patch.city = out.city; patch.state = lead.state || out.state; }
       // verified industry columns are migration 0008; jsonb carries them until then
