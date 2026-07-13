@@ -62,6 +62,20 @@ task, next 2, gotchas). Sessions die at context limits — a replacement session
 must resume from one paste. PM watches lane commit recency and flags stalls
 in MORNING-BRIEF.
 
+**⚙️ CONTEXT ROLLOVER PROTOCOL (John 7/13 — "not scalable for me to notice
+it"; ALL LANES, effective now):** when your session sees context-pressure
+warnings from the harness (or you judge yourself past ~80%): (1) STOP taking
+new units; finish + commit + push the current one; (2) refresh your HANDOFF
+section (current task, next 2, gotchas, last commit hash) and add the line
+"ROLLED OVER <date> — successor resumes here"; (3) send the PM session
+(local_b552862b-ea9f-4559-8adc-400f0bbf8c58) a message titled "ROLLING OVER"
+with your last commit hash; (4) go idle — no shared-doc writes after the
+handoff commit. PM then: prepares the one-paste successor boot prompt,
+surfaces it to John in chat + MORNING-BRIEF immediately (John's only action
+= paste into a new session + Allow its hello), and covers any urgent lane
+item in the gap. Do NOT wait until you're too full to write the handoff —
+the handoff commit is the LAST thing you do, not the first thing you skip.
+
 ---
 
 ## Lane A — Brokers  (`scraper/sources/*`, `scraper/config.json`)
@@ -419,6 +433,23 @@ set) into your new chips UI as a small follow-up.
   off_target), new lists start HELD (one activation decision per list),
   nightly $ + Hunter caps, digest = receipt + tonight's plan w/ pause. Do
   NOT start the digest build until John approves the amended card.
+- 🔥🔥 **IMPROVEMENTS ATTACHMENTS + PPP SIZE DATA (John in chat 7/13 ~10:40 —
+  "Tom should be able to attach analyses or data files… he's been using PPP
+  loan databases to estimate company sizes"):** (Lane C) (a) Supabase
+  Storage bucket `feedback-attachments` + `POST /api/feedback/[id]/attachments`
+  (multipart upload, size/type limits, path recorded on a feedback_attachments
+  table or 0011 comments extension) + signed-URL GET; (b) **PPP SIZE SIGNAL —
+  fold into the size-proxy build:** SBA's public PPP loan data (company name,
+  address, loan amount, JOBS REPORTED) is a free, high-quality size signal —
+  loan ≈ 2.5× monthly payroll and jobs_reported ≈ employee count. One-time
+  import of green-industry NAICS rows for our states → match to leads/
+  companies by normalized name+state → size_signals.ppp = {loan, jobs, date}.
+  Tom's own analyses become calibration inputs via the attachment upload.
+  (Lane B) (c) attach-file control on the /improvements submit form + in
+  thread replies; attachments render as chips w/ download links in the
+  thread; mobile parity. Acceptance: Tom attaches a spreadsheet to a
+  suggestion; the owning lane can download it; PPP-derived employee counts
+  appear in size_signals for matched companies.
 - 🔥🔥🔥 **MEETING-NOTES PIPELINE — LIVE SWEEP + INPUT UI (John in chat 7/13
   ~10:20 — "the CRM includes all of the notes very easily… automated fashion…
   scrape Tom's Notion too… tag it to the right company or deal"; builds on
