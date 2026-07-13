@@ -211,7 +211,14 @@ async function main() {
       const patch = { enrichment: out, status: 'enriched' };
       // fill blanks only — license-board owner names are ground truth
       if (!lead.owner_name && out.owner_name) patch.owner_name = out.owner_name;
-      if (!lead.owner_email && (out.owner_email || out.business_email)) patch.owner_email = out.owner_email || out.business_email;
+      // owner_email is a PERSONAL/owner address only. A generic mailbox
+      // (info@/office@/sales@…) is a BUSINESS email — it must not count as an
+      // owner channel (John: reach OWNERS). Store it separately.
+      const GENERIC_MBOX = /^(info|office|contact|sales|service|services|support|admin|hello|customerservice|servicetoday|team|help|inquiries|dispatch)@/i;
+      const personalEmail = out.owner_email && !GENERIC_MBOX.test(out.owner_email) ? out.owner_email : null;
+      const bizEmail = out.business_email || (out.owner_email && GENERIC_MBOX.test(out.owner_email) ? out.owner_email : null);
+      if (bizEmail) out.business_email = bizEmail;
+      if (!lead.owner_email && personalEmail) patch.owner_email = personalEmail;
       // owner_phone attribution guard (John 7/12): never store the company
       // main line as an owner channel — demote a match to business_phone.
       const digits = (p) => String(p || '').replace(/[^0-9]/g, '').replace(/^1/, '');

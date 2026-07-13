@@ -16,6 +16,14 @@ when convenient: re-run import_hubspot_contacts.js to move [hs:] note
 breadcrumbs into the now-live hubspot_id/firm/title columns (needs a fresh MCP
 contact dump — low urgency, contacts already usable).
 
+**[self-iterate] 7/12 eve:** noticed by using the data that 21 leads had a
+GENERIC mailbox (info@/sales@/support@) sitting in owner_email — inflating
+CONTACTABLE with non-personal addresses (John wants OWNERS). Root cause: the
+enrichment write path fell back owner_email = owner_email || business_email.
+Fixed the source (generic → business_email, only personal in owner_email) +
+cleaned the 20 existing (+1 junk support@exa.ai scrape artifact). Coverage now
+honest: FULL 48 / CONTACTABLE 62. business_email preserved for later use.
+
 **Current task:** loop in build+monitor mode. Just shipped cascading enrichment
 (tier2.js), completeness levels, job progress, Outlook drafts (John-authorized
 in chat), Graph live ingestion, feedback pipeline.
