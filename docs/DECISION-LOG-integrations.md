@@ -54,11 +54,13 @@ until they dedupe that @import. Not my file; flagged only.
 (tier2.js), completeness levels, job progress, Outlook drafts (John-authorized
 in chat), Graph live ingestion, feedback pipeline.
 
-**Next 2:** (1) Feedback-poll standing rule — each loop iteration, GET
-/api/feedback?status=submitted, triage Lane-C items into TASK-QUEUE, flip
-'triaged' (needs 0010 applied to have data). (2) Location-pollution cleanup
-pass (Lane A owns the parser fix; Lane C re-derives city/state for polluted
-rows once parsers fixed).
+**Next 2:** (1) Standing thread-reply rule (activates on 0011): each loop, poll
+feedback for suggestions/feedback with an unanswered John/Tom comment → reply
+with a refined spec BEFORE building; on approve post build_plan, on ship post
+completion_summary. (2) When John approves the nightly-digest amended card
+[9bb9d925], build it with the thesis gate (active list + in-taxonomy +
+not off_target), new-lists-held, nightly $ + Hunter caps, receipt+plan digest.
+Migrations pending PM: 0011 (feedback_comments). Everything else 0004–0010 live.
 
 **Post-migration (0004–0010) checklist:** re-run `import_hubspot_contacts.js`
 (breadcrumbs→columns), `backfill_costs.js` once, `backfill_industry.js` for the
