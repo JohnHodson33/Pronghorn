@@ -86,6 +86,17 @@ in MORNING-BRIEF.
   names (proven, $0); (b) a cheap keyed API (OpenCorporates / skip-trace vendor,
   ~cents/lookup); (c) headless-browser resolver per priority state. Plumbing is
   live; each resolver activates the instant it's registered.
+- 🔥🔥 **COST-BADGE ACCOUNTING FIXES (John caught it 7/12 eve — Hunter showed
+  +$5.80 variable that isn't real cash):** (1) **No double-count:**
+  usage covered by a flat subscription books cost_usd=0 marginal (the $34
+  plan IS the cash cost) while still recording units + quota-used
+  (searches 58/500 this month); per-search internal rate only applies past
+  the plan cap or for pay-per-use services. Show "Hunter: 58/500 searches"
+  in the breakdown instead of fake dollars. (2) **subsMonthly=0 regression:**
+  /api/costs stopped counting the subscriptions rows after tonight's merge
+  (planned-column handling vs PM-seeded rows: 'Hunter (annual, active)' $34 +
+  'Vercel Pro (planned)' $20 exist and must total $54). (3) costPerContact =
+  (amortized subs + true variable) / owner contacts — conservative and honest.
 - 🔥🔥🔥 **ENRICHMENT COMPLETENESS LEVELS replace binary "enriched" (John 7/12
   ~16:05 — "enriched next to a lead with no owner info feels like nothing
   happened"):** status stays lifecycle-only (new/enriching/…); ADD a computed
