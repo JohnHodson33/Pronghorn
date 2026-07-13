@@ -849,3 +849,10 @@ network blip during the nightly run.
   top entry + my 7/13 AUTONOMY entry (hard criteria, receipt format, guardrails:
   skip ANY existing review incl. 'passed', bounded --limit 25, --dry-run first,
   never contacts anyone).
+
+## 2026-07-13 — loop iter (terse): sunbeltmidwest + thefirm health clean; auto-promote still parked
+- Merged origin/main (PM briefs + Lane B/C — no Lane A change). No John unblock
+  yet for auto-promote (#1) or the feedback-write; both stay parked per log.
+- Health: sunbeltmidwest 138 (95% CF, 93% state, 136 w/ agent — broker-contact
+  champion), thefirm 29 (28/29 CF; partial state = WAI for its regional blurbs;
+  commercial roofing $1.48M CF in sample). Both parsers holding.
