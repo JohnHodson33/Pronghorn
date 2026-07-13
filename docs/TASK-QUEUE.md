@@ -69,6 +69,14 @@ in MORNING-BRIEF.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 🔥 **BRAND ALIGNMENT PASS (John 7/12, PM started):** match the platform's
+  cosmetics to pronghornequity.com. PM shipped: logo (public/pronghorn-logo
+  .png) + dark forest sidebar + brand CSS variables in globals.css (--ph-navy
+  -deep #17301F · --ph-green #2C5A43 · --ph-paper #FBF9F2 · --ph-ivory
+  #EDE7D4 · --ph-gold #C9BD96 · --ph-gold-dark #A89A6F) + Playfair Display
+  import + paper page background. LANE B FINISHES: sweep emerald-* accents →
+  brand greens (buttons/links/chips), page H1s to Playfair (font-family
+  var), keep readability AA; don't restyle data-dense tables beyond accents.
 **⚠️ LANE B — YOUR "closes every 🔥" READ WAS STALE (PM 7/12 eve). PULL MAIN.
 Your actual order:** (1) ENRICHMENT PROGRESS VISIBILITY UI + COMPLETENESS
 LEVEL chips (below — John's top ask tonight); (2) ENRICHMENT ROUND 2 UI
