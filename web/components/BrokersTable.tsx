@@ -142,8 +142,9 @@ export default function BrokersTable({ brokers }: { brokers: BrokerRow[] }) {
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-right">
                   {b.contactId ? (
-                    <Link href="/contacts" className="text-xs font-semibold text-emerald-700 hover:underline">
-                      in Contacts ✓
+                    <Link href={`/contacts?broker=${b.id}`} className="text-xs font-semibold text-emerald-700 hover:underline"
+                      title="Open this broker's contact record, filtered">
+                      in Contacts ✓ →
                     </Link>
                   ) : (
                     <button

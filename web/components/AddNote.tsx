@@ -7,6 +7,7 @@
 // mobile parity (bottom-sheet panel, thumb targets).
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import MicButton from "@/components/MicButton";
 
 type Tag = {
   kind: "company" | "contact" | "deal";
@@ -168,13 +169,16 @@ export default function AddNote() {
               placeholder="Paste a Notion link (optional)…"
               className="mb-2 w-full rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus:border-emerald-600"
             />
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              rows={5}
-              placeholder="…or paste / type the note text"
-              className="w-full rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus:border-emerald-600"
-            />
+            <div className="flex items-start gap-2">
+              <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                rows={5}
+                placeholder="…or paste / type the note text — or tap the mic and talk"
+                className="w-full rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus:border-emerald-600"
+              />
+              <MicButton onText={(t) => setText((x) => (x ? x + " " : "") + t)} />
+            </div>
 
             <div className="mt-2 space-y-2">
               {tags.length > 0 && (
