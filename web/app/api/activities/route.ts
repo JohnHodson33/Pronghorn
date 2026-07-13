@@ -34,3 +34,20 @@ export async function POST(req: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }
+
+// Tag (or retag) an existing activity — the 'needs tagging' resolution path:
+// the Notion sweep leaves low-confidence notes untargeted; a human picks the
+// record here and the note leaves the attention queue.
+export async function PATCH(req: Request) {
+  if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
+  const { id, companyId, contactId, dealId } = await req.json();
+  if (!id || !(companyId || contactId || dealId))
+    return NextResponse.json({ error: "id and a target (companyId/contactId/dealId) required" }, { status: 400 });
+  const patch: Record<string, unknown> = {};
+  if (companyId) patch.company_id = companyId;
+  if (contactId) patch.contact_id = contactId;
+  if (dealId) patch.deal_id = dealId;
+  const { error } = await serverDb().from("activities").update(patch).eq("id", id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ ok: true });
+}

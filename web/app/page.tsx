@@ -4,6 +4,7 @@
 // matrix that informs the "commit to one vertical" decision.
 import Link from "next/link";
 import PinnedViews from "@/components/PinnedViews";
+import TagNoteCard from "@/components/TagNoteCard";
 import { fetchDashboardV3 } from "@/lib/dashboard-v3";
 
 export const dynamic = "force-dynamic";
@@ -65,6 +66,9 @@ export default async function Dashboard() {
           <ul className="divide-y divide-zinc-100">
             {data.actions.slice(0, 8).map((a, i) => (
               <li key={i}>
+                {a.kind === "note_tag" ? (
+                  <TagNoteCard action={a} />
+                ) : (
                 <Link href={a.href} className="flex items-center gap-3 px-5 py-3 hover:bg-emerald-50/50">
                   <span className="text-lg">{actionIcon[a.kind]}</span>
                   <span className="min-w-0 flex-1">
@@ -78,6 +82,7 @@ export default async function Dashboard() {
                   )}
                   <span className="shrink-0 text-zinc-300">→</span>
                 </Link>
+                )}
               </li>
             ))}
             {data.actions.length > 8 && (

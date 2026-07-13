@@ -9,6 +9,16 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   (UI + API, see 7/13 entry below) — browser-verified end-to-end, test
   artifacts removed from storage. Prior state (through 9cd3f33 dead-end
   sweep) merged to main and live.
+- **7/13 ~21:20 — NOTE-NEEDS-TAGGING KEY ACTION SHIPPED:** untagged sweep
+  notes (kind='meeting', no targets, has doc_url — same criterion as
+  /api/dashboard) now join Key Actions from fetchDashboardV3 directly (the
+  0006 view predates the kind, so the lib queries activities itself).
+  Interactive card: 🏷️ note title + "open note ↗" + Tag-it picker
+  (/api/search) → NEW `PATCH /api/activities` sets the target → note
+  leaves the queue on refresh. Verified with a marker row end-to-end
+  (tagged to a company via the picker, PATCH landed, row deleted after).
+  Also serves as the 'needs tagging' review surface (queue item f) until
+  volume justifies a dedicated list page.
 - **7/13 ~20:55 — PINNED VIEWS SHIPPED (card 5e13d986, John: "let's see
   what this looks like"):** 📌 Pinned row on the dashboard (chips = labeled
   filter-URLs, localStorage per device, ✕ to unpin; seeds: CONTACTABLE Tree
