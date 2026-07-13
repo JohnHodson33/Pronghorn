@@ -37,7 +37,7 @@ const eventLabel: Record<string, string> = {
 export default async function CompanyDetailV2({ id }: { id: string }) {
   const data = await fetchCompanyDetail(id);
   if (!data) notFound();
-  const { company: c, deal, contacts, activities, listings, comparison } = data;
+  const { company: c, deal, contacts, activities, listings, comparison, leadChannels } = data;
 
   return (
     <div className="max-w-4xl p-4 md:p-8 space-y-6">
@@ -120,6 +120,18 @@ export default async function CompanyDetailV2({ id }: { id: string }) {
 
       <MarketCheckCard check={comparison} />
 
+      {leadChannels && (
+        <div className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-900">
+          <span className="font-semibold">From enrichment — not yet on a contact:</span>{" "}
+          {leadChannels.email && <span className="mr-3">📧 {leadChannels.email}</span>}
+          {leadChannels.phone && <span className="mr-3">📞 {leadChannels.phone}</span>}
+          {leadChannels.linkedin && (
+            <a href={leadChannels.linkedin} target="_blank" rel="noreferrer" className="mr-3 underline">in/ LinkedIn</a>
+          )}
+          {leadChannels.ownerName && <span className="text-sky-700">(lead&apos;s owner: {leadChannels.ownerName})</span>}
+          <span className="ml-1 text-sky-600">— the nightly sync folds these onto the contact; edit the contact below to adopt them now.</span>
+        </div>
+      )}
       <ContactsSection companyId={c.id} contacts={contacts} />
 
       <section className="space-y-3">

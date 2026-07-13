@@ -9,6 +9,13 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   (UI + API, see 7/13 entry below) — browser-verified end-to-end, test
   artifacts removed from storage. Prior state (through 9cd3f33 dead-end
   sweep) merged to main and live.
+- **7/13 ~21:45 — LEAD-CHANNEL PROVENANCE ON COMPANY PROFILE SHIPPED:**
+  when the source lead holds an owner channel no contact carries (the
+  promotion/sync gap Lane C is root-causing), the profile shows a sky strip
+  above Contacts — "From enrichment — not yet on a contact: 📞 … (lead's
+  owner: X) — the nightly sync folds these onto the contact" — instead of
+  reading as blank. Read-only by design (the write path is Lane C's).
+  Verified on a live gap company (4b09be03, orphan phone).
 - **7/13 ~21:20 — NOTE-NEEDS-TAGGING KEY ACTION SHIPPED:** untagged sweep
   notes (kind='meeting', no targets, has doc_url — same criterion as
   /api/dashboard) now join Key Actions from fetchDashboardV3 directly (the
