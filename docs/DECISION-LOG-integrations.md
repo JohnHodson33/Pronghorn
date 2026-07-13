@@ -2,12 +2,22 @@
 
 ## 🤝 HANDOFF (keep current — replacement session resumes from this)
 
-**State (2026-07-13 ~00:45, replacement session ACTIVE):** Worktree
-`C:\Users\johnd\Pronghorn-integrations`, branch `lane/integrations` (push after
-each unit; PM merges — merged through aff549e). Env copied from main checkout;
-scraper/node_modules junction; web/node_modules real install. Migrations
-0004–0010 LIVE; **0011 (feedback_comments) + 0012 (lead_list_progress) pending
-PM — apply together.** Outlook drafts + live ingestion LIVE and verified.
+**State (2026-07-13 ~12:55, session ACTIVE, main merged in):** Worktree
+`C:\Users\johnd\Pronghorn-integrations`, branch `lane/integrations`. Migrations
+0004–0010 LIVE; **0011 + 0012 + 0013 (outreach_rules) pending PM — apply in
+order.** ⚠️ AUTO-DRAFTING IS PAUSED (John 7/13 ~11:15 — too broad, not
+tailored): leadgen.yml step if:false; do NOT draft locally either. The
+rules-gated rewrite is SHIPPED (75f9a5e): zero rules = zero drafts; 5 tailored
+samples posted to /improvements — resume only after John approves + first rule
+exists. Sunday-daytime shipped: draft rules+tailoring+samples (75f9a5e), AZ
+owner-name resolver via ROC posting list (0e2448f), role-mailbox guard
+(375b266), Lawn Care list fully enriched+promoted+tier-2'd (91 leads → 90
+companies, 29 owner contacts, +16 LinkedIn, +2 emails, +5 size bands),
+broker_id backfill (2/18 linked; other 16 = relationship contacts not in
+directory, correct), NC recon (no free path). Still open on my queue:
+MEETING-NOTES LIVE SWEEP (NOTION_TOKEN live, top item now), PPP size import,
+size-proxy tier math (card 37450f11) + nightly digest (9bb9d925) both still
+awaiting John.
 
 **SHIPPED THIS SESSION (7/13 ~00:45):**
 (1) LIST-BUILD RUN VISIBILITY + 15-MIN DRAIN (6641c89): leadgen.yml cron */15
