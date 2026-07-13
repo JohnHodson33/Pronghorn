@@ -16,6 +16,7 @@ export type DirectoryContact = {
   company_id: string | null;
   broker_id: string | null; // links back to the Broker Directory record
   companyName: string | null;
+  companyIndustry: string | null; // verified industry via the company join
 };
 
 const roleStyle: Record<string, string> = {
@@ -40,20 +41,28 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
 
   const [q, setQ] = useState("");
   const [role, setRole] = useState<string | null>(null);
+  const [industry, setIndustry] = useState<string | null>(null);
   const [withEmail, setWithEmail] = useState(false);
   const [withPhone, setWithPhone] = useState(false);
+
+  const industryCounts = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const c of contacts) if (c.companyIndustry) m[c.companyIndustry] = (m[c.companyIndustry] ?? 0) + 1;
+    return m;
+  }, [contacts]);
 
   const rows = useMemo(
     () =>
       contacts.filter((c) => {
-        if (q && !`${c.name ?? ""} ${c.email ?? ""} ${c.companyName ?? ""} ${c.notes ?? ""}`.toLowerCase().includes(q.toLowerCase()))
+        if (q && !`${c.name ?? ""} ${c.email ?? ""} ${c.companyName ?? ""} ${c.companyIndustry ?? ""} ${c.notes ?? ""}`.toLowerCase().includes(q.toLowerCase()))
           return false;
         if (role && (c.role ?? "other") !== role) return false;
+        if (industry && c.companyIndustry !== industry) return false;
         if (withEmail && !c.email) return false;
         if (withPhone && !c.phone) return false;
         return true;
       }),
-    [contacts, q, role, withEmail, withPhone]
+    [contacts, q, role, industry, withEmail, withPhone]
   );
 
   function exportCsv() {
@@ -112,6 +121,23 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
               {r} · {n}
             </button>
           ))}
+        {Object.keys(industryCounts).length > 0 && <span className="mx-1 text-zinc-300">|</span>}
+        {Object.entries(industryCounts)
+          .sort((a, b) => b[1] - a[1])
+          .map(([i, n]) => (
+            <button
+              key={i}
+              onClick={() => setIndustry(industry === i ? null : i)}
+              className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
+                industry === i
+                  ? "bg-emerald-700 text-white ring-2 ring-emerald-600"
+                  : "border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+              }`}
+              title={`Every contact at a ${i} company`}
+            >
+              {i} · {n}
+            </button>
+          ))}
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
@@ -156,7 +182,16 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
                 </td>
                 <td className="px-4 py-3 text-zinc-700">
                   {c.companyName ? (
-                    <span className={c.company_id ? "text-emerald-700" : ""}>{c.companyName}</span>
+                    <>
+                      <span className={c.company_id ? "text-emerald-700" : ""}>{c.companyName}</span>
+                      {c.companyIndustry ? (
+                        <span className="ml-1.5 rounded bg-emerald-50 px-1.5 py-0.5 text-xs font-medium text-emerald-800">
+                          {c.companyIndustry}
+                        </span>
+                      ) : (
+                        <span className="ml-1.5 rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-400">—</span>
+                      )}
+                    </>
                   ) : (
                     "—"
                   )}
