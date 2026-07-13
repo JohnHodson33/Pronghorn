@@ -67,7 +67,11 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node promote_leads.js
       - name: Auto-draft owner outreach on CONTACTABLE (queue only, never sends)
-        if: steps.check.outputs.pending != '0' || github.event_name == 'workflow_dispatch'
+        # PAUSED per John 7/13 ~11:15 (PM chat): drafts were too broad (non-
+        # priority industries got drafted) and content not tailored enough.
+        # Re-enable ONLY after DRAFT RULES ship + John approves 5 sample
+        # drafts (TASK-QUEUE Lane C top item).
+        if: ${{ false }}
         working-directory: scraper
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

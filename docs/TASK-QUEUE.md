@@ -433,6 +433,28 @@ set) into your new chips UI as a small follow-up.
   off_target), new lists start HELD (one activation decision per list),
   nightly $ + Hunter caps, digest = receipt + tonight's plan w/ pause. Do
   NOT start the digest build until John approves the amended card.
+- 🔥🔥🔥 **OUTREACH DRAFT RULES + TAILORING (John in chat 7/13 ~11:15 after
+  reviewing his Drafts folder — "I like the idea of the automation… but I
+  don't think they should just auto draft… it's too broad and the content
+  isn't tailored enough. I don't trust to click send."):** PM has PAUSED the
+  auto-draft step in leadgen.yml (if: false) — do NOT re-enable until (c)
+  below. (Lane C) (a) **DRAFT RULES — same design as the digest's
+  auto-enrich rules (one rules engine if practical):** John creates explicit
+  rules (industry allowlist — thesis-core only by default, HVAC et al.
+  excluded until he says otherwise; min completeness CONTACTABLE+; min size
+  tier once tier math ships; geography; nightly cap). **Zero rules = zero
+  auto-drafts.** Leads outside rules are never drafted, period. (b)
+  **TAILORING PASS:** rewrite the drafting prompt to anchor each email on
+  SPECIFIC enrichment facts (site-scrape signals like certifications/years/
+  services, city, industry specifics) in John's voice per
+  docs/OUTREACH-STRATEGY.md — relationship-opener, never "are you selling",
+  short. Outbox rows must show "why drafted" (rule matched + facts used).
+  (c) **APPROVAL GATE:** generate 5 SAMPLE drafts on thesis-core tree-care
+  CONTACTABLE leads → post to /improvements for John's review; resume
+  auto-drafting only after he approves samples + at least one rule exists.
+  (d) The 35 existing Outlook drafts: inert (nothing sends); John deletes at
+  leisure; regenerate under new rules after (c). (Lane B) small surface:
+  rules editor (reuse criteria chip patterns) + "why drafted" line on outbox.
 - 🔥🔥 **IMPROVEMENTS ATTACHMENTS + PPP SIZE DATA (John in chat 7/13 ~10:40 —
   "Tom should be able to attach analyses or data files… he's been using PPP
   loan databases to estimate company sizes"):** (Lane C) (a) Supabase
