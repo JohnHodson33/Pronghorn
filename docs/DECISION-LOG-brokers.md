@@ -888,3 +888,9 @@ network blip during the nightly run.
   editor. That's a shared UI-editable table — deliberately not mine to write.
   My config.json change stays (correct for standalone runs + fallback), no code
   change needed beyond it.
+
+## 2026-07-13 — loop iter (terse): businessesforsale + franchiseresales health clean
+- No Lane A queue change; both John asks still pending (auto-promote unblock,
+  screen-profile keywords).
+- Health: businessesforsale 602/0 err (40 pages; DB 607 = churn), franchiseresales
+  74/0 err (exact DB match). Both holding.
