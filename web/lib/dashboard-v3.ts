@@ -22,11 +22,15 @@ function subsectorOf(industry: string | null): string | null {
 }
 
 export type KeyAction = {
-  kind: "promote" | "send_inquiry" | "nda" | "stale" | "deadline" | "queued_email";
+  kind: "promote" | "send_inquiry" | "nda" | "stale" | "deadline" | "queued_email" | "note_tag";
   label: string;
   detail: string;
   href: string;
   urgent: boolean;
+  // note_tag only: the untagged activity row + its source doc, so the card
+  // can tag in place instead of navigating
+  refId?: string;
+  docUrl?: string | null;
 };
 
 export type FunnelStep = { label: string; count: number; kind: "prospecting" | "deal" };
@@ -129,6 +133,17 @@ export async function fetchDashboardV3(): Promise<DashboardV3 | null> {
     db.from("outbox_emails").select("id, subject, to_email").eq("status", "queued").limit(20),
   ]);
 
+  // Meeting notes the Notion sweep couldn't confidently attach — a human
+  // decision, so it joins the attention queue regardless of the 0006 view
+  // (the view predates this kind). Same criterion as /api/dashboard.
+  const untaggedNotesRes = await db
+    .from("activities")
+    .select("id, body, doc_url, created_at")
+    .eq("kind", "meeting").is("company_id", null).is("contact_id", null)
+    .not("doc_url", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(10);
+
   type Review = {
     status: string;
     notes: string | null;
@@ -174,6 +189,18 @@ export async function fetchDashboardV3(): Promise<DashboardV3 | null> {
 
   // ---------- key actions (the human-attention queue)
   const actions: KeyAction[] = [];
+  for (const n of (untaggedNotesRes.data ?? []) as { id: number; body: string | null; doc_url: string | null; created_at: string }[]) {
+    const firstLine = String(n.body ?? "").split("\n")[0].replace(/^\[Notion meeting [^\]]*\]\s*/, "");
+    actions.push({
+      kind: "note_tag",
+      label: `Untagged meeting note: ${firstLine || "Meeting note"}`,
+      detail: "the sweep couldn't match it — pick the company/deal it belongs to",
+      href: n.doc_url ?? "#",
+      urgent: true,
+      refId: String(n.id),
+      docUrl: n.doc_url,
+    });
+  }
   if (viewsLive) {
     // Server-side view is the source of truth for actions.
     for (const a of (viewActions.data ?? []) as { kind: string; title: string; detail: string | null; ref_id: string | null }[]) {
