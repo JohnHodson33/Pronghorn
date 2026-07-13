@@ -25,7 +25,32 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Brand sweep (Lane B): remap the emerald token scale to the pronghornequity
+   palette so every existing emerald-* accent (buttons/links/chips — 340+
+   usages) renders in brand greens without touching component markup.
+   Contrast: 700/800 on white ≥ 7:1; white on 700 ≥ 7:1 (AA/AAA). */
+@theme {
+  --color-emerald-50: #f2f5f1;
+  --color-emerald-100: #e3ebe3;
+  --color-emerald-200: #c6d7c9;
+  --color-emerald-300: #9fbca8;
+  --color-emerald-400: #6f9a80;
+  --color-emerald-500: #4e8568; /* --ph-green-light */
+  --color-emerald-600: #38684f;
+  --color-emerald-700: #2c5a43; /* --ph-green */
+  --color-emerald-800: #234936;
+  --color-emerald-900: #1e3a30; /* --ph-navy */
+  --color-emerald-950: #17301f; /* --ph-navy-deep */
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* Display headings in the brand serif; data-dense tables are untouched
+   (they don't use h1). */
+h1 {
+  font-family: "Playfair Display", Georgia, serif;
+  letter-spacing: -0.01em;
 }
