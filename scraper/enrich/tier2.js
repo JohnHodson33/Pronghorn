@@ -40,7 +40,7 @@ async function hunterEmail(lead, budget, log) {
       params: { domain, full_name: normalizeName(lead.owner_name), api_key: process.env.HUNTER_API_KEY },
       timeout: 30000,
     });
-    await recordUsage('hunter', 'email_finding', 1, 0, { tier: 2, lead: lead.id });
+    await recordUsage('hunter', 'email_finding', 1, Number(process.env.HUNTER_PER_SEARCH) || 0.10, { tier: 2, lead: lead.id });
     const r = data.data || {};
     return { hunter: { email: r.email || null, score: r.score ?? null, at: new Date().toISOString() },
              email: r.email && (r.score ?? 0) >= HUNTER_MIN_SCORE ? r.email : null };

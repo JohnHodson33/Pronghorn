@@ -53,6 +53,19 @@ in MORNING-BRIEF.
   (submitted→triaged→building→shipped) so Tom sees ideas move; agent
   self-review + roadmap panel (PM curates). PM wires sidebar entry on merge.
   Ship the basic version TODAY — the Haiku refine-chat step is v2.
+- ✅ DECIDED (John 7/12 ~16:20): **Hunter Starter $49/mo APPROVED** — John
+  upgrades in the Hunter dashboard (2 min; same API key, limits lift
+  automatically); sub flips planned→active on the cost badge when done.
+  **Hunter is ALWAYS part of the default cascade**: any Enrich click fires
+  Hunter whenever contact info is still missing after the free tiers (early
+  exit saves the cost when free sources complete the contact). **Skip-tracing
+  DEFERRED** — run real Hunter reps first, measure hit rate, then decide;
+  vendor recs on file (Tracerfy ~$0.02/rec pay-per-hit first sample, REISift
+  $0.10 @ ~81% match) in the 7/12 chat + PM memory.
+  → LANE C NOTE: cascade already fires Hunter for any lead missing email after
+    free tiers (tier2.js), early-exit honored. Quota cap in tier2 (5/run) is a
+    free-tier guard — LIFT it to a larger per-run budget once John's Starter is
+    active (see Lane C item below).
 - 🔨 LANE C — 🔥 **FREE OWNER-NAME UNLOCKS — SHAPE SHIPPED + RECON (7/12).**
   `enrich/sos_lookup.js`: per-state resolver registry wired into the tier-2
   cascade (resolved name → unlocks Hunter/LinkedIn); TX resolver LIVE via

@@ -14,7 +14,13 @@ const { supabase } = require('../core/db');
 const log = require('../utils/logger');
 const { runTier2 } = require('./tier2');
 
-const TIER2_BUDGET = { hunter: 10, exa: 40 }; // per runner pass, protects quotas
+// Per-runner-pass budgets. Hunter Starter is approved (John 7/12) — 500
+// searches/mo lifts the old free-tier guard; env override lets John tune it
+// without a redeploy. Exa is generous/cheap.
+const TIER2_BUDGET = {
+  hunter: Number(process.env.HUNTER_RUN_BUDGET) || 60,
+  exa: Number(process.env.EXA_RUN_BUDGET) || 60,
+};
 
 async function jobLeads(job, statusFilter) {
   let q = supabase.from('leads')
@@ -77,7 +83,7 @@ async function main() {
       await setProgress(job.id, {
         status: 'complete', finished_at: new Date().toISOString(),
         counts: { total, processed, found_owner: owners, found_email: emailsNow, tier1: fresh.length, tier2: t2.processed, tier2_emails: t2.emails, tier2_linkedins: t2.linkedins },
-        cost_actual: Number((fresh.length * 0.01 + t2.emails * 0.0 + t2.processed * 0.006).toFixed(2)),
+        cost_actual: Number((fresh.length * 0.01 + t2.emails * (Number(process.env.HUNTER_PER_SEARCH) || 0.10) + t2.processed * 0.006).toFixed(2)),
       });
       log.info(`  job done: ${processed} processed (${fresh.length} tier1, ${t2.processed} tier2 → +${t2.emails} emails, +${t2.linkedins} linkedins)`);
     } catch (e) {

@@ -10,7 +10,8 @@ import { NextResponse } from "next/server";
 import { hasDb, serverDb } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
-const COST_PER_LEAD = 0.01;
+const COST_PER_LEAD = 0.01;          // tier 1: website scrape + Exa + Haiku
+const COST_PER_TIER2 = 0.11;         // tier 2 max: Hunter search ~$0.10 + Exa LinkedIn ~$0.006
 
 export async function GET(req: Request) {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
@@ -43,7 +44,7 @@ export async function POST(req: Request) {
   const tier2 = (sel ?? []).filter((l) =>
     l.status === "enriched" && !(l.owner_name && l.owner_email && (l.owner_phone || l.owner_linkedin))).length;
   const count = tier1 + tier2;
-  const estimate = Number((tier1 * COST_PER_LEAD + tier2 * COST_PER_LEAD).toFixed(2));
+  const estimate = Number((tier1 * COST_PER_LEAD + tier2 * COST_PER_TIER2).toFixed(2));
   if (b.estimateOnly) return NextResponse.json({ count, tier1, tier2, estimate });
   if (!count) return NextResponse.json({ error: "selection is fully enriched — every lead already has owner + email + phone/LinkedIn" }, { status: 422 });
 
