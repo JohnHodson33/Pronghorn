@@ -9,6 +9,14 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   (UI + API, see 7/13 entry below) — browser-verified end-to-end, test
   artifacts removed from storage. Prior state (through 9cd3f33 dead-end
   sweep) merged to main and live.
+- **7/13 ~19:45 — OUTREACH RULES SURFACE SHIPPED** (Lane C's 75f9a5e landed
+  the backend; Lane B's half same evening): new `/api/outreach-rules`
+  (GET/POST/PATCH/DELETE, degrades w/ honest note pre-0013) + rules editor
+  on /outbox (taxonomy chips w/ ★ thesis-core, state chips, completeness
+  floor, nightly cap; "zero rules = zero auto-drafts" state is explicit) +
+  "why drafted" provenance line on outbox rows (draft_meta post-0013;
+  outbox GET does the two-shape select fallback). Everything verified
+  against the degrade path; saves go live the moment PM applies 0013.
 - **Next**: unblocked queue is DRAINED (7/13 ~19:05). Blocked/waiting:
   size-tier chips (John's tier-math approval, card 37450f11) · 'needs
   tagging' review list (Lane C sweep leftover shape) · ?broker= contact

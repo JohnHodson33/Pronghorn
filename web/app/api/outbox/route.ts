@@ -58,11 +58,15 @@ async function meter(db: ReturnType<typeof serverDb>, activity: string, usage?: 
 
 export async function GET() {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
-  const { data, error } = await serverDb()
-    .from("outbox_emails")
-    .select("id, listing_id, to_email, to_name, subject, body, status, created_at, sent_at")
-    .order("created_at", { ascending: false })
-    .limit(100);
+  // draft_meta (why-drafted provenance) arrives with 0013 — retry without it
+  const select = (withMeta: boolean) =>
+    serverDb()
+      .from("outbox_emails")
+      .select("id, listing_id, to_email, to_name, subject, body, status, created_at, sent_at" + (withMeta ? ", draft_meta" : ""))
+      .order("created_at", { ascending: false })
+      .limit(100);
+  let { data, error } = await select(true);
+  if (error) ({ data, error } = await select(false));
   if (error) return NextResponse.json({ error: `${error.message} — apply migration 0006`, emails: [] }, { status: 200 });
   return NextResponse.json({ emails: data });
 }

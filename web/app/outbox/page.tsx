@@ -6,6 +6,7 @@
 // send route + env vars are provisioned (guardrail: nothing auto-sends).
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import OutreachRules from "@/components/OutreachRules";
 
 type OutboxEmail = {
   id: string;
@@ -17,6 +18,9 @@ type OutboxEmail = {
   status: "queued" | "sent" | "cancelled";
   created_at: string;
   sent_at: string | null;
+  // why-drafted provenance (0013): which rule matched + the enrichment facts
+  // the email was anchored on
+  draft_meta?: { rule_name?: string; facts_used?: string[] } | null;
 };
 
 const statusStyle: Record<OutboxEmail["status"], string> = {
@@ -60,6 +64,12 @@ function Draft({ email, onChanged }: { email: OutboxEmail; onChanged: () => void
           {new Date(email.sent_at ?? email.created_at).toLocaleString()}
         </span>
       </div>
+      {email.draft_meta && (email.draft_meta.rule_name || email.draft_meta.facts_used?.length) && (
+        <div className="rounded-md bg-sky-50 px-2.5 py-1.5 text-xs text-sky-800">
+          🎯 {email.draft_meta.rule_name && <>drafted under rule <span className="font-semibold">{email.draft_meta.rule_name}</span></>}
+          {email.draft_meta.facts_used?.length ? <> · anchored on: {email.draft_meta.facts_used.join(" · ")}</> : null}
+        </div>
+      )}
       {queued ? (
         <>
           <input
@@ -155,6 +165,8 @@ export default function Outbox() {
       {error && (
         <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">{error}</div>
       )}
+
+      <OutreachRules />
 
       <section className="space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
