@@ -1,26 +1,32 @@
-// Log an activity (meeting note, call, general note) against a company.
+// Log an activity (meeting note, call, general note) against a company,
+// contact, or deal — any combination; at least one target required.
 import { NextResponse } from "next/server";
 import { hasDb, serverDb } from "@/lib/db";
 
 export async function POST(req: Request) {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
-  const { companyId, kind, body, docUrl } = await req.json();
-  if (!companyId || !String(body ?? "").trim())
-    return NextResponse.json({ error: "companyId and body required" }, { status: 400 });
+  const { companyId, contactId, dealId, kind, body, docUrl } = await req.json();
+  if (!(companyId || contactId || dealId) || !String(body ?? "").trim())
+    return NextResponse.json({ error: "a target (companyId/contactId/dealId) and body are required" }, { status: 400 });
 
   const db = serverDb();
   // attach to the company's most recent deal too, if one exists
-  const { data: deal } = await db
-    .from("deals")
-    .select("id")
-    .eq("company_id", companyId)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  let attachDealId = dealId ?? null;
+  if (companyId && !attachDealId) {
+    const { data: deal } = await db
+      .from("deals")
+      .select("id")
+      .eq("company_id", companyId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    attachDealId = deal?.id ?? null;
+  }
 
   const { error } = await db.from("activities").insert({
-    company_id: companyId,
-    deal_id: deal?.id ?? null,
+    company_id: companyId ?? null,
+    contact_id: contactId ?? null,
+    deal_id: attachDealId,
     kind: ["meeting", "call", "email", "note", "task", "doc"].includes(kind) ? kind : "note",
     body: String(body).trim(),
     doc_url: docUrl || null,
