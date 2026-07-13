@@ -9,13 +9,19 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   (UI + API, see 7/13 entry below) — browser-verified end-to-end, test
   artifacts removed from storage. Prior state (through 9cd3f33 dead-end
   sweep) merged to main and live.
-- **Next**: (1) size-tier chips (blocked on tier-math approval, card
-  37450f11); (2) queued sweep items in TASK-QUEUE (sources health table,
-  broker→filtered-contacts deep link, click-to-filter industry chips);
-  (3) tonight's [self-iterate] ship — critique the live site first.
-  SHIPPED this session: attachments (977fa21), meeting-notes input
-  (db8bd1c), list-build status_detail rows (see entries below).
-  'Needs tagging' review list (f) waits on Lane C's sweep leftover shape.
+- **Next**: unblocked queue is DRAINED (7/13 ~19:05). Blocked/waiting:
+  size-tier chips (John's tier-math approval, card 37450f11) · 'needs
+  tagging' review list (Lane C sweep leftover shape) · ?broker= contact
+  filter data (Lane C broker_id backfill, flagged in TASK-QUEUE) ·
+  0011/0012 application (thread API + list progress go live, no code
+  change). Loop is on a ~25-min poll cadence: feedback → new TASK-QUEUE
+  items → main updates. Sweep notes: sources health lives on /sources
+  (V3 dashboard intentionally lean); Add-to-Contacts + /deals index +
+  Passed handling were already shipped by predecessor.
+  SHIPPED this session: attachments (977fa21) · meeting-notes input
+  (db8bd1c) · status_detail rows (d4d1417) · [self-iterate] URL-param
+  filtered views (fef296a) · [self-iterate] mic on Add-note + broker
+  deep links (bccaa86). PM merged through fef296a → main (6efa365).
 - **Session notes**: dev server = launch config `pronghorn-web-laneB` port
   3311 (killed the dead predecessor's orphaned process holding the port —
   two dev servers can't share this worktree's .next). Feedback polled 17:40:
