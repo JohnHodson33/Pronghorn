@@ -282,6 +282,13 @@ set) into your new chips UI as a small follow-up.
   copy-ready pre-filled contact block + note from inquiry_profiles (and, where
   possible, a browser-automation prefill John triggers from his own machine).
   John reviews + clicks submit; status flips to info_requested on click.
+- ✅→🔥🔥 **SCRAPE CRITERIA REDESIGN — item (a) SHIPPED BY PM (7/13 ~00:40,
+  John re-raised in chat):** the Subsectors card now has a one-line **"+ Add
+  industry"** bar — type "hydraulic services", Claude brainstorms the full
+  include/exclude keyword set (POST /api/criteria/keywords), the industry
+  persists as a real chip (NEW: POST /api/taxonomy upsert) toggled ON, and
+  keywords land in include/exclude lists. Verified live on prod. LANE B still
+  owns the REST of this item (b–e below); don't rebuild (a).
 - 🔥🔥 **SCRAPE CRITERIA REDESIGN (John 7/12 ~00:45 — supersedes the old
   "unified criteria" idea):** PM confirmed screen_profiles feeds ONLY broker-
   scrape tiering (proprietary has no financials to screen), and moved the tab
