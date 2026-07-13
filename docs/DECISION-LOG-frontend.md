@@ -33,12 +33,15 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   Companies/Contacts toolbars (prompts for a label, captures current path +
   filter params). Verified round-trip live. Promote to a table later if
   John wants cross-device sync.
-- **NEW LANE B ITEMS from John's verdict batch (e234a44), next up:**
-  (1) note_needs_tagging Key Actions card (Lane C serves the kind already)
-  → tap opens note + company picker; (2) company-profile channel provenance
-  ("from enrichment — not yet on contact"); (3) Size Estimation settings
-  tab + ~est. revenue/EBITDA columns — WAIT for Lane C's assumptions
-  storage + estimate math contract before building.
+- **Verdict batch (e234a44): ALL unblocked Lane B items shipped 7/13 eve**
+  — pinned views 4c2354c · note-tagging card c3bf3a7 · provenance strip
+  a5b6833. REMAINING (blocked): Size Estimation settings tab + ~est.
+  revenue/EBITDA columns + Platform/Tuck-in/Too-small tier labels
+  (amendment 3, 77a6cbf) — starts when Lane C lands the assumptions
+  storage + estimates contract; size-tier chips ride the same contract.
+  Also still waiting: 0011/0012/0013 application (thread API, list
+  progress, outreach rules all self-upgrade); 'needs tagging' dedicated
+  page only if volume outgrows the Key Actions card.
 - **7/13 ~19:45 — OUTREACH RULES SURFACE SHIPPED** (Lane C's 75f9a5e landed
   the backend; Lane B's half same evening): new `/api/outreach-rules`
   (GET/POST/PATCH/DELETE, degrades w/ honest note pre-0013) + rules editor
