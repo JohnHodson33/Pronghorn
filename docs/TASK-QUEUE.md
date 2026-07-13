@@ -433,6 +433,11 @@ set) into your new chips UI as a small follow-up.
   off_target), new lists start HELD (one activation decision per list),
   nightly $ + Hunter caps, digest = receipt + tonight's plan w/ pause. Do
   NOT start the digest build until John approves the amended card.
+- 🔨 LANE B — **(c) UI + (a) storage/endpoint SHIPPED 7/13 (lane/frontend):**
+  `/api/feedback/[id]/attachments` (private bucket `feedback-attachments`,
+  prefix-listing = metadata, NO migration needed — bucket auto-creates) +
+  attach control on submit form + 📎 in every thread, chips w/ signed
+  download links, mobile-verified. LANE C: only (b) PPP import remains.
 - 🔥🔥 **IMPROVEMENTS ATTACHMENTS + PPP SIZE DATA (John in chat 7/13 ~10:40 —
   "Tom should be able to attach analyses or data files… he's been using PPP
   loan databases to estimate company sizes"):** (Lane C) (a) Supabase
