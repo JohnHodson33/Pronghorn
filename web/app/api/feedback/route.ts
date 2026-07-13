@@ -10,8 +10,12 @@ import { hasDb, serverDb } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-const TYPES = ["bug", "idea", "change"];
-const STATUSES = ["submitted", "triaged", "building", "shipped", "verified"];
+// 'suggestion' rows are AGENT-generated improvement ideas (the platform
+// "brain", John 7/12): they start at status 'suggested'; John/Tom approve
+// (→ 'approved' = build it, top-of-lane) or decline. No schema change —
+// 0010's columns are plain text; these arrays are the only gate.
+const TYPES = ["bug", "idea", "change", "suggestion"];
+const STATUSES = ["submitted", "triaged", "building", "shipped", "verified", "suggested", "approved", "declined"];
 
 export async function GET(req: Request) {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
@@ -33,11 +37,15 @@ export async function POST(req: Request) {
   const body = String(b.body ?? "").trim();
   const author = String(b.author ?? "").trim();
   if (!body) return NextResponse.json({ error: "body required" }, { status: 400 });
-  if (!["John", "Tom"].includes(author)) return NextResponse.json({ error: "author must be John or Tom" }, { status: 400 });
   const type = TYPES.includes(b.type) ? b.type : "idea";
+  // Humans submit feedback; agents submit 'suggestion' rows (author "Agent — <lane>").
+  const isAgent = type === "suggestion" && author.startsWith("Agent");
+  if (!isAgent && !["John", "Tom"].includes(author)) {
+    return NextResponse.json({ error: "author must be John or Tom (or Agent — * for suggestions)" }, { status: 400 });
+  }
 
   const { data, error } = await serverDb().from("feedback")
-    .insert({ author, type, page: b.page ?? null, body })
+    .insert({ author, type, page: b.page ?? null, body, status: type === "suggestion" ? "suggested" : "submitted" })
     .select("id").single();
   if (error) return NextResponse.json({ error: `${error.message} — apply migration 0010` }, { status: 503 });
   return NextResponse.json({ ok: true, id: data.id });
@@ -54,5 +62,14 @@ export async function PATCH(req: Request) {
   for (const k of ["status", "lane", "task_ref", "shipped_ref"]) if (b[k] !== undefined) patch[k] = b[k];
   const { error } = await serverDb().from("feedback").update(patch).eq("id", b.id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // detail-append: John/Tom add context to a suggestion without editing history
+  if (typeof b.detail === "string" && b.detail.trim()) {
+    const { data: row } = await serverDb().from("feedback").select("body").eq("id", b.id).maybeSingle();
+    if (row) {
+      await serverDb().from("feedback")
+        .update({ body: `${row.body}\n\n— ${String(b.detailAuthor ?? "John")} adds: ${b.detail.trim()}` })
+        .eq("id", b.id);
+    }
+  }
   return NextResponse.json({ ok: true });
 }
