@@ -467,6 +467,20 @@ set) into your new chips UI as a small follow-up.
   inert, delete at leisure. Lane B: rules editor + "why drafted" line remain
   yours.
   --- original card ---
+- 🔥🔥 **DEAL/COMPANY ATTACHMENTS + CIM INGEST (John 7/13 ~15:15 — received
+  the All American Fence Erectors CIM via Axial; PM hand-built the records:
+  company 35a33893 w/ CIM financials, deal ed791a49 stage 'CIM Received',
+  Peregrine Advisors bankers as contacts):** (a) (Lane B+C) **attachments on
+  company AND deal profiles** — extend the feedback-attachments pattern
+  (private bucket `deal-attachments`, prefix {companyId|dealId}/, signed
+  URLs, upload control + chips on both profile pages; CIMs/NDAs/LOIs live
+  attached to their records). (b) (Lane C) **CIM/document ingest sweep**:
+  scan John's Outlook (Graph, Mail.Read — consented) for deal-document
+  attachments (CIM/IOI/LOI/NDA/teaser PDFs), upload to the bucket, attach
+  to the matched deal/company, log an activity w/ provenance; backfill pass
+  over existing mail (the AAFE CIM itself arrived via Axial phone/email).
+  OneDrive/local-drive sweep = phase 2 (needs Files.Read consent — bubble
+  to John). NEVER auto-delete or move mail.
 - 🔥🔥🔥 **SIZE ESTIMATION — AMENDMENT 3 + UI COMPLETION (John 7/13 ~14:45;
   card 37450f11 flipped back to 'building' — server math shipped but John
   rightly notes NOTHING is visible on the site yet):**
