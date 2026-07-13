@@ -115,7 +115,13 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
       {deal.broker && (
         <div className="rounded-xl border border-zinc-200 bg-white p-4">
           <div className="flex items-center justify-between">
-            <span className="font-semibold">{deal.broker.name ?? "Unnamed broker"}</span>
+            {deal.broker.id ? (
+              <Link href={`/brokers/${deal.broker.id}`} className="font-semibold hover:text-emerald-700 hover:underline">
+                {deal.broker.name ?? "Unnamed broker"}
+              </Link>
+            ) : (
+              <span className="font-semibold">{deal.broker.name ?? "Unnamed broker"}</span>
+            )}
             <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-800">
               listing broker
             </span>

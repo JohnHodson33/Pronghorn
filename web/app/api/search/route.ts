@@ -13,7 +13,7 @@ export async function GET(req: Request) {
   const db = serverDb();
   const like = `%${q}%`;
 
-  const [companies, contacts, deals, listings] = await Promise.all([
+  const [companies, contacts, deals, listings, brokers] = await Promise.all([
     db
       .from("companies")
       .select("id, name, industry, city, state")
@@ -32,6 +32,11 @@ export async function GET(req: Request) {
       .ilike("name", like)
       .order("tier", { ascending: true, nullsFirst: false })
       .limit(8),
+    db
+      .from("brokers")
+      .select("id, name, brokerage")
+      .or(`name.ilike.${like},brokerage.ilike.${like}`)
+      .limit(5),
   ]);
 
   const hits = {
@@ -58,6 +63,12 @@ export async function GET(req: Request) {
       label: d.name,
       sub: d.stage,
       href: `/deals/${d.id}`,
+    })),
+    brokers: (brokers.data ?? []).map((b) => ({
+      id: b.id,
+      label: b.name ?? b.brokerage ?? "(unnamed broker)",
+      sub: b.brokerage ?? "broker",
+      href: `/brokers/${b.id}`,
     })),
     listings: (listings.data ?? []).map((l) => ({
       id: l.id,

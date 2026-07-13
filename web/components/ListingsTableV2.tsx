@@ -97,13 +97,21 @@ function toCsv(rows: UiListing[]): string {
   return [header.join(","), ...lines].join("\n");
 }
 
-export default function ListingsTableV2({ rows: allRows, live }: { rows: UiListing[]; live: boolean }) {
+export default function ListingsTableV2({
+  rows: allRows,
+  live,
+  initialIndustry,
+}: {
+  rows: UiListing[];
+  live: boolean;
+  initialIndustry?: string; // deep link: /listings?industry=Tree%20Care
+}) {
   const industries = [...new Set(allRows.map((l) => l.industry))].sort();
   const states = [...new Set(allRows.map((l) => l.state).filter(Boolean))].sort() as string[];
   const sources = [...new Set(allRows.map((l) => l.source))].sort();
 
   const [q, setQ] = useState("");
-  const [industry, setIndustry] = useState("all");
+  const [industry, setIndustry] = useState(initialIndustry ?? "all");
   const [state, setState] = useState("all");
   const [source, setSource] = useState("all");
   const [tiers, setTiers] = useState<number[]>([1, 2, 3, 4]);

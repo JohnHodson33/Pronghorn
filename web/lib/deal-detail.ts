@@ -45,6 +45,7 @@ export type DealDetail = {
     tier: number | null;
   } | null;
   broker: {
+    id: string | null; // → /brokers/[id] directory record
     name: string | null;
     brokerage: string | null;
     email: string | null;
@@ -126,7 +127,7 @@ export async function fetchDealDetail(id: string): Promise<DealDetail | null> {
     c.listing_id
       ? db
           .from("listings")
-          .select("name, url, source_id, tier, broker_id, brokers(name, brokerage, email, phone)")
+          .select("name, url, source_id, tier, broker_id, brokers(id, name, brokerage, email, phone)")
           .eq("id", c.listing_id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
@@ -137,7 +138,7 @@ export async function fetchDealDetail(id: string): Promise<DealDetail | null> {
     url: string | null;
     source_id: string | null;
     tier: number | null;
-    brokers: { name: string | null; brokerage: string | null; email: string | null; phone: string | null } | null;
+    brokers: { id: string | null; name: string | null; brokerage: string | null; email: string | null; phone: string | null } | null;
   } | null;
   const broker = Array.isArray(listing?.brokers) ? listing?.brokers[0] : listing?.brokers;
 
