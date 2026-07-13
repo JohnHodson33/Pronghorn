@@ -46,11 +46,59 @@ export type DashboardV3 = {
   totals: { listings: number; tier12: number; leads: number; deals: number };
 };
 
+// Map Lane C's dashboard_key_actions view rows (migration 0006) onto the UI
+// shape. Falls back to the interim table computation when the view errors
+// (migration not applied).
+const VIEW_ACTION_MAP: Record<string, { kind: KeyAction["kind"]; urgent: boolean; label: (t: string) => string; detail: (d: string | null) => string; href: (ref: string | null) => string }> = {
+  ready_to_promote: {
+    kind: "promote",
+    urgent: true,
+    label: (t) => `Ready to promote: ${t}`,
+    detail: () => "CIM in hand — fill the real name/financials and create the deal",
+    href: (r) => `/listings/${r}`,
+  },
+  nda_countersign_pending: {
+    kind: "nda",
+    urgent: false,
+    label: (t) => `NDA in process: ${t}`,
+    detail: (d) => `Signed by us — broker countersign pending${d ? ` (${d})` : ""}`,
+    href: (r) => `/listings/${r}`,
+  },
+  queued_email: {
+    kind: "queued_email",
+    urgent: true,
+    label: (t) => `Inquiry awaiting your send: ${t}`,
+    detail: (d) => `To ${d ?? "broker"} — one click in the Outbox`,
+    href: () => "/outbox",
+  },
+  stale_pursuit: {
+    kind: "stale",
+    urgent: false,
+    label: (t) => `Stale pursuit: ${t}`,
+    detail: (d) => `No movement since ${d ?? "the request"} — nudge the broker?`,
+    href: (r) => `/listings/${r}`,
+  },
+  next_step_due: {
+    kind: "deadline",
+    urgent: true,
+    label: (t) => `Next step due: ${t}`,
+    detail: (d) => d ?? "next step",
+    href: (r) => `/deals/${r}`,
+  },
+};
+
 export async function fetchDashboardV3(): Promise<DashboardV3 | null> {
   if (!hasDb()) return null;
   const db = serverDb();
   const today = new Date().toISOString().slice(0, 10);
   const weekAgo = new Date(Date.now() - 7 * 86400_000).toISOString();
+
+  // Lane C's server-side aggregates first (single source of truth).
+  const [viewActions, viewCoverage] = await Promise.all([
+    db.from("dashboard_key_actions").select("kind, title, detail, ref_id, at").limit(50),
+    db.from("dashboard_enrichment_coverage").select("subsector, total, enriched, outreach_ready"),
+  ]);
+  const viewsLive = !viewActions.error && !viewCoverage.error;
 
   // Pursuit states + listing info + broker email (for the send-inquiry action).
   // requested_at lands with migration 0005 — retry without it until applied.
@@ -126,8 +174,16 @@ export async function fetchDashboardV3(): Promise<DashboardV3 | null> {
 
   // ---------- key actions (the human-attention queue)
   const actions: KeyAction[] = [];
+  if (viewsLive) {
+    // Server-side view is the source of truth for actions.
+    for (const a of (viewActions.data ?? []) as { kind: string; title: string; detail: string | null; ref_id: string | null }[]) {
+      const m = VIEW_ACTION_MAP[a.kind];
+      if (!m) continue;
+      actions.push({ kind: m.kind, label: m.label(a.title), detail: m.detail(a.detail), href: m.href(a.ref_id), urgent: m.urgent });
+    }
+  }
   // Queued inquiry drafts awaiting John's one-click send (Outbox)
-  if (!outboxRes.error) {
+  if (!viewsLive && !outboxRes.error) {
     for (const o of (outboxRes.data ?? []) as { id: string; subject: string; to_email: string }[]) {
       actions.push({
         kind: "queued_email",
@@ -138,7 +194,7 @@ export async function fetchDashboardV3(): Promise<DashboardV3 | null> {
       });
     }
   }
-  for (const r of reviews) {
+  for (const r of viewsLive ? [] : reviews) {
     const broker = Array.isArray(r.listings.brokers) ? r.listings.brokers[0] : r.listings.brokers;
     const name = r.listings.name ?? "(unnamed listing)";
     const href = `/listings/${r.listings.id}`;
@@ -200,7 +256,7 @@ export async function fetchDashboardV3(): Promise<DashboardV3 | null> {
       }
     }
   }
-  for (const d of deals) {
+  for (const d of viewsLive ? [] : deals) {
     if (d.next_step_due && d.next_step_due <= today) {
       actions.push({
         kind: "deadline",
@@ -228,19 +284,36 @@ export async function fetchDashboardV3(): Promise<DashboardV3 | null> {
   ];
 
   // ---------- subsector matrix
+  // Proprietary side prefers the server-side coverage view; broker side and
+  // the interim fallback compute from tables either way.
+  const coverage = viewsLive
+    ? ((viewCoverage.data ?? []) as { subsector: string; total: number; outreach_ready: number }[])
+    : null;
+  const covFor = (key: string) =>
+    coverage
+      ?.filter((c) => subsectorOf(c.subsector) === key || subsectorMatch(c.subsector, key))
+      .reduce((a, c) => ({ total: a.total + c.total, ready: a.ready + c.outreach_ready }), { total: 0, ready: 0 });
+
   const tier12Industries = (tier12Res.data ?? []) as { industry: string | null }[];
-  const subsectors: SubsectorRow[] = SUBSECTORS.map((s) => ({
-    key: s.key,
-    brokerListings: tier12Industries.filter((l) => subsectorOf(l.industry) === s.key).length,
-    brokerDeals: deals.filter((d) => subsectorOf(d.industry) === s.key).length,
-    propTargets: leads.filter((l) => subsectorOf(l.industry) === s.key || (l.industry && subsectorMatch(l.industry, s.key))).length,
-    propReady: leads.filter(
-      (l) =>
-        (subsectorOf(l.industry) === s.key || (l.industry && subsectorMatch(l.industry, s.key))) &&
-        !!l.owner_name &&
-        (!!l.owner_email || !!l.owner_phone)
-    ).length,
-  }));
+  const subsectors: SubsectorRow[] = SUBSECTORS.map((s) => {
+    const cov = covFor(s.key);
+    return {
+      key: s.key,
+      brokerListings: tier12Industries.filter((l) => subsectorOf(l.industry) === s.key).length,
+      brokerDeals: deals.filter((d) => subsectorOf(d.industry) === s.key).length,
+      propTargets: cov
+        ? cov.total
+        : leads.filter((l) => subsectorOf(l.industry) === s.key || (l.industry && subsectorMatch(l.industry, s.key))).length,
+      propReady: cov
+        ? cov.ready
+        : leads.filter(
+            (l) =>
+              (subsectorOf(l.industry) === s.key || (l.industry && subsectorMatch(l.industry, s.key))) &&
+              !!l.owner_name &&
+              (!!l.owner_email || !!l.owner_phone)
+          ).length,
+    };
+  });
 
   return {
     actions,
