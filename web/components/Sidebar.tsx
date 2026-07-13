@@ -119,6 +119,10 @@ const nav: { section: string; items: { label: string; href: string | null }[] }[
       { label: "Cold Calling", href: "/cold-calling" },
     ],
   },
+  {
+    section: "Platform",
+    items: [{ label: "Improvements", href: "/improvements" }],
+  },
 ];
 
 export default function Sidebar() {
