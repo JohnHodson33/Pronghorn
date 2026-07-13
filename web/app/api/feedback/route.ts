@@ -20,12 +20,23 @@ const STATUSES = ["submitted", "triaged", "building", "shipped", "verified", "su
 export async function GET(req: Request) {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
   const url = new URL(req.url);
-  let q = serverDb().from("feedback")
-    .select("id, created_at, author, type, page, body, status, lane, task_ref, shipped_ref, updated_at")
-    .order("created_at", { ascending: false }).limit(200);
-  const status = url.searchParams.get("status");
-  if (status) q = q.eq("status", status);
-  const { data, error } = await q;
+  // reply_pending + comment counts land with 0011 — retry without them until applied
+  const build = (withThread: boolean) => {
+    let q = serverDb().from("feedback")
+      .select(
+        "id, created_at, author, type, page, body, status, lane, task_ref, shipped_ref, updated_at" +
+          (withThread ? ", reply_pending, feedback_comments(count)" : "")
+      )
+      .order("created_at", { ascending: false }).limit(200);
+    const status = url.searchParams.get("status");
+    if (status) q = q.eq("status", status);
+    return q;
+  };
+  let res = await build(true);
+  if (res.error) res = await build(false);
+  // two select shapes defeat supabase's inference — cast like lib/crm.ts does
+  const data = res.data as unknown as ({ status: string } & Record<string, unknown>)[] | null;
+  const error = res.error;
   if (error) return NextResponse.json({ error: `${error.message} — apply migration 0010`, items: [] }, { status: 200 });
   const counts = STATUSES.reduce<Record<string, number>>((a, s) => { a[s] = (data ?? []).filter((r) => r.status === s).length; return a; }, {});
   return NextResponse.json({ items: data, counts });
