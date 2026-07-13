@@ -692,9 +692,12 @@ set) into your new chips UI as a small follow-up.
   AZ TREE CARE leads resolved+persisted (tree work is mostly ROC-exempt — the
   hit rate on AZ landscape/HVAC/plumbing/electrical lists will be far higher
   since those REQUIRE a ROC license). Supersedes the dead AZ eCorp recon path.
-- ⬜ More state license boards (GA, NC, SC, TN, FL; AZ OPM for pest) — recon
+- ⬜ More state license boards (GA, SC, TN, FL; AZ OPM for pest) — recon
   logged in DECISION-LOG-integrations (GA Kelly blocked, FL = Power BI, TN
-  empty). NC is the next-largest nameless pool (9).
+  empty). NC RECON 7/13: no free path — the landscape board
+  (public-nclclb.arlsys.com) is search-UI only, and NC SOS bulk data (which
+  DOES carry officers/company officials, weekly CSV) is a PAID data
+  subscription — falls under John's pending SoS decision option (b).
 - ⬜ Login-network sync — Axial (co-pilot + CIM ingest) + DealForce (creds in .env).
 - 📝 COORDINATION NOTE for Lane A (enrichment.yml): contract verified — the
   workflow's `node enrich/run_enrichment.js --limit N` + env vars match Lane C's
