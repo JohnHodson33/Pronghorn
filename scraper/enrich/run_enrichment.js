@@ -45,9 +45,12 @@ OUTPUT — valid JSON only:
  "industry_verified": "one value from the list", "industry_confidence": "high|medium|low",
  "on_target": true/false,
  "years_in_business": 12 or null, "pe_backed": true/false/null,
+ "size_signals": {"employees_stated": 25 or null, "crew_count": 4 or null, "fleet_size": 10 or null, "locations": 2 or null},
  "overview": "1-2 sentences: what the company does, service mix, recurring-revenue signals",
  "signals": ["notable acquisition-relevant facts: owner near retirement, second location, fleet size, family-owned, hiring, awards"],
- "confidence": "high|medium|low"}`;
+ "confidence": "high|medium|low"}
+
+size_signals: numbers ONLY when the text states them ("our team of 25", "fleet of 12 trucks", "4 crews", "serving from 2 locations") — a size estimate can gate real outreach dollars, so never infer.`;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
