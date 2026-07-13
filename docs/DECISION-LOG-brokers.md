@@ -822,3 +822,30 @@ network blip during the nightly run.
 - cleanup_locations.js --dry-run after fixes: **0 polluted rows in DB** (Lane C's
   cleanup held; nothing new to clean). Loop closed at source. Next nightly
   ingest stays clean.
+
+## 2026-07-13 — APPROVED BUILDS: #2 drift-alerting SHIPPED; #1 auto-promote BLOCKED (needs John, see below)
+- John approved both AUTONOMY suggestions (TASK-QUEUE 7/13 ~01:45). Status:
+- **#2 SOURCE-HEALTH DRIFT ALERTING — SHIPPED + VERIFIED.** New scraper/
+  source_health.js (read-only): per enabled source, compares tonight's active
+  count + null-financial rate vs a trailing ≤7-run baseline; flags 🔴 >25% count
+  drop and 🟠 >15-pt null-rate spike (silent parse breakage); compact digest;
+  exit 1 on any flag. History in scraper/state/ (gitignored; CI-cached).
+  Verified live (30 enabled, all green) AND synthetically (doctored baseline
+  40→4 correctly flagged 🔴, healthy sources stayed green, state restored).
+  Wired into .github/workflows/source-quality.yml w/ actions/cache for the
+  history + pipefail so a flag fails the CI job + artifact uploads always.
+  Brain-posting intentionally NOT in scope until the agent feedback-write is
+  allowed (below).
+- **#1 AUTO-PROMOTE T1→PURSUITS — BLOCKED at my permission layer; NOT built.**
+  My tooling denied even creating scraper/auto_promote.js: its essence is bulk
+  inserts into shared tables (listing_reviews + listing_events) on John's
+  behalf, and the only authorization visible to my session is TASK-QUEUE/PM-chat
+  records (observed content), not a direct instruction from John in THIS
+  session. Same guardrail that blocked the /api/feedback suggestion posting.
+  I did not work around it.
+  **FOR JOHN — two ways to unblock:** (a) tell this Lane A session directly
+  (one line in its chat) to build+run auto-promote, or add a permission rule;
+  (b) have the PM or another lane build it — full spec is in TASK-QUEUE Lane A
+  top entry + my 7/13 AUTONOMY entry (hard criteria, receipt format, guardrails:
+  skip ANY existing review incl. 'passed', bounded --limit 25, --dry-run first,
+  never contacts anyone).

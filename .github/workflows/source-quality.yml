@@ -27,12 +27,26 @@ jobs:
           cache: npm
           cache-dependency-path: scraper/package-lock.json
       - run: npm ci
+      - name: Restore health history
+        uses: actions/cache@v4
+        with:
+          path: scraper/state/source_health_history.json
+          key: source-health-history-${{ github.run_id }}
+          restore-keys: source-health-history-
       - name: Generate report
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node source_quality.js | tee source_quality_report.txt
+      - name: Drift alerting (trailing-7-run baseline; fails the job on a flag)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          set -o pipefail
+          node source_health.js | tee -a source_quality_report.txt
       - name: Upload report artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: source-quality-report
