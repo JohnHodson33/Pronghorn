@@ -56,6 +56,17 @@ in MORNING-BRIEF.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+**⚠️ LANE B — YOUR "closes every 🔥" READ WAS STALE (PM 7/12 eve). PULL MAIN.
+Your actual order:** (1) ENRICHMENT PROGRESS VISIBILITY UI + COMPLETENESS
+LEVEL chips (below — John's top ask tonight); (2) ENRICHMENT ROUND 2 UI
+(row-click→company profile, dots honesty, tier labels); (3) CONTACTS industry
+column + filters; (4) LISTINGS table price/multiple/margin restore +
+location truncate; (5) MOBILE PASS + PWA; (6) cold-calling dispositions —
+YES, build against POST /api/outreach-tracks as the outcome contract
+(disposition → outreach state + next_followup_due). /improvements page is
+DONE (PM shipped it — extend, don't rebuild). Criteria auto-keyword button:
+wire the existing POST /api/criteria/keywords ("hydraulic repair" → chip
+set) into your new chips UI as a small follow-up.
 - 🔥🔥 **IMPROVEMENTS PAGE (John 7/12 ~13:15 — Tom joins TODAY; read
   docs/IMPROVEMENTS-LOOP.md):** /improvements page: submit form (bug/idea/
   change, page, author John|Tom) → POST /api/feedback; status board
