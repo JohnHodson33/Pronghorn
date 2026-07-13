@@ -30,7 +30,8 @@ async function main() {
   const key = process.env.HUNTER_API_KEY;
   if (!key) { console.error('HUNTER_API_KEY not set in scraper/.env'); process.exit(1); }
   const arg = (f) => { const i = process.argv.indexOf(f); return i > -1 ? Number(process.argv[i + 1]) : null; };
-  const limit = arg('--limit') || 5;
+  // Default lifted from 5 (free-tier guard) — Hunter Starter approved 7/12.
+  const limit = arg('--limit') || Number(process.env.HUNTER_RUN_BUDGET) || 50;
   const minScore = arg('--min-score') || 70;
 
   const { data: leads, error } = await supabase.from('leads')
@@ -81,7 +82,11 @@ async function main() {
   }
   log.info(`Email finder: ${found}/${targets.length} verified emails${quota != null ? ` (Hunter quota remaining: ${quota})` : ''}`);
   const { recordUsage } = require('../core/usage');
-  await recordUsage('hunter', 'email_finding', targets.length, 0, { found, tier: 'free', quota_remaining: quota });
+  // Hunter Starter (approved 7/12) ≈ $49/500 searches ≈ $0.10/search; a search
+  // is billed whether or not it returns a confident email.
+  const HUNTER_PER_SEARCH = Number(process.env.HUNTER_PER_SEARCH) || 0.10;
+  await recordUsage('hunter', 'email_finding', targets.length, targets.length * HUNTER_PER_SEARCH,
+    { found, plan: 'starter', quota_remaining: quota });
 }
 
 main().catch((e) => { console.error(e.message); process.exit(1); });

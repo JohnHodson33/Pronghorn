@@ -2,21 +2,34 @@
 
 ## 🤝 HANDOFF (keep current — replacement session resumes from this)
 
-**State (2026-07-12 ~01:15):** Worktree `C:\Users\johnd\Pronghorn-integrations`,
+**State (2026-07-12 ~16:45):** Worktree `C:\Users\johnd\Pronghorn-integrations`,
 branch `lane/integrations` (push after each unit; PM merges). Env files copied
-from main checkout; scraper/node_modules is a junction; web/node_modules is a
-real install. Everything shipped + verified; queue statuses in TASK-QUEUE.md
-are accurate.
+from main checkout; scraper/node_modules junction; web/node_modules real
+install. Migrations now 0004–0010 pending John/PM in Supabase SQL editor.
 
-**Current task:** none in flight — loop is in monitor mode (pursuit re-scans,
-enrichment/promotion ticks on new leads, respond to PM relays).
+**MIGRATIONS 0004–0009 ARE LIVE (verified 7/12 ~19:00); only 0010 (feedback)
+pending.** Post-migration backfills DONE: industry_verified column populated
+for all 231 enriched leads (217 copied from jsonb + 14 fresh), 19 off-target
+flagged; cost backfill already present; enrichment-job drain + tier-2 cascade
+proven end-to-end (job queued → run_jobs → tier1+tier2 → complete). Still TODO
+when convenient: re-run import_hubspot_contacts.js to move [hs:] note
+breadcrumbs into the now-live hubspot_id/firm/title columns (needs a fresh MCP
+contact dump — low urgency, contacts already usable).
 
-**Next 2:** (1) `/api/criteria/keywords` is live but gated on ANTHROPIC_API_KEY
-in web env (PM/John adds to Vercel); verify once keyed. (2) After John's
-morning re-auth + migrations 0004–0009: re-run `import_hubspot_contacts.js`
-(moves breadcrumbs into real columns), run `backfill_costs.js` once, PM runs
-`fix_passed_stage.js` if not already, then schedule `ingest_pursuit.js` +
-`enrich/run_jobs.js` on the workflows.
+**Current task:** loop in build+monitor mode. Just shipped cascading enrichment
+(tier2.js), completeness levels, job progress, Outlook drafts (John-authorized
+in chat), Graph live ingestion, feedback pipeline.
+
+**Next 2:** (1) Feedback-poll standing rule — each loop iteration, GET
+/api/feedback?status=submitted, triage Lane-C items into TASK-QUEUE, flip
+'triaged' (needs 0010 applied to have data). (2) Location-pollution cleanup
+pass (Lane A owns the parser fix; Lane C re-derives city/state for polluted
+rows once parsers fixed).
+
+**Post-migration (0004–0010) checklist:** re-run `import_hubspot_contacts.js`
+(breadcrumbs→columns), `backfill_costs.js` once, `backfill_industry.js` for the
+rest, verify `/api/enrich` `/api/feedback` `/api/costs` `/api/outreach-tracks`
+light up, schedule the 3 GH workflows (leadgen/enrichment-jobs/pursuit-live).
 
 **Gotchas a replacement MUST know:**
 - **Outlook write-back (drafts/sends/scopes) is HARD-BLOCKED in sessions
@@ -195,6 +208,24 @@ company records; they could feed Market Multiples (rev×EBITDA×industry) like
 other unnamed listings, but that's Lane A's multiples table. Full/named access
 is login-gated → the co-pilot path (John's live browser) per CREDENTIALS-INTAKE,
 not a headless scrape. No adapter built; recon logged.
+
+## 2026-07-12 — SoS owner-name lookups: recon + the honest path
+
+PM asked for free Secretary-of-State/corp-registry owner-name lookups (biggest
+BASIC→IDENTIFIED lift). Recon: the public registries are bot-hostile — AZ eCorp
+(ecorp.azcc.gov) is an SPA whose host won't resolve for scripted GET; FL Sunbiz
+hard-403s bots; OpenCorporates' open API now 401s (token required). None are
+cleanly scriptable at scale. Shipped the CORRECT SHAPE instead of a stub:
+`enrich/sos_lookup.js` = a per-state resolver registry that no-ops cleanly until
+a resolver exists, wired into the tier-2 cascade (a resolved name unlocks
+Hunter/LinkedIn). Registered the ONE genuinely-free working resolver — TX via
+the Socrata TDLR licensee dataset (verified: resolves "Xtreme Air Services" →
+its owner). The real unblock for other states is one of: (a) extend the Socrata
+pattern to states with a licensee open-dataset carrying owner/officer names
+(free, proven — same as TDLR); (b) a cheap keyed API (OpenCorporates or a
+skip-trace vendor, ~cents/lookup — bubble the cost to John); (c) a
+headless-browser resolver per priority state (bigger build). Plumbing is live
+now; each resolver activates the instant it's registered.
 
 ## 2026-07-11 — Enrichment worker live: the ~free owner-contact tier works
 

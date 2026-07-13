@@ -16,9 +16,14 @@ create index if not exists usage_events_service_idx on usage_events (service);
 create table if not exists subscriptions (
   name text primary key,
   monthly_usd numeric not null,
-  active boolean not null default true
+  active boolean not null default true,
+  planned boolean not null default false   -- committed-but-not-yet-billing (honest monthly floor)
 );
--- seed empty on purpose: all current tooling is usage-based or free tier
+-- Planned baseline (John 7/12): Hunter Starter — we'll outgrow the 25-free
+-- cap; showing it now means one over-cap pull never reads as a cost spike.
+insert into subscriptions (name, monthly_usd, active, planned)
+  values ('Hunter Starter', 49, true, true)
+on conflict (name) do nothing;
 
 alter table usage_events enable row level security;
 alter table subscriptions enable row level security;

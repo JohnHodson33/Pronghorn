@@ -38,7 +38,8 @@ OUTPUT — valid JSON only:
 {"owner_name": "First Last or null", "owner_title": "Owner/President/... or null",
  "owner_email": "explicitly shown email of the owner or null",
  "business_email": "general company email (info@/office@) or null",
- "owner_phone": "a phone explicitly identified as the owner's/cell, else null",
+ "owner_phone": "ONLY a phone explicitly identified as the OWNER's personal/cell/direct line — NEVER the company main/office number (that goes in business_phone). null if unsure.",
+ "business_phone": "the company's general/office phone if shown, else null",
  "owner_linkedin": "linkedin.com/in/... URL if present, else null",
  "city": "HQ city if stated, else null", "state": "2-letter state if stated, else null",
  "industry_verified": "one value from the list", "industry_confidence": "high|medium|low",
@@ -195,6 +196,9 @@ async function main() {
   const anthropic = new Anthropic();
   const totals = { tokIn: 0, tokOut: 0, exa: 0 };
   let enriched = 0, skipped = 0;
+  const jobIdx = process.argv.indexOf('--job');
+  const jobId = jobIdx > -1 ? process.argv[jobIdx + 1] : null;
+  let processed = 0, foundOwner = 0, foundEmail = 0;
 
   for (const lead of leads) {
     try {
@@ -208,7 +212,13 @@ async function main() {
       // fill blanks only — license-board owner names are ground truth
       if (!lead.owner_name && out.owner_name) patch.owner_name = out.owner_name;
       if (!lead.owner_email && (out.owner_email || out.business_email)) patch.owner_email = out.owner_email || out.business_email;
-      if (!lead.owner_phone && out.owner_phone) patch.owner_phone = out.owner_phone;
+      // owner_phone attribution guard (John 7/12): never store the company
+      // main line as an owner channel — demote a match to business_phone.
+      const digits = (p) => String(p || '').replace(/[^0-9]/g, '').replace(/^1/, '');
+      if (!lead.owner_phone && out.owner_phone) {
+        if (lead.phone && digits(out.owner_phone) === digits(lead.phone)) out.business_phone = out.business_phone || out.owner_phone;
+        else patch.owner_phone = out.owner_phone;
+      }
       if (!lead.owner_linkedin && out.owner_linkedin) patch.owner_linkedin = out.owner_linkedin;
       if (!lead.city && out.city) { patch.city = out.city; patch.state = lead.state || out.state; }
       // verified industry columns are migration 0008; jsonb carries them until then
@@ -224,6 +234,15 @@ async function main() {
       if (uErr) { log.error(`  ${lead.name}: ${uErr.message}`); continue; }
       enriched++;
       log.info(`  ${lead.name}: owner=${patch.owner_name || lead.owner_name || '—'} email=${patch.owner_email || '—'} (${out.confidence})`);
+      // live progress for the UI (John: clicking Enrich must never feel dead)
+      processed++;
+      if (patch.owner_name || lead.owner_name) foundOwner++;
+      if (patch.owner_email) foundEmail++;
+      if (jobId && processed % 3 === 0) {
+        await supabase.from('enrichment_jobs').update({
+          counts: { total: leads.length, processed, found_owner: foundOwner, found_email: foundEmail, phase: 'tier1' },
+        }).eq('id', jobId);
+      }
       await sleep(300);
     } catch (e) {
       log.error(`  ${lead.name}: ${e.message}`);

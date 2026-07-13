@@ -10,7 +10,8 @@ import { NextResponse } from "next/server";
 import { hasDb, serverDb } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
-const COST_PER_LEAD = 0.01;
+const COST_PER_LEAD = 0.01;          // tier 1: website scrape + Exa + Haiku
+const COST_PER_TIER2 = 0.11;         // tier 2 max: Hunter search ~$0.10 + Exa LinkedIn ~$0.006
 
 export async function GET(req: Request) {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
@@ -32,18 +33,25 @@ export async function POST(req: Request) {
   const leadIds: string[] = Array.isArray(b.leadIds) ? b.leadIds : [];
   if (!leadIds.length && !b.listId) return NextResponse.json({ error: "leadIds or listId required" }, { status: 400 });
 
-  // count what would actually run (un-enriched only)
-  let cq = db.from("leads").select("id", { count: "exact", head: true }).eq("status", "new");
-  if (leadIds.length) cq = cq.in("id", leadIds);
-  else cq = cq.eq("lead_list_id", b.listId);
-  const { count } = await cq;
-  const estimate = Number(((count ?? 0) * COST_PER_LEAD).toFixed(2));
-  if (b.estimateOnly) return NextResponse.json({ count, estimate });
-  if (!count) return NextResponse.json({ error: "nothing to enrich in that selection" }, { status: 422 });
+  // THE CASCADE CONTRACT (John 7/12): a selection of already-enriched leads
+  // never no-ops — it escalates to tier 2 (email/LinkedIn hunt, early exit
+  // when complete). Estimate previews the MAX cascade cost across both tiers.
+  let sq = db.from("leads").select("id, status, owner_name, owner_email, owner_phone, owner_linkedin");
+  if (leadIds.length) sq = sq.in("id", leadIds);
+  else sq = sq.eq("lead_list_id", b.listId);
+  const { data: sel } = await sq.limit(1000);
+  const tier1 = (sel ?? []).filter((l) => l.status === "new").length;
+  const tier2 = (sel ?? []).filter((l) =>
+    l.status === "enriched" && !(l.owner_name && l.owner_email && (l.owner_phone || l.owner_linkedin))).length;
+  const count = tier1 + tier2;
+  const estimate = Number((tier1 * COST_PER_LEAD + tier2 * COST_PER_TIER2).toFixed(2));
+  if (b.estimateOnly) return NextResponse.json({ count, tier1, tier2, estimate });
+  if (!count) return NextResponse.json({ error: "selection is fully enriched — every lead already has owner + email + phone/LinkedIn" }, { status: 422 });
 
   const { data: job, error } = await db.from("enrichment_jobs").insert({
     lead_list_id: b.listId ?? null, lead_ids: leadIds, cost_estimate: estimate,
+    counts: { total: count, processed: 0, tier1, tier2 },
   }).select("id").single();
   if (error) return NextResponse.json({ error: `${error.message} — apply migration 0008` }, { status: 503 });
-  return NextResponse.json({ jobId: job.id, count, estimate, note: "queued — the runner picks it up (local loop now; GH workflow when secrets land)" });
+  return NextResponse.json({ jobId: job.id, count, tier1, tier2, estimate, note: "queued — runner picks it up within 15 min (or the next worker pass)" });
 }

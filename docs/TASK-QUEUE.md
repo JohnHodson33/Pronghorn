@@ -62,13 +62,21 @@ in MORNING-BRIEF.
   DEFERRED** — run real Hunter reps first, measure hit rate, then decide;
   vendor recs on file (Tracerfy ~$0.02/rec pay-per-hit first sample, REISift
   $0.10 @ ~81% match) in the 7/12 chat + PM memory.
-- 🔥 **FREE OWNER-NAME UNLOCKS (PM add 7/12, from John's fill-rate question):**
-  (Lane C) add **Secretary of State / state corp registry lookups** to the
-  cascade — registered agents/officers/members for LLCs give owner NAMES at
-  high accuracy for $0 (we already do TX license boards; extend the pattern:
-  AZ CC, CO SoS, WA SoS, FL Sunbiz have searchable/free endpoints). Combined
-  w/ website discovery this is the biggest lift from ◔BASIC → ◑IDENTIFIED,
-  and names are the key that unlocks Hunter + skip-tracing downstream.
+  → LANE C NOTE: cascade already fires Hunter for any lead missing email after
+    free tiers (tier2.js), early-exit honored. Quota cap in tier2 (5/run) is a
+    free-tier guard — LIFT it to a larger per-run budget once John's Starter is
+    active (see Lane C item below).
+- 🔨 LANE C — 🔥 **FREE OWNER-NAME UNLOCKS — SHAPE SHIPPED + RECON (7/12).**
+  `enrich/sos_lookup.js`: per-state resolver registry wired into the tier-2
+  cascade (resolved name → unlocks Hunter/LinkedIn); TX resolver LIVE via
+  Socrata TDLR (verified). RECON (don't re-walk): AZ eCorp = SPA/won't resolve
+  for scripted GET · FL Sunbiz = hard 403 to bots · OpenCorporates open API =
+  401 (now token-gated). The public SoS SPAs are NOT cleanly scriptable.
+  **DECISION FOR JOHN (bubbled):** other states unblock via one of — (a) extend
+  the free Socrata pattern to states w/ a licensee open-dataset carrying owner
+  names (proven, $0); (b) a cheap keyed API (OpenCorporates / skip-trace vendor,
+  ~cents/lookup); (c) headless-browser resolver per priority state. Plumbing is
+  live; each resolver activates the instant it's registered.
 - 🔥🔥🔥 **ENRICHMENT COMPLETENESS LEVELS replace binary "enriched" (John 7/12
   ~16:05 — "enriched next to a lead with no owner info feels like nothing
   happened"):** status stays lifecycle-only (new/enriching/…); ADD a computed
@@ -234,22 +242,41 @@ in MORNING-BRIEF.
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
-- 🔥🔥 **RUNNER MUST SELF-DRAIN + RE-ENRICH NO-OP BUG (John hit both 7/12
-  ~15:20):** John queued 80 leads via the UI button; the job sat unprocessed
-  (nothing runs run_jobs.js continuously) and when PM drained it manually the
-  runner NO-OPed ("No un-enriched leads") because all 80 were already
-  status='enriched' from tier 1. Fix: (a) run_jobs on a tight schedule (every
-  loop iteration + a GH workflow every 15min); (b) jobs on already-enriched
-  leads must CASCADE to tier 2 / fill-missing-fields, never no-op — this is
-  the one-click cascade contract; ship the cascade path FIRST. (c) build the
-  website-discovery pass (many skips = no website stored; find via Exa/Serper
-  then re-run tier 1).
-- 🔥 **LOCATION DATA POLLUTION (Lane A parsers + Lane C cleanup, John 7/12):**
-  tupelomarket + businessbroker adapters write description text into
-  listings.city (e.g. "HVAC BusinessesHVAC Businesses…Bellingham"). Fix both
-  parsers, then a cleanup pass: re-derive city/state for polluted rows (regex:
-  city ilike %business%/%serving%/%service% or length>40), null when
-  unrecoverable.
+- 🔨 LANE C — 🔥🔥 **RUNNER SELF-DRAIN + CASCADE NO-OP — FIXED + SHIPPED.**
+  (a) `.github/workflows/enrichment-jobs.yml` drains the queue every 15 min +
+  every worker loop pass. (b) `run_jobs.js` now CASCADES: tier-1 for new leads,
+  then `enrich/tier2.js` (Hunter email + Exa LinkedIn, early exit when owner
+  complete, quota-budgeted, no company-line phones) for enriched-but-incomplete
+  — never no-ops. Live test: 10/15 LinkedIn URLs found. (c) website-discovery
+  already exists in run_enrichment.js (Exa, --retry-skipped). `/api/enrich`
+  estimate is now cascade-aware (tier1+tier2, verified: 21+7 → $0.28); job
+  progress counts update live for the UI banner.
+- 🔨 LANE C — 🔥🔥🔥 **COMPLETENESS LEVELS — SHIPPED.** `web/lib/completeness.ts`
+  (FULL/CONTACTABLE/IDENTIFIED/BASIC/RAW, single source of truth) + `/api/leads`
+  computes level server-side, sorts most-complete-first, returns per-level
+  counts. Live: 451 leads = 14 full / 62 contactable / 128 identified / 239
+  basic / 8 raw. Lane B: render dots + filter + counts header off this.
+- 🔨 LANE C — 🔥🔥 **FEEDBACK PIPELINE — SHIPPED (Tom joins today).**
+  `0010_feedback.sql` + `/api/feedback` GET/POST/PATCH (author John|Tom, type,
+  page, lifecycle submitted→triaged→building→shipped→verified, per-status
+  counts). Degrades w/ apply-0010 note (verified). Lane B builds /improvements
+  on this. STANDING RULE now active for Lane C: each loop polls
+  ?status=submitted, triages Lane-C items, flips 'triaged'.
+- ✅ Contact-carry (Sage Tree Care) + Hunter $49 / Vercel Pro $20 planned subs
+  — done in promote_leads.js + migrations 0009/0010.
+- 🔨 LANE C — 🔥 **LOCATION POLLUTION — CLEANUP DONE (Lane C half).**
+  `scraper/cleanup_locations.js` re-derived city/state for all 49 polluted rows:
+  5 recovered a clean city (Portland/Pittsburgh/Cleveland + 2 counties w/ state
+  prefix), 44 nulled as unrecoverable (case-glue/dedupe validator rejects junk
+  like "LouisvilleLouisville"). **0 polluted rows remain.** ⬜ LANE A STILL OWES:
+  fix the tupelomarket + businessbroker parsers so description text stops
+  landing in listings.city at source (re-run cleanup_locations.js after).
+- ✅ LANE C — **owner_phone attribution audit (John 7/12 ROUND 2 item c) — DONE.**
+  Found 11/25 owner_phones were the company MAIN LINE (inflating "contactable").
+  Demoted all 11 to enrichment.business_phone (owner-contactable dropped to the
+  honest 75). Prevention: extraction prompt now separates owner cell vs
+  business_phone, and the write path demotes any owner_phone that equals the
+  lead's company phone. Won't recur.
 - 🔥🔥 **FEEDBACK PIPELINE (John 7/12 ~13:15 — Tom joins TODAY; read
   docs/IMPROVEMENTS-LOOP.md):** `feedback` table (author, type, page, body,
   status, task_ref) + POST /api/feedback + PATCH status. THEN the standing
@@ -435,12 +462,14 @@ in MORNING-BRIEF.
   step (quota-capped by design). Add it as a second step after enrichment, or
   drop the unused secret from that workflow.
 - ⬜ SELF-ITERATE: what contact data are we still missing per company? Close the gap.
-  COVERAGE CHECKPOINT (2026-07-12 ~00:40, post relaxed-bar promotion + full tick):
-  **451 leads · 231 enriched · 204 owner names · 76 owner emails · 60
-  outreach-ready · 310 PROPRIETARY COMPANIES in the CRM (origin=lead) · 18
-  off-target flagged.** Remaining levers: owner phones/LinkedIn (VA shortlist,
-  va_export.js ready), Hunter quota pacing, and the ~180 no-web-presence
-  license rows (VA tier by design).
+  COVERAGE CHECKPOINT (2026-07-12 ~20:05, two tier-2 batches w/ Hunter Starter):
+  **completeness now FULL 50 · CONTACTABLE 58** (FULL was 14 → 33 → 50 across two
+  40-lead tier-2 passes: +16 verified owner emails, +54 LinkedIn URLs total).
+  Hunter spend ~$3 (30 searches, trivial vs 500/mo Starter). ~20 incomplete-named
+  leads still un-tier-2'd (next passes). owner_phone attribution fixed. Note: a
+  few Hunter skips are "owner_name" that's actually a company/LLC name (not a
+  person) — a data-quality tail, low value to chase. ~180 no-web license rows
+  are the VA tier by design.
 
 ## PM / Integrator  (branch `main`; owns Sidebar.tsx, shared docs, deploys)
 - Merge lane branches → main; build + deploy; wire new routes into Sidebar.
@@ -451,6 +480,14 @@ in MORNING-BRIEF.
 ---
 
 ## Decisions bubbled to John (non-blocking)
+- 🔔 **Owner-name lookups beyond TX need a small call (Lane C, 7/12):** free
+  public SoS registries (AZ/FL/etc.) are bot-hostile SPAs and OpenCorporates
+  went token-gated — none scriptable free at scale. Pick the path: (a) I extend
+  the free Socrata license-dataset pattern state-by-state (proven, $0, but only
+  states that publish licensee data w/ owner names); (b) buy a cheap keyed
+  lookup (OpenCorporates or a skip-trace vendor, ~cents/lead) and I wire it into
+  the resolver registry that's already live; (c) headless-browser resolvers per
+  priority state (bigger build). TX already resolves names for $0 today.
 - 🔔 **GitHub Actions are FAILING on schedule (7/11 ~07:20+ AM):** Nightly Scrape
   + Delisting Pass red — the repo secrets aren't set yet. Add in GitHub →
   Settings → Secrets and variables → Actions: `SUPABASE_URL`,
