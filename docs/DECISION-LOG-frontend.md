@@ -9,13 +9,14 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   (UI + API, see 7/13 entry below) — browser-verified end-to-end, test
   artifacts removed from storage. Prior state (through 9cd3f33 dead-end
   sweep) merged to main and live.
-- **Next (PM's order)**: (1) meeting-NOTES input UI ("+ Add note", paste
-  Notion link/text → suggested tag chips → activity); (2) list-build
-  status_detail rendering on Proprietary Deal Flow rows (string served by
-  /api/lead-lists TODAY, degrade note pre-0012); (3) size-tier chips
-  (blocked on tier-math approval, card 37450f11); (4) queued sweep items in
-  TASK-QUEUE (sources health table, broker→filtered-contacts deep link,
-  click-to-filter industry chips). ≥1 [self-iterate] ship per night.
+- **Next (PM's order)**: (1) list-build status_detail rendering on
+  Proprietary Deal Flow rows (string served by /api/lead-lists TODAY,
+  degrade note pre-0012); (2) size-tier chips (blocked on tier-math
+  approval, card 37450f11); (3) queued sweep items in TASK-QUEUE (sources
+  health table, broker→filtered-contacts deep link, click-to-filter
+  industry chips). ≥1 [self-iterate] ship per night. Meeting-notes input
+  UI: SHIPPED (see 7/13 entry) — 'needs tagging' review list (f) waits on
+  Lane C's sweep defining where leftovers land.
 - **Session notes**: dev server = launch config `pronghorn-web-laneB` port
   3311 (killed the dead predecessor's orphaned process holding the port —
   two dev servers can't share this worktree's .next). Feedback polled 17:40:
@@ -44,6 +45,34 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
     pointer previously named a nonexistent session id.
 - All shipped work is browser-verified except paths requiring live paid runs
   or prod-data mutation; those verify on John's first real use.
+
+## 2026-07-13 — "+ Add note" meeting-notes input (John 7/13 ~10:20, item e)
+
+- **Global header button** (layout.tsx, next to ActiveJobPill — available on
+  every page incl. mobile): paste a Notion link OR note text → **new API
+  `POST /api/notes/suggest`** matches companies/contacts/deals by name
+  (deterministic + transparent: full-name = high, all-name-words = medium,
+  with a reason per chip; generic names contained in a longer match are
+  suppressed — "Tree Care" no longer rides along with "Sage Tree Care").
+  Chips editable: ✕ remove, search-add via existing /api/search. Save writes
+  one kind='meeting' activity per tagged record (verified live: Dan Mello
+  exemplar note landed on contact 7b39286a + Sage Tree Care company; test
+  rows removed).
+- `/api/activities` extended to accept contactId/dealId targets (schema
+  already had the columns; company-latest-deal auto-attach unchanged).
+- **Notion fetch**: works when NOTION_TOKEN is in the WEB env; without it
+  the panel says exactly that and asks for pasted text (link still saves as
+  doc_url). **PM: add NOTION_TOKEN to web/.env.local + Vercel env** when
+  convenient — Lane C already holds the token for the sweep.
+- **Bug found + fixed in the same unit:** the header bar's `backdrop-blur`
+  creates a CSS containing block that traps `fixed` overlays inside the
+  50px bar — the panel now portals to document.body. Any future modal
+  launched from the header needs the same portal.
+- Claude-confidence matching stays with Lane C's sweep (b); this UI is the
+  interactive two-click path. Item (f) 'needs tagging' review list waits on
+  the sweep's leftover shape.
+- Mobile: bottom-sheet at <640px (verified 375px), centered 512px dialog on
+  desktop (verified 1280px).
 
 ## 2026-07-13 — Improvements attachments (John 7/13 ~10:40, Tom's PPP analyses)
 

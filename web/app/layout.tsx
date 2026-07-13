@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ActiveJobPill from "@/components/ActiveJobPill";
+import AddNote from "@/components/AddNote";
 import GlobalSearch from "@/components/GlobalSearch";
 import MobileNav from "@/components/MobileNav";
 import Sidebar from "@/components/Sidebar";
@@ -53,6 +54,7 @@ export default function RootLayout({
               <div className="flex flex-1 justify-center">
                 <GlobalSearch />
               </div>
+              <AddNote />
               <ActiveJobPill />
             </div>
             <main className="min-h-0 min-w-0 flex-1 overflow-y-auto">{children}</main>
