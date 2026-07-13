@@ -21,13 +21,14 @@
    every-15-min workflows use roughly 3–6k — so going private likely means
    a paid Actions tier or slowing the runner cadence. Your call; I can
    model the exact cost if you want.
-1. **GitHub secrets — 4 to add (~2 min):** GitHub → Settings → Secrets and
+1. **GitHub secrets — 5 to add (~2 min):** GitHub → Settings → Secrets and
    variables → Actions, values from `C:\Users\johnd\Pronghorn\scraper\.env`:
-   `GRAPH_CLIENT_ID`, `GRAPH_TENANT_ID`, `GRAPH_REFRESH_TOKEN` (unlocks the
-   every-3h Outlook sync: pursuit detection + drafts push, never sends) and
-   `GOOGLE_PLACES_API_KEY` (the 15-min leadgen runner's only missing key —
-   your original six from yesterday are working; the 06:00 scrape proved it).
-   Until then these jobs only run when a worker session drives them locally.
+   `GRAPH_CLIENT_ID`, `GRAPH_TENANT_ID`, `GRAPH_REFRESH_TOKEN` (every-3h
+   Outlook sync: pursuit detection + drafts push, never sends),
+   `GOOGLE_PLACES_API_KEY` (the 15-min leadgen runner's only missing key),
+   and `NOTION_TOKEN` (the every-3h meeting-notes sweep). Your original six
+   from yesterday are working — the 06:00 scrape proved it. Until then these
+   jobs only run when a worker session drives them locally.
 2. **Vercel env keys (~3 min, fixes the "key missing" badges):**
    Vercel dashboard → pronghorn → Settings → Environment Variables → add
    `ANTHROPIC_API_KEY`, `EXA_API_KEY`, `HUNTER_API_KEY`, `SERPER_API_KEY`,
