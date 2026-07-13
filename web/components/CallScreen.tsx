@@ -5,6 +5,7 @@
 // Script drafts persist to localStorage; call outcomes are a later build
 // (needs a call-log table / reply.io task sync — flagged in the lane log).
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { CallLead } from "@/lib/call-list";
 
 const DEFAULT_SCRIPT = `Hi, is this {{first_name}}? — This is {{sender_name}}.
@@ -44,10 +45,56 @@ function fill(script: string, l: CallLead) {
 }
 
 export default function CallScreen({ leads }: { leads: CallLead[] }) {
+  const router = useRouter();
   const [selectedId, setSelectedId] = useState<string | null>(leads[0]?.id ?? null);
   const [editing, setEditing] = useState(false);
   const [script, setScript] = useState(DEFAULT_SCRIPT);
   const [loaded, setLoaded] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [callbackFor, setCallbackFor] = useState<string | null>(null);
+  const [callbackDate, setCallbackDate] = useState("");
+  const [toast, setToast] = useState<string | null>(null);
+
+  // Disposition → lead lifecycle + (when promoted) the company outreach track.
+  // Logging only — dialing stays John's finger on the tel: link.
+  async function disposition(
+    lead: CallLead,
+    opts: { leadStatus: string; trackState: string; followupDays?: number; followupDate?: string; label: string }
+  ) {
+    setBusy(true);
+    const due =
+      opts.followupDate ??
+      (opts.followupDays ? new Date(Date.now() + opts.followupDays * 86400e3).toISOString().slice(0, 10) : null);
+    await fetch(`/api/leads/${lead.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: opts.leadStatus }),
+    });
+    if (lead.company_id) {
+      await fetch("/api/outreach-tracks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyId: lead.company_id,
+          state: opts.trackState,
+          channelLast: "call",
+          lastTouchAt: new Date().toISOString(),
+          nextFollowupDue: due,
+          notes: `Call disposition: ${opts.label}`,
+        }),
+      });
+    }
+    setBusy(false);
+    setCallbackFor(null);
+    setCallbackDate("");
+    setToast(`${lead.name}: ${opts.label}${due ? ` — follow-up ${due}` : ""}`);
+    setTimeout(() => setToast(null), 3000);
+    // smile-and-dial: advance to the next lead in the list
+    const idx = leads.findIndex((l) => l.id === lead.id);
+    const next = leads.slice(idx + 1).find((l) => l.status !== "dead");
+    setSelectedId(next?.id ?? null);
+    router.refresh();
+  }
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -62,7 +109,12 @@ export default function CallScreen({ leads }: { leads: CallLead[] }) {
   const overview = sel && typeof sel.enrichment?.overview === "string" ? (sel.enrichment.overview as string) : null;
 
   return (
-    <div className="grid gap-6 md:grid-cols-[280px_1fr]">
+    <div className="relative grid gap-6 md:grid-cols-[280px_1fr]">
+      {toast && (
+        <div className="absolute right-0 top-0 z-30 rounded-lg bg-zinc-900 px-3 py-2 text-xs font-medium text-white shadow-lg">
+          ✓ {toast}
+        </div>
+      )}
       <aside className="max-h-[70vh] space-y-2 overflow-y-auto pr-1">
         {leads.map((l) => (
           <button
@@ -124,6 +176,64 @@ export default function CallScreen({ leads }: { leads: CallLead[] }) {
               <span className="rounded bg-zinc-100 px-2 py-0.5 font-medium capitalize text-zinc-600">{sel.status.replace("_", " ")}</span>
             </div>
             {overview && <p className="mt-3 border-t border-zinc-100 pt-3 text-sm text-zinc-700">{overview}</p>}
+
+            {/* Disposition bar — one tap logs the outcome and advances the queue */}
+            <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-zinc-100 pt-3">
+              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Outcome</span>
+              <button
+                onClick={() => disposition(sel, { leadStatus: "responded", trackState: "replied", label: "connected — interested" })}
+                disabled={busy}
+                className="rounded-md bg-emerald-700 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
+              >
+                ✓ Interested
+              </button>
+              <button
+                onClick={() => disposition(sel, { leadStatus: "contacted", trackState: "contacted", followupDays: 3, label: "voicemail" })}
+                disabled={busy}
+                className="rounded-md bg-amber-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-amber-700 disabled:opacity-50"
+              >
+                📼 Voicemail (+3d)
+              </button>
+              <button
+                onClick={() => setCallbackFor(callbackFor === sel.id ? null : sel.id)}
+                disabled={busy}
+                className="rounded-md border border-zinc-300 px-2.5 py-1 text-xs font-semibold text-zinc-600 hover:bg-zinc-50 disabled:opacity-50"
+              >
+                📅 Callback…
+              </button>
+              <button
+                onClick={() => disposition(sel, { leadStatus: "dead", trackState: "dead", label: "not interested" })}
+                disabled={busy}
+                className="rounded-md border border-red-200 px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+              >
+                ✕ Not interested
+              </button>
+              {callbackFor === sel.id && (
+                <span className="flex items-center gap-1.5">
+                  <input
+                    type="date"
+                    value={callbackDate}
+                    onChange={(e) => setCallbackDate(e.target.value)}
+                    className="rounded-md border border-zinc-300 px-2 py-1 text-xs"
+                  />
+                  <button
+                    onClick={() =>
+                      callbackDate &&
+                      disposition(sel, { leadStatus: "contacted", trackState: "nurture", followupDate: callbackDate, label: "callback scheduled" })
+                    }
+                    disabled={busy || !callbackDate}
+                    className="rounded-md bg-zinc-800 px-2.5 py-1 text-xs font-semibold text-white disabled:opacity-50"
+                  >
+                    Set
+                  </button>
+                </span>
+              )}
+              {!sel.company_id && (
+                <span className="text-[10px] text-zinc-400" title="Outcome logs to the lead; the outreach track starts when it's promoted to a company">
+                  lead-only (not in CRM yet)
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="rounded-xl border border-zinc-200 bg-white p-5">

@@ -4,6 +4,7 @@ import { hasDb, serverDb } from "./db";
 
 export type CallLead = {
   id: string;
+  company_id: string | null;
   name: string;
   website: string | null;
   phone: string | null;
@@ -25,7 +26,7 @@ export async function fetchCallList(): Promise<CallLead[] | null> {
   const { data, error } = await serverDb()
     .from("leads")
     .select(
-      "id, name, website, phone, city, state, rating, review_count, bbb_grade, enrichment, " +
+      "id, name, website, phone, city, state, rating, review_count, bbb_grade, enrichment, company_id, " +
         "owner_name, owner_phone, owner_email, status, lead_lists(query_industry, query_geography)"
     )
     .neq("status", "dead")
