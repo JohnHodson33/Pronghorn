@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 import { hasDb, serverDb } from "@/lib/db";
 import { companyCompleteness, LEVELS, type Completeness } from "@/lib/completeness";
 import { sizeEstimate, TIERS } from "@/lib/size";
+import { loadSizeModel } from "@/lib/size-model";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +40,7 @@ export async function GET(req: Request) {
     .not("company_id", "is", null)
     .limit(3000);
   const leadByCompany = new Map((leadRows ?? []).map((l) => [l.company_id as string, l]));
+  const model = await loadSizeModel();
 
   const levelFilter = url.searchParams.get("level") as Completeness | null;
   let companies = (data ?? []).map((c) => {
@@ -49,6 +51,7 @@ export async function GET(req: Request) {
           (lead.industry_verified as string | null) ?? (c.industry as string | null),
           (lead.enrichment as { size_signals?: Record<string, unknown> } | null)?.size_signals,
           lead.review_count as number | null,
+          model,
         )
       : null;
     return {
@@ -56,6 +59,9 @@ export async function GET(req: Request) {
       ownerContactCount: (c.contacts ?? []).filter((x) => (x.role ?? "").toLowerCase() === "owner").length,
       completeness: companyCompleteness(c),
       size, size_tier: size?.tier ?? "unsized",
+      // always-present columns (John amendment 3): actuals win over estimates
+      est_revenue: size?.revenue ?? null,
+      est_ebitda: size?.ebitda ?? null,
     };
   });
 
@@ -73,8 +79,8 @@ export async function GET(req: Request) {
   if (tierFilter && TIERS.includes(tierFilter as (typeof TIERS)[number])) {
     companies = companies.filter((c) => c.size_tier === tierFilter);
   }
-  // most-complete first, tier A floats above within a level (outreach A-first)
-  const tierRank = (t: string) => ({ A: 0, B: 1, C: 3, unsized: 2 })[t] ?? 2;
+  // most-complete first, platform floats above within a level (outreach order)
+  const tierRank = (t: string) => ({ platform: 0, tuckin: 1, toosmall: 3, unsized: 2 })[t] ?? 2;
   companies.sort((a, b) =>
     LEVELS.indexOf(a.completeness) - LEVELS.indexOf(b.completeness) ||
     tierRank(a.size_tier) - tierRank(b.size_tier));

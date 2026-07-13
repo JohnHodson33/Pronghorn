@@ -1,19 +1,27 @@
-// Size-proxy tier math — single source of truth (approved card 37450f11).
+// Size-proxy tier math — single source of truth (approved card 37450f11 +
+// John's amendment 3: tiers are PLATFORM / TUCK-IN / TOO SMALL, and BOTH the
+// per-industry benchmarks AND the tier threshold boundaries are editable
+// assumptions with the math cascading).
+//
 // Proprietary leads carry no financials, so SIZE is estimated from free
 // signals already captured at ingest/enrichment (size_signals jsonb, review
 // counts). Everything is a RANGE with a confidence grade — never fake
-// precision; no signal = no tier (null), never guessed.
+// precision; no signal = no tier (unsized), never guessed.
 //
 //   employee estimate (best signal wins) × per-industry revenue-per-employee
-//   → revenue range → EBITDA range via industry margin band → tier:
-//   A = plausible anchor ($1M+ EBITDA possible) · B = tuck-in · C = too small
+//   → revenue range → EBITDA range via industry margin band → tier vs the
+//   editable thresholds: PLATFORM (clears the platform bar in revenue OR
+//   EBITDA terms) · TOO SMALL (under the floor on the optimistic end) ·
+//   TUCK-IN (everything between).
 //
-// Benchmarks live in size-benchmarks.json (seed) and become DB-editable with
-// migration 0014; actual-vs-estimate CIM logs tune them over time.
+// Benchmarks + thresholds live in size-benchmarks.json as seeds and become
+// DB-editable with migration 0014 (size_benchmarks + size_thresholds; the
+// /api/size-model endpoint is the Size Estimation tab's backend). Callers
+// pass DB rows via `model` when available; omission = seeded defaults.
 import benchmarks from "./size-benchmarks.json";
 
 export type SizeConfidence = "high" | "medium" | "low";
-export type SizeTier = "A" | "B" | "C";
+export type SizeTier = "platform" | "tuckin" | "toosmall";
 
 export interface SizeEstimate {
   tier: SizeTier;
@@ -24,6 +32,22 @@ export interface SizeEstimate {
   basis: string;               // which signal produced the employee estimate
 }
 
+export interface Bench { revenue_per_employee: number; ebitda_margin: [number, number] }
+export interface Thresholds {
+  platform_min_ebitda: number;
+  platform_min_revenue: number | null;  // null = EBITDA-only test
+  toosmall_max_ebitda: number;
+  toosmall_max_revenue: number | null;
+}
+export interface SizeModel { benchmarks: Record<string, Bench>; thresholds: Thresholds }
+
+export const DEFAULT_THRESHOLDS: Thresholds = {
+  platform_min_ebitda: 1_000_000,   // the $1M+ EBITDA anchor thesis
+  platform_min_revenue: null,
+  toosmall_max_ebitda: 200_000,     // below tuck-in floor even optimistically
+  toosmall_max_revenue: null,
+};
+
 interface SizeSignals {
   employees_stated?: number | null;
   crew_count?: number | null;
@@ -33,12 +57,7 @@ interface SizeSignals {
   ppp?: { jobs?: number | null; loan?: number | null; date?: string | null } | null;
 }
 
-interface Bench { revenue_per_employee: number; ebitda_margin: [number, number] }
-
-const bench = (industry?: string | null): Bench => {
-  const table = benchmarks as unknown as Record<string, Bench>;
-  return table[String(industry ?? "")] ?? table.default;
-};
+const seedBench = benchmarks as unknown as Record<string, Bench>;
 
 /** Employee-count range from the best available signal. Order matters:
  *  stated > PPP jobs (payroll-verified) > LinkedIn band > crew/fleet heuristics. */
@@ -48,7 +67,7 @@ export function employeeEstimate(sig: SizeSignals | null | undefined, reviewCoun
   const s = { ...(sig ?? {}) };
   // plausibility clamps: numbers beyond small-business scale are marketplace/
   // franchise stats scraped off aggregator sites, not the target's own size —
-  // drop the signal rather than mint a fake tier-A
+  // drop the signal rather than mint a fake platform tier
   if ((s.employees_stated ?? 0) > 500) s.employees_stated = null;
   if ((s.crew_count ?? 0) > 50) s.crew_count = null;
   if ((s.fleet_size ?? 0) > 200) s.fleet_size = null;
@@ -70,15 +89,19 @@ export function employeeEstimate(sig: SizeSignals | null | undefined, reviewCoun
   return null;
 }
 
-/** Full size estimate for a lead/company. Null when no usable signal exists. */
+/** Full size estimate for a lead/company. Null when no usable signal exists.
+ *  `model` carries DB-edited benchmarks/thresholds; omitted = seeded defaults. */
 export function sizeEstimate(
   industry: string | null | undefined,
   sig: SizeSignals | null | undefined,
   reviewCount?: number | null,
+  model?: Partial<SizeModel>,
 ): SizeEstimate | null {
   const emp = employeeEstimate(sig, reviewCount);
   if (!emp) return null;
-  const b = bench(industry);
+  const table = model?.benchmarks ?? seedBench;
+  const b = table[String(industry ?? "")] ?? table.default ?? seedBench.default;
+  const t = model?.thresholds ?? DEFAULT_THRESHOLDS;
   const revenue: [number, number] = [
     Math.round(emp.range[0] * b.revenue_per_employee),
     Math.round(emp.range[1] * b.revenue_per_employee),
@@ -87,9 +110,14 @@ export function sizeEstimate(
     Math.round(revenue[0] * b.ebitda_margin[0]),
     Math.round(revenue[1] * b.ebitda_margin[1]),
   ];
-  // Tier on the OPTIMISTIC end (ebitda hi): A = the $1M+ anchor thesis is
-  // plausible; C = even optimistically under $200k (below tuck-in floor).
-  const tier: SizeTier = ebitda[1] >= 1_000_000 ? "A" : ebitda[1] < 200_000 ? "C" : "B";
+  // PLATFORM: optimistic end clears the bar in EBITDA terms OR (when set)
+  // revenue terms. TOO SMALL: optimistic end under the floor on every set
+  // metric. Everything between = TUCK-IN.
+  const isPlatform = ebitda[1] >= t.platform_min_ebitda ||
+    (t.platform_min_revenue != null && revenue[1] >= t.platform_min_revenue);
+  const isTooSmall = !isPlatform && ebitda[1] < t.toosmall_max_ebitda &&
+    (t.toosmall_max_revenue == null || revenue[1] < t.toosmall_max_revenue);
+  const tier: SizeTier = isPlatform ? "platform" : isTooSmall ? "toosmall" : "tuckin";
   return {
     tier,
     employees: [Math.round(emp.range[0]), Math.round(emp.range[1])],
@@ -99,4 +127,7 @@ export function sizeEstimate(
   };
 }
 
-export const TIERS: (SizeTier | "unsized")[] = ["A", "B", "C", "unsized"];
+export const TIERS: (SizeTier | "unsized")[] = ["platform", "tuckin", "toosmall", "unsized"];
+export const TIER_LABELS: Record<string, string> = {
+  platform: "Platform", tuckin: "Tuck-in", toosmall: "Too small", unsized: "Unsized",
+};
