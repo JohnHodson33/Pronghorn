@@ -107,6 +107,17 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 PM 7/13 ~15:00 — **LANE B: THE SIZE CONTRACT IS UP, START THE BUILD.**
+  Lane C shipped it (merged + deployed): `/api/size-model` GET/PATCH =
+  assumptions + Platform/Too-small thresholds (all editable, cascade on
+  read); `/api/leads` + `/api/companies` rows carry always-present
+  `size {tier platform|tuckin|toosmall, employees[], revenue[], ebitda[],
+  confidence, basis}` + `est_revenue`/`est_ebitda` (null ⇒ blank) +
+  `?tier=` filter + TIER_LABELS export for display names. Verified live on
+  prod. Build now: Size Estimation tab (under Proprietary Sourcing) +
+  ~est. Revenue / ~est. EBITDA columns on EVERY company/deal surface +
+  Platform/Tuck-in/Too-small chips + tier filter. Amendment 3 (77a6cbf)
+  is the spec.
 - 📣 PM 7/13 ~09:30 — ✅ LANE B SWEEP (PM verified, all merged + live on
   prod): completeness UI c37126a · location truncate 4cc9684 · contacts
   industry 64a6cd6 · nav fix + CRM levels 8836564 · improvements dialogue
