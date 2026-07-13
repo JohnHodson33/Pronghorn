@@ -21,7 +21,9 @@ doc + the repo docs restore full state with zero loss. Boot prompt for John:_
   `NODE_PATH="/c/Users/johnd/Pronghorn-integrations/scraper/node_modules"`.
 - Worker sessions (send_message needs John's confirm click):
   Brokers local_56a6eb86-…-c71b2e6e615b · Frontend local_bc4c78c9-…-b10bd47bc429
-  · CRM/Data local_a5947c46-…-cea8f4be5a6a. Durable channel = TASK-QUEUE.md.
+  · CRM/Data local_32385d95-1c7f-4341-9861-1989d0a4bbc8 (replacement 7/13;
+  predecessor local_a5947c46-… archived). PM session (this loop) =
+  local_b552862b-ea9f-4559-8adc-400f0bbf8c58. Durable channel = TASK-QUEUE.md.
 
 ## ⚠️ COMMUNICATION RULES (hard-won — read memory john-comms-file-channel)
 1. **Answer LAST in every turn**: text before a tool call (esp. ScheduleWakeup)
