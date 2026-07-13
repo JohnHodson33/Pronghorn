@@ -350,23 +350,16 @@ set) into your new chips UI as a small follow-up.
   (we'll outgrow the 25-free cap); /api/costs includes planned subs in
   subsMonthly with a planned flag so the badge shows the honest monthly
   floor and one over-cap pull never reads as a cost spike.
-- 🔨 LANE C — 🔥🔥 **OUTLOOK DRAFTS + LIVE INGESTION — BUILT (John authorized
-  drafts IN CHAT 7/12; auto-send remains forbidden — permanent 403).**
-  (a) `POST /api/outbox/[id] {action:'draft'}` → Graph creates the inquiry in
-  John's Outlook DRAFTS folder (Mail.ReadWrite only, scope-checked; status →
-  drafted_to_outlook; listing_events audit). John reviews + sends in Outlook.
-  (b) `scraper/graph_mail.js` + `ingest_pursuit.js --live [--hours N]` —
-  scheduled pursuit detection via Graph Mail.Read. Both degrade with exact
-  instructions until John's ONE consent (below) + GRAPH_* in web env.
-- ✅ **OUTLOOK RE-AUTH: READY (PM staged the scopes 7/12 ~01:25).**
-  `scraper/delivery/outlook.js` SCOPES = Mail.Send + Mail.Read +
-  Mail.ReadWrite + User.Read + offline_access. MORNING STEP FOR JOHN
-  (~2 min): pull main, then run `node auth_email.js` in
-  `C:\Users\johnd\Pronghorn\scraper` → open the printed URL, enter the code,
-  sign in, approve once. Token saves itself; unlocks scheduled pursuit
-  detection AND Outlook-draft creation in one consent. Lane C: build the
-  draft route + scheduled ingestion against these scopes now — they activate
-  the moment John consents.
+- ✅ LANE C — 🔥🔥 **OUTLOOK DRAFTS + LIVE INGESTION — LIVE (John consented
+  7/12 ~22:25; verified end-to-end).** Mail.ReadWrite + Mail.Read both active.
+  (a) `POST /api/outbox/[id] {action:'draft'}` + `scraper/push_drafts_to_outlook.js`
+  create drafts in John's Outlook DRAFTS folder — **ran: all 25 auto-drafted
+  owner-outreach emails pushed to his Outlook** (review + send there; auto-send
+  still a permanent 403). (b) `ingest_pursuit.js --live` reads Graph Mail.Read —
+  **ran: first live scan advanced/reviewed real mail** (flagged an unmatched
+  "Data Room Invite" from Oliver for manual review — see Decisions). (c)
+  `.github/workflows/outlook-sync.yml` schedules both every 3h (needs GRAPH_*
+  repo secrets). NOTHING sends — John's send is the only human touch left.
 - 🔨 LANE C — 🔥🔥 **COST METERING — SHIPPED.** Migration `0009_cost_tracking.sql`
   (usage_events + subscriptions) · `core/usage.js` recorder (no-ops safely
   pre-0009) · every paid call site instrumented (enrichment Claude+Exa, Hunter,
@@ -531,6 +524,18 @@ set) into your new chips UI as a small follow-up.
 ---
 
 ## Decisions bubbled to John (non-blocking)
+- 🔔 **Landmark/Oliver "Data Room Invite" detected but UNMATCHED (Lane C live
+  pursuit scan, 7/12 eve):** the live detector saw a data-room/CIM invite from
+  oliver@theadvisoryib.com but couldn't tie it to a scraped broker listing —
+  because Landmark (and the new FL Access Control deal Oliver sent) are HubSpot/
+  CRM DEALS, not scraped listings, so there's no listing_reviews row to advance.
+  ACTION: this signals the Landmark data room is OPEN (deal progressing). The
+  pursuit auto-detect only covers the broker-scrape prong by design; CRM-deal
+  mail advancement (Landmark et al.) would be a small follow-on — flag if you
+  want it. For now: your Landmark data room access is live, go pull the CIM.
+- 🔔 **25 owner-outreach drafts are in your Outlook Drafts** (auto-drafted on
+  CONTACTABLE, pushed on your consent). Review + send the ones you like; nothing
+  was sent. New CONTACTABLE owners get drafts nightly via the workflow.
 - 🔔 **Owner-name lookups beyond TX need a small call (Lane C, 7/12):** free
   public SoS registries (AZ/FL/etc.) are bot-hostile SPAs and OpenCorporates
   went token-gated — none scriptable free at scale. Pick the path: (a) I extend
