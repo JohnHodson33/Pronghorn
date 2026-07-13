@@ -19,6 +19,15 @@ don't have, SENDING outreach, destructive actions). Bias hard to shipping.
 
 Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 
+**⚙️ SELF-ITERATE QUOTA (John 7/12 eve — "it feels like improvements only
+happen when I prompt them"):** every lane ships **≥1 UNPROMPTED improvement
+per night** — something you noticed by using the live site, not something
+John asked for — and tags its commit `[self-iterate]`. ALSO: migration 0010
+is applied → **poll /api/feedback for status='submitted' EVERY loop
+iteration**; Tom/John submissions on /improvements are top-of-lane priority.
+PM lists each lane's self-iterate ship in MORNING-BRIEF so John sees
+proactivity, not just responsiveness.
+
 **⚙️ HANDOFF READINESS (PM rule, 7/12):** every worker keeps a short
 "HANDOFF" section current at the TOP of its DECISION-LOG-<lane>.md (current
 task, next 2, gotchas). Sessions die at context limits — a replacement session
