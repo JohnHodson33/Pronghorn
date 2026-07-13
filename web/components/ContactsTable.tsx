@@ -2,7 +2,11 @@
 
 // Contacts directory as the shared list pattern: search + role filter chips +
 // CSV export; rows link to the contact's company profile.
-import { useMemo, useState } from "react";
+// Filters sync to URL params (?q= ?role= ?industry= ?email=1 ?phone=1
+// ?broker=<id>) so filtered views are shareable and other pages can deep-link
+// (e.g. Broker Directory → this broker's contacts). Read once on mount —
+// not in the initializer — so SSR markup matches first client render.
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 
@@ -44,6 +48,29 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
   const [industry, setIndustry] = useState<string | null>(null);
   const [withEmail, setWithEmail] = useState(false);
   const [withPhone, setWithPhone] = useState(false);
+  const [brokerId, setBrokerId] = useState<string | null>(null);
+
+  // URL → state on mount; state → URL on change (replaceState: no history spam)
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    if (p.get("q")) setQ(p.get("q")!);
+    if (p.get("role")) setRole(p.get("role"));
+    if (p.get("industry")) setIndustry(p.get("industry"));
+    if (p.get("email") === "1") setWithEmail(true);
+    if (p.get("phone") === "1") setWithPhone(true);
+    if (p.get("broker")) setBrokerId(p.get("broker"));
+  }, []);
+  useEffect(() => {
+    const p = new URLSearchParams();
+    if (q) p.set("q", q);
+    if (role) p.set("role", role);
+    if (industry) p.set("industry", industry);
+    if (withEmail) p.set("email", "1");
+    if (withPhone) p.set("phone", "1");
+    if (brokerId) p.set("broker", brokerId);
+    const qs = p.toString();
+    window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
+  }, [q, role, industry, withEmail, withPhone, brokerId]);
 
   const industryCounts = useMemo(() => {
     const m: Record<string, number> = {};
@@ -60,9 +87,10 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
         if (industry && c.companyIndustry !== industry) return false;
         if (withEmail && !c.email) return false;
         if (withPhone && !c.phone) return false;
+        if (brokerId && c.broker_id !== brokerId) return false;
         return true;
       }),
-    [contacts, q, role, industry, withEmail, withPhone]
+    [contacts, q, role, industry, withEmail, withPhone, brokerId]
   );
 
   function exportCsv() {
@@ -100,6 +128,15 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
       </div>
 
       <div className="flex flex-wrap gap-2">
+        {brokerId && (
+          <button
+            onClick={() => setBrokerId(null)}
+            className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700 ring-2 ring-blue-400"
+            title="Showing only contacts linked to one Broker Directory record — click to clear"
+          >
+            linked to broker record ✕
+          </button>
+        )}
         <button
           onClick={() => setRole(null)}
           className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${

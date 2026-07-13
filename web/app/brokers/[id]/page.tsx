@@ -46,8 +46,9 @@ export default async function BrokerPage({ params }: { params: Promise<{ id: str
             </p>
           </div>
           {contact ? (
-            <Link href="/contacts" className="shrink-0 rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800 hover:bg-emerald-200">
-              in Contacts ✓
+            <Link href={`/contacts?broker=${id}`} className="shrink-0 rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800 hover:bg-emerald-200"
+              title="Open this broker's contact record, filtered">
+              in Contacts ✓ →
             </Link>
           ) : (
             <span className="shrink-0 rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-500">
