@@ -218,8 +218,16 @@ async function main() {
       // (info@/office@/sales@…) is a BUSINESS email — it must not count as an
       // owner channel (John: reach OWNERS). Store it separately.
       const GENERIC_MBOX = /^(info|office|contact|sales|service|services|support|admin|hello|customerservice|servicetoday|team|help|inquiries|dispatch)@/i;
-      const personalEmail = out.owner_email && !GENERIC_MBOX.test(out.owner_email) ? out.owner_email : null;
-      const bizEmail = out.business_email || (out.owner_email && GENERIC_MBOX.test(out.owner_email) ? out.owner_email : null);
+      // role mailboxes hiding in the localpart (wcahiring@, careers.tree@ …) —
+      // never an owner channel even when the exact-prefix list misses them
+      const ROLE_MBOX = (e) => {
+        const lp = String(e).split('@')[0];
+        return /(hiring|careers?|recruit)/i.test(lp) ||
+          /(^|[._-])(jobs?|hr|billing|estimates?|quotes?|scheduling|reception|frontdesk|resumes?)([._-]|$)/i.test(lp);
+      };
+      const isOwnerMbox = (e) => e && !GENERIC_MBOX.test(e) && !ROLE_MBOX(e);
+      const personalEmail = isOwnerMbox(out.owner_email) ? out.owner_email : null;
+      const bizEmail = out.business_email || (out.owner_email && !personalEmail ? out.owner_email : null);
       if (bizEmail) out.business_email = bizEmail;
       if (!lead.owner_email && personalEmail) patch.owner_email = personalEmail;
       // owner_phone attribution guard (John 7/12): never store the company
