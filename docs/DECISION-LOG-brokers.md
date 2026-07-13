@@ -793,3 +793,12 @@ network blip during the nightly run.
 - Health: murphy 456/0 err (95% CF, 89% state — high completeness), empire 26/0
   err (100% CF; state 1/26 = inherent to empire's blind M&A profiles, not drift).
   Both parsers holding.
+
+## 2026-07-13 — loop iter (terse): alliant + vr health clean; morning brief reflects Lane A
+- Merged origin/main (Lane C Outlook/deal-mail automation — scraper/ but not
+  broker-sources, no conflict). No Lane A tasks; my 2 brain suggestions still
+  un-triaged/un-approved (PM morning brief line 57 shows feedback queue = 0 agent
+  items → confirms my blocked write; log entry stands as the pickup path).
+- Health: vr 366/0 err, alliant 11/0 err. alliant glued-label parse + name-based
+  state inference verified clean (TN fencing co $399K SDE, electrical/generator
+  installer $249K KY — quality thesis inventory). No drift.
