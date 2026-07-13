@@ -1,0 +1,47 @@
+# Nightly digest + rules-gated auto-enrich (Lane C; John approved card
+# 9bb9d925 on 7/13). Two beats:
+#   - EVENING (plan): write tonight's digest row — which rules fire, which
+#     leads, est cost — so John can one-tap PAUSE it from the dashboard.
+#   - EARLY AM (run): execute the plan unless paused; queues the proven
+#     enrichment_jobs cascade. ZERO auto_enrich_rules = ZERO spend, always.
+#
+# REQUIRED REPO SECRETS: SUPABASE_URL, SUPABASE_SERVICE_KEY
+
+name: Nightly Digest
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * *"  # 19:00 Phoenix — plan lands the evening before
+    - cron: "0 12 * * *" # 05:00 Phoenix — run (skips itself if paused)
+
+concurrency:
+  group: nightly-digest
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: scraper
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: scraper/package-lock.json
+      - run: npm ci
+      - name: Plan or run (run only on the 12:00 UTC fire)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          HOUR=$(date -u +%H)
+          if [ "$HOUR" -ge 10 ] && [ "$HOUR" -le 14 ]; then
+            node nightly_digest.js --run
+          else
+            node nightly_digest.js
+          fi

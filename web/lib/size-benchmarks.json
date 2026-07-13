@@ -1,0 +1,19 @@
+{
+  "_comment": "Per-industry size benchmarks (size-proxy card 37450f11). revenue_per_employee in USD/yr; ebitda_margin as [low, high] fraction. Seed values from small-business industry norms — John tunes via the editable table (0014) and actual-vs-estimate CIM logs. Keys are canonical taxonomy labels; 'default' backstops unlisted industries.",
+  "Tree Care": { "revenue_per_employee": 130000, "ebitda_margin": [0.15, 0.25] },
+  "Landscaping": { "revenue_per_employee": 110000, "ebitda_margin": [0.10, 0.18] },
+  "Lawn Care": { "revenue_per_employee": 95000, "ebitda_margin": [0.12, 0.20] },
+  "Pest Control": { "revenue_per_employee": 120000, "ebitda_margin": [0.18, 0.28] },
+  "Pool Services": { "revenue_per_employee": 100000, "ebitda_margin": [0.12, 0.20] },
+  "Lake/Pond Management": { "revenue_per_employee": 120000, "ebitda_margin": [0.15, 0.25] },
+  "Irrigation": { "revenue_per_employee": 110000, "ebitda_margin": [0.12, 0.20] },
+  "HVAC": { "revenue_per_employee": 160000, "ebitda_margin": [0.10, 0.18] },
+  "Plumbing": { "revenue_per_employee": 150000, "ebitda_margin": [0.10, 0.18] },
+  "Electrical": { "revenue_per_employee": 150000, "ebitda_margin": [0.10, 0.16] },
+  "Roofing": { "revenue_per_employee": 180000, "ebitda_margin": [0.12, 0.22] },
+  "Windows & Doors": { "revenue_per_employee": 160000, "ebitda_margin": [0.10, 0.18] },
+  "Cleaning/Janitorial": { "revenue_per_employee": 55000, "ebitda_margin": [0.08, 0.15] },
+  "Restoration": { "revenue_per_employee": 150000, "ebitda_margin": [0.12, 0.20] },
+  "Property Maintenance": { "revenue_per_employee": 90000, "ebitda_margin": [0.10, 0.18] },
+  "default": { "revenue_per_employee": 110000, "ebitda_margin": [0.10, 0.20] }
+}
