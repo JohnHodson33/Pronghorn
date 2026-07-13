@@ -19,6 +19,19 @@ don't have, SENDING outreach, destructive actions). Bias hard to shipping.
 
 Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 
+**🌙 AUTONOMY NIGHT ORDER (John, logging off 7/12 ~21:00 — verbatim intent:
+"really push for the agents to self direct on creating new functionalities
+or automations… so that Tom and I are not bottlenecks"):** tonight every
+lane, beyond its queue: (a) post **≥2 improvement suggestions** to the brain
+(POST /api/feedback, type='suggestion', author='Agent — <lane>') — bigger
+swings for John's morning approval; (b) bias every build choice toward
+REMOVING HUMAN CLICKS: schedule what is manual (runner cadence, auto-promote,
+auto-draft on CONTACTABLE, auto-refresh lists), summarize what needs eyes
+(receipts, digests, Key Actions) — the human touch should be approve/send/
+sign, nothing else; (c) hard guardrails unchanged: nothing SENDS, nothing
+destructive, spend within existing keys/plans. John's submitted feedback and
+any 'approved' suggestions are top-of-lane the moment they appear.
+
 **⚙️ SELF-ITERATE QUOTA (John 7/12 eve — "it feels like improvements only
 happen when I prompt them"):** every lane ships **≥1 UNPROMPTED improvement
 per night** — something you noticed by using the live site, not something
