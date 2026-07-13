@@ -50,6 +50,10 @@
   their ships here as they land.
 
 ## Watch items
+- **💳 FABLE 5 BILLING (your 7/12 heads-up):** check your Claude usage/billing
+  page first thing — if Fable 5 flipped to token billing overnight, restart
+  the agent sessions (PM + lanes) on **Opus 4.8**. Agents cannot detect the
+  switch or change their own model; the model is picked per session by you.
 - All three lane sessions committed within the last hour of the handoff
   (22:14 / 22:49 / 23:04) — healthy. If any lane shows no commits by your
   morning it hit its context limit: one-paste restart per the TASK-QUEUE
