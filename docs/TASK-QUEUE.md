@@ -385,6 +385,13 @@ set) into your new chips UI as a small follow-up.
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+- ⬜ **BROKER_ID BACKFILL (Lane B finding 7/13 eve):** 0 of the 18
+  broker-role contacts carry `broker_id` — so the Broker Directory page's
+  "in Contacts ✓" check silently shows "directory only" for every broker,
+  and the new `/contacts?broker=<id>` deep-link filter (shipped, plumbed)
+  has no data to serve. Backfill: match contacts(role=broker) to brokers by
+  normalized name and/or email; the "Add to Contacts" button (Lane B queue)
+  sets the link going forward.
 - 🔨 LANE C — 🔥🔥🔥 **LIST-BUILD RUN VISIBILITY + 15-MIN DRAIN — SHIPPED
   (7/13, 6641c89; John's "queued · 0 found looks broken" complaint).**
   leadgen.yml now cron */15 (curl guard skips heavy steps when no pending

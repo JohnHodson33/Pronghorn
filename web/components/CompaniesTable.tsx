@@ -3,7 +3,7 @@
 // Companies table with John's requested controls: search bar, industry filter
 // chips, Industry as its own column, and whole-row click-through to the
 // company profile.
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { money } from "@/lib/mock";
 import type { CompanyRow } from "@/lib/crm";
@@ -35,6 +35,28 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
   const [stage, setStage] = useState("all");
   const [level, setLevel] = useState<Completeness | null>(null);
   const [withDealOnly, setWithDealOnly] = useState(false);
+
+  // Filters ↔ URL params (?q= ?industry= ?level= ?stage= ?deal=1): filtered
+  // views are shareable and deep-linkable ("CONTACTABLE owners in Tree Care"
+  // is a URL). Read once on mount so SSR markup matches first client render.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    if (p.get("q")) setQ(p.get("q")!);
+    if (p.get("industry")) setIndustry(p.get("industry"));
+    if (p.get("stage")) setStage(p.get("stage")!);
+    if (p.get("level")) setLevel(p.get("level") as Completeness);
+    if (p.get("deal") === "1") setWithDealOnly(true);
+  }, []);
+  useEffect(() => {
+    const p = new URLSearchParams();
+    if (q) p.set("q", q);
+    if (industry) p.set("industry", industry);
+    if (stage !== "all") p.set("stage", stage);
+    if (level) p.set("level", level);
+    if (withDealOnly) p.set("deal", "1");
+    const qs = p.toString();
+    window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
+  }, [q, industry, stage, level, withDealOnly]);
 
   const levels = useMemo(() => {
     const m = new Map<string, ReturnType<typeof companyLevel>>();

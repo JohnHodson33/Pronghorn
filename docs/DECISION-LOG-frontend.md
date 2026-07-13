@@ -45,6 +45,24 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 - All shipped work is browser-verified except paths requiring live paid runs
   or prod-data mutation; those verify on John's first real use.
 
+## 2026-07-13 — [self-iterate] Filtered views become URLs (contacts + companies)
+
+- Noticed using the live site: every filter on /contacts and /companies
+  lives in client state only — no filtered view is shareable, bookmarkable,
+  or deep-linkable, which dead-ends cross-page links (the Broker Directory
+  "in Contacts ✓" pill pointed at the UNFILTERED list). Shipped: filters ↔
+  URL params on both tables (contacts: q/role/industry/email/phone/broker ·
+  companies: q/industry/level/stage/deal) — read once on mount (SSR-safe),
+  replaceState on change. John's acceptance query is now literally a URL:
+  `/companies?industry=Tree Care&level=contactable` (verified: 26 rows).
+- Broker page pill now deep-links `/contacts?broker=<id>` w/ a clearable
+  "linked to broker record" chip. **Data gap found: 0 contacts carry
+  broker_id** (flagged to Lane C in TASK-QUEUE — the pill has been falling
+  back to "directory only" for every broker; the filter activates on
+  backfill).
+- Pattern note for future list pages: same ~20-line param sync; consider a
+  shared hook if a third table needs it.
+
 ## 2026-07-13 — List-build honest status rows (Lane C contract, John's "queued · 0 found looks broken")
 
 - Recent-lists rows on /list-building now render the served `status_detail`
