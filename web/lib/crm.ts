@@ -1,5 +1,7 @@
 // Live CRM loaders — deals with company detail, and the companies list.
 import { hasDb, serverDb } from "./db";
+import { sizeEstimate, type SizeEstimate } from "./size";
+import { loadSizeModel } from "./size-model";
 
 export type LiveDeal = {
   id: string;
@@ -106,6 +108,8 @@ export type CompanyRow = {
   created_at: string;
   deals: { stage: string }[];
   contacts: { role: string | null; name: string | null; email: string | null; phone: string | null; linkedin: string | null }[];
+  // size-proxy estimate from the source lead's signals (null = unsized)
+  size: SizeEstimate | null;
 };
 
 export type BrokerRow = {
@@ -196,5 +200,31 @@ export async function fetchCompanies(): Promise<CompanyRow[] | null> {
     console.error("fetchCompanies failed:", error.message);
     return null;
   }
-  return data as unknown as CompanyRow[];
+
+  // size signals live on the source LEAD's enrichment — same join + math as
+  // /api/companies so the chips can't drift between surfaces
+  const [{ data: leadRows }, model] = await Promise.all([
+    serverDb()
+      .from("leads")
+      .select("company_id, enrichment, review_count, industry_verified")
+      .not("company_id", "is", null)
+      .limit(3000),
+    loadSizeModel(),
+  ]);
+  const leadByCompany = new Map((leadRows ?? []).map((l) => [l.company_id as string, l]));
+
+  return (data as unknown as Omit<CompanyRow, "size">[]).map((c) => {
+    const lead = leadByCompany.get(c.id);
+    return {
+      ...c,
+      size: lead
+        ? sizeEstimate(
+            (lead.industry_verified as string | null) ?? c.industry,
+            (lead.enrichment as { size_signals?: Record<string, unknown> } | null)?.size_signals,
+            lead.review_count as number | null,
+            model,
+          )
+        : null,
+    };
+  });
 }

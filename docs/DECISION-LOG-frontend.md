@@ -9,6 +9,22 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   (UI + API, see 7/13 entry below) — browser-verified end-to-end, test
   artifacts removed from storage. Prior state (through 9cd3f33 dead-end
   sweep) merged to main and live.
+- **7/13 ~22:30 — SIZE ESTIMATION TAB + TIER CHIPS/COLUMNS ON COMPANIES
+  SHIPPED** (amendment 3 build on Lane C's size contract): (a) new
+  `/size-estimation` page — editable tier boundaries + per-industry
+  benchmarks table (PATCH /api/size-model; honest 0014 seed note) with a
+  LIVE example row so the cascade is visible (verified: 12 Tree Care emp →
+  Tuck-in, 60 → Platform). **PM: wire "Size Estimation" into Sidebar**
+  (suggest under Proprietary Sourcing, beside Scrape Criteria). (b)
+  /companies: Size filter chips w/ counts (live split: 10 Platform · 85
+  Tuck-in · 7 Too small · 367 Unsized), tier chip column (tooltip = full
+  derivation: employees ← basis → revenue → EBITDA + confidence), and
+  Revenue/EBITDA columns fall back to ~range estimates when no actuals
+  (actuals always win); `?tier=` URL param combinable with level/industry —
+  `/companies?tier=platform&level=contactable` = 5 rows, verified live.
+  fetchCompanies reuses the exact /api/companies join+math so surfaces
+  can't drift. NEXT: same chips on /enrichment (leads API already serves
+  size_tier + tierCounts).
 - **7/13 ~21:45 — LEAD-CHANNEL PROVENANCE ON COMPANY PROFILE SHIPPED:**
   when the source lead holds an owner channel no contact carries (the
   promotion/sync gap Lane C is root-causing), the profile shows a sky strip
