@@ -292,6 +292,19 @@ also executed the two swaps previously flagged as PM actions:
   once and filters labels+aliases locally ("exterminator" finds Pest
   Control); static fallback kept.
 
+## 2026-07-12 — Key-status honesty + outreach tracker surface
+
+- **List-building key badges**: new `GET /api/leadgen-keys` (boolean presence
+  per credential — process.env + scraper/.env fallback in dev, values never
+  exposed); source cards show server-checked "connected ✓"/"key missing";
+  footer names exactly the missing keys (live: only PARALLEL_API_KEY).
+- **Outreach tracker** mounted on /outreach above the sequence library —
+  Lane C's /api/outreach-tracks (0007): per-company state chips
+  (not_started → contacted → replied → meeting → nurture → dead) with
+  inline state change + next-follow-up date (overdue = red), owner
+  reachability, links to the company. TRACKING ONLY — no sending anywhere,
+  per OUTREACH-STRATEGY.md "no site build until John + Tom finalize".
+
 ## Lane B session setup
 
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch

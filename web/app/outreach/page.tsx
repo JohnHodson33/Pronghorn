@@ -6,6 +6,7 @@
 // a proper outreach_sequences table + reply.io export are flagged to the PM.
 
 import { useEffect, useMemo, useState } from "react";
+import OutreachTracker from "@/components/OutreachTracker";
 
 type Step = { subject: string; body: string; delayDays: number };
 type Sequence = { id: string; name: string; steps: Step[]; updatedAt: string };
@@ -123,6 +124,8 @@ export default function OutreachLibrary() {
           Export to reply.io
         </button>
       </header>
+
+      <OutreachTracker />
 
       <div className="grid gap-6 md:grid-cols-[240px_1fr]">
         <aside className="space-y-2">
