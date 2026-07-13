@@ -68,10 +68,13 @@
   page first thing — if Fable 5 flipped to token billing overnight, restart
   the agent sessions (PM + lanes) on **Opus 4.8**. Agents cannot detect the
   switch or change their own model; the model is picked per session by you.
-- All three lane sessions committed within the last hour of the handoff
-  (22:14 / 22:49 / 23:04) — healthy. If any lane shows no commits by your
-  morning it hit its context limit: one-paste restart per the TASK-QUEUE
-  HANDOFF rule.
+- **Lane session health (PM watch, updated ~01:50):** Lane A healthy (last
+  commit 00:54 — drift alerting shipped). **Lane B quiet since 00:18** (after
+  shipping the brand sweep) and **Lane C (replacement) quiet since 00:25**
+  (after shipping size signals) — either mid-large-unit (mobile/PWA is big)
+  or context-dead. If their last commits are still 00:18/00:25 when you wake:
+  one-paste restart per the TASK-QUEUE HANDOFF rule (Lane C's boot prompt =
+  the one from chat; Lane B resumes from DECISION-LOG-frontend HANDOFF).
 - Feedback queue: 0 submitted items overnight so far; agent suggestions
   accumulating on /improvements for your morning approval pass.
 - Full ledger: docs/JOHN-OPEN-ITEMS.md · Enrichment contract:
