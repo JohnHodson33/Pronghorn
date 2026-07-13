@@ -86,17 +86,16 @@ in MORNING-BRIEF.
   names (proven, $0); (b) a cheap keyed API (OpenCorporates / skip-trace vendor,
   ~cents/lookup); (c) headless-browser resolver per priority state. Plumbing is
   live; each resolver activates the instant it's registered.
-- 🔥🔥 **COST-BADGE ACCOUNTING FIXES (John caught it 7/12 eve — Hunter showed
-  +$5.80 variable that isn't real cash):** (1) **No double-count:**
-  usage covered by a flat subscription books cost_usd=0 marginal (the $34
-  plan IS the cash cost) while still recording units + quota-used
-  (searches 58/500 this month); per-search internal rate only applies past
-  the plan cap or for pay-per-use services. Show "Hunter: 58/500 searches"
-  in the breakdown instead of fake dollars. (2) **subsMonthly=0 regression:**
-  /api/costs stopped counting the subscriptions rows after tonight's merge
-  (planned-column handling vs PM-seeded rows: 'Hunter (annual, active)' $34 +
-  'Vercel Pro (planned)' $20 exist and must total $54). (3) costPerContact =
-  (amortized subs + true variable) / owner contacts — conservative and honest.
+- 🔨 LANE C — 🔥🔥 **COST-BADGE ACCOUNTING FIXES — DONE + VERIFIED (John 7/12).**
+  (1) No double-count: Hunter is a flat sub → usage now books $0 marginal +
+  keeps units; 32 already-booked phantom rows zeroed ($5.80 → $0). (2)
+  subsMonthly regression fixed: root cause was `/api/costs` selecting a
+  `planned` column absent on the PM-seeded rows → PostgREST errored the whole
+  subs query → subsMonthly=0; now `select('*')` + tolerant planned-derivation.
+  **subsMonthly = $54** (Hunter $34 + Vercel Pro $20). (3) Hunter shows as
+  **quota "73/500 searches"** not dollars; variableTotal now real ($3.11
+  Claude/Exa/Serper); costPerContact $0.27 amortizes monthTotal $57.11 / 210
+  owner contacts. `/api/enrich` estimate also de-Huntered ($0 marginal).
 - 🔥🔥🔥 **ENRICHMENT COMPLETENESS LEVELS replace binary "enriched" (John 7/12
   ~16:05 — "enriched next to a lead with no owner info feels like nothing
   happened"):** status stays lifecycle-only (new/enriching/…); ADD a computed

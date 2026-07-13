@@ -82,11 +82,11 @@ async function main() {
   }
   log.info(`Email finder: ${found}/${targets.length} verified emails${quota != null ? ` (Hunter quota remaining: ${quota})` : ''}`);
   const { recordUsage } = require('../core/usage');
-  // Hunter Starter (approved 7/12) ≈ $49/500 searches ≈ $0.10/search; a search
-  // is billed whether or not it returns a confident email.
-  const HUNTER_PER_SEARCH = Number(process.env.HUNTER_PER_SEARCH) || 0.10;
-  await recordUsage('hunter', 'email_finding', targets.length, targets.length * HUNTER_PER_SEARCH,
-    { found, plan: 'starter', quota_remaining: quota });
+  // Hunter is a FLAT monthly subscription (the sub IS the cash cost). Book $0
+  // marginal so variable spend isn't double-counted against the sub; keep
+  // units so the badge can show "searches used / cap" (John 7/12 fix).
+  await recordUsage('hunter', 'email_finding', targets.length, 0,
+    { found, plan: 'subscription', quota_remaining: quota });
 }
 
 main().catch((e) => { console.error(e.message); process.exit(1); });
