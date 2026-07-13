@@ -69,6 +69,24 @@ in MORNING-BRIEF.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 🔥🔥🔥 **IMPROVEMENTS DIALOGUE (John in chat 7/12 ~23:45 — TOP OF LANE; screenshot
+  feedback on /improvements):** John's exact words: "I wanna be able to actually
+  have a dialogue with the agent before I click approve… and in that same
+  conversation see status responses when things are completed and a summary of
+  what was actually done. I don't wanna click approve willy nilly and have no
+  idea what's actually getting put into the website." Build (with Lane C's
+  comments API below): (a) each suggestion/feedback card opens a **THREAD view**
+  — comments (John/Tom/Agent), status-change events inline (suggested →
+  approved → building → shipped), completion summary rendered distinctly;
+  (b) "Add detail" becomes **"Reply"** — composer posts a comment, and the card
+  badges "agent reply pending" until the owning lane answers; (c) **Approve
+  semantics**: button reads "Approve latest spec" and shows WHICH revision it
+  approves (last agent reply = the build contract); after approve, the agent's
+  first comment must be the BUILD PLAN, and on ship the thread gets the
+  "what was actually done" summary + link; (d) mobile card layout per the
+  standing parity rule. INTERIM (until Lane C's 0011 lands): render the
+  existing body-append "— X adds:" segments as a pseudo-thread so John's
+  amendments and PM replies already read as dialogue.
 - 🔥 **BRAND ALIGNMENT PASS (John 7/12, PM started):** match the platform's
   cosmetics to pronghornequity.com. PM shipped: logo (public/pronghorn-logo
   .png) + dark forest sidebar + brand CSS variables in globals.css (--ph-navy
@@ -293,6 +311,24 @@ set) into your new chips UI as a small follow-up.
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+- 🔥🔥🔥 **FEEDBACK THREAD MODEL + AGENT-REPLY LOOP (John in chat 7/12 ~23:45 —
+  TOP OF LANE; pairs w/ Lane B's IMPROVEMENTS DIALOGUE):** (a) migration
+  `0011_feedback_comments.sql`: `feedback_comments` (feedback_id FK, author
+  John|Tom|"Agent — <lane>", body, kind comment|status_change|build_plan|
+  completion_summary, created_at) + `/api/feedback/[id]/comments` GET/POST;
+  PATCH status writes a status_change comment automatically so the thread IS
+  the audit trail. (b) **STANDING RULE (all lanes, replaces bare polling):**
+  every loop, poll for suggestions/feedback with an UNANSWERED John/Tom
+  comment → the owning lane replies with a refined spec BEFORE any build;
+  the LAST agent reply is the build contract that Approve locks in. (c) On
+  approve → post a build_plan comment (what will ship, where, est cost/time);
+  on shipped → post a completion_summary comment (what actually changed,
+  where to see it) + flip status. Nothing ships without its summary. (d)
+  Wire the NIGHTLY DIGEST suggestion's amended spec (PM reply already on the
+  card): thesis gate (active list + industry_verified in-taxonomy + not
+  off_target), new lists start HELD (one activation decision per list),
+  nightly $ + Hunter caps, digest = receipt + tonight's plan w/ pause. Do
+  NOT start the digest build until John approves the amended card.
 - 🔨 LANE C — 🔥🔥 **RUNNER SELF-DRAIN + CASCADE NO-OP — FIXED + SHIPPED.**
   (a) `.github/workflows/enrichment-jobs.yml` drains the queue every 15 min +
   every worker loop pass. (b) `run_jobs.js` now CASCADES: tier-1 for new leads,
