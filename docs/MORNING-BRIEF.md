@@ -1,6 +1,10 @@
 # Morning brief — overnight of 2026-07-12 → 07-13 (PM session, rewritten nightly)
 
-## ☀️ YOUR MORNING (2 quick actions + 1 heads-up)
+## ☀️ YOUR MORNING (3 quick actions + 1 heads-up)
+0. **Migration 0011 (~1 min):** same SQL-editor routine —
+   `supabase/migrations/0011_feedback_comments.sql`. Unlocks the REAL
+   threaded dialogue on /improvements (replies, build plans, completion
+   summaries — the directive you gave tonight; backend is live and waiting).
 1. **GitHub secrets for Outlook automation (~2 min):** Lane C's new
    `outlook-sync.yml` runs every 3h on GitHub's servers (pursuit detection +
    pushing queued drafts into your Outlook Drafts — never sends). It needs 3
