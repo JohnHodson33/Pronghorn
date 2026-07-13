@@ -128,7 +128,15 @@ export default function CriteriaPage() {
 
       <section className="rounded-xl border border-zinc-200 bg-white p-5">
         <h2 className="mb-3 font-semibold">Subsectors <span className="text-sm font-normal text-zinc-500">— one criteria set, both funnels (listings screening + proprietary list-building)</span></h2>
-        <SubsectorToggles keywords={toList(inc)} onChange={(next) => setInc(next.join("\n"))} />
+        <SubsectorToggles
+          keywords={toList(inc)}
+          onChange={(next) => setInc(next.join("\n"))}
+          onAddExclude={(terms) => {
+            const existing = new Set(toList(exc).map((x) => x.toLowerCase()));
+            const add = terms.filter((t) => !existing.has(t.toLowerCase()));
+            if (add.length) setExc((prev) => [...toList(prev), ...add].join("\n"));
+          }}
+        />
       </section>
 
       <section className="grid gap-6 md:grid-cols-2">

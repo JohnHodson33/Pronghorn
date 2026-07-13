@@ -31,3 +31,23 @@ export async function GET() {
   }
   return NextResponse.json({ industries: SEED, source: "seed (apply migration 0008 to edit in DB)" });
 }
+
+// Add a new industry as a first-class subsector chip (John 7/13: type one
+// industry name on the criteria page, agents brainstorm the keywords — the
+// new subsector persists here so it survives reloads and the enrichment
+// classifier can snap to it).
+export async function POST(req: Request) {
+  if (!hasDb()) return NextResponse.json({ error: "no db — apply migration 0008" }, { status: 503 });
+  const b = await req.json();
+  const label = String(b.label ?? "").trim();
+  if (!label) return NextResponse.json({ error: "label required" }, { status: 400 });
+  const id = label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  const aliases: string[] = Array.isArray(b.aliases)
+    ? b.aliases.map((a: unknown) => String(a).trim()).filter((a: string) => a && a.toLowerCase() !== label.toLowerCase())
+    : [];
+  const row = { id, label, aliases, thesis_core: !!b.thesis_core };
+  const { data, error } = await serverDb().from("industry_taxonomy")
+    .upsert(row, { onConflict: "id" }).select("id, label, aliases, thesis_core").single();
+  if (error) return NextResponse.json({ error: `${error.message} — apply migration 0008` }, { status: 503 });
+  return NextResponse.json({ ok: true, industry: data });
+}
