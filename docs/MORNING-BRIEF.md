@@ -63,6 +63,12 @@
 - **Lane B / Lane A:** night still in progress at last PM pass — I list
   their ships here as they land.
 
+## Overnight receipts (verified by PM)
+- ✅ **Nightly cloud scrape ran on schedule** — 17,036 listings refreshed by
+  ~07:00 (GitHub servers, no sessions involved).
+- ✅ Site healthy all night (checked every pass); zero feedback submissions;
+  no queued jobs stranded.
+
 ## Watch items
 - **💳 FABLE 5 BILLING (your 7/12 heads-up):** check your Claude usage/billing
   page first thing — if Fable 5 flipped to token billing overnight, restart
