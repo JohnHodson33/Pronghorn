@@ -694,7 +694,16 @@ set) into your new chips UI as a small follow-up.
   step (quota-capped by design). Add it as a second step after enrichment, or
   drop the unused secret from that workflow.
 - ⬜ SELF-ITERATE: what contact data are we still missing per company? Close the gap.
-  COVERAGE CHECKPOINT (2026-07-12 ~20:05, two tier-2 batches w/ Hunter Starter):
+  COVERAGE CHECKPOINT (2026-07-13 ~08:20 loop pass): 40-lead tier-2 batch →
+  **FULL 51 · CONTACTABLE 60**, +4 owner LinkedIn, +2 LinkedIn employee bands
+  (size signals now accumulate on every pass), 0 Hunter emails (named backlog
+  has used its one-attempt each — remaining unlock is owner NAMES: SoS
+  resolvers beyond TX, or the VA tier). 10 fresh owner drafts queued to outbox
+  (queue-only). NOTE: the queued HubSpot re-import (breadcrumbs→0004 columns)
+  was BLOCKED by the safety layer as bulk PII export on relayed authority —
+  same ruling class as prior sessions; needs John to ask for it directly in a
+  session (2-min task then). Low urgency, contacts usable as-is.
+  PRIOR CHECKPOINT (2026-07-12 ~20:05, two tier-2 batches w/ Hunter Starter):
   **completeness now FULL 50 · CONTACTABLE 58** (FULL was 14 → 33 → 50 across two
   40-lead tier-2 passes: +16 verified owner emails, +54 LinkedIn URLs total).
   Hunter spend ~$3 (30 searches, trivial vs 500/mo Starter). ~20 incomplete-named
