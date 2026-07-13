@@ -366,8 +366,16 @@ set) into your new chips UI as a small follow-up.
   off_target), new lists start HELD (one activation decision per list),
   nightly $ + Hunter caps, digest = receipt + tonight's plan w/ pause. Do
   NOT start the digest build until John approves the amended card.
-- 🔥🔥🔥 **COMPANY-LEVEL COMPLETENESS SERVER-SIDE (John in chat 7/12 ~23:59,
-  pairs w/ Lane B's CRM levels item):** extend the completeness single source
+- 🔨 LANE C — 🔥🔥🔥 **COMPANY-LEVEL COMPLETENESS — SHIPPED.** `companyCompleteness()`
+  added to `web/lib/completeness.ts` (same ladder, computed from owner-contact
+  channels — one module, ladders can't drift). `GET /api/companies` returns
+  level + per-level counts + `?level=` filter combinable with `?industry=`/
+  `?origin=`/`?q=`; `GET /api/companies/[id]` returns the company + its level.
+  Verified: company split 14 full / 58 contactable / 138 identified / 118 basic;
+  **John's acceptance query answers — 34 CONTACTABLE+ owners in Tree Care.**
+  Lane B renders the chips/filter/counts on /companies off this.
+  --- original card ---
+- extend the completeness single source
   of truth (web/lib/completeness.ts) to COMPANIES: compute a company's level
   from its owner contact(s) channels (owner contact role=owner: name/email/
   phone/LinkedIn) — same FULL/CONTACTABLE/IDENTIFIED/BASIC/RAW ladder.

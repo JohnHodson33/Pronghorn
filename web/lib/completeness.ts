@@ -24,6 +24,32 @@ export function completeness(l: LeadChannels): Completeness {
   return "raw";
 }
 
+// Company-level completeness — same ladder, computed from the company's OWNER
+// contact channels (role='owner'). Kept in this module so the lead ladder and
+// the company ladder can never drift (John 7/12: "count of CONTACTABLE owners
+// in tree care across the whole company DB" must be one consistent number).
+export type OwnerContact = {
+  role?: string | null;
+  name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  linkedin?: string | null;
+};
+
+export function companyCompleteness(company: { contacts?: OwnerContact[] | null; website?: string | null; city?: string | null }): Completeness {
+  const owners = (company.contacts ?? []).filter((c) => (c.role ?? "").toLowerCase() === "owner");
+  // aggregate the best signal across all owner contacts
+  const l: LeadChannels = {
+    owner_name: owners.find((o) => o.name)?.name ?? null,
+    owner_email: owners.find((o) => o.email)?.email ?? null,
+    owner_phone: owners.find((o) => o.phone)?.phone ?? null,
+    owner_linkedin: owners.find((o) => o.linkedin)?.linkedin ?? null,
+    website: company.website,
+    city: company.city,
+  };
+  return completeness(l);
+}
+
 export const LEVEL_META: Record<Completeness, { dot: string; label: string }> = {
   full: { dot: "●", label: "Full — owner + email + phone/LinkedIn" },
   contactable: { dot: "◕", label: "Contactable — owner + 1 channel" },
