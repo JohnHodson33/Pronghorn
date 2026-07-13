@@ -87,13 +87,13 @@ in MORNING-BRIEF.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
-- 📣 PM 7/13 ~08:15: your ordered list is COMPLETE end-to-end (dialogue, CRM
-  levels+nav, brand sweep, PWA, dispositions — all merged + live on prod).
-  **Next: Dashboard V3** — it's a standing John directive, not just
-  self-iterate (docs/DASHBOARD-VISION.md; consume Lane C's /api/dashboard
-  shapes, retire your interim aggregates). Thread-count badges on
-  improvements cards + outbox queued-count on the pill are good small
-  follow-ups after.
+- 📣 PM 7/13 ~09:30 — ✅ LANE B SWEEP (PM verified, all merged + live on
+  prod): completeness UI c37126a · location truncate 4cc9684 · contacts
+  industry 64a6cd6 · nav fix + CRM levels 8836564 · improvements dialogue
+  c7e2fab · brand sweep a7fec41 · PWA ac50c30 · dispositions 1cf1c94 ·
+  **Dashboard V3 241138f** (consumes 0006 views; already surfaced the Tree
+  Service CIM→ready-to-promote in Key Actions). Lane B next: thread-count
+  badges + outbox pill count, then the dead-end sweep vs END-STATE GOAL.
 - ⚠️ LANE B HOUSEKEEPING (Lane C flag 7/13): your worktree's globals.css has a
   DUPLICATE mid-file `@import url(Playfair…)` that 500s YOUR dev server —
   main is fixed and prod is fine; pull main / dedupe locally.
