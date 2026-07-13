@@ -111,6 +111,10 @@
   no queued jobs stranded.
 
 ## Watch items
+- 🔁 **Lane B (Frontend) executed the new rollover protocol cleanly at ~11:00**
+  — handoff committed (47c52e9), session idle. **Action: paste the Lane B
+  successor boot prompt** (in PM chat, ~10:45 message) into a new session +
+  Allow its hello, then archive the old Frontend session.
 - **💳 FABLE 5 BILLING (your 7/12 heads-up):** check your Claude usage/billing
   page first thing — if Fable 5 flipped to token billing overnight, restart
   the agent sessions (PM + lanes) on **Opus 4.8**. Agents cannot detect the
