@@ -1,55 +1,59 @@
-# Morning brief — overnight of 2026-07-11 → 07-12 (PM session, rewritten nightly)
+# Morning brief — overnight of 2026-07-12 → 07-13 (PM session, rewritten nightly)
 
-## ☀️ YOUR 3-STEP MORNING (≈7 minutes total, in order)
-1. **Outlook consent (~2 min):** pull main, then in
-   `C:\Users\johnd\Pronghorn\scraper` run `node auth_email.js` → open the
-   printed URL, enter the code, sign in, approve once. Unlocks scheduled
-   NDA/CIM detection AND drafts-in-your-Outlook in one consent (scopes staged).
-2. **Migrations 0008 + 0009 (~3 min):** same SQL-editor routine as yesterday,
-   in order. 0008 activates the UI **Enrich button end-to-end** (job queue +
-   verified-industry columns + editable taxonomy); 0009 activates **dollar
-   metering** (the spend badge is live and waiting). I run the July cost
-   backfill right after you confirm.
-3. ~~Check your GitHub emails~~ ✅ **CONFIRMED WORKING: the nightly cloud
-   scrape fired at 06:00 and refreshed all 30 sources from GitHub's servers**
-   — your secrets are correct and the platform now updates itself daily with
-   no laptop or session involved. The failure emails are over.
+## ☀️ YOUR MORNING (2 quick actions + 1 heads-up)
+1. **GitHub secrets for Outlook automation (~2 min):** Lane C's new
+   `outlook-sync.yml` runs every 3h on GitHub's servers (pursuit detection +
+   pushing queued drafts into your Outlook Drafts — never sends). It needs 3
+   more repo secrets (GitHub → Settings → Secrets and variables → Actions):
+   `GRAPH_CLIENT_ID`, `GRAPH_TENANT_ID`, `GRAPH_REFRESH_TOKEN` — values from
+   `C:\Users\johnd\Pronghorn\scraper\.env`. Until then it runs only when a
+   worker session drives it locally.
+2. **Vercel env keys (~3 min, fixes the "key missing" badges):**
+   Vercel dashboard → pronghorn → Settings → Environment Variables → add
+   `ANTHROPIC_API_KEY`, `EXA_API_KEY`, `HUNTER_API_KEY`, `SERPER_API_KEY`,
+   `GOOGLE_PLACES_API_KEY` (values from `scraper\.env`), then tell me — I
+   redeploy. Until then /list-building badges are truthful about the WEB env
+   only; the GitHub runner has all keys and drains jobs every 15 min anyway.
+3. **Heads-up — your first real Enrich click is the live end-to-end test**
+   (~$14 max-cascade estimate on the current selection). Everything is
+   verified except a real UI-triggered paid run; I'll be watching the job
+   the moment you click.
 
-## What shipped overnight (all live on pronghorn-green.vercel.app)
-1. **ENRICHMENT FLOW — your 23:40 feedback, built end-to-end overnight:**
-   - Locations/websites now PERSIST at ingest + 151 existing leads backfilled
-     (your "66 tree companies with no location" complaint is fixed at the root)
-   - Free-pass enrichment auto-chains onto every new list (costs nothing)
-   - Checkbox selection + **"Enrich selected (est. $X)"** with real cost
-     previews (verified: 21 leads → $0.21) — fully live once you run 0008
-   - **Verified Industry column** replaces the List column; off-target
-     companies get flagged (already caught a property-management firm hiding
-     on the lake-services list — your exact "catchy name" example)
-   - Typeahead on industry + geography in the list-build form
-2. **Every enriched company → CRM profile (your directive):** promotion bar
-   relaxed and run — **310 proprietary companies** now live in the Companies
-   tab with owner contacts attached where found.
-3. **Cost tracking (your directive):** every paid call is metered; Sidebar
-   badge shows month-to-date spend on every tab (activates $ after 0009);
-   breakdown = subscriptions ($0/mo) vs variable by service + **cost per
-   owner-contact** — your yardstick vs buying data.
-4. **Scrape Criteria:** confirmed broker-prong-only, moved under Broker
-   Sourcing, renamed. Keyword auto-generation endpoint is live
-   (`hydraulic repair` → full keyword set); the LinkedIn-style chip UI is
-   Lane B's current build.
-5. **Pursuit detector** regression-fixed; **Outlook draft route** builds
-   against the new scopes and activates the moment you consent.
-6. Lane A: resilience hardening across adapters (shared retry), health clean.
+## This week
+- **Jack Williams (William Blair) — Tue Jul 14, 3:00–3:30 PM CT, Teams**
+  (verified in Outlook). Say the word and I'll generate the call-prep
+  one-pager (the API is live) Monday so you walk in briefed.
+- **Tom:** send him https://pronghorn-green.vercel.app + password; the
+  /improvements page is his channel and every lane polls it each loop.
 
-## Decisions logged yesterday (no action needed)
-Kumo: no-for-now · HubSpot token: parked (Pronghorn is system of record) ·
-key rotation: confirmed done · 14 nail-salon deals: migrated to Passed.
+## What shipped tonight (live on pronghorn-green.vercel.app)
+1. **Outlook drafts + live mail ingestion are LIVE (your consent activated
+   them):** queued outbox inquiries now push straight into your Outlook
+   Drafts folder in bulk (drafts only — the token scope physically can't
+   send); NDA/CIM pursuit detection runs on schedule; and broker
+   correspondence auto-logs onto CRM deals (verified: Landmark deal picked
+   up the Oliver data-room invite + both process letters, idempotently).
+2. **Listings table:** polluted location values truncated so price /
+   multiple / margin columns stay visible (Lane B; full column restore is
+   next in their queue).
+3. **Broker sources:** Murphy + Empire health-checked clean, parse quality
+   verified (Lane A).
+4. PM: merged all lanes → main, built, deployed, verified prod + /api/costs
+   ($57.13 MTD: $54 subs + $3.13 variable; Hunter 73/500 searches).
+
+## Self-iterate ledger (the SELF-ITERATE QUOTA you set)
+- **Lane C:** deal-mail → CRM activity auto-logging (unprompted — removes
+  the "forward me that email" click) + nightly digest/auto-cadence
+  suggestion posted to the brain.
+- **Lane B / Lane A:** night still in progress at last PM pass — I list
+  their ships here as they land.
 
 ## Watch items
-- Lane B (Frontend) session: last push ~00:30 (Enrichment UX). If no commits
-  by your morning, it hit its context limit — reopen with one paste (see
-  TASK-QUEUE HANDOFF rule).
-- Brokers session was near its context limit when you logged off — same
-  one-paste restart if dead.
+- All three lane sessions committed within the last hour of the handoff
+  (22:14 / 22:49 / 23:04) — healthy. If any lane shows no commits by your
+  morning it hit its context limit: one-paste restart per the TASK-QUEUE
+  HANDOFF rule.
+- Feedback queue: 0 submitted items overnight so far; agent suggestions
+  accumulating on /improvements for your morning approval pass.
 - Full ledger: docs/JOHN-OPEN-ITEMS.md · Enrichment contract:
-  docs/ENRICHMENT-UX.md · Cost design: docs/COST-TRACKING.md
+  docs/ENRICHMENT-UX.md · Outreach strategy: docs/OUTREACH-STRATEGY.md
