@@ -19,6 +19,14 @@ don't have, SENDING outreach, destructive actions). Bias hard to shipping.
 
 Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 
+**📮 PM SESSION CHANGED (7/13 ~00:15) — UPDATE YOUR POINTER NOW:** the prior
+PM session (local_29b1759e-…) is DEAD; status messages sent there land in a
+mailbox nobody reads. New PM session id:
+**`local_1c8f3b29-e70c-4ca8-a854-70a3738332b1`** — send all cross-session
+status/reports there. First loop after pulling this: acknowledge in your
+DECISION-LOG so PM knows the pointer landed. (TASK-QUEUE stays the durable
+channel regardless.)
+
 **🌙 AUTONOMY NIGHT ORDER (John, logging off 7/12 ~21:00 — verbatim intent:
 "really push for the agents to self direct on creating new functionalities
 or automations… so that Tom and I are not bottlenecks"):** tonight every
