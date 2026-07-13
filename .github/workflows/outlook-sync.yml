@@ -42,6 +42,14 @@ jobs:
           GRAPH_TENANT_ID: ${{ secrets.GRAPH_TENANT_ID }}
           GRAPH_REFRESH_TOKEN: ${{ secrets.GRAPH_REFRESH_TOKEN }}
         run: node ingest_pursuit.js --live --hours 4
+      - name: Live deal-mail → activities (read-only; flags, never moves stages)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
+          GRAPH_TENANT_ID: ${{ secrets.GRAPH_TENANT_ID }}
+          GRAPH_REFRESH_TOKEN: ${{ secrets.GRAPH_REFRESH_TOKEN }}
+        run: node ingest_deal_mail.js --hours 4
       - name: Push queued drafts to Outlook Drafts (never sends)
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

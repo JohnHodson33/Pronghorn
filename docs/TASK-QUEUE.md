@@ -524,15 +524,13 @@ set) into your new chips UI as a small follow-up.
 ---
 
 ## Decisions bubbled to John (non-blocking)
-- 🔔 **Landmark/Oliver "Data Room Invite" detected but UNMATCHED (Lane C live
-  pursuit scan, 7/12 eve):** the live detector saw a data-room/CIM invite from
-  oliver@theadvisoryib.com but couldn't tie it to a scraped broker listing —
-  because Landmark (and the new FL Access Control deal Oliver sent) are HubSpot/
-  CRM DEALS, not scraped listings, so there's no listing_reviews row to advance.
-  ACTION: this signals the Landmark data room is OPEN (deal progressing). The
-  pursuit auto-detect only covers the broker-scrape prong by design; CRM-deal
-  mail advancement (Landmark et al.) would be a small follow-on — flag if you
-  want it. For now: your Landmark data room access is live, go pull the CIM.
+- ✅ RESOLVED (Lane C, 7/12 eve): the unmatched Landmark/Oliver "Data Room
+  Invite" gap is CLOSED — built `scraper/ingest_deal_mail.js` (--live) that
+  matches broker mail to KNOWN DEALS by broker email→contact→deal and logs it
+  as flagged activities (read-only; flags pursuit signals, never auto-moves a
+  live deal's stage). Ran it: Landmark deal now has Oliver's Data Room Invite +
+  both Process Letters logged as ⚑-flagged activities. Wired into
+  outlook-sync.yml. **Your Landmark data room is OPEN — go pull the CIM.**
 - 🔔 **25 owner-outreach drafts are in your Outlook Drafts** (auto-drafted on
   CONTACTABLE, pushed on your consent). Review + send the ones you like; nothing
   was sent. New CONTACTABLE owners get drafts nightly via the workflow.
