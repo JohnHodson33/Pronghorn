@@ -1,10 +1,26 @@
 # Morning brief — overnight of 2026-07-12 → 07-13 (PM session, rewritten nightly)
 
-## ☀️ YOUR MORNING (3 quick actions + 1 heads-up)
-0. **Migration 0011 (~1 min):** same SQL-editor routine —
-   `supabase/migrations/0011_feedback_comments.sql`. Unlocks the REAL
-   threaded dialogue on /improvements (replies, build plans, completion
-   summaries — the directive you gave tonight; backend is live and waiting).
+## ☀️ YOUR MORNING (5 quick actions + 1 heads-up)
+0. **Migrations 0011 + 0012 (~2 min, in order):** same SQL-editor routine —
+   `0011_feedback_comments.sql` (real threaded dialogue on /improvements)
+   then `0012_lead_list_progress.sql` (live per-source progress on list
+   builds — the "queued · 0 found" fix; runner degrades gracefully until
+   then).
+0b. **Lane A unblock — one direct line (~30 sec):** the auto-promote-T1
+   build you approved was correctly blocked by Lane A's own permission
+   layer (bulk writes to shared deal tables need YOUR words in ITS chat,
+   not a relayed approval). Open the "Pronghorn - Brokers" session and
+   paste: *"I approve the auto-promote Tier-1 → pursuits build as specced
+   in TASK-QUEUE (dry-run first, limit 25, skip existing reviews, never
+   contact anyone). Build it."* Drift alerting (approval #2) shipped fine —
+   it needed no shared-table writes.
+0c. **DECISION — the GitHub repo is PUBLIC (Lane C flag):** your strategy
+   docs/thesis are world-readable. No secrets or PII are committed, but
+   consider flipping to private (repo Settings → General → Danger Zone).
+   Trade-off: private repos get 2k free Actions minutes/mo and our
+   every-15-min workflows use roughly 3–6k — so going private likely means
+   a paid Actions tier or slowing the runner cadence. Your call; I can
+   model the exact cost if you want.
 1. **GitHub secrets for Outlook automation (~2 min):** Lane C's new
    `outlook-sync.yml` runs every 3h on GitHub's servers (pursuit detection +
    pushing queued drafts into your Outlook Drafts — never sends). It needs 3
@@ -64,6 +80,17 @@
   their ships here as they land.
 
 ## Overnight receipts (verified by PM)
+- ✅ **The dialogue loop you asked for is already working:** you commented on
+  the nightly-digest card ("how does the system know a thesis is active?")
+  and Lane C replied in-thread with a rules-based revision — YOU create
+  explicit auto-enrich rules (industry + min size tier + caps); zero rules
+  = zero auto-spend; lists never self-activate. That reply is the pending
+  build contract — approve the card and that's what gets built.
+- ✅ Lane A drift alerting verified two ways: all 30 live sources green, and
+  a synthetic 40→4 count drop correctly flagged 🔴.
+- ✅ Size-proxy signals flowing: LinkedIn employee bands captured in tier-2
+  (live-tested), review counts persisted on 241/542 leads. Tier math still
+  held for your card amendments.
 - ✅ **Nightly cloud scrape ran on schedule** — 17,036 listings refreshed by
   ~07:00 (GitHub servers, no sessions involved).
 - ✅ Site healthy all night (checked every pass); zero feedback submissions;
