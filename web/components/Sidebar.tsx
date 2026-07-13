@@ -39,10 +39,11 @@ function CostBadge() {
       <button
         onClick={() => setOpen((o) => !o)}
         title="Month-to-date platform spend — click for breakdown"
-        className="w-full rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-left hover:bg-emerald-100"
+        className="w-full rounded-lg px-3 py-1.5 text-left"
+        style={{ background: "rgba(237,231,212,0.08)", border: "1px solid rgba(237,231,212,0.18)" }}
       >
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700">This month</span>
-        <span className="float-right text-sm font-bold tabular-nums text-emerald-900">{fmt(costs.monthTotal)}</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#C9BD96" }}>This month</span>
+        <span className="float-right text-sm font-bold tabular-nums" style={{ color: "#EDE7D4" }}>{fmt(costs.monthTotal)}</span>
       </button>
       {open && (
         <div className="mt-1 rounded-lg border border-zinc-200 bg-white p-3 text-xs space-y-2">
@@ -125,19 +126,29 @@ const nav: { section: string; items: { label: string; href: string | null }[] }[
   },
 ];
 
+// Brand palette from pronghornequity.com/styles.css (7/12): navy-deep #17301F,
+// navy #1E3A30, ivory #EDE7D4, paper #FBF9F2, gold #C9BD96 / #A89A6F.
 export default function Sidebar() {
   const pathname = usePathname();
   return (
-    <aside className="w-60 shrink-0 border-r border-zinc-200 bg-white flex flex-col">
-      <div className="px-5 py-5 border-b border-zinc-200">
-        <div className="text-lg font-bold tracking-tight text-emerald-800">Pronghorn</div>
-        <div className="text-xs text-zinc-500">Deal Sourcing Platform</div>
+    <aside className="w-60 shrink-0 flex flex-col" style={{ background: "#17301F", borderRight: "1px solid rgba(237,231,212,0.14)" }}>
+      <div className="px-5 py-5 flex items-center gap-3" style={{ borderBottom: "1px solid rgba(237,231,212,0.14)" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/pronghorn-logo.png" alt="Pronghorn" className="h-11 w-auto" />
+        <div>
+          <div className="text-lg font-bold tracking-wide" style={{ color: "#EDE7D4", fontFamily: "'Playfair Display', Georgia, serif" }}>
+            PRONGHORN
+          </div>
+          <div className="text-[10px] uppercase tracking-[0.18em]" style={{ color: "#C9BD96" }}>
+            Equity Partners
+          </div>
+        </div>
       </div>
       <CostBadge />
-      <nav className="flex-1 px-3 py-4 space-y-6">
+      <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
         {nav.map((group) => (
           <div key={group.section}>
-            <div className="px-2 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+            <div className="px-2 mb-1.5 text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#A89A6F" }}>
               {group.section}
             </div>
             <ul className="space-y-0.5">
@@ -146,22 +157,20 @@ export default function Sidebar() {
                   <li key={item.label}>
                     <Link
                       href={item.href}
-                      className={`block rounded-md px-2 py-1.5 text-sm ${
+                      className="block rounded-md px-2 py-1.5 text-sm transition-colors"
+                      style={
                         pathname === item.href
-                          ? "bg-emerald-50 font-medium text-emerald-900"
-                          : "text-zinc-700 hover:bg-zinc-100"
-                      }`}
+                          ? { background: "#2C5A43", color: "#EDE7D4", fontWeight: 600 }
+                          : { color: "rgba(237,231,212,0.74)" }
+                      }
                     >
                       {item.label}
                     </Link>
                   </li>
                 ) : (
-                  <li
-                    key={item.label}
-                    className="flex items-center justify-between px-2 py-1.5 text-sm text-zinc-400"
-                  >
+                  <li key={item.label} className="flex items-center justify-between px-2 py-1.5 text-sm" style={{ color: "rgba(237,231,212,0.45)" }}>
                     {item.label}
-                    <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium">
+                    <span className="rounded px-1.5 py-0.5 text-[10px] font-medium" style={{ background: "rgba(237,231,212,0.1)" }}>
                       soon
                     </span>
                   </li>
@@ -171,7 +180,7 @@ export default function Sidebar() {
           </div>
         ))}
       </nav>
-      <div className="px-5 py-4 border-t border-zinc-200 text-xs text-zinc-400">
+      <div className="px-5 py-4 text-xs" style={{ borderTop: "1px solid rgba(237,231,212,0.14)", color: "#A89A6F" }}>
         John Hodson · Tom Berman
       </div>
     </aside>
