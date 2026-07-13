@@ -462,12 +462,13 @@ in MORNING-BRIEF.
   step (quota-capped by design). Add it as a second step after enrichment, or
   drop the unused secret from that workflow.
 - ⬜ SELF-ITERATE: what contact data are we still missing per company? Close the gap.
-  COVERAGE CHECKPOINT (2026-07-12 ~00:40, post relaxed-bar promotion + full tick):
-  **451 leads · 231 enriched · 204 owner names · 76 owner emails · 60
-  outreach-ready · 310 PROPRIETARY COMPANIES in the CRM (origin=lead) · 18
-  off-target flagged.** Remaining levers: owner phones/LinkedIn (VA shortlist,
-  va_export.js ready), Hunter quota pacing, and the ~180 no-web-presence
-  license rows (VA tier by design).
+  COVERAGE CHECKPOINT (2026-07-12 ~19:35, post tier-2 cascade w/ Hunter Starter):
+  **completeness now FULL 33 · CONTACTABLE 63 · IDENTIFIED 108** (was 14/62/128
+  — a 40-lead tier-2 pass added 7 verified owner emails + 33 LinkedIn URLs,
+  moving 19 leads to FULL). Hunter spend $1.50 (15 searches, well within 500/mo
+  Starter). owner_phone attribution fixed (11 company-lines demoted). Next
+  levers: keep tier-2 cascading the remaining incomplete-but-named leads
+  (bounded per run), and the ~180 no-web license rows are the VA tier by design.
 
 ## PM / Integrator  (branch `main`; owns Sidebar.tsx, shared docs, deploys)
 - Merge lane branches → main; build + deploy; wire new routes into Sidebar.
