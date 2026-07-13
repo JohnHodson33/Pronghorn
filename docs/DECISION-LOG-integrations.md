@@ -2,10 +2,14 @@
 
 ## 🤝 HANDOFF (keep current — replacement session resumes from this)
 
-**State (2026-07-12 ~16:45):** Worktree `C:\Users\johnd\Pronghorn-integrations`,
-branch `lane/integrations` (push after each unit; PM merges). Env files copied
-from main checkout; scraper/node_modules junction; web/node_modules real
-install. Migrations now 0004–0010 pending John/PM in Supabase SQL editor.
+**State (2026-07-13 ~00:25):** Worktree `C:\Users\johnd\Pronghorn-integrations`,
+branch `lane/integrations` (push after each unit; PM merges — merged through
+aff549e). Env files copied from main checkout; scraper/node_modules junction;
+web/node_modules real install. Migrations 0004–0010 LIVE; **only 0011
+(feedback_comments) pending PM.** Outlook consent LANDED — drafts + live
+ingestion verified working. Shipped tonight: call-prep API, auto-draft owners
+(25 in John's Outlook Drafts), deal-mail ingestion, feedback threads backend,
+company-level completeness (/api/companies), industry normalization.
 
 **MIGRATIONS 0004–0009 ARE LIVE (verified 7/12 ~19:00); only 0010 (feedback)
 pending.** Post-migration backfills DONE: industry_verified column populated
@@ -39,9 +43,10 @@ Outlook Drafts (push_drafts_to_outlook.js); ran the first `ingest_pursuit.js
 Invite for review). outlook-sync.yml schedules both every 3h (needs GRAPH_*
 repo secrets). Nothing sends. This closes the last gated Lane C feature.
 
-**PM POINTER (7/13 ~00:15):** new PM session is
-`local_1c8f3b29-e70c-4ca8-a854-70a3738332b1` — route cross-session status
-there (prior local_29b1759e is dead). Pointer acknowledged.
+**PM POINTER (CORRECTED 7/13 ~00:20):** the ACTIVE PM session is
+`local_b552862b-ea9f-4559-8adc-400f0bbf8c58` ("Pronghorn PM loop") — the
+earlier id (local_1c8f3b29) was wrong/nonexistent; prior local_29b1759e is
+dead. Route cross-session status to local_b552862b. Acknowledged.
 
 **⚠️ FLAG for Lane B/PM:** Lane B's brand-pass `web/app/globals.css` (in the
 Pronghorn-frontend worktree, ~1623 lines) has a DUPLICATE `@import
