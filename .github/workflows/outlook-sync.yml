@@ -1,0 +1,52 @@
+# Outlook sync (Lane C) — activates now that John has consented (Mail.Read +
+# Mail.ReadWrite). Two mail-dependent jobs on a schedule:
+#   1. live pursuit detection (Graph Mail.Read) — advance broker listings on
+#      NDA/CIM signals; pure read.
+#   2. push queued owner/inquiry drafts → John's Outlook Drafts (Mail.ReadWrite)
+#      — DRAFTS ONLY, never sends. John reviews + sends in Outlook.
+#
+# REQUIRED REPO SECRETS (+ the usual SUPABASE_*):
+#   GRAPH_CLIENT_ID, GRAPH_TENANT_ID, GRAPH_REFRESH_TOKEN
+
+name: Outlook Sync
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "20 */3 * * *" # every 3h, offset from the other jobs
+
+concurrency:
+  group: outlook-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: scraper
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: scraper/package-lock.json
+      - run: npm ci
+      - name: Live pursuit detection (read-only)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
+          GRAPH_TENANT_ID: ${{ secrets.GRAPH_TENANT_ID }}
+          GRAPH_REFRESH_TOKEN: ${{ secrets.GRAPH_REFRESH_TOKEN }}
+        run: node ingest_pursuit.js --live --hours 4
+      - name: Push queued drafts to Outlook Drafts (never sends)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
+          GRAPH_TENANT_ID: ${{ secrets.GRAPH_TENANT_ID }}
+          GRAPH_REFRESH_TOKEN: ${{ secrets.GRAPH_REFRESH_TOKEN }}
+        run: node push_drafts_to_outlook.js --limit 50

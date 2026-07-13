@@ -32,6 +32,13 @@ you selling"), queues it in outbox_emails for John's review+send. NEVER sends.
 Ran: 25 drafts queued ($0.024). Wired into leadgen.yml nightly. This removes
 the per-lead "draft" click. 0010 (feedback) now LIVE — poll active.
 
+**🎉 OUTLOOK CONSENT LANDED (7/12 ~22:25) — draft + live-ingestion features
+are LIVE.** Verified: pushed all 25 auto-drafted owner emails into John's
+Outlook Drafts (push_drafts_to_outlook.js); ran the first `ingest_pursuit.js
+--live` scan (Graph Mail.Read works — flagged Oliver's unmatched Data Room
+Invite for review). outlook-sync.yml schedules both every 3h (needs GRAPH_*
+repo secrets). Nothing sends. This closes the last gated Lane C feature.
+
 **Current task:** loop in build+monitor mode. Just shipped cascading enrichment
 (tier2.js), completeness levels, job progress, Outlook drafts (John-authorized
 in chat), Graph live ingestion, feedback pipeline.
