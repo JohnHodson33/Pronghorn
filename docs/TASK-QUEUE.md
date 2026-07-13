@@ -457,9 +457,12 @@ set) into your new chips UI as a small follow-up.
   exists for curated dumps; PM hand-cataloged today's Dan Mello advisor note
   as the pattern exemplar — see contact 7b39286a + its meeting activity):**
   (Lane C) (a) LIVE SWEEP: extend ingest_notion_meetings.js with --live —
-  poll the Notion API for new/edited AI meeting notes since last run (needs
-  NOTION_TOKEN internal-integration secret from John; degrade w/ exact
-  instructions until set); (b) AUTO-TAG: Claude matches each note against
+  poll the Notion API for new/edited AI meeting notes since last run.
+  **NOTION_TOKEN IS LIVE (John added 7/13 ~11:10; PM synced to all worktree
+  scraper/.env files + verified via API — currently sees 1 page, today's
+  Dan Mello note). John is re-sharing the PARENT notes location so future
+  notes inherit access; build the sweep now. Setup guide for Tom:
+  docs/NOTION-CONNECT.md (his token will be NOTION_TOKEN_TOM).** (b) AUTO-TAG: Claude matches each note against
   CRM companies/contacts/deals (names, domains, attendee emails) → writes
   kind='meeting' activity w/ doc_url provenance (idempotent per URL) +
   confidence; ALSO auto-detect advisor/broker/owner people mentioned w/
