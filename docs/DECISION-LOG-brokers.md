@@ -706,3 +706,54 @@ network blip during the nightly run.
   bizbuysell.com/search/tabb/...>` — a broker-filtered subset of BizBuySell,
   which we already scrape in full. Zero unique inventory → SKIP (mirror, same
   call as disabled bizquest). Other assoc MLS (WA CommercialMLS) = non-priority.
+
+## 2026-07-12 — loop iter: broker-contact gap investigated → structural, not a parse miss
+- Full audit clean: 19,271 listings, 113 T1 + 234 T2, all enabled sources fresh
+  07-12, no drift. (painting/restore intake recovery lands on next full scrape.)
+- Ran down the persistent **broker-contact gap** (audit flags 9 sources w/ ≥3
+  thesis-fit but 0 brokers: tupelomarket, bizbuysell, fcbb, bbf, murphy,
+  hedgestone, businessesforsale, vr, empire). Checked whether it's fixable:
+  - **tupelomarket:** Tupelo public API exposes firm but NO individual agent
+    name (tupelo.js:66 already documents this) → can't seed a person row.
+  - **bbf (best case — assoc MLS):** detail pages (a-bus-d.asp) DO carry contact,
+    but only **office brokerage + direct/cell phone + office address** (e.g.
+    "Sunbelt Business Brokers of South FL", (561) 832-9222). Individual agent
+    NAME is not published; email is form-gated (no plaintext @).
+- **Conclusion — structural, not neglect:** the established enrichment convention
+  (businessbroker.js:133 — "only seed brokers table when there's a real person
+  name; else keep in raw") means office-only contact can't populate broker rows.
+  These MLS/aggregator pages deliberately withhold individual agent PII. So the
+  gap isn't a parse bug and isn't closeable under current rules. NOT building a
+  browser detail-fetch that only writes office phone to raw (low value + partly
+  redundant with the national `sunbelt` source).
+- **For PM/John (decision needed):** cold-calling is the primary channel, so
+  office/brokerage phone IS useful. If you want it, that's a deliberate
+  data-model change: allow FIRM/office contacts (company + phone, no person) into
+  the brokers table. Say the word and I'll build gated detail-fetch enrichment
+  for bbf + fcbb + the bizmls national source (office phone → brokers, flagged
+  is_firm=true). Until then the "person-name-only" rule stands and the gap is WAI.
+
+## 2026-07-13 — loop iter (terse): zion + southernmergers health clean (parse quality verified)
+- Merged origin/main (PM owner-name cascade: Hunter $49 approved, SoS/corp-registry
+  free unlocks — enrichment lane, no Lane A change). No new Lane A tasks.
+- Health: southernmergers 21/0 errors, zion 4 — counts match DB. Spot-checked
+  zion Wix parse QUALITY (not just count): clean names + asking/rev/SDE + UT on
+  all 4 (incl. roofing co. $499K SDE = T1). Fragile rich-text grouping holds, no drift.
+
+## 2026-07-13 — loop iter (terse): green-specialist probe → BBF member, already covered
+- Up to date, no new PM tasks. New-source probe (angle A + B, green verticals).
+- Angle A: "dealrelations.com landscaping/lawn/pest/tree" → only hit is
+  sunbeltnaples (already subdomain #1). No new DealRelations subdomain.
+- Angle B: **acquisitionexperts.net** (FL lawn-care/landscaping specialist broker)
+  — listings are an `<iframe src=bbms.info/listings/bbf-170/...>`, i.e. BBF member
+  broker #170's feed off the Business Brokers of Florida MLS, which our `bbf`
+  source already scrapes in full (all ~2,115 FL member listings). Subset, no
+  unique inventory → SKIP. Signal: FL green-vertical specialists route through
+  BBF (already covered), so they're not a productive new-source frontier.
+
+## 2026-07-13 — loop iter (terse): fcbb + intermountain health clean
+- Up to date, no new PM tasks. Health: fcbb 825/0 errors (matches DB), intermountain
+  8/0 errors. Spot-checked intermountain K/M prose parse: names/state/asking clean;
+  full financials extracted where prose states them (home-based plumbing $800K ask /
+  $1.19M rev / $465K SDE = T1). Rev/CF nulls elsewhere = teaser pages w/o stated
+  financials (WAI per adapter design), not drift. Both parsers holding.
