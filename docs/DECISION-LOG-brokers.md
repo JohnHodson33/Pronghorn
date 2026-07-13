@@ -739,3 +739,14 @@ network blip during the nightly run.
 - Health: southernmergers 21/0 errors, zion 4 — counts match DB. Spot-checked
   zion Wix parse QUALITY (not just count): clean names + asking/rev/SDE + UT on
   all 4 (incl. roofing co. $499K SDE = T1). Fragile rich-text grouping holds, no drift.
+
+## 2026-07-13 — loop iter (terse): green-specialist probe → BBF member, already covered
+- Up to date, no new PM tasks. New-source probe (angle A + B, green verticals).
+- Angle A: "dealrelations.com landscaping/lawn/pest/tree" → only hit is
+  sunbeltnaples (already subdomain #1). No new DealRelations subdomain.
+- Angle B: **acquisitionexperts.net** (FL lawn-care/landscaping specialist broker)
+  — listings are an `<iframe src=bbms.info/listings/bbf-170/...>`, i.e. BBF member
+  broker #170's feed off the Business Brokers of Florida MLS, which our `bbf`
+  source already scrapes in full (all ~2,115 FL member listings). Subset, no
+  unique inventory → SKIP. Signal: FL green-vertical specialists route through
+  BBF (already covered), so they're not a productive new-source frontier.
