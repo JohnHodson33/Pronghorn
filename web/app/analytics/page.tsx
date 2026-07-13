@@ -28,7 +28,15 @@ function BandTable({ rows, muted }: { rows: IndustryStats[]; muted?: boolean }) 
       <tbody className="divide-y divide-zinc-100">
         {rows.map((s) => (
           <tr key={s.industry} className="hover:bg-zinc-50">
-            <td className={`px-5 py-2.5 font-medium ${muted ? "text-zinc-500" : ""}`}>{s.industry}</td>
+            <td className={`px-5 py-2.5 font-medium ${muted ? "text-zinc-500" : ""}`}>
+              <a
+                href={`/listings?industry=${encodeURIComponent(s.industry)}`}
+                className="hover:text-emerald-700 hover:underline"
+                title="Open the live listings behind this row"
+              >
+                {s.industry}
+              </a>
+            </td>
             <td className="px-3 py-2.5 text-right text-xs text-zinc-500 tabular-nums">{s.n}</td>
             {SIZE_BANDS.map((b) => {
               const cell = s.bands[b.key];

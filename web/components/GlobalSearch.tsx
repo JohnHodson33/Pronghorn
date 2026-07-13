@@ -7,13 +7,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type Hit = { id: string; label: string; sub: string; href: string };
-type Results = { companies: Hit[]; contacts: Hit[]; deals: Hit[]; listings: Hit[] };
+type Results = { companies: Hit[]; contacts: Hit[]; deals: Hit[]; listings: Hit[]; brokers: Hit[] };
 
-const EMPTY: Results = { companies: [], contacts: [], deals: [], listings: [] };
+const EMPTY: Results = { companies: [], contacts: [], deals: [], listings: [], brokers: [] };
 const GROUPS: { key: keyof Results; label: string }[] = [
   { key: "deals", label: "Deals" },
   { key: "companies", label: "Companies" },
   { key: "contacts", label: "Contacts" },
+  { key: "brokers", label: "Brokers" },
   { key: "listings", label: "Listings" },
 ];
 
@@ -57,7 +58,7 @@ export default function GlobalSearch() {
     setBusy(true);
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(term.trim())}`);
-      if (res.ok && my === seq.current) setResults(await res.json());
+      if (res.ok && my === seq.current) setResults({ ...EMPTY, ...(await res.json()) });
     } finally {
       if (my === seq.current) setBusy(false);
     }
