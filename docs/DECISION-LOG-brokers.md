@@ -861,3 +861,9 @@ network blip during the nightly run.
 - No queue change; auto-promote (#1) still awaiting John's direct unblock.
 - Health: sunacquisitions 6/0 err (index 23 incl. Sold — skip is WAI, matches DB),
   wpbdp 13/0 err (13/13 broker contacts). Both holding.
+
+## 2026-07-13 — loop iter (terse): gabb + synergy health clean
+- Foreign TASK-QUEUE edit (Lane B sweep items) stashed/restored around merge.
+  No Lane A change; auto-promote (#1) still awaiting John's direct unblock.
+- Health: gabb 201 (feed 202; DB 199 → slight growth, normal churn), synergy
+  20/0 err (DB 21, one delisting). Both holding.
