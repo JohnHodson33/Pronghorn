@@ -456,6 +456,22 @@ set) into your new chips UI as a small follow-up.
   inert, delete at leisure. Lane B: rules editor + "why drafted" line remain
   yours.
   --- original card ---
+- 🔥🔥🔥 **LEAD→CONTACT CHANNEL SYNC — ROOT-CAUSE FIX (John found it live 7/13
+  ~14:00: A & B Lawn Service showed FULL + 2 dots on Enrichment but its CRM
+  contact had NO channels — "I would not call that full… I assume there are
+  many other examples"):** He was right: PM audit found **96/136 owner
+  contacts stale** (lead had channels the contact lacked — promotion creates
+  the contact once and later enrichment never propagates). **PM ran the
+  one-time heal: 93 contacts updated, 112 channel fields filled
+  (fill-blanks-only), A & B verified.** LANE C — fix the WRITE PATH so it
+  never recurs: (a) whenever enrichment updates leads.owner_* on a lead
+  with company_id, propagate to the matching owner contact (fill-blanks) in
+  the same write; (b) promote_leads.js updates existing linked contacts'
+  blank channels on every pass, not only at creation; (c) add the sync to
+  the tier-2/run_jobs completion step. LANE B — company profile: if the
+  owner contact still lacks a channel the LEAD has, show it with provenance
+  ("from enrichment — not yet on contact") rather than blank. Acceptance:
+  Enrichment-tab dots and the company profile can never disagree.
 - 🔥🔥🔥 **JOHN'S VERDICT BATCH (7/13 ~13:15 in PM chat) — FOUR APPROVALS,
   effective now:**
   (1) **SIZE-PROXY CARD 37450f11 APPROVED WITH AMENDMENT (Lane C — top
