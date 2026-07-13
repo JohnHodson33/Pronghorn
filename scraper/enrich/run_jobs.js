@@ -83,7 +83,8 @@ async function main() {
       await setProgress(job.id, {
         status: 'complete', finished_at: new Date().toISOString(),
         counts: { total, processed, found_owner: owners, found_email: emailsNow, tier1: fresh.length, tier2: t2.processed, tier2_emails: t2.emails, tier2_linkedins: t2.linkedins },
-        cost_actual: Number((fresh.length * 0.01 + t2.emails * (Number(process.env.HUNTER_PER_SEARCH) || 0.10) + t2.processed * 0.006).toFixed(2)),
+        // Hunter is a flat sub ($0 marginal); tier-2 marginal = Exa LinkedIn only
+        cost_actual: Number((fresh.length * 0.01 + t2.processed * 0.006).toFixed(2)),
       });
       log.info(`  job done: ${processed} processed (${fresh.length} tier1, ${t2.processed} tier2 → +${t2.emails} emails, +${t2.linkedins} linkedins)`);
     } catch (e) {

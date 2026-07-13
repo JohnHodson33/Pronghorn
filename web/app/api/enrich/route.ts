@@ -10,8 +10,11 @@ import { NextResponse } from "next/server";
 import { hasDb, serverDb } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
+// Marginal cash only. Hunter is a flat monthly sub → $0 marginal (it counts
+// against the plan's search quota, not per-lead cash), so a tier-2 lead's
+// marginal cost is just the Exa LinkedIn call.
 const COST_PER_LEAD = 0.01;          // tier 1: website scrape + Exa + Haiku
-const COST_PER_TIER2 = 0.11;         // tier 2 max: Hunter search ~$0.10 + Exa LinkedIn ~$0.006
+const COST_PER_TIER2 = 0.01;         // tier 2 marginal: Exa LinkedIn (~$0.006) + slack
 
 export async function GET(req: Request) {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });

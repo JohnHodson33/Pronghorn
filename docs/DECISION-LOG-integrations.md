@@ -16,6 +16,22 @@ when convenient: re-run import_hubspot_contacts.js to move [hs:] note
 breadcrumbs into the now-live hubspot_id/firm/title columns (needs a fresh MCP
 contact dump — low urgency, contacts already usable).
 
+**[self-iterate] 7/12 eve:** noticed by using the data that 21 leads had a
+GENERIC mailbox (info@/sales@/support@) sitting in owner_email — inflating
+CONTACTABLE with non-personal addresses (John wants OWNERS). Root cause: the
+enrichment write path fell back owner_email = owner_email || business_email.
+Fixed the source (generic → business_email, only personal in owner_email) +
+cleaned the 20 existing (+1 junk support@exa.ai scrape artifact). Coverage now
+honest: FULL 48 / CONTACTABLE 62. business_email preserved for later use.
+
+**AUTONOMY NIGHT (John 7/12 ~21:00 "remove human clicks"):** posted 2 agent
+suggestions to the brain (auto-draft owner outreach; nightly digest+cadence).
+Built `auto_draft_owners.js` — Claude drafts a personalized cold email to the
+OWNER of every CONTACTABLE proprietary company (relationship opener, not "are
+you selling"), queues it in outbox_emails for John's review+send. NEVER sends.
+Ran: 25 drafts queued ($0.024). Wired into leadgen.yml nightly. This removes
+the per-lead "draft" click. 0010 (feedback) now LIVE — poll active.
+
 **Current task:** loop in build+monitor mode. Just shipped cascading enrichment
 (tier2.js), completeness levels, job progress, Outlook drafts (John-authorized
 in chat), Graph live ingestion, feedback pipeline.
