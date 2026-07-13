@@ -581,6 +581,15 @@ set) into your new chips UI as a small follow-up.
   prefix-listing = metadata, NO migration needed — bucket auto-creates) +
   attach control on submit form + 📎 in every thread, chips w/ signed
   download links, mobile-verified. LANE C: only (b) PPP import remains.
+- 🔨 LANE C — **(b) PPP SIZE IMPORT — SHIPPED 7/13 ~15:50 (308e8ff).**
+  scraper/import_ppp.js: SBA 150k-plus PPP file (968k loans → 63k green-NAICS
+  subset kept locally), conservative name+state match, 19/19 dry-run-validated
+  → 19 leads gained PAYROLL-VERIFIED employee counts; **PLATFORM tier 1 → 10
+  companies** (Tree Care of New York 120 jobs, Berger 111, All Turf 82, Tree
+  Pros AZ 61…). jobs_reported ranks just under stated-on-site in tier math;
+  Est. Revenue/EBITDA columns fill automatically. Re-run --match as new leads
+  land (dataset static since 2021). Sub-150k files deliberately skipped: those
+  borrowers are too-small tier by definition.
 - 🔥🔥 **IMPROVEMENTS ATTACHMENTS + PPP SIZE DATA (John in chat 7/13 ~10:40 —
   "Tom should be able to attach analyses or data files… he's been using PPP
   loan databases to estimate company sizes"):** (Lane C) (a) Supabase
