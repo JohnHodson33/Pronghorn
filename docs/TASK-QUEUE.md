@@ -614,8 +614,17 @@ set) into your new chips UI as a small follow-up.
   skipped leads are TDLR rows w/ owner NAME but no website; an Exa/search
   website-finder pass before enrichment would unlock them (owner coverage 112/227,
   email coverage only 5/227 — email-finder key is the other lever).
-- ⬜ More state license boards (AZ OPM, GA, NC, SC, TN, FL) — recon logged in
-  DECISION-LOG-integrations (GA Kelly blocked, FL = Power BI, TN empty).
+- 🔨 LANE C — **AZ owner-name resolver — SHIPPED (7/13 AM).** AZ ROC publishes
+  ALL ~58k active contractor licenses as a public CSV (roc.az.gov/posting-list)
+  incl. **Qualifying Party** = the licensed person. Registered as the 'AZ'
+  resolver in enrich/sos_lookup.js (weekly-cached download, exact-name match w/
+  suffix stripping, filters "QP Exempt" + org-shaped QPs). Live: 2/43 nameless
+  AZ TREE CARE leads resolved+persisted (tree work is mostly ROC-exempt — the
+  hit rate on AZ landscape/HVAC/plumbing/electrical lists will be far higher
+  since those REQUIRE a ROC license). Supersedes the dead AZ eCorp recon path.
+- ⬜ More state license boards (GA, NC, SC, TN, FL; AZ OPM for pest) — recon
+  logged in DECISION-LOG-integrations (GA Kelly blocked, FL = Power BI, TN
+  empty). NC is the next-largest nameless pool (9).
 - ⬜ Login-network sync — Axial (co-pilot + CIM ingest) + DealForce (creds in .env).
 - 📝 COORDINATION NOTE for Lane A (enrichment.yml): contract verified — the
   workflow's `node enrich/run_enrichment.js --limit N` + env vars match Lane C's
