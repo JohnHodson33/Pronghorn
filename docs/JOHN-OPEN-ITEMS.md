@@ -21,10 +21,20 @@ you or recently decided. Ask "what's open?" anytime and I'll resend it._
 3. **CRM session swap (in flight):** paste the two prompts from chat (new
    session boot + old session stand-down); click **Allow** when the new
    session's hello message arrives; archive the old one after it confirms.
-4. **Approve/amend on /improvements:** the amended **nightly digest** card
-   (thesis-gated auto-enrichment — Lane C holds the build for your approve)
-   and the **size-proxy scoring** card (signals work may start; tier math
-   waits for your amendments).
+4. **Approve/amend on /improvements:** the **nightly digest** card (Lane C
+   answered your thesis question with a rules-based revision — explicit
+   auto-enrich rules you create; zero rules = zero auto-spend) and the
+   **size-proxy scoring** card (signals already accumulating — tier math
+   ships fast on your approve).
+4b. **SoS owner-name decision (now the coverage bottleneck):** the named
+   backlog has exhausted its Hunter attempts, so contactable growth needs
+   owner NAMES. Pick: (a) extend the free Socrata license-dataset pattern
+   state-by-state ($0, proven in TX), (b) cheap keyed lookup
+   (OpenCorporates/skip-trace, ~cents/lead), (c) headless-browser resolvers
+   per priority state. My read: start with (a) for your priority states +
+   sample (b) on one batch to compare hit rates.
+4c. **HubSpot contact re-import:** needs a direct 1-line ask in a Lane C
+   session (bulk-PII guardrail; low urgency, contacts usable as-is).
 5. **💳 Fable 5 billing check (morning):** if Fable 5 flipped to token
    billing overnight, restart agent sessions on Opus 4.8 — agents cannot
    detect the switch or switch models themselves.

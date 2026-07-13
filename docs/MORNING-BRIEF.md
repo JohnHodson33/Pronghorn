@@ -21,13 +21,13 @@
    every-15-min workflows use roughly 3–6k — so going private likely means
    a paid Actions tier or slowing the runner cadence. Your call; I can
    model the exact cost if you want.
-1. **GitHub secrets for Outlook automation (~2 min):** Lane C's new
-   `outlook-sync.yml` runs every 3h on GitHub's servers (pursuit detection +
-   pushing queued drafts into your Outlook Drafts — never sends). It needs 3
-   more repo secrets (GitHub → Settings → Secrets and variables → Actions):
-   `GRAPH_CLIENT_ID`, `GRAPH_TENANT_ID`, `GRAPH_REFRESH_TOKEN` — values from
-   `C:\Users\johnd\Pronghorn\scraper\.env`. Until then it runs only when a
-   worker session drives it locally.
+1. **GitHub secrets — 4 to add (~2 min):** GitHub → Settings → Secrets and
+   variables → Actions, values from `C:\Users\johnd\Pronghorn\scraper\.env`:
+   `GRAPH_CLIENT_ID`, `GRAPH_TENANT_ID`, `GRAPH_REFRESH_TOKEN` (unlocks the
+   every-3h Outlook sync: pursuit detection + drafts push, never sends) and
+   `GOOGLE_PLACES_API_KEY` (the 15-min leadgen runner's only missing key —
+   your original six from yesterday are working; the 06:00 scrape proved it).
+   Until then these jobs only run when a worker session drives them locally.
 2. **Vercel env keys (~3 min, fixes the "key missing" badges):**
    Vercel dashboard → pronghorn → Settings → Environment Variables → add
    `ANTHROPIC_API_KEY`, `EXA_API_KEY`, `HUNTER_API_KEY`, `SERPER_API_KEY`,
