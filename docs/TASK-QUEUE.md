@@ -474,6 +474,18 @@ set) into your new chips UI as a small follow-up.
   multiplier = calibration knob); use the LARGER single draw, never sum
   draws. UI (Lane B): est. revenue + est. EBITDA columns w/ "~" prefix +
   tooltip ("PPP-derived estimate"), sortable, beside size-tier chips.
+  **AMENDMENT 2 (John 7/13 ~13:45): assumptions are UI-EDITABLE, math
+  CASCADES.** (Lane B) a **"Size Estimation" settings tab** (same pattern
+  as Scrape Criteria): per-industry inputs for payroll-%-of-rev (seeds
+  above) AND **EBITDA margin % (seed 20 for ALL industries)**. (Lane C)
+  store assumptions in an editable table (like taxonomy); **compute
+  estimates at read time from raw PPP payroll × current assumptions —
+  never persist baked revenue/EBITDA numbers** so one input change updates
+  the whole DB instantly. Data source: SBA's public PPP FOIA dataset
+  (data.sba.gov — full loan-level CSVs incl. borrower name/address/NAICS/
+  loan amount/jobs; free download, no vendor needed). ALSO report **PPP
+  match-rate per industry** vs our scraped companies so John can judge
+  effectiveness + evaluate future baselining sources.
   (2) **DIGEST CARD 9bb9d925 APPROVED** — Lane C builds per the amended
   rules-based spec. (3) **PINNED VIEWS APPROVED** (card 5e13d986, Lane B).
   (4) **PAINTING/RESTORE SCREENING: DONE** — PM executed with John's
