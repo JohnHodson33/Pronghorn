@@ -87,6 +87,25 @@ in MORNING-BRIEF.
   standing parity rule. INTERIM (until Lane C's 0011 lands): render the
   existing body-append "— X adds:" segments as a pseudo-thread so John's
   amendments and PM replies already read as dialogue.
+- 🔥🔥🔥 **COMPLETENESS LEVELS IN THE CRM + ENRICHMENT NAV FIX (John in chat
+  7/12 ~23:59 — live feedback, do the nav fix FIRST, it's a 20-min unblocker):**
+  (a) **NAV FIX:** from the Enrichment tab, clicking a company (name link and
+  the CRM button currently both → /companies/[id]) strands John: the profile's
+  back arrow goes to /companies, so working new-enrichments one-by-one means
+  re-navigating to Enrichment every single time. Fix: company-profile back
+  control returns to WHERE HE CAME FROM (?from= param or router.back() w/
+  referrer fallback to /companies); ALSO drop the redundant duplicate click
+  target on the Enrichment rows — keep the company-name link only. Acceptance:
+  Enrichment → click company → profile → back → SAME enrichment list, scroll/
+  filters intact, repeat for the next row without friction.
+  (b) **COMPLETENESS ACROSS THE CRM:** the FULL/CONTACTABLE/IDENTIFIED/BASIC/RAW
+  level must appear OUTSIDE the enrichment tab: level chip + channel dots as a
+  column on /companies (and /contacts), a level FILTER + per-level counts
+  header, combinable with the industry filter — John's stated query: "how many
+  CONTACTABLE owners do I have in tree care across the full company database."
+  Company profile shows its level near the header. (Lane C below serves the
+  level server-side for companies; interim: derive client-side from owner
+  contact channels.) Mobile parity per standing rule.
 - 🔥 **BRAND ALIGNMENT PASS (John 7/12, PM started):** match the platform's
   cosmetics to pronghornequity.com. PM shipped: logo (public/pronghorn-logo
   .png) + dark forest sidebar + brand CSS variables in globals.css (--ph-navy
@@ -329,6 +348,16 @@ set) into your new chips UI as a small follow-up.
   off_target), new lists start HELD (one activation decision per list),
   nightly $ + Hunter caps, digest = receipt + tonight's plan w/ pause. Do
   NOT start the digest build until John approves the amended card.
+- 🔥🔥🔥 **COMPANY-LEVEL COMPLETENESS SERVER-SIDE (John in chat 7/12 ~23:59,
+  pairs w/ Lane B's CRM levels item):** extend the completeness single source
+  of truth (web/lib/completeness.ts) to COMPANIES: compute a company's level
+  from its owner contact(s) channels (owner contact role=owner: name/email/
+  phone/LinkedIn) — same FULL/CONTACTABLE/IDENTIFIED/BASIC/RAW ladder.
+  /api/companies (list) returns level + per-level counts + supports
+  ?level= filter combinable w/ industry; company detail includes it. Keep
+  lead-level and company-level logic in the one module so the ladders never
+  drift. John's acceptance query: "count of CONTACTABLE owners in tree care
+  across the whole company DB" answerable in one filtered view.
 - 🔥🔥 **INDUSTRY_VERIFIED NORMALIZATION (Lane B finding 7/12 late, PM relay):**
   classifier output fragments ("Tree care" / "Tree care services" / "Tree Care"
   = 3 different filter chips; same for Pool Service/Pool Services) — every
