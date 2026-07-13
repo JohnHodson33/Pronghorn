@@ -19,6 +19,12 @@ don't have, SENDING outreach, destructive actions). Bias hard to shipping.
 
 Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 
+**📋 MIGRATION STATE — PM DB AUDIT 7/13 ~10:00 (definitive; stop re-checking):**
+0004–0010 ALL APPLIED (contact_directory, pursuit_flow, dashboard views +
+outbox, outreach_tracks, enrichment_jobs + taxonomy, usage_events, feedback).
+**MISSING: 0011 (feedback_comments) + 0012 (lead_lists.progress)** — both on
+John's morning list. Build against the degrade paths until he runs them.
+
 **📮 PM SESSION CHANGED (7/13 — CORRECTED ~01:20, the 00:15 id was WRONG):**
 the prior PM session (local_29b1759e-…) is DEAD. The ACTIVE PM session id is
 **`local_b552862b-ea9f-4559-8adc-400f0bbf8c58`** ("Pronghorn PM loop") —
