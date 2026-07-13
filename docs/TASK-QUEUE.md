@@ -53,6 +53,22 @@ in MORNING-BRIEF.
   (submitted→triaged→building→shipped) so Tom sees ideas move; agent
   self-review + roadmap panel (PM curates). PM wires sidebar entry on merge.
   Ship the basic version TODAY — the Haiku refine-chat step is v2.
+- ✅ DECIDED (John 7/12 ~16:20): **Hunter Starter $49/mo APPROVED** — John
+  upgrades in the Hunter dashboard (2 min; same API key, limits lift
+  automatically); sub flips planned→active on the cost badge when done.
+  **Hunter is ALWAYS part of the default cascade**: any Enrich click fires
+  Hunter whenever contact info is still missing after the free tiers (early
+  exit saves the cost when free sources complete the contact). **Skip-tracing
+  DEFERRED** — run real Hunter reps first, measure hit rate, then decide;
+  vendor recs on file (Tracerfy ~$0.02/rec pay-per-hit first sample, REISift
+  $0.10 @ ~81% match) in the 7/12 chat + PM memory.
+- 🔥 **FREE OWNER-NAME UNLOCKS (PM add 7/12, from John's fill-rate question):**
+  (Lane C) add **Secretary of State / state corp registry lookups** to the
+  cascade — registered agents/officers/members for LLCs give owner NAMES at
+  high accuracy for $0 (we already do TX license boards; extend the pattern:
+  AZ CC, CO SoS, WA SoS, FL Sunbiz have searchable/free endpoints). Combined
+  w/ website discovery this is the biggest lift from ◔BASIC → ◑IDENTIFIED,
+  and names are the key that unlocks Hunter + skip-tracing downstream.
 - 🔥🔥🔥 **ENRICHMENT COMPLETENESS LEVELS replace binary "enriched" (John 7/12
   ~16:05 — "enriched next to a lead with no owner info feels like nothing
   happened"):** status stays lifecycle-only (new/enriching/…); ADD a computed
