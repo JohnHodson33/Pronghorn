@@ -78,6 +78,9 @@ in MORNING-BRIEF.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- ⚠️ LANE B HOUSEKEEPING (Lane C flag 7/13): your worktree's globals.css has a
+  DUPLICATE mid-file `@import url(Playfair…)` that 500s YOUR dev server —
+  main is fixed and prod is fine; pull main / dedupe locally.
 - 🔥🔥🔥 **IMPROVEMENTS DIALOGUE (John in chat 7/12 ~23:45 — TOP OF LANE; screenshot
   feedback on /improvements):** John's exact words: "I wanna be able to actually
   have a dialogue with the agent before I click approve… and in that same
