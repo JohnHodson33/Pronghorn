@@ -9,6 +9,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
+import { PinButton } from "@/components/PinnedViews";
 
 export type DirectoryContact = {
   id: string;
@@ -117,6 +118,7 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
         </label>
         <span className="ml-auto flex items-center gap-3">
           <span className="text-sm text-zinc-500 tabular-nums">{rows.length} of {contacts.length}</span>
+          <PinButton defaultLabel={[role, industry, "contacts"].filter(Boolean).join(" ")} />
           <button
             onClick={exportCsv}
             disabled={rows.length === 0}

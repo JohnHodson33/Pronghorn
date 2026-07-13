@@ -3,6 +3,7 @@
 // across both prongs, and the per-subsector broker vs proprietary readiness
 // matrix that informs the "commit to one vertical" decision.
 import Link from "next/link";
+import PinnedViews from "@/components/PinnedViews";
 import { fetchDashboardV3 } from "@/lib/dashboard-v3";
 
 export const dynamic = "force-dynamic";
@@ -45,6 +46,8 @@ export default async function Dashboard() {
           <Link href="/list-building" className="font-medium text-emerald-700 hover:underline">Proprietary Deal Flow →</Link>
         </div>
       </header>
+
+      <PinnedViews />
 
       {/* ---- Key Actions: the human-attention queue ---- */}
       <section className="rounded-xl border-2 border-emerald-700/20 bg-white">
