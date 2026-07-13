@@ -9,10 +9,10 @@ type Item = {
   id: string;
   created_at: string;
   author: string;
-  type: "bug" | "idea" | "change";
+  type: "bug" | "idea" | "change" | "suggestion";
   page: string | null;
   body: string;
-  status: "submitted" | "triaged" | "building" | "shipped" | "verified";
+  status: "submitted" | "triaged" | "building" | "shipped" | "verified" | "suggested" | "approved" | "declined";
   lane: string | null;
   shipped_ref: string | null;
 };
