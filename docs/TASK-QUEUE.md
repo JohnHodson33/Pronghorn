@@ -363,6 +363,23 @@ set) into your new chips UI as a small follow-up.
   off_target), new lists start HELD (one activation decision per list),
   nightly $ + Hunter caps, digest = receipt + tonight's plan w/ pause. Do
   NOT start the digest build until John approves the amended card.
+- 🔥🔥🔥 **LIST-BUILD RUN VISIBILITY + FASTER DRAIN (John in chat 7/13 ~00:50 —
+  his Lawn Care National list sat "queued · 0 found" 15 min and read as
+  BROKEN; "this is a very core functionality"):** (Lane C) (a) shorten
+  `.github/workflows/leadgen.yml` cadence from 2×/day to **every 15 min**
+  (same pattern as enrichment-jobs.yml — cheap no-op when queue empty);
+  (b) add progress fields to lead_lists (status pending|running|complete|
+  error + started_at + per-source progress jsonb: source running, candidates
+  seen, leads inserted so far) and have run_leadgen.js update them as it
+  works; (c) optional instant-trigger: POST /api/lead-lists fires a
+  workflow_dispatch via GH token if present in env. (Lane B) (d) "Recent
+  lists" rows show HONEST live status: queued → "queued — runner picks this
+  up within 15 min (next pass ~HH:MM)"; running → live progress ("serper_maps
+  — 38 found of target 100…") via polling; complete → result + link; error →
+  say so. Same design language as the enrichment progress banner. NEVER let
+  a queued list read as a malfunction. Acceptance: John builds a list,
+  watches numbers move or sees exactly when it will run, and is told when
+  it's done.
 - 🔥🔥🔥 **COMPANY-LEVEL COMPLETENESS SERVER-SIDE (John in chat 7/12 ~23:59,
   pairs w/ Lane B's CRM levels item):** extend the completeness single source
   of truth (web/lib/completeness.ts) to COMPANIES: compute a company's level
