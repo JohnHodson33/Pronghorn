@@ -14,10 +14,11 @@
    `GOOGLE_PLACES_API_KEY` (values from `scraper\.env`), then tell me — I
    redeploy. Until then /list-building badges are truthful about the WEB env
    only; the GitHub runner has all keys and drains jobs every 15 min anyway.
-3. **Heads-up — your first real Enrich click is the live end-to-end test**
-   (~$14 max-cascade estimate on the current selection). Everything is
-   verified except a real UI-triggered paid run; I'll be watching the job
-   the moment you click.
+3. **Heads-up — your first real Enrich click is the live end-to-end test.**
+   Real max-cascade estimate for the ENTIRE remaining lead base is **$4.03
+   (403 leads)** — the ~$14 figure was stale, from before the Hunter
+   accounting fix. Everything is verified except a real UI-triggered paid
+   run; I'll be watching the job the moment you click.
 
 ## This week
 - **Jack Williams (William Blair) — Tue Jul 14, 3:00–3:30 PM CT, Teams**
