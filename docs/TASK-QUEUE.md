@@ -59,6 +59,15 @@ in MORNING-BRIEF.
 ---
 
 ## Lane A — Brokers  (`scraper/sources/*`, `scraper/config.json`)
+- 🔥🔥🔥 **JOHN APPROVED 7/13 (~01:45, explicit in PM chat) — your two AUTONOMY
+  suggestions are GO, build both:** (1) **AUTO-PROMOTE T1 → PURSUITS:** nightly
+  job opens a pursuit (stage 'new') for any Tier-1 listing clearing HARD
+  criteria — priority state + CF $300K–$10M + thesis keyword + not delisted +
+  not mirror-dup — each with a "why it qualified" receipt on the listing/deal;
+  human touch = approve/reject (Pass action). Never contacts anyone. (2)
+  **SOURCE-HEALTH DRIFT ALERTING:** trailing-7-run baseline per source; flag
+  >25% count drop or null-financial-rate spike → compact digest to dashboard
+  Key Actions (+ brain). Post-build: PM lists both in MORNING-BRIEF receipts.
 - 🔥 **OPS AUTOMATION (PM refill 7/11 — Lane A's own recon says free-source
   discovery is saturated; shift to keeping the machine running itself):**
   GitHub Actions workflows (`.github/workflows/`, Lane A owns) for (a) nightly
