@@ -22,7 +22,7 @@ Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 **⚙️ SELF-ITERATE QUOTA (John 7/12 eve — "it feels like improvements only
 happen when I prompt them"):** every lane ships **≥1 UNPROMPTED improvement
 per night** — something you noticed by using the live site, not something
-John asked for — and tags its commit `[self-iterate]`. ALSO: migration 0010
+John asked for — and tags its commit `[self-iterate]`. ALSO: once migration 0010
 is applied → **poll /api/feedback for status='submitted' EVERY loop
 iteration**; Tom/John submissions on /improvements are top-of-lane priority.
 PM lists each lane's self-iterate ship in MORNING-BRIEF so John sees
