@@ -26,13 +26,15 @@ you or recently decided. Ask "what's open?" anytime and I'll resend it._
    auto-enrich rules you create; zero rules = zero auto-spend) and the
    **size-proxy scoring** card (signals already accumulating — tier math
    ships fast on your approve).
-4b. **SoS owner-name decision (now the coverage bottleneck):** the named
-   backlog has exhausted its Hunter attempts, so contactable growth needs
-   owner NAMES. Pick: (a) extend the free Socrata license-dataset pattern
-   state-by-state ($0, proven in TX), (b) cheap keyed lookup
-   (OpenCorporates/skip-trace, ~cents/lead), (c) headless-browser resolvers
-   per priority state. My read: start with (a) for your priority states +
-   sample (b) on one batch to compare hit rates.
+4b. **SoS owner-name decision (the coverage bottleneck) — option (a) is
+   winning on its own:** Lane C found AZ's ROC publishes all ~58k contractor
+   licenses free (incl. the licensed person) and wired it in — the free
+   official-dataset pattern now covers **TX + AZ, your two biggest lead
+   states**, resolving owner names at ingest for $0 (best in trades AZ
+   licenses: landscape/HVAC/plumbing/electrical; tree care is mostly
+   ROC-exempt). NC (9 nameless) is next. Remaining decision is narrower:
+   sample a cheap keyed lookup (~cents/lead) ONLY for leads free datasets
+   can't name, or let the VA tier handle that tail.
 4c. **HubSpot contact re-import:** needs a direct 1-line ask in a Lane C
    session (bulk-PII guardrail; low urgency, contacts usable as-is).
 5. **💳 Fable 5 billing check (morning):** if Fable 5 flipped to token
