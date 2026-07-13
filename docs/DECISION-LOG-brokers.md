@@ -856,3 +856,8 @@ network blip during the nightly run.
 - Health: sunbeltmidwest 138 (95% CF, 93% state, 136 w/ agent — broker-contact
   champion), thefirm 29 (28/29 CF; partial state = WAI for its regional blurbs;
   commercial roofing $1.48M CF in sample). Both parsers holding.
+
+## 2026-07-13 — loop iter (terse): sun + wpbdp health clean
+- No queue change; auto-promote (#1) still awaiting John's direct unblock.
+- Health: sunacquisitions 6/0 err (index 23 incl. Sold — skip is WAI, matches DB),
+  wpbdp 13/0 err (13/13 broker contacts). Both holding.
