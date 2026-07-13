@@ -2,31 +2,53 @@
 
 ## 🤝 HANDOFF (keep current — replacement session resumes from this)
 
-**🛑 SESSION STOOD DOWN 7/13 ~00:30 (John's order, context limit). A successor
-Lane C session resumes from THIS doc — everything below is current as of the
-stand-down; branch lane/integrations is clean and fully pushed (HEAD 9228e35).**
+**State (2026-07-13 ~00:45, replacement session ACTIVE):** Worktree
+`C:\Users\johnd\Pronghorn-integrations`, branch `lane/integrations` (push after
+each unit; PM merges — merged through aff549e). Env copied from main checkout;
+scraper/node_modules junction; web/node_modules real install. Migrations
+0004–0010 LIVE; **0011 (feedback_comments) + 0012 (lead_list_progress) pending
+PM — apply together.** Outlook drafts + live ingestion LIVE and verified.
 
-**State (2026-07-13 ~00:30):** Worktree `C:\Users\johnd\Pronghorn-integrations`,
-branch `lane/integrations` (push after each unit; PM merges — merged through
-aff549e). Env files copied from main checkout; scraper/node_modules junction;
-web/node_modules real install. Migrations 0004–0010 LIVE; **only 0011
-(feedback_comments) pending PM.** Outlook consent LANDED — drafts + live
-ingestion verified working. Shipped tonight: call-prep API, auto-draft owners
-(25 in John's Outlook Drafts), deal-mail ingestion, feedback threads backend,
-company-level completeness (/api/companies), industry normalization.
+**SHIPPED THIS SESSION (7/13 ~00:45):**
+(1) LIST-BUILD RUN VISIBILITY + 15-MIN DRAIN (6641c89): leadgen.yml cron */15
+w/ curl idle-guard (dispatch always runs full chain); run_leadgen.js writes
+live progress per source stage (probe-degrades pre-0012); /api/lead-lists GET
+serves per-list `status_detail` (honest queued/running/failed/complete; overdue
+warning past 45 min) + POST returns the queued note for an instant toast.
+Verified live on dev server. Repo is PUBLIC on GitHub → Actions minutes free.
+(2) SIZE-PROXY SIGNALS ONLY (1507f29): tier2 `exaCompanyBand()` →
+enrichment.size_signals.linkedin_employee_band (+company URL; one attempt/lead
+ever; live test: Wilson Tree → "1-10"); extraction prompt now returns
+size_signals {employees_stated, crew_count, fleet_size, locations} — stated
+numbers only. Places review_count ALREADY persists at ingest (241/542 leads,
+verified — no change needed). TIER MATH NOT BUILT — card 37450f11 awaits John.
+(3) Replied to John's unanswered comment on nightly-digest card 9bb9d925: new
+build contract = EXPLICIT auto-enrich rules John creates (industry + min size
+tier + nightly caps); zero rules = zero auto-spend; building a list never
+activates spend; digest previews tonight's plan w/ one-tap pause. Digest stays
+UNBUILT until he approves that revision. (4) Auto-draft card 468ade1e flipped
+→ shipped w/ completion summary (board truthful). (5) [self-iterate]
+ROOT-CAUSED the worktree dev-500 (627dae3): any worktree with `@import
+"tailwindcss"` BEFORE the Playfair url() import 500s every route — PostCSS
+inlines ~1600 tailwind lines so the url import lands mid-file (the "line 1623"
+error). Fixed on our branch to match main's order.
 
-**Successor next 2:** (1) once 0011 lands, activate the standing thread-reply
-rule — each loop, reply to any unanswered John/Tom feedback comment BEFORE
-building; build_plan comment on approve, completion_summary on ship. (2) when
-John approves the nightly-digest amended card [9bb9d925], build it EXACTLY per
-the PM's thesis-gate amendment (active lists only, in-taxonomy, not off_target,
-new lists start HELD, nightly $ + Hunter caps, digest = receipt + tonight's
-plan). Gotchas: PowerShell commits break on double-quotes in -m bodies (omit
-quotes); shared dev port 3210 may serve Lane B's worktree (verify via scraper
-node scripts against Supabase instead); Hunter is a flat $34/mo sub — book $0
-marginal cost, never per-search dollars; HubSpot/Outlook remain READ-ONLY
-except Outlook DRAFT creation (John-authorized; auto-send permanently 403).
-PM session pointer: local_b552862b ("Pronghorn PM loop").
+**Successor next 2:** (1) once 0011 lands, thread-reply via the comments API
+(interim: body-append "— Agent — Lane C adds:" PATCH, used tonight); keep
+polling feedback every loop — John/Tom submissions outrank the queue. (2) when
+John approves size-proxy card 37450f11 → build tier math (A/B/C chips, ranges,
+per-industry benchmark table) on the signals now accumulating; when he
+approves digest card 9bb9d925 → build EXACTLY the rules-based revision in my
+reply. Gotchas: PowerShell commits break on double-quotes in -m bodies (use
+bash heredoc); Hunter is a flat $34/mo sub — book $0 marginal; HubSpot/Outlook
+READ-ONLY except Outlook DRAFT creation (John-authorized; send permanently
+403); if any worktree dev server 500s with the "1623 @import" CSS error, fix
+the import order AND touch globals.css — Turbopack's persistent cache survives
+restarts and .next deletion, only a file-change event busts it. PM session
+pointer CONFIRMED working: local_b552862b ("Pronghorn PM loop"). FLAGGED to
+PM: the GitHub repo is PUBLIC — thesis/strategy docs are world-readable; John
+should decide public vs private (private burns Actions minutes: ~2 workflows
+at */15 cron ≈ 3-6k min/mo vs 2k free).
 
 **MIGRATIONS 0004–0009 ARE LIVE (verified 7/12 ~19:00); only 0010 (feedback)
 pending.** Post-migration backfills DONE: industry_verified column populated

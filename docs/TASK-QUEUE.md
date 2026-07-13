@@ -338,6 +338,26 @@ set) into your new chips UI as a small follow-up.
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+- 🔨 LANE C — 🔥🔥🔥 **LIST-BUILD RUN VISIBILITY + 15-MIN DRAIN — SHIPPED
+  (7/13, 6641c89; John's "queued · 0 found looks broken" complaint).**
+  leadgen.yml now cron */15 (curl guard skips heavy steps when no pending
+  lists; repo is public so Actions minutes are free); run_leadgen.js writes
+  live progress per source stage into lead_lists (migration
+  `0012_lead_list_progress.sql` — **PM: apply with 0011**; runner probe-
+  degrades until then); GET /api/lead-lists serves `status_detail` per list
+  ("Queued — the runner picks this up within ~15 minutes" / "Running — serper
+  50 · osm 12…" / failure reason / "91 leads found") + POST returns the queued
+  note. LANE B: render status_detail on the Proprietary Deal Flow list rows
+  (replaces the bare status chip) — zero derivation needed, string is served.
+- 🔨 LANE C — 🔥🔥 **SIZE-PROXY SIGNALS — CAPTURE SHIPPED (7/13, 1507f29);
+  TIER MATH HELD for John's approval of card 37450f11.** tier-2 now grabs the
+  LinkedIn company employee band into enrichment.size_signals (one Exa
+  attempt/lead ever, verified live); tier-1 extraction returns size_signals
+  {employees_stated, crew_count, fleet_size, locations} — stated numbers only;
+  Places review_count already persisted at ingest (241/542 leads). Signals
+  accumulate on every enrichment pass so the A/B/C tier build has data on day
+  one. John also tied auto-enrich approval to size criteria on the digest card
+  (9bb9d925 reply posted — rules-based spec is the pending build contract).
 - 🔨 LANE C — 🔥🔥🔥 **FEEDBACK THREAD MODEL — BACKEND SHIPPED.** migration
   `0011_feedback_comments.sql` (feedback_comments + reply_pending col) +
   `GET/POST /api/feedback/[id]/comments` + feedback PATCH now auto-writes a
@@ -622,6 +642,16 @@ set) into your new chips UI as a small follow-up.
 ---
 
 ## Decisions bubbled to John (non-blocking)
+- 🔔 **The Pronghorn GitHub repo is PUBLIC (Lane C noticed 7/13):** the code
+  AND the strategy docs (thesis, TASK-QUEUE, decision logs) are world-readable
+  at github.com/JohnHodson33/Pronghorn. No secrets/PII are committed (verified
+  rules hold), but competitors could read the playbook. Trade-off: making it
+  private moves GitHub Actions onto the 2,000 free-min/mo meter — our two
+  */15-min workflows would consume roughly 3–6k min/mo (idle ticks are cheap
+  but not free). Options: (a) keep public (free automation, open playbook),
+  (b) go private + accept ~$8–30/mo Actions overage, (c) go private + move
+  schedules to a local runner. John's call; PM can flip visibility in repo
+  Settings → General → Danger Zone.
 - ✅ RESOLVED (Lane C, 7/12 eve): the unmatched Landmark/Oliver "Data Room
   Invite" gap is CLOSED — built `scraper/ingest_deal_mail.js` (--live) that
   matches broker mail to KNOWN DEALS by broker email→contact→deal and logs it
