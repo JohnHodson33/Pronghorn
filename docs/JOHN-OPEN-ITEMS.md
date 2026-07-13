@@ -3,10 +3,16 @@ _Updated 2026-07-13 ~02:00 · Single source of truth for everything awaiting
 you or recently decided. Ask "what's open?" anytime and I'll resend it._
 
 ## ⏳ ON YOU (in priority order)
-1. **Migration 0011 (~1 min):** SQL editor → run
-   `supabase/migrations/0011_feedback_comments.sql`. Activates real threaded
-   comments on /improvements (the dialogue feature you directed tonight —
-   UI is already live via a fallback renderer).
+1. **Migrations 0011 + 0012 (~2 min, in order):** SQL editor →
+   `0011_feedback_comments.sql` (real threaded comments on /improvements)
+   then `0012_lead_list_progress.sql` (live list-build progress).
+1b. **Lane A unblock (30 sec):** paste one direct approval line into the
+   "Pronghorn - Brokers" session chat for the auto-promote-T1 build
+   (exact wording in MORNING-BRIEF item 0b) — its permission layer rightly
+   won't take relayed approval for bulk deal-table writes.
+1c. **DECISION — GitHub repo is PUBLIC:** strategy docs world-readable (no
+   secrets committed). Private = ~3-6k Actions min/mo vs 2k free; details
+   in MORNING-BRIEF item 0c.
 2. **GitHub secrets for Outlook automation (~2 min):** repo Settings →
    Secrets → Actions → add `GRAPH_CLIENT_ID`, `GRAPH_TENANT_ID`,
    `GRAPH_REFRESH_TOKEN` (values in `Pronghorn\scraper\.env`). Until then
