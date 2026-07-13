@@ -19,6 +19,17 @@ type LeadList = {
   status: string;
   leads_found: number;
   created_at: string;
+  // honest live status served by /api/lead-lists ("Queued — the runner picks
+  // this up within ~15 minutes" / "Running — serper 50…" / "91 leads found")
+  status_detail: string | null;
+};
+
+// status → chip tone; the words come from status_detail, never derived here
+const statusChip: Record<string, string> = {
+  pending: "bg-zinc-100 text-zinc-600",
+  running: "bg-amber-100 text-amber-800 animate-pulse",
+  complete: "bg-emerald-100 text-emerald-800",
+  failed: "bg-red-100 text-red-700",
 };
 
 const costBadge: Record<string, string> = {
@@ -45,6 +56,17 @@ export default function ListBuilding() {
       .then((j) => setKeyStatus(j?.keys ?? null))
       .catch(() => {});
   }, []);
+
+  // live status: keep polling while any list is queued/running so John
+  // watches numbers move instead of reading "queued" as a malfunction
+  const hasActive = recent.some((l) => l.status === "pending" || l.status === "running");
+  useEffect(() => {
+    if (!hasActive) return;
+    const t = setInterval(() => {
+      fetch("/api/lead-lists").then((r) => (r.ok ? r.json() : null)).then((j) => j && setRecent(j)).catch(() => {});
+    }, 10_000);
+    return () => clearInterval(t);
+  }, [hasActive]);
 
   // Industry typeahead: canonical taxonomy from /api/taxonomy (objects with
   // label + aliases; fetched once, filtered client-side), static fallback.
@@ -94,7 +116,8 @@ export default function ListBuilding() {
       }),
     });
     if (res.ok) {
-      setMsg("Queued. Scraping runs once data-source keys are connected (see note below).");
+      const j = await res.json().catch(() => ({}));
+      setMsg(j.note ?? "Queued — the runner picks this up on its next pass.");
       fetch("/api/lead-lists").then((r) => r.json()).then(setRecent);
     } else setMsg(`Failed: ${(await res.json()).error}`);
   }
@@ -221,14 +244,19 @@ export default function ListBuilding() {
           <ul className="divide-y divide-zinc-100">
             {recent.map((l) => (
               <li key={l.id}>
-                <a href={`/list-building/${l.id}`} className="flex items-center justify-between px-5 py-3 hover:bg-zinc-50">
-                  <div>
-                    <div className="text-sm font-medium text-emerald-800">{l.query_industry}{l.query_geography ? ` — ${l.query_geography}` : " — National"}</div>
+                <a href={`/list-building/${l.id}`} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5 py-3 hover:bg-zinc-50">
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium text-emerald-800">{l.query_industry}{l.query_geography ? ` — ${l.query_geography}` : " — National"}</div>
                     <div className="text-xs text-zinc-500">target {l.target_count} · {l.created_at.slice(0, 16).replace("T", " ")}</div>
                   </div>
-                  <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600">
-                    {l.status === "pending" ? "queued" : l.status} · {l.leads_found} found →
-                  </span>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusChip[l.status] ?? "bg-zinc-100 text-zinc-600"}`}>
+                      {l.status === "pending" ? "queued" : l.status}
+                    </span>
+                    <span className="truncate text-xs text-zinc-600">
+                      {l.status_detail ?? `${l.leads_found} found`} →
+                    </span>
+                  </div>
                 </a>
               </li>
             ))}
