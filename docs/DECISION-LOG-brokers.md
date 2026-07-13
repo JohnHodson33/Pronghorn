@@ -732,3 +732,10 @@ network blip during the nightly run.
   the brokers table. Say the word and I'll build gated detail-fetch enrichment
   for bbf + fcbb + the bizmls national source (office phone → brokers, flagged
   is_firm=true). Until then the "person-name-only" rule stands and the gap is WAI.
+
+## 2026-07-13 — loop iter (terse): zion + southernmergers health clean (parse quality verified)
+- Merged origin/main (PM owner-name cascade: Hunter $49 approved, SoS/corp-registry
+  free unlocks — enrichment lane, no Lane A change). No new Lane A tasks.
+- Health: southernmergers 21/0 errors, zion 4 — counts match DB. Spot-checked
+  zion Wix parse QUALITY (not just count): clean names + asking/rev/SDE + UT on
+  all 4 (incl. roofing co. $499K SDE = T1). Fragile rich-text grouping holds, no drift.
