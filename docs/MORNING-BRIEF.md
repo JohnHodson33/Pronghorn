@@ -1,11 +1,11 @@
 # Morning brief — overnight of 2026-07-12 → 07-13 (PM session, rewritten nightly)
 
 ## ☀️ YOUR MORNING (5 quick actions + 1 heads-up)
-0. **Migrations 0011 + 0012 + 0013 (~3 min, in order):** same SQL-editor
+0. **Migrations 0011 + 0012 + 0013 + 0014 (~4 min, in order):** same SQL-editor
    routine — `0011_feedback_comments.sql` (real threaded dialogue on
    /improvements), `0012_lead_list_progress.sql` (live per-source list-build
    progress), `0013_outreach_rules.sql` (your outreach draft rules + draft
-   provenance). Everything degrades gracefully until they run.
+   provenance), `0014_size_and_digest.sql` (DB-editable size benchmarks + digest tables). Everything degrades gracefully until they run.
 0b. **Lane A unblock — one direct line (~30 sec):** the auto-promote-T1
    build you approved was correctly blocked by Lane A's own permission
    layer (bulk writes to shared deal tables need YOUR words in ITS chat,
