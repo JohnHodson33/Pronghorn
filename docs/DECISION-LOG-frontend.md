@@ -9,6 +9,19 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   (UI + API, see 7/13 entry below) — browser-verified end-to-end, test
   artifacts removed from storage. Prior state (through 9cd3f33 dead-end
   sweep) merged to main and live.
+- **7/13 ~20:55 — PINNED VIEWS SHIPPED (card 5e13d986, John: "let's see
+  what this looks like"):** 📌 Pinned row on the dashboard (chips = labeled
+  filter-URLs, localStorage per device, ✕ to unpin; seeds: CONTACTABLE Tree
+  Care · Enrichment · Outbox — all removable) + 📌 pin button on the
+  Companies/Contacts toolbars (prompts for a label, captures current path +
+  filter params). Verified round-trip live. Promote to a table later if
+  John wants cross-device sync.
+- **NEW LANE B ITEMS from John's verdict batch (e234a44), next up:**
+  (1) note_needs_tagging Key Actions card (Lane C serves the kind already)
+  → tap opens note + company picker; (2) company-profile channel provenance
+  ("from enrichment — not yet on contact"); (3) Size Estimation settings
+  tab + ~est. revenue/EBITDA columns — WAIT for Lane C's assumptions
+  storage + estimate math contract before building.
 - **7/13 ~19:45 — OUTREACH RULES SURFACE SHIPPED** (Lane C's 75f9a5e landed
   the backend; Lane B's half same evening): new `/api/outreach-rules`
   (GET/POST/PATCH/DELETE, degrades w/ honest note pre-0013) + rules editor

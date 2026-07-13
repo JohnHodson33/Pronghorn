@@ -10,6 +10,7 @@ import type { CompanyRow } from "@/lib/crm";
 import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 import { companyLevel } from "@/lib/company-level";
 import { LEVELS, LEVEL_META, type Completeness } from "@/lib/completeness";
+import { PinButton } from "@/components/PinnedViews";
 
 const levelChip: Record<Completeness, string> = {
   full: "bg-emerald-700 text-white",
@@ -114,6 +115,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
           <span className="text-sm text-zinc-500 tabular-nums">
             {rows.length} of {companies.length}
           </span>
+          <PinButton defaultLabel={[level, industry, "companies"].filter(Boolean).join(" ")} />
           <button
             onClick={() =>
               downloadCsv(
