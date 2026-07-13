@@ -36,6 +36,23 @@ const usableCount = (cands, dbKeys) => {
 
 const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
+// 0012 progress columns — probed once at startup. Before the migration lands,
+// progress writes are skipped and only the 0001 columns (status/leads_found/
+// cost_actual) are touched, so runs behave exactly as before.
+const PROGRESS_COLS = ['started_at', 'finished_at', 'progress_note', 'candidates_found', 'last_error'];
+let hasProgressCols = false;
+async function probeProgressCols() {
+  const { error } = await supabase.from('lead_lists').select('progress_note').limit(1);
+  hasProgressCols = !error;
+  if (!hasProgressCols) log.warn('lead_lists progress columns missing (apply 0012) — running without live progress');
+}
+async function updateList(id, patch) {
+  if (!hasProgressCols) { patch = { ...patch }; for (const k of PROGRESS_COLS) delete patch[k]; }
+  if (!Object.keys(patch).length) return;
+  const { error } = await supabase.from('lead_lists').update(patch).eq('id', id);
+  if (error) log.warn(`lead_lists update failed: ${error.message}`);
+}
+
 async function loadPending(listId) {
   let q = supabase.from('lead_lists').select('*');
   q = listId ? q.eq('id', listId) : q.eq('status', 'pending');
@@ -57,7 +74,15 @@ async function existingLeadKeys() {
 
 async function runList(list, dbKeys) {
   log.info(`Lead list ${list.id}: "${list.query_industry}" @ ${list.query_geography || 'national'} (target ${list.target_count})`);
-  await supabase.from('lead_lists').update({ status: 'running' }).eq('id', list.id);
+  await updateList(list.id, {
+    status: 'running', started_at: new Date().toISOString(),
+    progress_note: 'starting — querying sources', candidates_found: 0, last_error: null,
+  });
+  const stages = [];
+  const tick = async (label, found, total) => {
+    stages.push(`${label} ${found}`);
+    await updateList(list.id, { candidates_found: total, progress_note: stages.join(' · ') });
+  };
 
   const enabled = list.sources_enabled || [];
   const useAll = enabled.length === 0; // older rows may have no explicit toggles
@@ -78,12 +103,14 @@ async function runList(list, dbKeys) {
       costActual += credits * COST_PER_CREDIT;
       if (sl.length) log.info(`  serper: ${sl.length} candidates (${credits} credits)`);
       candidates.push(...sl);
+      await tick('serper', sl.length, candidates.length);
     }
 
     if (on('osm')) {
       const osm = await fetchOsmLeads(list.query_industry, geo, list.radius_miles || 70, log);
       log.info(`  osm: ${osm.length} candidates`);
       candidates.push(...osm);
+      await tick('osm', osm.length, candidates.length);
     }
     if (on('state_license')) {
       // TX license boards apply when the search is in/around Texas or national.
@@ -93,6 +120,7 @@ async function runList(list, dbKeys) {
         const tdlr = await fetchTdlrLeads(list.query_industry, { county });
         log.info(`  tdlr${county ? ` (${county} County)` : ''}: ${tdlr.length} candidates`);
         candidates.push(...tdlr);
+        await tick('license boards', tdlr.length, candidates.length);
       }
     }
 
@@ -102,6 +130,7 @@ async function runList(list, dbKeys) {
       const pl = await fetchPlacesLeads(list.query_industry, list.query_geography, log);
       if (pl.length) log.info(`  places (rescue): ${pl.length} candidates`);
       candidates.push(...pl);
+      await tick('places', pl.length, candidates.length);
     }
     if (on('exa') && usableCount(candidates, dbKeys) < target) {
       const need = target - usableCount(candidates, dbKeys);
@@ -109,6 +138,7 @@ async function runList(list, dbKeys) {
       costActual += searches * EXA_COST;
       if (el.length) log.info(`  exa (rescue): ${el.length} candidates`);
       candidates.push(...el);
+      await tick('exa', el.length, candidates.length);
     }
     if (on('parallel') && usableCount(candidates, dbKeys) < target) {
       const need = target - usableCount(candidates, dbKeys);
@@ -116,6 +146,7 @@ async function runList(list, dbKeys) {
       costActual += searches * PARALLEL_COST;
       if (pl2.length) log.info(`  parallel (rescue): ${pl2.length} candidates`);
       candidates.push(...pl2);
+      await tick('parallel', pl2.length, candidates.length);
     }
 
     // Dedupe (merge source_tags/fields when two sources found the same company)
@@ -159,6 +190,7 @@ async function runList(list, dbKeys) {
     }
 
     // zero-cost enrichment runs on every build, automatically (ENRICHMENT-UX)
+    await updateList(list.id, { progress_note: `${stages.join(' · ')} → ${inserted} inserted, free enrichment pass…` });
     const { freePass } = require('./free_pass');
     await freePass(list.id, list.query_industry, log);
 
@@ -167,14 +199,19 @@ async function runList(list, dbKeys) {
       await recordUsage('serper', 'list_building', 1, costActual, { list: list.id, industry: list.query_industry, note: 'blended serper+exa+parallel for this build' });
     }
 
-    await supabase.from('lead_lists').update({
+    await updateList(list.id, {
       status: 'complete', leads_found: inserted, cost_actual: costActual,
-    }).eq('id', list.id);
+      finished_at: new Date().toISOString(),
+      progress_note: `${inserted} leads from ${ranked.length} unique candidates`,
+    });
     log.info(`  → ${inserted} leads inserted (${ranked.length} unique candidates found)`);
     return inserted;
   } catch (e) {
     log.error(`  lead list ${list.id} failed: ${e.message}`);
-    await supabase.from('lead_lists').update({ status: 'failed' }).eq('id', list.id);
+    await updateList(list.id, {
+      status: 'failed', last_error: String(e.message).slice(0, 500),
+      finished_at: new Date().toISOString(),
+    });
     return 0;
   }
 }
@@ -184,6 +221,7 @@ async function main() {
   const listId = listIdx > -1 ? process.argv[listIdx + 1] : null;
   const lists = await loadPending(listId);
   if (!lists.length) { log.info('No pending lead lists.'); return; }
+  await probeProgressCols();
   const dbKeys = await existingLeadKeys();
   let total = 0;
   for (const [i, l] of lists.entries()) {

@@ -3,6 +3,10 @@
 # UI-created builds run without a human — then promotes newly outreach-ready
 # leads into companies (John 7/11: auto-promotion is the critical path).
 #
+# Cadence: every 15 minutes (John 7/12 — his list sat "queued · 0 found" for
+# hours; a build must start within minutes of the click). A cheap curl guard
+# skips the heavy steps when nothing is pending, so idle ticks cost seconds.
+#
 # REQUIRED REPO SECRETS (same set John is adding for the other workflows):
 #   SUPABASE_URL, SUPABASE_SERVICE_KEY
 #   SERPER_API_KEY, GOOGLE_PLACES_API_KEY, EXA_API_KEY   (paid/rescue sources)
@@ -12,7 +16,7 @@ name: Lead-List Runner
 on:
   workflow_dispatch:
   schedule:
-    - cron: "30 15,22 * * *" # 08:30 & 15:30 America/Phoenix
+    - cron: "*/15 * * * *"
 
 concurrency:
   group: leadgen
@@ -22,18 +26,32 @@ jobs:
   run-lists:
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    defaults:
-      run:
-        working-directory: scraper
     steps:
+      - name: Check for pending lists
+        id: check
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          COUNT=$(curl -sf "$SUPABASE_URL/rest/v1/lead_lists?status=eq.pending&select=id" \
+            -H "apikey: $SUPABASE_SERVICE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
+            | grep -o '"id"' | wc -l)
+          echo "pending=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "Pending lead lists: $COUNT"
       - uses: actions/checkout@v4
+        if: steps.check.outputs.pending != '0' || github.event_name == 'workflow_dispatch'
       - uses: actions/setup-node@v4
+        if: steps.check.outputs.pending != '0' || github.event_name == 'workflow_dispatch'
         with:
           node-version: "20"
           cache: npm
           cache-dependency-path: scraper/package-lock.json
       - run: npm ci
+        if: steps.check.outputs.pending != '0' || github.event_name == 'workflow_dispatch'
+        working-directory: scraper
       - name: Run pending lead lists
+        if: steps.check.outputs.pending != '0' || github.event_name == 'workflow_dispatch'
+        working-directory: scraper
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
@@ -42,11 +60,15 @@ jobs:
           EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
         run: node leadgen/run_leadgen.js
       - name: Promote newly outreach-ready leads
+        if: steps.check.outputs.pending != '0' || github.event_name == 'workflow_dispatch'
+        working-directory: scraper
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node promote_leads.js
       - name: Auto-draft owner outreach on CONTACTABLE (queue only, never sends)
+        if: steps.check.outputs.pending != '0' || github.event_name == 'workflow_dispatch'
+        working-directory: scraper
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}

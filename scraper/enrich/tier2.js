@@ -71,6 +71,44 @@ async function exaLinkedin(lead, budget, log) {
   return null;
 }
 
+// Size-proxy SIGNAL capture (card 37450f11 — signals only; the tier math waits
+// for John's approval). LinkedIn company pages state an employee band ("11-50
+// employees") right in the search snippet — one Exa search, no page fetch.
+// One attempt per lead ever (linkedin_checked_at marks it, band or not).
+async function exaCompanyBand(lead, budget, log) {
+  if (budget.exa <= 0 || !process.env.EXA_API_KEY) return null;
+  if (lead.enrichment?.size_signals?.linkedin_checked_at) return null;
+  budget.exa--;
+  try {
+    const { data } = await axios.post('https://api.exa.ai/search', {
+      query: `${lead.name} ${lead.state || ''} company`,
+      numResults: 3,
+      includeDomains: ['linkedin.com'],
+      contents: { text: { maxCharacters: 600 } },
+    }, { headers: { 'x-api-key': process.env.EXA_API_KEY, 'content-type': 'application/json' }, timeout: 30000 });
+    await recordUsage('exa', 'enrichment', 1, 0.006, { tier: 2, lead: lead.id, kind: 'company_size' });
+    const sig = { linkedin_checked_at: new Date().toISOString() };
+    const tokens = String(lead.name).toLowerCase().split(/[^a-z0-9]+/)
+      .filter((t) => t.length > 2 && !['llc', 'inc', 'the', 'and', 'company', 'services', 'service'].includes(t));
+    for (const r of data.results || []) {
+      if (!/linkedin\.com\/company\//.test(r.url || '')) continue;
+      const hay = `${r.title || ''} ${r.url} ${r.text || ''}`.toLowerCase();
+      const hits = tokens.filter((t) => hay.includes(t)).length;
+      if (tokens.length && hits < Math.min(2, tokens.length)) continue; // wrong company
+      const m = hay.match(/([\d,]+)\s*[-–]\s*([\d,]+)\+?\s*employees/i) || hay.match(/\b([\d,]+)\+?\s*employees\b/i);
+      if (m) {
+        sig.linkedin_employee_band = m[2] ? `${m[1].replace(/,/g, '')}-${m[2].replace(/,/g, '')}` : m[1].replace(/,/g, '');
+        sig.linkedin_company_url = r.url.split('?')[0];
+        break;
+      }
+    }
+    return sig;
+  } catch (e) {
+    log?.warn(`    exa/company-size: ${e.response?.status || e.message}`);
+    return null; // error → do NOT mark checked; retry on a later pass
+  }
+}
+
 /**
  * Cascade tier 2 over a set of leads (already tier-1 enriched, incomplete).
  * @param leads rows with id,name,website,owner_name,owner_email,owner_phone,owner_linkedin,enrichment
@@ -80,19 +118,30 @@ async function exaLinkedin(lead, budget, log) {
  */
 async function runTier2(leads, budget, log, onProgress) {
   const { resolveOwnerName } = require('./sos_lookup');
-  let processed = 0, emails = 0, linkedins = 0, names = 0;
+  let processed = 0, emails = 0, linkedins = 0, names = 0, bands = 0;
   for (const l of leads) {
     processed++;
     if (isComplete(l)) { onProgress?.(processed, false); continue; } // early exit — nothing to add
     const patch = {};
     const enrich = { ...(l.enrichment || {}) };
 
+    // Size signal (works with or without an owner name — company-level)
+    const sizeSig = await exaCompanyBand(l, budget, log);
+    if (sizeSig) {
+      enrich.size_signals = { ...(enrich.size_signals || {}), ...sizeSig };
+      if (sizeSig.linkedin_employee_band) { bands++; log?.info(`    tier2 ${l.name}: ~${sizeSig.linkedin_employee_band} employees (LinkedIn)`); }
+    }
+
     // Free owner-name resolve (SoS/Socrata registry) — no-ops until a resolver
     // for this state exists. A found name unlocks Hunter/LinkedIn below.
     if (!l.owner_name) {
       const owner = await resolveOwnerName(l);
       if (owner) { l.owner_name = owner; patch.owner_name = owner; names++; }
-      else { onProgress?.(processed, false); continue; } // still no name → tier 2 channels can't run
+      else {
+        // no name → channels can't run, but keep any size signal we just paid for
+        if (sizeSig) await supabase.from('leads').update({ enrichment: enrich }).eq('id', l.id);
+        onProgress?.(processed, !!sizeSig); continue;
+      }
     }
 
     if (!l.owner_email) {
@@ -110,7 +159,7 @@ async function runTier2(leads, budget, log, onProgress) {
     else if (patch.owner_name || patch.owner_email || patch.owner_linkedin) log?.info(`    tier2 ${l.name}: ${[patch.owner_name && `name ${patch.owner_name}`, patch.owner_email, patch.owner_linkedin].filter(Boolean).join(' · ')}`);
     onProgress?.(processed, true);
   }
-  return { processed, emails, linkedins, names };
+  return { processed, emails, linkedins, names, bands };
 }
 
 module.exports = { runTier2, isComplete };

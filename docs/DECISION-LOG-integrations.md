@@ -2,7 +2,11 @@
 
 ## 🤝 HANDOFF (keep current — replacement session resumes from this)
 
-**State (2026-07-13 ~00:25):** Worktree `C:\Users\johnd\Pronghorn-integrations`,
+**🛑 SESSION STOOD DOWN 7/13 ~00:30 (John's order, context limit). A successor
+Lane C session resumes from THIS doc — everything below is current as of the
+stand-down; branch lane/integrations is clean and fully pushed (HEAD 9228e35).**
+
+**State (2026-07-13 ~00:30):** Worktree `C:\Users\johnd\Pronghorn-integrations`,
 branch `lane/integrations` (push after each unit; PM merges — merged through
 aff549e). Env files copied from main checkout; scraper/node_modules junction;
 web/node_modules real install. Migrations 0004–0010 LIVE; **only 0011
@@ -10,6 +14,19 @@ web/node_modules real install. Migrations 0004–0010 LIVE; **only 0011
 ingestion verified working. Shipped tonight: call-prep API, auto-draft owners
 (25 in John's Outlook Drafts), deal-mail ingestion, feedback threads backend,
 company-level completeness (/api/companies), industry normalization.
+
+**Successor next 2:** (1) once 0011 lands, activate the standing thread-reply
+rule — each loop, reply to any unanswered John/Tom feedback comment BEFORE
+building; build_plan comment on approve, completion_summary on ship. (2) when
+John approves the nightly-digest amended card [9bb9d925], build it EXACTLY per
+the PM's thesis-gate amendment (active lists only, in-taxonomy, not off_target,
+new lists start HELD, nightly $ + Hunter caps, digest = receipt + tonight's
+plan). Gotchas: PowerShell commits break on double-quotes in -m bodies (omit
+quotes); shared dev port 3210 may serve Lane B's worktree (verify via scraper
+node scripts against Supabase instead); Hunter is a flat $34/mo sub — book $0
+marginal cost, never per-search dollars; HubSpot/Outlook remain READ-ONLY
+except Outlook DRAFT creation (John-authorized; auto-send permanently 403).
+PM session pointer: local_b552862b ("Pronghorn PM loop").
 
 **MIGRATIONS 0004–0009 ARE LIVE (verified 7/12 ~19:00); only 0010 (feedback)
 pending.** Post-migration backfills DONE: industry_verified column populated
