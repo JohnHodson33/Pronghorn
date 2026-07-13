@@ -37,6 +37,15 @@ you or recently decided. Ask "what's open?" anytime and I'll resend it._
    can't name, or let the VA tier handle that tail.
 4c. **HubSpot contact re-import:** needs a direct 1-line ask in a Lane C
    session (bulk-PII guardrail; low urgency, contacts usable as-is).
+4d. **Painting/restoration screening — your thesis call (~30s if yes):**
+   Lane A's audit found their 7/12 intake fix is dormant — production reads
+   criteria from the DB profile your Scrape Criteria page edits, which has
+   no painting/painters/restore keywords. If you WANT these adjacency
+   listings screened in: Scrape Criteria → "+ Add industry" → type
+   "painting" (chip + keywords auto-generate) → toggle the Restoration chip
+   on → Save. Next nightly re-screens the already-collected rows (no
+   re-scrape needed). Zero spend/outreach impact either way — just what
+   shows in your listings table.
 5. **💳 Fable 5 billing check (morning):** if Fable 5 flipped to token
    billing overnight, restart agent sessions on Opus 4.8 — agents cannot
    detect the switch or switch models themselves.
