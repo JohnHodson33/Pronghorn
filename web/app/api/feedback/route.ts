@@ -62,6 +62,14 @@ export async function PATCH(req: Request) {
   for (const k of ["status", "lane", "task_ref", "shipped_ref"]) if (b[k] !== undefined) patch[k] = b[k];
   const { error } = await serverDb().from("feedback").update(patch).eq("id", b.id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // a status change writes a status_change comment so the thread IS the audit
+  // trail (0011). Tolerated if feedback_comments isn't applied yet.
+  if (b.status) {
+    await serverDb().from("feedback_comments").insert({
+      feedback_id: b.id, author: String(b.actor ?? "PM"), kind: "status_change",
+      body: `Status → ${b.status}${b.lane ? ` (lane ${b.lane})` : ""}${b.task_ref ? ` · ${b.task_ref}` : ""}`,
+    });
+  }
   // detail-append: John/Tom add context to a suggestion without editing history
   if (typeof b.detail === "string" && b.detail.trim()) {
     const { data: row } = await serverDb().from("feedback").select("body").eq("id", b.id).maybeSingle();

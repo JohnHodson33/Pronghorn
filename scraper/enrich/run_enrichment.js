@@ -234,7 +234,8 @@ async function main() {
         main.hasIndustryCols = !probe;
       }
       if (main.hasIndustryCols && out.industry_verified) {
-        patch.industry_verified = out.industry_verified;
+        const { snapIndustry } = require('../core/industry_taxonomy');
+        patch.industry_verified = snapIndustry(out.industry_verified); // canonical label (no chip fragmentation)
         patch.off_target = out.on_target === false;
       }
       const { error: uErr } = await supabase.from('leads').update(patch).eq('id', lead.id);

@@ -1,10 +1,24 @@
-// Update company key fields from the profile page. Whitelisted fields only;
-// financials parse to numbers (empty string clears).
+// Company detail: GET returns the company + its server-side completeness level;
+// PATCH updates whitelisted key fields (financials parse to numbers).
 import { NextResponse } from "next/server";
 import { hasDb, serverDb } from "@/lib/db";
+import { companyCompleteness } from "@/lib/completeness";
 
 const TEXT_FIELDS = ["name", "industry", "city", "state", "website", "notes"] as const;
 const NUM_FIELDS = ["revenue", "ebitda"] as const;
+
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
+  const { id } = await params;
+  const { data, error } = await serverDb()
+    .from("companies")
+    .select("id, name, industry, city, state, website, notes, revenue, ebitda, ebitda_type, origin, contacts(role, name, email, phone, linkedin)")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (!data) return NextResponse.json({ error: "company not found" }, { status: 404 });
+  return NextResponse.json({ ...data, completeness: companyCompleteness(data) });
+}
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });

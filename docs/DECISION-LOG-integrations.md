@@ -39,15 +39,28 @@ Outlook Drafts (push_drafts_to_outlook.js); ran the first `ingest_pursuit.js
 Invite for review). outlook-sync.yml schedules both every 3h (needs GRAPH_*
 repo secrets). Nothing sends. This closes the last gated Lane C feature.
 
+**PM POINTER (7/13 ~00:15):** new PM session is
+`local_1c8f3b29-e70c-4ca8-a854-70a3738332b1` — route cross-session status
+there (prior local_29b1759e is dead). Pointer acknowledged.
+
+**⚠️ FLAG for Lane B/PM:** Lane B's brand-pass `web/app/globals.css` (in the
+Pronghorn-frontend worktree, ~1623 lines) has a DUPLICATE `@import
+url(Playfair…)` MID-FILE → "CSS @import must precede all rules" → their dev
+server 500s every route. Main's globals.css is fine (29 lines, correct), so
+the live deploy is NOT affected — this only breaks Lane B's local preview
+until they dedupe that @import. Not my file; flagged only.
+
 **Current task:** loop in build+monitor mode. Just shipped cascading enrichment
 (tier2.js), completeness levels, job progress, Outlook drafts (John-authorized
 in chat), Graph live ingestion, feedback pipeline.
 
-**Next 2:** (1) Feedback-poll standing rule — each loop iteration, GET
-/api/feedback?status=submitted, triage Lane-C items into TASK-QUEUE, flip
-'triaged' (needs 0010 applied to have data). (2) Location-pollution cleanup
-pass (Lane A owns the parser fix; Lane C re-derives city/state for polluted
-rows once parsers fixed).
+**Next 2:** (1) Standing thread-reply rule (activates on 0011): each loop, poll
+feedback for suggestions/feedback with an unanswered John/Tom comment → reply
+with a refined spec BEFORE building; on approve post build_plan, on ship post
+completion_summary. (2) When John approves the nightly-digest amended card
+[9bb9d925], build it with the thesis gate (active list + in-taxonomy +
+not off_target), new-lists-held, nightly $ + Hunter caps, receipt+plan digest.
+Migrations pending PM: 0011 (feedback_comments). Everything else 0004–0010 live.
 
 **Post-migration (0004–0010) checklist:** re-run `import_hubspot_contacts.js`
 (breadcrumbs→columns), `backfill_costs.js` once, `backfill_industry.js` for the
