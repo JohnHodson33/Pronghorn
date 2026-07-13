@@ -750,3 +750,10 @@ network blip during the nightly run.
   source already scrapes in full (all ~2,115 FL member listings). Subset, no
   unique inventory → SKIP. Signal: FL green-vertical specialists route through
   BBF (already covered), so they're not a productive new-source frontier.
+
+## 2026-07-13 — loop iter (terse): fcbb + intermountain health clean
+- Up to date, no new PM tasks. Health: fcbb 825/0 errors (matches DB), intermountain
+  8/0 errors. Spot-checked intermountain K/M prose parse: names/state/asking clean;
+  full financials extracted where prose states them (home-based plumbing $800K ask /
+  $1.19M rev / $465K SDE = T1). Rev/CF nulls elsewhere = teaser pages w/o stated
+  financials (WAI per adapter design), not drift. Both parsers holding.
