@@ -343,6 +343,28 @@ also executed the two swaps previously flagged as PM actions:
   (website demoted to a ↗ icon); channel dots = usable owner channels only;
   cascade tiers explained in the button tooltip + footer.
 
+## 2026-07-13 — 🔥🔥🔥 Nav fix + completeness across the CRM (+ dev 500 hotfix)
+
+- **NAV FIX (acceptance verified end-to-end)**: enrichment rows push
+  `?from=enrichment`; company profile's back control is a new BackLink that
+  router.back()s to WHERE JOHN CAME FROM ("← Back to enrichment"), falling
+  back to /companies when opened cold. LeadsTable filters persist in
+  sessionStorage so the round trip keeps them (verified: filter to ● full →
+  open Titan Tree Care → back → same filtered list, ring intact). The
+  duplicate "in CRM →" click target on enrichment rows is now a plain ✓ —
+  the row itself is the single target.
+- **COMPLETENESS ACROSS THE CRM**: /companies gains an "Owner reach" column
+  (level chip + channel dots) + level filter chips with counts, combinable
+  with industry — John's stated query verified live: ◕ contactable × Tree
+  Care → 26 of 328. Company profile header shows its level chip. Derivation:
+  new lib/company-level.ts (owner/seller contacts → lib/completeness scale,
+  best level wins) — swaps to Lane C's server-side level when it lands.
+- **HOTFIX: dev 500 on every page** — the brand pass's Google-Fonts @import
+  sat AFTER `@import "tailwindcss"`; PostCSS inlines tailwind's rules, making
+  the fonts import illegal (hard error in Turbopack dev, tolerated in prod
+  build). Hoisted the fonts import above the tailwind import in globals.css.
+- Did NOT reintroduce the $0.11 tier-2 tooltip (PM hot-fixed rate honored).
+
 ## Lane B session setup
 
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch

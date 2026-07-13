@@ -59,12 +59,31 @@ export default function LeadsTable({
   showListFilter?: boolean;
 }) {
   const router = useRouter();
-  const [q, setQ] = useState("");
-  const [industry, setIndustry] = useState("all");
-  const [state, setState] = useState("all");
-  const [list, setList] = useState("all");
-  const [level, setLevel] = useState<Completeness | "all">("all");
-  const [showOffTarget, setShowOffTarget] = useState(false);
+  // Filters survive the open-company → back round trip (nav-fix acceptance:
+  // "back → SAME enrichment list, filters intact").
+  const FILTER_KEY = "pronghorn-leads-filters-v1";
+  const saved: Record<string, string> = (() => {
+    if (typeof window === "undefined") return {};
+    try {
+      return JSON.parse(sessionStorage.getItem(FILTER_KEY) ?? "{}");
+    } catch {
+      return {};
+    }
+  })();
+  const [q, setQ] = useState(saved.q ?? "");
+  const [industry, setIndustry] = useState(saved.industry ?? "all");
+  const [state, setState] = useState(saved.state ?? "all");
+  const [list, setList] = useState(saved.list ?? "all");
+  const [level, setLevel] = useState<Completeness | "all">((saved.level as Completeness) ?? "all");
+  const [showOffTarget, setShowOffTarget] = useState(saved.offTarget === "1");
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        FILTER_KEY,
+        JSON.stringify({ q, industry, state, list, level, offTarget: showOffTarget ? "1" : "0" })
+      );
+    } catch {}
+  }, [q, industry, state, list, level, showOffTarget]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -399,9 +418,9 @@ export default function LeadsTable({
                 return (
                   <tr
                     key={l.id}
-                    onClick={() => clickable && router.push(`/companies/${l.company_id}`)}
+                    onClick={() => clickable && router.push(`/companies/${l.company_id}?from=enrichment`)}
                     className={`${clickable ? "cursor-pointer " : ""}hover:bg-zinc-50 ${l.off_target ? "opacity-60" : ""}`}
-                    title={clickable ? "Open the CRM company profile" : undefined}
+                    title={clickable ? "Open the CRM company profile (back returns here)" : undefined}
                   >
                     <td className="px-4 py-2.5" onClick={(e) => e.stopPropagation()}>
                       <input
@@ -472,9 +491,8 @@ export default function LeadsTable({
                     </td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-right" onClick={(e) => e.stopPropagation()}>
                       {l.company_id ? (
-                        <a href={`/companies/${l.company_id}`} className="text-xs font-semibold text-emerald-700 hover:underline">
-                          in CRM →
-                        </a>
+                        // no second click target — the row itself opens the profile (nav-fix directive)
+                        <span className="text-xs font-semibold text-emerald-700">in CRM ✓</span>
                       ) : ready ? (
                         <button
                           onClick={() => promote(l.id)}

@@ -5,12 +5,23 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ActivityForm from "@/components/ActivityForm";
+import BackLink from "@/components/BackLink";
 import CompanyEditor from "@/components/CompanyEditor";
 import ContactsSection from "@/components/ContactsSection";
 import DealControls from "@/components/DealControls";
 import MarketCheckCard from "@/components/MarketCheckCard";
 import { fetchCompanyDetail } from "@/lib/company-detail";
+import { companyLevel } from "@/lib/company-level";
+import { LEVEL_META } from "@/lib/completeness";
 import { money } from "@/lib/mock";
+
+const levelChipCls: Record<string, string> = {
+  full: "bg-emerald-700 text-white",
+  contactable: "bg-emerald-100 text-emerald-800",
+  identified: "bg-amber-100 text-amber-800",
+  basic: "bg-zinc-100 text-zinc-600",
+  raw: "bg-zinc-50 text-zinc-400",
+};
 
 const kindIcon: Record<string, string> = {
   meeting: "🗓", call: "📞", email: "✉️", note: "📝", task: "☑", doc: "📄",
@@ -31,7 +42,7 @@ export default async function CompanyDetailV2({ id }: { id: string }) {
   return (
     <div className="max-w-4xl p-4 md:p-8 space-y-6">
       <header>
-        <Link href="/companies" className="text-sm text-emerald-700 hover:underline">← Companies</Link>
+        <BackLink fallback="/companies" fallbackLabel="Companies" />
         <div className="mt-2 flex items-end justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">{c.name}</h1>
@@ -48,6 +59,17 @@ export default async function CompanyDetailV2({ id }: { id: string }) {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {(() => {
+              const lv = companyLevel(contacts, c.website);
+              return (
+                <span
+                  className={`rounded-full px-2.5 py-1 text-xs font-semibold ${levelChipCls[lv.level]}`}
+                  title={LEVEL_META[lv.level].label}
+                >
+                  {LEVEL_META[lv.level].dot} {lv.level}
+                </span>
+              );
+            })()}
             <CompanyEditor
               companyId={c.id}
               name={c.name}
