@@ -867,3 +867,24 @@ network blip during the nightly run.
   No Lane A change; auto-promote (#1) still awaiting John's direct unblock.
 - Health: gabb 201 (feed 202; DB 199 → slight growth, normal churn), synergy
   20/0 err (DB 21, one delisting). Both holding.
+
+## 2026-07-13 — CORRECTION: painting/restore intake fix is DORMANT in production (audit finding)
+- Full audit + drift alerting: all green, all 30 enabled sources fresh; DB grew
+  to 19,430 (+159, nightly ran 06:46 MT). But **0 new painting listings** —
+  investigated and found my 7/12 conclusion was partially wrong:
+- **`run_supabase.js` (the production nightly) OVERRIDES config.relevance with
+  the DB screen_profiles default profile** (run_supabase.js:41-45 "Criteria live
+  in the DB — the UI edits them, the pipeline obeys them"). My config.json
+  keyword addition only governs standalone run_daily.js runs — it is dormant in
+  production. Verified the DB "Green Industry Default" profile (81 keywords):
+  NO painting, NO painters, NO bare restore (restoration only).
+- Also corrected my mental model: in the nightly, relevance-dropped listings DO
+  land in the DB (annotated relevant=false in raw) — they're just never screened
+  → never tiered → invisible to the platform. So recovery needs no re-scrape
+  gymnastics: add the keywords and the next run screens the newly-relevant rows
+  (self-heal via untieredIds only covers tier-null relevant rows).
+- **THE ONE LEVER (John/PM, ~30 seconds):** add `painting`, `painters`,
+  `restore` to the Green Industry Default profile via the Screen Criteria
+  editor. That's a shared UI-editable table — deliberately not mine to write.
+  My config.json change stays (correct for standalone runs + fallback), no code
+  change needed beyond it.
