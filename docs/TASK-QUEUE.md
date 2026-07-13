@@ -385,13 +385,15 @@ set) into your new chips UI as a small follow-up.
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
-- ⬜ **BROKER_ID BACKFILL (Lane B finding 7/13 eve):** 0 of the 18
-  broker-role contacts carry `broker_id` — so the Broker Directory page's
-  "in Contacts ✓" check silently shows "directory only" for every broker,
-  and the new `/contacts?broker=<id>` deep-link filter (shipped, plumbed)
-  has no data to serve. Backfill: match contacts(role=broker) to brokers by
-  normalized name and/or email; the "Add to Contacts" button (Lane B queue)
-  sets the link going forward.
+- 🔨 LANE C — **BROKER_ID BACKFILL — RAN 7/13 (~12:45); honest result: 2/18
+  linked** (James Feng, Phil Handke — both by email). The other 16 broker
+  contacts are CURATED RELATIONSHIP people (Notion/HubSpot/deal imports:
+  Oliver Bogner, Ron Edmonds, Jack Williams/William Blair, etc.) with NO
+  record in the scraped listing-site directory — nothing to link to, working
+  as designed. Matching: email-exact, then name-exact, then unambiguous
+  token match (one false positive caught + reverted: "Bryant Bryant" ≠
+  Bryant Hoover). LANE B: "in Contacts ✓" lights up only for directory
+  brokers someone explicitly promotes — correct behavior; don't chase the 16.
 - 🔨 LANE C — 🔥🔥🔥 **LIST-BUILD RUN VISIBILITY + 15-MIN DRAIN — SHIPPED
   (7/13, 6641c89; John's "queued · 0 found looks broken" complaint).**
   leadgen.yml now cron */15 (curl guard skips heavy steps when no pending
@@ -440,6 +442,20 @@ set) into your new chips UI as a small follow-up.
   off_target), new lists start HELD (one activation decision per list),
   nightly $ + Hunter caps, digest = receipt + tonight's plan w/ pause. Do
   NOT start the digest build until John approves the amended card.
+- 🔨 LANE C — 🔥🔥🔥 **OUTREACH DRAFT RULES — (a)+(b)+(c) SHIPPED 7/13 ~12:40
+  (75f9a5e); AWAITING JOHN'S SAMPLE APPROVAL.** auto_draft_owners.js is now
+  rules-gated (zero rules = zero drafts, verified live — works pre-0013 too)
+  + tailored (each draft anchored on 1-2 concrete enrichment facts; leads
+  without facts are SKIPPED) + provenance (draft_meta {rule, facts_used} on
+  every outbox row post-0013). Migration `0013_outreach_rules.sql` — **PM:
+  apply with 0011/0012.** THE GATE: 5 sample drafts on Tree Care CONTACTABLE
+  owners are POSTED to /improvements (anchors like "1388 Google reviews at
+  4.9", "50% Board Certified Master Arborists") with a proposed first rule
+  (Tree Care · contactable · cap 5) — John approves/amends there; workflow
+  step stays if:false until approval + first rule. (d) his 35 old drafts:
+  inert, delete at leisure. Lane B: rules editor + "why drafted" line remain
+  yours.
+  --- original card ---
 - 🔥🔥🔥 **OUTREACH DRAFT RULES + TAILORING (John in chat 7/13 ~11:15 after
   reviewing his Drafts folder — "I like the idea of the automation… but I
   don't think they should just auto draft… it's too broad and the content
