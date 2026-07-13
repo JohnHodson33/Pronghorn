@@ -5,6 +5,9 @@
 // run, so edits here change what the next scrape keeps and screens.
 
 import { useEffect, useState } from "react";
+import RangeSlider from "@/components/RangeSlider";
+import SubsectorToggles from "@/components/SubsectorToggles";
+import { US_STATES } from "@/lib/geo-suggest";
 
 type Profile = {
   id: string;
@@ -123,6 +126,11 @@ export default function CriteriaPage() {
       </header>
       {saved && <div className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{saved}</div>}
 
+      <section className="rounded-xl border border-zinc-200 bg-white p-5">
+        <h2 className="mb-3 font-semibold">Subsectors <span className="text-sm font-normal text-zinc-500">— one criteria set, both funnels (listings screening + proprietary list-building)</span></h2>
+        <SubsectorToggles keywords={toList(inc)} onChange={(next) => setInc(next.join("\n"))} />
+      </section>
+
       <section className="grid gap-6 md:grid-cols-2">
         <div className="rounded-xl border border-zinc-200 bg-white p-5">
           <label className={label}>Industry keywords — INCLUDE (one per line; empty = all industries)</label>
@@ -136,6 +144,25 @@ export default function CriteriaPage() {
           <div className="rounded-xl border border-zinc-200 bg-white p-5 space-y-4">
             <div>
               <label className={label}>Priority states (flagged ★, never filtered)</label>
+              <div className="mb-2 flex flex-wrap gap-1">
+                {US_STATES.map((s) => {
+                  const list = toList(priStates).map((x) => x.toUpperCase());
+                  const on = list.includes(s);
+                  return (
+                    <button
+                      key={s}
+                      onClick={() =>
+                        setPriStates((on ? list.filter((x) => x !== s) : [...list, s]).join(", "))
+                      }
+                      className={`rounded px-1.5 py-0.5 text-[11px] font-semibold transition ${
+                        on ? "bg-emerald-700 text-white" : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  );
+                })}
+              </div>
               <input value={priStates} onChange={(e) => setPriStates(e.target.value)} className={input} />
             </div>
             <div>
@@ -152,6 +179,30 @@ export default function CriteriaPage() {
 
       <section className="rounded-xl border border-zinc-200 bg-white p-5">
         <h2 className="mb-4 font-semibold">Size guardrails ($)</h2>
+        <div className="mb-6 grid gap-6 md:grid-cols-2">
+          <RangeSlider
+            label="Cash flow (SDE/EBITDA) range"
+            floor={0}
+            ceil={10_000_000}
+            min={toNum(minCF)}
+            max={toNum(maxCF)}
+            onChange={(lo, hi) => {
+              setMinCF(fromNum(lo));
+              setMaxCF(fromNum(hi));
+            }}
+          />
+          <RangeSlider
+            label="Asking price range"
+            floor={0}
+            ceil={30_000_000}
+            min={toNum(minAsk)}
+            max={toNum(maxAsk)}
+            onChange={(lo, hi) => {
+              setMinAsk(fromNum(lo));
+              setMaxAsk(fromNum(hi));
+            }}
+          />
+        </div>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
           <div>
             <label className={label}>Min cash flow (SDE/EBITDA floor)</label>

@@ -305,6 +305,23 @@ also executed the two swaps previously flagged as PM actions:
   reachability, links to the company. TRACKING ONLY — no sending anywhere,
   per OUTREACH-STRATEGY.md "no site build until John + Tom finalize".
 
+## 2026-07-12 — Unified Screening Criteria UX (DASHBOARD-VISION §2.1)
+
+- **Criteria page upgraded**: dual-thumb log-scale sliders for cash-flow and
+  asking-price ranges (synced with the numeric inputs), **subsector toggle
+  chips** driven by /api/taxonomy — toggling writes the canonical label +
+  aliases into industry_keywords_include (hand-typed keywords untouched;
+  toggle state derives from the live keyword list — verified: all six
+  green-industry subsectors read back ✓ from the default profile), and a
+  clickable US-state grid for priority states.
+- **Both funnels visibly consume one set**: new CriteriaStrip on the
+  list-building form shows the profile's active subsectors + priority states
+  + cash-flow band; clicking a chip fills the industry/geography fields
+  (verified: Pest Control → industry field). The scraper side already reads
+  screen_profiles every run — unchanged.
+- Schema untouched: keywords remain the source of truth, so the pipeline
+  needs no migration.
+
 ## Lane B session setup
 
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch

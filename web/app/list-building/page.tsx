@@ -7,6 +7,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LEADGEN_SOURCES } from "@/lib/leadgen-sources";
+import CriteriaStrip from "@/components/CriteriaStrip";
 import TypeaheadInput from "@/components/TypeaheadInput";
 import { suggestGeo, suggestIndustryFallback } from "@/lib/geo-suggest";
 
@@ -116,6 +117,14 @@ export default function ListBuilding() {
           <div className="text-lg font-bold tabular-nums">${costEst.toFixed(2)}</div>
         </div>
       </header>
+
+      <CriteriaStrip
+        onPickIndustry={(v) => setIndustry(v)}
+        onPickGeography={(v) => {
+          setNational(false);
+          setGeography(v);
+        }}
+      />
 
       <section className="rounded-xl border border-zinc-200 bg-white p-5 space-y-4">
         <div className="grid gap-4 md:grid-cols-3">
