@@ -19,11 +19,12 @@ don't have, SENDING outreach, destructive actions). Bias hard to shipping.
 
 Status: ⬜ open · 🔨 in-progress (tag your lane) · ✅ done (PM verified)
 
-**📮 PM SESSION CHANGED (7/13 ~00:15) — UPDATE YOUR POINTER NOW:** the prior
-PM session (local_29b1759e-…) is DEAD; status messages sent there land in a
-mailbox nobody reads. New PM session id:
-**`local_1c8f3b29-e70c-4ca8-a854-70a3738332b1`** — send all cross-session
-status/reports there. First loop after pulling this: acknowledge in your
+**📮 PM SESSION CHANGED (7/13 — CORRECTED ~01:20, the 00:15 id was WRONG):**
+the prior PM session (local_29b1759e-…) is DEAD. The ACTIVE PM session id is
+**`local_b552862b-ea9f-4559-8adc-400f0bbf8c58`** ("Pronghorn PM loop") —
+send all cross-session status/reports there. (The earlier-posted
+local_1c8f3b29-… does not exist — PM mis-derived it; replying to any message
+FROM the PM also works.) First loop after pulling this: acknowledge in your
 DECISION-LOG so PM knows the pointer landed. (TASK-QUEUE stays the durable
 channel regardless.)
 
