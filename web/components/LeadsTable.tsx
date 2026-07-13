@@ -343,7 +343,7 @@ export default function LeadsTable({
             onClick={enrichSelected}
             disabled={selected.size === 0 || busy === "enrich" || (estimate !== null && estimate.count === 0)}
             className="rounded-lg bg-emerald-700 px-4 py-1.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-40"
-            title="Cascading enrichment: free pass → tier 1 (~$0.01/lead) → tier 2 email/LinkedIn hunt (~$0.11 max/lead), early exit when complete"
+            title="Cascading enrichment: free pass → tier 1 (~$0.01/lead) → tier 2 email/LinkedIn hunt (~$0.01/lead marginal; Hunter uses sub quota, not cash), early exit when complete"
           >
             {busy === "enrich" ? "Queuing…" : enrichLabel}
           </button>

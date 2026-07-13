@@ -329,6 +329,13 @@ set) into your new chips UI as a small follow-up.
   off_target), new lists start HELD (one activation decision per list),
   nightly $ + Hunter caps, digest = receipt + tonight's plan w/ pause. Do
   NOT start the digest build until John approves the amended card.
+- 🔥🔥 **INDUSTRY_VERIFIED NORMALIZATION (Lane B finding 7/12 late, PM relay):**
+  classifier output fragments ("Tree care" / "Tree care services" / "Tree Care"
+  = 3 different filter chips; same for Pool Service/Pool Services) — every
+  industry count in the app splits. Fix: (a) classification prompt + write path
+  SNAP to canonical `/api/taxonomy` labels (nearest-match, else 'Other —
+  <raw>'); (b) one-time normalization pass over existing leads.industry_verified
+  + contacts joins; (c) verify chips collapse on /contacts + /enrichment after.
 - 🔨 LANE C — 🔥🔥 **RUNNER SELF-DRAIN + CASCADE NO-OP — FIXED + SHIPPED.**
   (a) `.github/workflows/enrichment-jobs.yml` drains the queue every 15 min +
   every worker loop pass. (b) `run_jobs.js` now CASCADES: tier-1 for new leads,
