@@ -7,6 +7,15 @@ branch `lane/integrations` (push after each unit; PM merges). Env files copied
 from main checkout; scraper/node_modules junction; web/node_modules real
 install. Migrations now 0004–0010 pending John/PM in Supabase SQL editor.
 
+**MIGRATIONS 0004–0009 ARE LIVE (verified 7/12 ~19:00); only 0010 (feedback)
+pending.** Post-migration backfills DONE: industry_verified column populated
+for all 231 enriched leads (217 copied from jsonb + 14 fresh), 19 off-target
+flagged; cost backfill already present; enrichment-job drain + tier-2 cascade
+proven end-to-end (job queued → run_jobs → tier1+tier2 → complete). Still TODO
+when convenient: re-run import_hubspot_contacts.js to move [hs:] note
+breadcrumbs into the now-live hubspot_id/firm/title columns (needs a fresh MCP
+contact dump — low urgency, contacts already usable).
+
 **Current task:** loop in build+monitor mode. Just shipped cascading enrichment
 (tier2.js), completeness levels, job progress, Outlook drafts (John-authorized
 in chat), Graph live ingestion, feedback pipeline.
