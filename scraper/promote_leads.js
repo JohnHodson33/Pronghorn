@@ -15,6 +15,7 @@
 const { supabase } = require('./core/db');
 const log = require('./utils/logger');
 
+const { snapIndustry } = require('./core/industry_taxonomy');
 const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
 async function main() {
@@ -48,7 +49,8 @@ async function main() {
     if (!companyId) {
       const { data: co, error: cErr } = await supabase.from('companies').insert({
         name: l.name, website: l.website, city: l.city, state: l.state,
-        industry: industryOf.get(l.lead_list_id) || null,
+        // prefer the lead's VERIFIED industry (canonical); snap either to taxonomy
+        industry: snapIndustry(l.enrichment?.industry_verified || industryOf.get(l.lead_list_id)) || null,
         origin: 'lead', lead_id: l.id,
         notes: [overview, `Proprietary target · sources: ${(l.source_tags || []).join(', ')}`].filter(Boolean).join(' | '),
       }).select('id').single();
