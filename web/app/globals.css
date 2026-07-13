@@ -1,6 +1,9 @@
-@import "tailwindcss";
-/* Brand type: Playfair Display for display headings (pronghornequity.com) */
+/* Brand type: Playfair Display for display headings (pronghornequity.com).
+   The url() import MUST come before @import "tailwindcss" — PostCSS inlines
+   tailwindcss (~1600 lines), and an @import after any rule is a hard CSS
+   error (500s every page in dev). Same order as main. */
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&display=swap");
+@import "tailwindcss";
 
 :root {
   /* Brand palette — pronghornequity.com/styles.css (7/12) */
