@@ -900,3 +900,10 @@ network blip during the nightly run.
   landed on main (Lane C — scraper/import_ppp.js, not broker-sources).
 - Health: bbf 2,094/0 err (browser ASP session + rpp=9999 single-shot holding;
   DB 2,115 = churn). Heavy-source rotation continues (next: bizmls or sunbelt).
+
+## 2026-07-13 — loop iter (terse): 4th-iter audit green; bizmls health clean
+- Full audit + drift alerting: all green, totals stable (19,430 / 113 T1 / 234 T2),
+  all 30 enabled fresh. Both John asks still pending (auto-promote unblock;
+  screen-profile keywords).
+- Health: bizmls 144/0 err (FL exclusion working — 2,097 rows correctly ceded to
+  bbf; DB 143 → +1). Holding.
