@@ -784,3 +784,12 @@ network blip during the nightly run.
      brain / Key Actions. Removes the manual health sweep entirely.
 - ACTION FOR JOHN/PM: approve me writing agent 'suggestion' rows to /api/feedback
   (or add a permission rule), or post these two yourself. Until then they live here.
+
+## 2026-07-13 — loop iter (terse): murphy + empire health clean; AUTONOMY suggestions still pending
+- Merged big AUTONOMY-NIGHT origin/main (other lanes' approved suggestions:
+  call-prep one-pager, owner-language mirroring, scraper/auto_draft_owners.js =
+  enrichment lane [queues owner drafts, never sends] — not Lane A, no conflict).
+  Lane A queue unchanged; my 2 brain suggestions still un-triaged (John offline).
+- Health: murphy 456/0 err (95% CF, 89% state — high completeness), empire 26/0
+  err (100% CF; state 1/26 = inherent to empire's blind M&A profiles, not drift).
+  Both parsers holding.
