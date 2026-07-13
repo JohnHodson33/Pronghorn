@@ -390,6 +390,31 @@ set) into your new chips UI as a small follow-up.
   lead-level and company-level logic in the one module so the ladders never
   drift. John's acceptance query: "count of CONTACTABLE owners in tree care
   across the whole company DB" answerable in one filtered view.
+- 🔥🔥🔥 **SIZE-PROXY SCORING for the proprietary funnel (John in chat 7/13
+  ~01:05 — "we're really gonna need to solve this to make the proprietary
+  funnel effective"; design card posted to /improvements for his amendments):**
+  proprietary leads have no financials, so the cash-flow guardrails can't
+  screen them — build a SIZE ESTIMATE from free signals so outreach targets
+  acquirable-size companies first. (Lane C) (a) capture size SIGNALS:
+  Google reviews count + rating (Places already returns it — persist at
+  ingest like we did locations), LinkedIn company-page employee band (Exa,
+  already in tier-2 path), website extraction adds employee_count / fleet
+  size / locations count / years_in_business / service-area breadth to the
+  Claude enrichment prompt (same call, no new cost); license boards where
+  they list tech counts. (b) estimate: `size_signals` jsonb + per-industry
+  revenue-per-employee benchmark table (landscaping ~$120-160k/emp, tree
+  ~$150-200k, pest ~$150k; editable like taxonomy) → revenue RANGE →
+  EBITDA RANGE via industry margin bands. Always ranges + confidence,
+  never point estimates. (c) `size_tier` A|B|C|unknown server-side:
+  A = likely anchor ($1M+ EBITDA plausible), B = tuck-in, C = too small;
+  computed in the completeness module family (single source of truth).
+  (d) calibration loop: when a pursuit yields real financials (CIM),
+  log actual-vs-estimate to tune benchmarks. (Lane B) size-tier chip +
+  filter on enrichment/companies/contacts, combinable w/ completeness +
+  industry ("CONTACTABLE tree care, tier A"); outreach queue + auto-draft
+  prioritization sort by tier; dashboard coverage by subsector × size tier.
+  PAID upgrades (bubble to John, do NOT buy): ZoomInfo/Apollo/D&B give
+  employee counts + revenue estimates ~$/lead if free signals prove thin.
 - 🔥🔥 **INDUSTRY_VERIFIED NORMALIZATION (Lane B finding 7/12 late, PM relay):**
   classifier output fragments ("Tree care" / "Tree care services" / "Tree Care"
   = 3 different filter chips; same for Pool Service/Pool Services) — every
