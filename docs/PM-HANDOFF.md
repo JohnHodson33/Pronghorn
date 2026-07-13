@@ -17,6 +17,16 @@ doc + the repo docs restore full state with zero loss. Boot prompt for John:_
   web/.env.local>`; web/.vercel/project.json must say projectName "pronghorn".
   Site: https://pronghorn-green.vercel.app (basic auth: pronghorn-green-2026).
 - PM-owned files: Sidebar.tsx, shared docs, deploys, this handoff.
+- **PM recurring duty — NOTION NOTES TIDY (John confirmed 7/13):** each loop
+  pass (or at least every few hours), search John's Notion for new AI meeting
+  notes sitting at the Private ROOT (they land there, not in the folder),
+  rename to `YYYY-MM-DD · Meeting title`, and file into the taxonomy under
+  "Meeting Notes (CRM-synced)" (parent 39c42e2a-3ad4-81ee-9f74-ded5fb3bf720):
+  <Industry>/Industry Research|Advisors/<person>|Deals/<target>; non-industry
+  → Brokers & Intermediaries or Firm & Platform; empty → Archive. New industry
+  = new folder on first note. Notion MCP tools do this (John authorized the
+  writes 7/13). Lane C's 3h sweep handles the CRM tagging — the tidy is about
+  Notion organization only.
 - **PM worktree scraper/ has NO node_modules** — run node scripts with
   `NODE_PATH="/c/Users/johnd/Pronghorn-integrations/scraper/node_modules"`.
 - Worker sessions (send_message needs John's confirm click):
