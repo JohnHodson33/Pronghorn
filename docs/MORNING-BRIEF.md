@@ -80,6 +80,13 @@
   their ships here as they land.
 
 ## Overnight receipts (verified by PM)
+- 📈 **Coverage this morning: FULL 51 · CONTACTABLE 60** (tier-2 passes keep
+  running; size bands accumulating). Lane C's finding: further contactable
+  growth is now bottlenecked on OWNER NAMES — the unlock is your pending
+  SoS-resolver decision (Decisions queue: extend free Socrata pattern /
+  cheap keyed API / headless resolvers) or the VA tier. Also: the HubSpot
+  re-import needs a direct 1-line ask in a Lane C session (bulk-PII
+  guardrail, same class as the others; low urgency).
 - ✅ **The dialogue loop you asked for is already working:** you commented on
   the nightly-digest card ("how does the system know a thesis is active?")
   and Lane C replied in-thread with a rules-based revision — YOU create
