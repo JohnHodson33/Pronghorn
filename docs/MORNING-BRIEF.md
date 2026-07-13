@@ -80,6 +80,13 @@
   their ships here as they land.
 
 ## Overnight receipts (verified by PM)
+- 🎯 **DEAL NEWS: the Tree Service (FCBB) CIM arrived and the Outlook
+  detector auto-advanced the pursuit to cim_received — it's sitting in your
+  dashboard Key Actions as READY TO PROMOTE.** Also queued there: the
+  aquatic-contractor NDA countersign and the Landmark IOI follow-up.
+- ✅ **Dashboard V3 is live** — visual command center on `/`: Key Actions
+  attention queue on top, funnel + subsector coverage matrix from the 0006
+  SQL views (broker + proprietary prongs side by side).
 - 📈 **Coverage this morning: FULL 51 · CONTACTABLE 60** (tier-2 passes keep
   running; size bands accumulating). Lane C's finding: further contactable
   growth is now bottlenecked on OWNER NAMES — the unlock is your pending
