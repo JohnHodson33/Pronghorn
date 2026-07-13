@@ -894,3 +894,9 @@ network blip during the nightly run.
   screen-profile keywords).
 - Health: businessesforsale 602/0 err (40 pages; DB 607 = churn), franchiseresales
   74/0 err (exact DB match). Both holding.
+
+## 2026-07-13 — loop iter (terse): bbf health clean
+- No Lane A queue change; both John asks still pending. PPP size-signal import
+  landed on main (Lane C — scraper/import_ppp.js, not broker-sources).
+- Health: bbf 2,094/0 err (browser ASP session + rpp=9999 single-shot holding;
+  DB 2,115 = churn). Heavy-source rotation continues (next: bizmls or sunbelt).
