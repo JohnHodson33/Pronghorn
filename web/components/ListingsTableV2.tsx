@@ -362,9 +362,13 @@ export default function ListingsTableV2({ rows: allRows, live }: { rows: UiListi
                     )}
                   </div>
                 </td>
-                <td className="whitespace-nowrap px-4 py-3">
-                  {l.city ? `${l.city}, ` : ""}{l.state ?? "—"}
-                  {l.priorityState && <span className="ml-1 text-emerald-700">★</span>}
+                {/* polluted city values must not blow the money columns out — truncate + tooltip */}
+                <td className="max-w-36 px-4 py-3" title={`${l.city ? `${l.city}, ` : ""}${l.state ?? ""}`}>
+                  <span className="block truncate whitespace-nowrap">
+                    {l.city ? `${l.city}, ` : ""}
+                    {l.state ?? "—"}
+                    {l.priorityState && <span className="ml-1 text-emerald-700">★</span>}
+                  </span>
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums">{money(l.revenue)}</td>
                 <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
