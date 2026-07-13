@@ -15,7 +15,7 @@ type Row = {
   notes: string | null;
   company_id: string | null;
   broker_id: string | null;
-  companies: { name: string } | { name: string }[] | null;
+  companies: { name: string; industry: string | null } | { name: string; industry: string | null }[] | null;
 };
 
 export default async function Contacts() {
@@ -23,7 +23,7 @@ export default async function Contacts() {
   if (hasDb()) {
     const { data } = await serverDb()
       .from("contacts")
-      .select("id, name, role, email, phone, notes, company_id, broker_id, companies(name)")
+      .select("id, name, role, email, phone, notes, company_id, broker_id, companies(name, industry)")
       .order("name")
       .limit(500);
     rows = ((data as unknown as Row[]) ?? []).map((r) => {
@@ -38,6 +38,7 @@ export default async function Contacts() {
         company_id: r.company_id,
         broker_id: r.broker_id,
         companyName: co?.name ?? null,
+        companyIndustry: co?.industry ?? null,
       };
     });
   }
