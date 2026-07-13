@@ -5,6 +5,7 @@
 // TASK-QUEUE; statuses flow back so ideas visibly move submitted → shipped.
 import { useEffect, useState } from "react";
 import FeedbackThread from "@/components/FeedbackThread";
+import { StagedFiles, uploadAttachment } from "@/components/Attachments";
 
 type Item = {
   id: string;
@@ -164,6 +165,7 @@ export default function Improvements() {
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
   const [threadFor, setThreadFor] = useState<string | null>(null);
 
   async function load() {
@@ -183,9 +185,18 @@ export default function Improvements() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ author, type, page: page || null, body: body.trim() }),
     });
-    setBusy(false);
-    if (res.ok) { setBody(""); setDone(true); setTimeout(() => setDone(false), 2500); load(); }
-    else setError((await res.json().catch(() => ({}))).error ?? "submit failed");
+    if (res.ok) {
+      // upload staged files against the new row's id; surface any failure
+      const { id } = await res.json().catch(() => ({}));
+      let uploadErr: string | null = null;
+      if (id) for (const f of files) uploadErr = (await uploadAttachment(id, f)) ?? uploadErr;
+      setBusy(false);
+      setBody(""); setFiles([]); setDone(true); setTimeout(() => setDone(false), 2500); load();
+      setError(uploadErr && `submitted, but an attachment failed: ${uploadErr}`);
+    } else {
+      setBusy(false);
+      setError((await res.json().catch(() => ({}))).error ?? "submit failed");
+    }
   }
 
   return (
@@ -222,6 +233,7 @@ export default function Improvements() {
             className="w-full rounded-md border border-zinc-300 px-2.5 py-1.5 text-sm" />
           <MicButton onText={(t) => setBody((b) => (b ? b + " " : "") + t)} />
         </div>
+        <StagedFiles files={files} setFiles={setFiles} />
         <div className="flex items-center gap-3">
           <button onClick={submit} disabled={busy || !body.trim()}
             className="rounded-lg bg-emerald-700 px-4 py-1.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50">

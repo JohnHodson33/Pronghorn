@@ -7,6 +7,7 @@
 // amendments already read as dialogue. Approve names the revision it
 // approves (the last agent reply = the build contract).
 import { useCallback, useEffect, useState } from "react";
+import { AttachmentStrip } from "@/components/Attachments";
 
 export type ThreadItem = {
   id: string;
@@ -146,6 +147,8 @@ export default function FeedbackThread({
           </div>
         );
       })}
+
+      <AttachmentStrip feedbackId={item.id} canAttach />
 
       {lastIsHuman && item.status !== "shipped" && (
         <div className="rounded-md bg-amber-50 px-2.5 py-1.5 text-[11px] font-medium text-amber-700">

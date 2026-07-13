@@ -3,19 +3,23 @@
 Per-lane log per PARALLEL-SESSIONS.md; the PM/integrator folds these into
 DECISION-LOG.md and wires routes into Sidebar.tsx.
 
-## 🔄 HANDOFF — ROLLED OVER 7/13 — successor resumes here
+## 🔄 HANDOFF — successor session live 7/13 ~17:45 (loop running)
 
-- **State**: nothing in flight. Last commit `9cd3f33` (dead-end sweep:
-  deal→broker link, Brokers in global search, /listings?industry= deep link
-  from Market Multiples) — pushed to `lane/frontend`, build green. Everything
-  through the PM's ordered list (completeness levels, progress UI, nav fix,
-  improvements dialogue, brand sweep, PWA, dispositions, 0006-view swap,
-  badges/pills) is pushed; 5bebc58 and earlier are merged + deployed.
-- **Next (PM's order)**: (1) improvements ATTACHMENTS UI; (2) meeting-NOTES
-  input UI; (3) list-build status_detail rendering (post-0012); (4) size-tier
-  chips (blocked on tier-math approval); (5) my queued sweep items in
+- **State**: nothing in flight. Latest: improvements ATTACHMENTS shipped
+  (UI + API, see 7/13 entry below) — browser-verified end-to-end, test
+  artifacts removed from storage. Prior state (through 9cd3f33 dead-end
+  sweep) merged to main and live.
+- **Next (PM's order)**: (1) meeting-NOTES input UI ("+ Add note", paste
+  Notion link/text → suggested tag chips → activity); (2) list-build
+  status_detail rendering on Proprietary Deal Flow rows (string served by
+  /api/lead-lists TODAY, degrade note pre-0012); (3) size-tier chips
+  (blocked on tier-math approval, card 37450f11); (4) queued sweep items in
   TASK-QUEUE (sources health table, broker→filtered-contacts deep link,
-  click-to-filter industry chips).
+  click-to-filter industry chips). ≥1 [self-iterate] ship per night.
+- **Session notes**: dev server = launch config `pronghorn-web-laneB` port
+  3311 (killed the dead predecessor's orphaned process holding the port —
+  two dev servers can't share this worktree's .next). Feedback polled 17:40:
+  0 submitted, 0 reply_pending; the 2 approved cards are Lane A's.
 - **Environment**: work in the git worktree `C:\Users\johnd\Pronghorn-frontend`
   (NEVER the main checkout — other lanes live there); dev server = launch
   config `pronghorn-web-laneB`, port 3311; copy web/.env.local if recreating.
@@ -40,6 +44,26 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
     pointer previously named a nonexistent session id.
 - All shipped work is browser-verified except paths requiring live paid runs
   or prod-data mutation; those verify on John's first real use.
+
+## 2026-07-13 — Improvements attachments (John 7/13 ~10:40, Tom's PPP analyses)
+
+- **New API route `/api/feedback/[id]/attachments`** (GET list w/ 1h signed
+  URLs · POST multipart upload, 15MB cap, extension allowlist incl. xlsx/csv/
+  pdf + iPhone image formats). Storage design: files live in private bucket
+  `feedback-attachments` under `{feedbackId}/{ts}_{name}` — the prefix listing
+  IS the metadata, so **no migration needed** and nothing new for John's SQL
+  list. Bucket auto-creates on first upload (verified live; test files
+  removed after).
+- **LANE C NOTE:** this covers the storage+endpoint half of your queue item
+  (a) — no feedback_attachments table required. Still yours: PPP size-signal
+  import (b).
+- **UI:** `components/Attachments.tsx` — chips w/ download links + 📎 attach
+  in every thread (FeedbackThread), staged-files picker on the submit form
+  (uploads after POST returns the id; upload failure surfaces honestly).
+  Mobile-verified at 375px (no overflow, chips wrap).
+- Attachments attach to the CARD (not individual comments) — matches the
+  storage-prefix design and Tom's use case; revisit only if per-comment
+  provenance ever matters.
 
 ## 2026-07-10 — Deal detail page (`/deals/[id]`)
 
