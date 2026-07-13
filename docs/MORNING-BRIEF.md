@@ -32,6 +32,16 @@
   /improvements page is his channel and every lane polls it each loop.
 
 ## What shipped tonight (live on pronghorn-green.vercel.app)
+0. **After you logged off (~00:30 wave):** (a) **brand sweep live** — the
+   whole app now renders in the pronghornequity.com palette (340+ accent
+   usages remapped, AA contrast kept) with Playfair display headings;
+   (b) **list-build visibility** — lists now show honest live status
+   (queued w/ next-run ETA → running w/ live counts → done) and the runner
+   drains every 15 min, so your "queued · 0 found" confusion can't recur;
+   (c) **size-proxy signal capture** started (review counts, employee
+   bands, website size signals) — tier math still held for your card
+   amendments; (d) old CRM session stood down cleanly; replacement session
+   confirmed and already shipping.
 1. **Outlook drafts + live mail ingestion are LIVE (your consent activated
    them):** queued outbox inquiries now push straight into your Outlook
    Drafts folder in bulk (drafts only — the token scope physically can't
