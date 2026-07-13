@@ -9,14 +9,13 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   (UI + API, see 7/13 entry below) — browser-verified end-to-end, test
   artifacts removed from storage. Prior state (through 9cd3f33 dead-end
   sweep) merged to main and live.
-- **Next (PM's order)**: (1) list-build status_detail rendering on
-  Proprietary Deal Flow rows (string served by /api/lead-lists TODAY,
-  degrade note pre-0012); (2) size-tier chips (blocked on tier-math
-  approval, card 37450f11); (3) queued sweep items in TASK-QUEUE (sources
-  health table, broker→filtered-contacts deep link, click-to-filter
-  industry chips). ≥1 [self-iterate] ship per night. Meeting-notes input
-  UI: SHIPPED (see 7/13 entry) — 'needs tagging' review list (f) waits on
-  Lane C's sweep defining where leftovers land.
+- **Next**: (1) size-tier chips (blocked on tier-math approval, card
+  37450f11); (2) queued sweep items in TASK-QUEUE (sources health table,
+  broker→filtered-contacts deep link, click-to-filter industry chips);
+  (3) tonight's [self-iterate] ship — critique the live site first.
+  SHIPPED this session: attachments (977fa21), meeting-notes input
+  (db8bd1c), list-build status_detail rows (see entries below).
+  'Needs tagging' review list (f) waits on Lane C's sweep leftover shape.
 - **Session notes**: dev server = launch config `pronghorn-web-laneB` port
   3311 (killed the dead predecessor's orphaned process holding the port —
   two dev servers can't share this worktree's .next). Feedback polled 17:40:
@@ -45,6 +44,19 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
     pointer previously named a nonexistent session id.
 - All shipped work is browser-verified except paths requiring live paid runs
   or prod-data mutation; those verify on John's first real use.
+
+## 2026-07-13 — List-build honest status rows (Lane C contract, John's "queued · 0 found looks broken")
+
+- Recent-lists rows on /list-building now render the served `status_detail`
+  verbatim ("Queued — the runner picks this up within ~15 minutes" /
+  "Running — serper 50…" / "91 leads found" / failure reason) beside a
+  status-toned chip (queued zinc · running amber pulse · complete emerald ·
+  failed red). Zero client derivation — the string is Lane C's.
+- Page polls /api/lead-lists every 10s while any list is pending/running,
+  stops when all settle. Build-success message now uses the POST's `note`
+  (replaces the stale "runs once keys are connected" copy).
+- Verified live on complete rows + 375px; queued/running strings come from
+  the API paths Lane C verified — no test list queued against prod.
 
 ## 2026-07-13 — "+ Add note" meeting-notes input (John 7/13 ~10:20, item e)
 
