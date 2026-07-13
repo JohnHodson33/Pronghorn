@@ -322,6 +322,27 @@ also executed the two swaps previously flagged as PM actions:
 - Schema untouched: keywords remain the source of truth, so the pipeline
   needs no migration.
 
+## 2026-07-12 (eve) — 🔥🔥🔥 Completeness levels + progress visibility + round-2 UI
+
+- **Completeness is the demarcation** (lib/completeness.ts, Lane C's single
+  source of truth): every lead shows its level chip (● full ◕ contactable
+  ◑ identified ◔ basic ○ raw); counts header doubles as the filter
+  ("183 leads: ●27 ◕31 ◑8 ◔117 ○0" — live values); default sort =
+  most-complete-first so results float up after a run.
+- **Tier-aware Enrich**: selection changes debounce a POST /api/enrich
+  estimateOnly → button reads "Enrich 156 (t1×32 + t2×124) — est. $13.96"
+  (live-verified); fully-enriched selections say so and disable (verified).
+- **Progress visibility**: queuing shows a sticky banner with a progress bar
+  polling GET /api/enrich?job= every 4s ("Enriching 34/80 — N owners, M
+  emails…"), honest "queued — runner picks this up within ~15 min" after
+  60s, and a completion summary with a "View results" reset. Global ⚙ pill
+  in the top bar (ActiveJobPill, 15s poll) visible from any page. NOTE: did
+  NOT queue a live job to test (≈$14 paid run — cost guardrail); polling
+  paths mirror verified patterns.
+- **Round-2 UI**: promoted lead rows click through to the company profile
+  (website demoted to a ↗ icon); channel dots = usable owner channels only;
+  cascade tiers explained in the button tooltip + footer.
+
 ## Lane B session setup
 
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch
