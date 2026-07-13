@@ -64,8 +64,15 @@ async function exaLinkedin(lead, budget, log) {
     const tokens = normalizeName(lead.owner_name).toLowerCase().split(/\s+/).filter((t) => t.length > 2);
     for (const r of data.results || []) {
       if (!/linkedin\.com\/in\//.test(r.url || '')) continue;
-      const hay = `${r.title || ''} ${r.url}`.toLowerCase();
-      if (tokens.some((t) => hay.includes(t))) return r.url.split('?')[0];
+      // eponymous-business guard: the company name often CONTAINS the owner
+      // surname ("McCallum's Pool Service"), so a title token match can hit a
+      // different person entirely. Trust the profile SLUG first (it carries
+      // the person's own name); fall back to ≥2 distinct tokens in the title.
+      const slug = (r.url.split('/in/')[1] || '').toLowerCase();
+      const title = String(r.title || '').toLowerCase();
+      const slugHit = tokens.some((t) => slug.includes(t));
+      const titleHits = new Set(tokens.filter((t) => title.includes(t))).size;
+      if (slugHit || titleHits >= 2) return r.url.split('?')[0];
     }
   } catch (e) { log?.warn(`    exa/linkedin: ${e.response?.status || e.message}`); }
   return null;

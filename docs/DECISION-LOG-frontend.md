@@ -9,6 +9,13 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   (UI + API, see 7/13 entry below) — browser-verified end-to-end, test
   artifacts removed from storage. Prior state (through 9cd3f33 dead-end
   sweep) merged to main and live.
+- **7/13 ~21:45 — LEAD-CHANNEL PROVENANCE ON COMPANY PROFILE SHIPPED:**
+  when the source lead holds an owner channel no contact carries (the
+  promotion/sync gap Lane C is root-causing), the profile shows a sky strip
+  above Contacts — "From enrichment — not yet on a contact: 📞 … (lead's
+  owner: X) — the nightly sync folds these onto the contact" — instead of
+  reading as blank. Read-only by design (the write path is Lane C's).
+  Verified on a live gap company (4b09be03, orphan phone).
 - **7/13 ~21:20 — NOTE-NEEDS-TAGGING KEY ACTION SHIPPED:** untagged sweep
   notes (kind='meeting', no targets, has doc_url — same criterion as
   /api/dashboard) now join Key Actions from fetchDashboardV3 directly (the
@@ -26,12 +33,15 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   Companies/Contacts toolbars (prompts for a label, captures current path +
   filter params). Verified round-trip live. Promote to a table later if
   John wants cross-device sync.
-- **NEW LANE B ITEMS from John's verdict batch (e234a44), next up:**
-  (1) note_needs_tagging Key Actions card (Lane C serves the kind already)
-  → tap opens note + company picker; (2) company-profile channel provenance
-  ("from enrichment — not yet on contact"); (3) Size Estimation settings
-  tab + ~est. revenue/EBITDA columns — WAIT for Lane C's assumptions
-  storage + estimate math contract before building.
+- **Verdict batch (e234a44): ALL unblocked Lane B items shipped 7/13 eve**
+  — pinned views 4c2354c · note-tagging card c3bf3a7 · provenance strip
+  a5b6833. REMAINING (blocked): Size Estimation settings tab + ~est.
+  revenue/EBITDA columns + Platform/Tuck-in/Too-small tier labels
+  (amendment 3, 77a6cbf) — starts when Lane C lands the assumptions
+  storage + estimates contract; size-tier chips ride the same contract.
+  Also still waiting: 0011/0012/0013 application (thread API, list
+  progress, outreach rules all self-upgrade); 'needs tagging' dedicated
+  page only if volume outgrows the Key Actions card.
 - **7/13 ~19:45 — OUTREACH RULES SURFACE SHIPPED** (Lane C's 75f9a5e landed
   the backend; Lane B's half same evening): new `/api/outreach-rules`
   (GET/POST/PATCH/DELETE, degrades w/ honest note pre-0013) + rules editor

@@ -107,6 +107,17 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 PM 7/13 ~15:00 — **LANE B: THE SIZE CONTRACT IS UP, START THE BUILD.**
+  Lane C shipped it (merged + deployed): `/api/size-model` GET/PATCH =
+  assumptions + Platform/Too-small thresholds (all editable, cascade on
+  read); `/api/leads` + `/api/companies` rows carry always-present
+  `size {tier platform|tuckin|toosmall, employees[], revenue[], ebitda[],
+  confidence, basis}` + `est_revenue`/`est_ebitda` (null ⇒ blank) +
+  `?tier=` filter + TIER_LABELS export for display names. Verified live on
+  prod. Build now: Size Estimation tab (under Proprietary Sourcing) +
+  ~est. Revenue / ~est. EBITDA columns on EVERY company/deal surface +
+  Platform/Tuck-in/Too-small chips + tier filter. Amendment 3 (77a6cbf)
+  is the spec.
 - 📣 PM 7/13 ~09:30 — ✅ LANE B SWEEP (PM verified, all merged + live on
   prod): completeness UI c37126a · location truncate 4cc9684 · contacts
   industry 64a6cd6 · nav fix + CRM levels 8836564 · improvements dialogue
@@ -456,6 +467,20 @@ set) into your new chips UI as a small follow-up.
   inert, delete at leisure. Lane B: rules editor + "why drafted" line remain
   yours.
   --- original card ---
+- 🔥🔥 **DEAL/COMPANY ATTACHMENTS + CIM INGEST (John 7/13 ~15:15 — received
+  the All American Fence Erectors CIM via Axial; PM hand-built the records:
+  company 35a33893 w/ CIM financials, deal ed791a49 stage 'CIM Received',
+  Peregrine Advisors bankers as contacts):** (a) (Lane B+C) **attachments on
+  company AND deal profiles** — extend the feedback-attachments pattern
+  (private bucket `deal-attachments`, prefix {companyId|dealId}/, signed
+  URLs, upload control + chips on both profile pages; CIMs/NDAs/LOIs live
+  attached to their records). (b) (Lane C) **CIM/document ingest sweep**:
+  scan John's Outlook (Graph, Mail.Read — consented) for deal-document
+  attachments (CIM/IOI/LOI/NDA/teaser PDFs), upload to the bucket, attach
+  to the matched deal/company, log an activity w/ provenance; backfill pass
+  over existing mail (the AAFE CIM itself arrived via Axial phone/email).
+  OneDrive/local-drive sweep = phase 2 (needs Files.Read consent — bubble
+  to John). NEVER auto-delete or move mail.
 - 🔥🔥🔥 **SIZE ESTIMATION — AMENDMENT 3 + UI COMPLETION (John 7/13 ~14:45;
   card 37450f11 flipped back to 'building' — server math shipped but John
   rightly notes NOTHING is visible on the site yet):**
@@ -556,6 +581,15 @@ set) into your new chips UI as a small follow-up.
   prefix-listing = metadata, NO migration needed — bucket auto-creates) +
   attach control on submit form + 📎 in every thread, chips w/ signed
   download links, mobile-verified. LANE C: only (b) PPP import remains.
+- 🔨 LANE C — **(b) PPP SIZE IMPORT — SHIPPED 7/13 ~15:50 (308e8ff).**
+  scraper/import_ppp.js: SBA 150k-plus PPP file (968k loans → 63k green-NAICS
+  subset kept locally), conservative name+state match, 19/19 dry-run-validated
+  → 19 leads gained PAYROLL-VERIFIED employee counts; **PLATFORM tier 1 → 10
+  companies** (Tree Care of New York 120 jobs, Berger 111, All Turf 82, Tree
+  Pros AZ 61…). jobs_reported ranks just under stated-on-site in tier math;
+  Est. Revenue/EBITDA columns fill automatically. Re-run --match as new leads
+  land (dataset static since 2021). Sub-150k files deliberately skipped: those
+  borrowers are too-small tier by definition.
 - 🔥🔥 **IMPROVEMENTS ATTACHMENTS + PPP SIZE DATA (John in chat 7/13 ~10:40 —
   "Tom should be able to attach analyses or data files… he's been using PPP
   loan databases to estimate company sizes"):** (Lane C) (a) Supabase
