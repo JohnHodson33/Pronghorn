@@ -72,8 +72,20 @@ class TupeloMarketScraper extends SourceScraper {
         }
       });
 
-      const locM = card.text().replace(/\s+/g, ' ').match(/([A-Za-z .'-]+,\s*[A-Za-z .]+),\s*United States/);
-      const locRaw = locM ? locM[1].trim() : null;
+      // Location is its own span: "City, County, State, United States" (city
+      // and/or county optional). Read it from that element — NOT the glued
+      // card.text(), which runs the title/description straight into the city
+      // (e.g. "Turnkey OpportunityBirmingham"). Take the SHORTEST element that
+      // ends in ", United States" (the description prose can also mention the
+      // U.S. but is long), then parse the city out structurally.
+      let locText = null;
+      card.find('span, div').each((_, el) => {
+        const t = $(el).text().replace(/\s+/g, ' ').trim();
+        if (/,\s*United States$/.test(t) && t.length <= 60 && /^[A-Za-z]/.test(t)) {
+          if (locText === null || t.length < locText.length) locText = t;
+        }
+      });
+      const { city, locRaw } = this.parseUsLoc(locText);
 
       out.push(this.listing({
         source_listing_id: id,
@@ -81,7 +93,7 @@ class TupeloMarketScraper extends SourceScraper {
         url: `https://www.tupelosmb.com/marketplace/listings/${id}`,
         description: null,
         location: {
-          city: locRaw ? locRaw.split(',')[0].trim() : null,
+          city,
           state: stateCode, // page is state-scoped
           raw: locRaw,
         },
@@ -95,6 +107,19 @@ class TupeloMarketScraper extends SourceScraper {
     });
 
     return out;
+  }
+
+  // "City, County, State, United States" → { city (clean, or null), locRaw }.
+  // Drops the trailing "United States" and state; the city is the first token
+  // that isn't a county. Returns null city when only county/state are present,
+  // so description text can never masquerade as a city.
+  parseUsLoc(locText) {
+    if (!locText) return { city: null, locRaw: null };
+    const parts = locText.split(',').map((s) => s.trim()).filter(Boolean);
+    if (parts.length && /^united states$/i.test(parts[parts.length - 1])) parts.pop();
+    if (parts.length) parts.pop(); // trailing state name (page is state-scoped)
+    const city = parts.find((p) => p && !/county$/i.test(p)) || null;
+    return { city, locRaw: locText.replace(/,\s*United States\s*$/i, '').trim() || null };
   }
 }
 

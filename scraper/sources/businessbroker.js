@@ -35,6 +35,20 @@ const { STATE_CODES } = require('../core/states');
 // normalize a name for fuzzy JSON-LD matching: lowercase, alphanumerics only
 const normName = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
+// Valid 2-letter US state codes, and a shape check that rejects description
+// text that leaked into the greedy city regex ("...Established Business, NY").
+const VALID_STATE_CODES = new Set(Object.values(STATE_CODES));
+const CITY_STOPWORD = /^(and|the|for|with|of|to|in|on|at|is|are|or|a|an|business|businesses|sale|company|companies|service|services|llc|inc|opportunity|established|profitable|turnkey|priced|owner|absentee|located|near|new|great)$/i;
+function cityLooksReal(c) {
+  if (!c) return false;
+  const s = String(c).replace(/\s+/g, ' ').trim();
+  if (s.length < 2 || s.length > 26 || /\d/.test(s)) return false;
+  const words = s.split(' ');
+  if (words.length > 3) return false;                       // real cities are ≤3 words
+  if (words.some((w) => CITY_STOPWORD.test(w))) return false; // description leakage
+  return true;
+}
+
 class BusinessBrokerScraper extends SourceScraper {
   async scrape() {
     const base = 'https://www.businessbroker.net';
@@ -229,12 +243,19 @@ class BusinessBrokerScraper extends SourceScraper {
       const asking = this.matchMoney(cardText, /asking\s*price:?\s*\$\s*([\d,.]+)/i);
       const cashFlow = this.matchMoney(cardText, /cash\s*flow:?\s*\$\s*([\d,.]+)/i);
       const revenue = this.matchMoney(cardText, /(?:gross\s*revenue|revenue|gross\s*income):?\s*\$\s*([\d,.]+)/i);
-      const locM = cardText.match(/([A-Za-z .'-]+),\s*([A-Z]{2})\b/);
+      // Prefer the STRUCTURED JSON-LD locality (clean). The card-text regex is
+      // only a fallback and is strictly validated — the old greedy match let
+      // description text ending in ", Xx" land in city, and accepted any two
+      // caps as a "state". Non-greedy, must start capitalized, state must be a
+      // real code, and the city must pass the shape check.
+      const locM = cardText.match(/([A-Z][A-Za-z .'-]{1,26}?),\s*([A-Z]{2})\b/);
+      const regexState = locM && VALID_STATE_CODES.has(locM[2]) ? locM[2] : null;
+      const regexCity = regexState && cityLooksReal(locM[1]) ? locM[1].trim() : null;
 
       const ld = name ? ldByName.get(normName(name)) : null;
       const clean = (v) => (v && !/not\s*disclosed|undisclosed|confidential/i.test(v) ? v.trim() : null);
-      const city = clean(locM?.[1]) ?? clean(ld?.city);
-      const state = locM?.[2] || ld?.state || slugState(href);
+      const city = clean(ld?.city) ?? clean(regexCity);
+      const state = ld?.state || regexState || slugState(href);
 
       out.push(this.listing({
         source_listing_id: id,

@@ -802,3 +802,23 @@ network blip during the nightly run.
 - Health: vr 366/0 err, alliant 11/0 err. alliant glued-label parse + name-based
   state inference verified clean (TN fencing co $399K SDE, electrical/generator
   installer $249K KY — quality thesis inventory). No drift.
+
+## 2026-07-13 — PM TASK DONE: tupelomarket + businessbroker city-pollution parser fixes
+- (Task via active-PM cross-session pointer + TASK-QUEUE L398: "LANE A STILL OWES".)
+- **Root cause, both adapters: city derived from GREEDY regex over glued
+  card.text()** — the title/description ran straight into the location with no
+  delimiter ("Turnkey OpportunityBirmingham", "…Gulf Coast MarketBaldwin County").
+- **tupelomarket fix:** read the location from its own DOM node (shortest
+  span/div ending ", United States", ≤60 chars) + structural parseUsLoc()
+  ("City, County, State, United States" → city, county-only → null). Verified
+  on live scrape: **97/335 polluted → 0/335**; clean values (Pinson, Birmingham,
+  Big Lake, Peoria) or honest nulls.
+- **businessbroker fix:** prefer structured JSON-LD locality over the card-text
+  regex (old code preferred regex!); fallback regex now non-greedy + must start
+  capitalized + state must be a REAL code (was: any 2 caps) + cityLooksReal()
+  shape check (≤3 words, ≤26 chars, no digits, stopword blacklist). Verified on
+  live scrape: **668 listings, 0 polluted**; survivors all real (Delray Beach,
+  Cleveland, Charleston…). Coverage is clean-only now — correctness over junk.
+- cleanup_locations.js --dry-run after fixes: **0 polluted rows in DB** (Lane C's
+  cleanup held; nothing new to clean). Loop closed at source. Next nightly
+  ingest stays clean.
