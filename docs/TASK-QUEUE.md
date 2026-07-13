@@ -462,13 +462,14 @@ in MORNING-BRIEF.
   step (quota-capped by design). Add it as a second step after enrichment, or
   drop the unused secret from that workflow.
 - ⬜ SELF-ITERATE: what contact data are we still missing per company? Close the gap.
-  COVERAGE CHECKPOINT (2026-07-12 ~19:35, post tier-2 cascade w/ Hunter Starter):
-  **completeness now FULL 33 · CONTACTABLE 63 · IDENTIFIED 108** (was 14/62/128
-  — a 40-lead tier-2 pass added 7 verified owner emails + 33 LinkedIn URLs,
-  moving 19 leads to FULL). Hunter spend $1.50 (15 searches, well within 500/mo
-  Starter). owner_phone attribution fixed (11 company-lines demoted). Next
-  levers: keep tier-2 cascading the remaining incomplete-but-named leads
-  (bounded per run), and the ~180 no-web license rows are the VA tier by design.
+  COVERAGE CHECKPOINT (2026-07-12 ~20:05, two tier-2 batches w/ Hunter Starter):
+  **completeness now FULL 50 · CONTACTABLE 58** (FULL was 14 → 33 → 50 across two
+  40-lead tier-2 passes: +16 verified owner emails, +54 LinkedIn URLs total).
+  Hunter spend ~$3 (30 searches, trivial vs 500/mo Starter). ~20 incomplete-named
+  leads still un-tier-2'd (next passes). owner_phone attribution fixed. Note: a
+  few Hunter skips are "owner_name" that's actually a company/LLC name (not a
+  person) — a data-quality tail, low value to chase. ~180 no-web license rows
+  are the VA tier by design.
 
 ## PM / Integrator  (branch `main`; owns Sidebar.tsx, shared docs, deploys)
 - Merge lane branches → main; build + deploy; wire new routes into Sidebar.
