@@ -456,6 +456,26 @@ set) into your new chips UI as a small follow-up.
   inert, delete at leisure. Lane B: rules editor + "why drafted" line remain
   yours.
   --- original card ---
+- 🔥🔥🔥 **SIZE ESTIMATION — AMENDMENT 3 + UI COMPLETION (John 7/13 ~14:45;
+  card 37450f11 flipped back to 'building' — server math shipped but John
+  rightly notes NOTHING is visible on the site yet):**
+  (a) **RENAME TIERS everywhere — "Platform / Tuck-in / Too small"**, never
+  A/B/C (API values can stay internal but every label, chip, filter, and
+  count reads the real words). (Lane C: rename in size.ts meta + API
+  labels; Lane B: render accordingly.)
+  (b) **Est. Revenue + Est. EBITDA columns on EVERY company/deal surface**
+  — Enrichment tab, Companies, company profile header, Deals index + deal
+  detail, outreach views. Columns ALWAYS present; blank (—) where no
+  estimate; "~" prefix + provenance tooltip where present.
+  (c) **Size Estimation tab under Proprietary Sourcing** (Lane B, with
+  Lane C's 0014 assumptions table): per-industry payroll-%-of-rev +
+  EBITDA-margin inputs AND **editable TIER THRESHOLDS** (Platform / Tuck-in
+  / Too small boundaries in revenue and/or EBITDA terms) — all cascade on
+  change, nothing baked. Seed thresholds: Platform ≥ $1M est. EBITDA;
+  Tuck-in $250K–$1M; Too small < $250K (John can amend in the tab).
+  (d) **PPP import (Lane C, next tick)** feeds the same math — until it
+  runs, estimates rest on LinkedIn bands/reviews only; ship UI first so
+  John SEES coverage grow.
 - 🔥🔥🔥 **LEAD→CONTACT CHANNEL SYNC — ROOT-CAUSE FIX (John found it live 7/13
   ~14:00: A & B Lawn Service showed FULL + 2 dots on Enrichment but its CRM
   contact had NO channels — "I would not call that full… I assume there are
