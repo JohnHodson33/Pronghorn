@@ -19,6 +19,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Pronghorn Platform",
   description: "Deal sourcing & CRM — Pronghorn Equity Partners",
+  // Installable on iOS/Android home screens (John reviews on mobile)
+  appleWebApp: { capable: true, title: "Pronghorn", statusBarStyle: "black-translucent" },
+  icons: { apple: "/pronghorn-logo.png" },
+};
+
+export const viewport = {
+  themeColor: "#17301F",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
