@@ -16,7 +16,23 @@ type Item = {
   status: "submitted" | "triaged" | "building" | "shipped" | "verified" | "suggested" | "approved" | "declined";
   lane: string | null;
   shipped_ref: string | null;
+  reply_pending?: boolean;
+  feedback_comments?: { count: number }[];
 };
+
+// 💬 count badge + reply-pending, shown on collapsed cards. Comment counts
+// come from 0011 when applied; until then the body-append segments count.
+function ThreadBadge({ it }: { it: Item }) {
+  const n = it.feedback_comments?.[0]?.count ?? Math.max(it.body.split(/—\s*\w+\s+adds:/).length - 1, 0);
+  return (
+    <span className="flex items-center gap-1.5">
+      {n > 0 && <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-600">💬 {n}</span>}
+      {it.reply_pending && (
+        <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">⏳ agent reply pending</span>
+      )}
+    </span>
+  );
+}
 
 const STATUS_STYLE: Record<string, string> = {
   submitted: "bg-zinc-100 text-zinc-600",
@@ -99,6 +115,7 @@ function SuggestionsSection({ items, onChanged }: { items: Item[] | null; onChan
               <span>🧠</span>
               <span className="font-medium text-zinc-700">{s.author}</span>
               {s.page && <span className="rounded bg-zinc-100 px-1.5 py-0.5">{s.page}</span>}
+              <ThreadBadge it={s} />
               <span className={`ml-auto rounded-full px-2 py-0.5 font-semibold ${STATUS_STYLE[s.status]}`}>{s.status}</span>
             </div>
             {openFor === s.id ? (
@@ -240,6 +257,7 @@ export default function Improvements() {
                 <span className="font-medium text-zinc-700">{it.author}</span>
                 {it.page && <span className="rounded bg-zinc-100 px-1.5 py-0.5">{it.page}</span>}
                 <span>{new Date(it.created_at).toLocaleString()}</span>
+                <ThreadBadge it={it} />
                 <span className={`ml-auto rounded-full px-2 py-0.5 font-semibold ${STATUS_STYLE[it.status]}`}>{it.status}</span>
                 {it.lane && <span className="rounded bg-zinc-100 px-1.5 py-0.5">lane {it.lane}</span>}
               </div>
