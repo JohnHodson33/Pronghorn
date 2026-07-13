@@ -53,6 +53,13 @@ in MORNING-BRIEF.
   (submitted→triaged→building→shipped) so Tom sees ideas move; agent
   self-review + roadmap panel (PM curates). PM wires sidebar entry on merge.
   Ship the basic version TODAY — the Haiku refine-chat step is v2.
+- 🔥 **FREE OWNER-NAME UNLOCKS (PM add 7/12, from John's fill-rate question):**
+  (Lane C) add **Secretary of State / state corp registry lookups** to the
+  cascade — registered agents/officers/members for LLCs give owner NAMES at
+  high accuracy for $0 (we already do TX license boards; extend the pattern:
+  AZ CC, CO SoS, WA SoS, FL Sunbiz have searchable/free endpoints). Combined
+  w/ website discovery this is the biggest lift from ◔BASIC → ◑IDENTIFIED,
+  and names are the key that unlocks Hunter + skip-tracing downstream.
 - 🔥🔥🔥 **ENRICHMENT COMPLETENESS LEVELS replace binary "enriched" (John 7/12
   ~16:05 — "enriched next to a lead with no owner info feels like nothing
   happened"):** status stays lifecycle-only (new/enriching/…); ADD a computed
