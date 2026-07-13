@@ -456,6 +456,31 @@ set) into your new chips UI as a small follow-up.
   inert, delete at leisure. Lane B: rules editor + "why drafted" line remain
   yours.
   --- original card ---
+- 🔥🔥🔥 **JOHN'S VERDICT BATCH (7/13 ~13:15 in PM chat) — FOUR APPROVALS,
+  effective now:**
+  (1) **SIZE-PROXY CARD 37450f11 APPROVED WITH AMENDMENT (Lane C — top
+  build):** add first-class **est_revenue + est_ebitda columns** from PPP
+  data. Method (John's spec): annual payroll = PPP loan ÷ 2.5 × 12 (= loan
+  × 4.8) → est. revenue = payroll ÷ industry payroll-%-of-revenue → est.
+  EBITDA = revenue × 20%. **PM-researched initial payroll assumptions
+  (editable table, like the taxonomy): tree care 40% · lawn care 35% ·
+  pest control 33% · fencing 30%** (sources: TCIA payroll 40-55% of gross,
+  field 30±5% + burden + office 10-12%; PCT/NPMA 2025 direct labor 26% +
+  admin; Dan Mello interview 7/13: payroll 33-44% of rev; fencing =
+  materials-heavier trade). Estimates are DIRECTIONAL/RELATIONAL by design
+  (John: "prioritize size relative to other targets"). Caveats to encode:
+  PPP capped comp at $100k/head (revenue biased LOW for high-wage firms —
+  fine for ranking); 2020 payroll basis (relational OK; wage-inflation
+  multiplier = calibration knob); use the LARGER single draw, never sum
+  draws. UI (Lane B): est. revenue + est. EBITDA columns w/ "~" prefix +
+  tooltip ("PPP-derived estimate"), sortable, beside size-tier chips.
+  (2) **DIGEST CARD 9bb9d925 APPROVED** — Lane C builds per the amended
+  rules-based spec. (3) **PINNED VIEWS APPROVED** (card 5e13d986, Lane B).
+  (4) **PAINTING/RESTORE SCREENING: DONE** — PM executed with John's
+  approval (Green Industry Default 81→94 include keywords + 6 excludes via
+  the criteria API; next nightly re-screens the backlog — Lane A verify
+  painting listings appear after the run). **Sample-drafts card 611290ff:
+  John still considering — auto-draft stays PAUSED.**
 - 🔥🔥🔥 **OUTREACH DRAFT RULES + TAILORING (John in chat 7/13 ~11:15 after
   reviewing his Drafts folder — "I like the idea of the automation… but I
   don't think they should just auto draft… it's too broad and the content
