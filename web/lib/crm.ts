@@ -105,6 +105,7 @@ export type CompanyRow = {
   origin: string | null;
   created_at: string;
   deals: { stage: string }[];
+  contacts: { role: string | null; name: string | null; email: string | null; phone: string | null; linkedin: string | null }[];
 };
 
 export type BrokerRow = {
@@ -186,7 +187,10 @@ export async function fetchCompanies(): Promise<CompanyRow[] | null> {
   if (!hasDb()) return null;
   const { data, error } = await serverDb()
     .from("companies")
-    .select("id, name, industry, city, state, revenue, ebitda, ebitda_type, origin, created_at, deals(stage)")
+    .select(
+      "id, name, industry, city, state, revenue, ebitda, ebitda_type, origin, created_at, deals(stage), " +
+        "contacts(role, name, email, phone, linkedin)"
+    )
     .order("created_at", { ascending: false });
   if (error) {
     console.error("fetchCompanies failed:", error.message);

@@ -8,6 +8,16 @@ import { useRouter } from "next/navigation";
 import { money } from "@/lib/mock";
 import type { CompanyRow } from "@/lib/crm";
 import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
+import { companyLevel } from "@/lib/company-level";
+import { LEVELS, LEVEL_META, type Completeness } from "@/lib/completeness";
+
+const levelChip: Record<Completeness, string> = {
+  full: "bg-emerald-700 text-white",
+  contactable: "bg-emerald-100 text-emerald-800",
+  identified: "bg-amber-100 text-amber-800",
+  basic: "bg-zinc-100 text-zinc-600",
+  raw: "bg-zinc-50 text-zinc-400",
+};
 
 export default function CompaniesTable({ companies }: { companies: CompanyRow[] }) {
   const router = useRouter();
@@ -23,7 +33,20 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
   const [q, setQ] = useState("");
   const [industry, setIndustry] = useState<string | null>(null);
   const [stage, setStage] = useState("all");
+  const [level, setLevel] = useState<Completeness | null>(null);
   const [withDealOnly, setWithDealOnly] = useState(false);
+
+  const levels = useMemo(() => {
+    const m = new Map<string, ReturnType<typeof companyLevel>>();
+    for (const c of companies) m.set(c.id, companyLevel(c.contacts));
+    return m;
+  }, [companies]);
+
+  const levelCounts = useMemo(() => {
+    const counts: Record<Completeness, number> = { full: 0, contactable: 0, identified: 0, basic: 0, raw: 0 };
+    for (const c of companies) counts[levels.get(c.id)!.level]++;
+    return counts;
+  }, [companies, levels]);
 
   const rows = useMemo(
     () =>
@@ -31,11 +54,12 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
         if (q && !`${c.name} ${c.industry ?? ""} ${c.city ?? ""} ${c.state ?? ""}`.toLowerCase().includes(q.toLowerCase()))
           return false;
         if (industry && c.industry !== industry) return false;
+        if (level && levels.get(c.id)!.level !== level) return false;
         if (stage !== "all" && c.deals?.[0]?.stage !== stage) return false;
         if (withDealOnly && !c.deals?.[0]) return false;
         return true;
       }),
-    [companies, q, industry, stage, withDealOnly]
+    [companies, q, industry, stage, level, levels, withDealOnly]
   );
 
   const inputCls = "rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-600";
@@ -98,6 +122,22 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
       </div>
 
       <div className="flex flex-wrap items-center gap-1.5">
+        <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-zinc-400">Owner reach</span>
+        {LEVELS.map((lv) => (
+          <button
+            key={lv}
+            onClick={() => setLevel(level === lv ? null : lv)}
+            className={`rounded-full px-2.5 py-1 text-xs font-semibold transition ${
+              level === lv ? "ring-2 ring-emerald-600 " : ""
+            }${levelChip[lv]}`}
+            title={LEVEL_META[lv].label}
+          >
+            {LEVEL_META[lv].dot} {levelCounts[lv]} {lv}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-1.5">
         <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-zinc-400">Industry</span>
         <button
           onClick={() => setIndustry(null)}
@@ -125,6 +165,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
           <thead>
             <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500">
               <th className="px-4 py-3">Company</th>
+              <th className="px-4 py-3">Owner reach</th>
               <th className="px-4 py-3">Industry</th>
               <th className="px-4 py-3">Location</th>
               <th className="px-4 py-3 text-right">Revenue</th>
@@ -142,6 +183,23 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
                 className="cursor-pointer hover:bg-zinc-50"
               >
                 <td className="px-4 py-3 font-medium">{c.name}</td>
+                <td className="whitespace-nowrap px-4 py-3">
+                  {(() => {
+                    const lv = levels.get(c.id)!;
+                    return (
+                      <span className="inline-flex items-center gap-2">
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${levelChip[lv.level]}`} title={LEVEL_META[lv.level].label}>
+                          {LEVEL_META[lv.level].dot} {lv.level}
+                        </span>
+                        <span className="inline-flex gap-1" title="owner phone · email · LinkedIn">
+                          {lv.channels.map((f, i) => (
+                            <span key={i} className={`h-2 w-2 rounded-full ${f ? "bg-emerald-600" : "bg-zinc-200"}`} />
+                          ))}
+                        </span>
+                      </span>
+                    );
+                  })()}
+                </td>
                 <td className="px-4 py-3">
                   {c.industry ? (
                     <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700">{c.industry}</span>
@@ -176,7 +234,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-10 text-center text-sm text-zinc-400">
+                <td colSpan={9} className="px-4 py-10 text-center text-sm text-zinc-400">
                   No companies match the current filters.
                 </td>
               </tr>
