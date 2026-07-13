@@ -61,6 +61,9 @@ export type CompanyDetail = {
   activities: { id: number; kind: string; body: string | null; doc_url: string | null; created_at: string }[];
   listings: CompanyListing[];
   comparison: MultipleComparison | null;
+  // channels the source LEAD has that no contact carries yet (promotion/sync
+  // gap — John 7/13: show with provenance rather than reading as blank)
+  leadChannels: { ownerName: string | null; email: string | null; phone: string | null; linkedin: string | null } | null;
 };
 
 export async function fetchCompanyDetail(id: string): Promise<CompanyDetail | null> {
@@ -80,7 +83,7 @@ export async function fetchCompanyDetail(id: string): Promise<CompanyDetail | nu
     notes: string | null; listing_id: string | null; created_at: string;
   };
 
-  const [{ data: dealRows }, { data: contacts }, { data: activities }, { data: linkedListings }] =
+  const [{ data: dealRows }, { data: contacts }, { data: activities }, { data: linkedListings }, { data: leadRows }] =
     await Promise.all([
       db
         .from("deals")
@@ -109,6 +112,12 @@ export async function fetchCompanyDetail(id: string): Promise<CompanyDetail | nu
             .from("listings")
             .select("id, name, url, source_id, tier, asking_price, cash_flow, first_seen_at, last_seen_at, delisted_at")
             .eq("company_id", id),
+      // the source lead's owner channels (promotion/sync gap detection)
+      db
+        .from("leads")
+        .select("owner_name, owner_email, owner_phone, owner_linkedin")
+        .eq("company_id", id)
+        .limit(5),
     ]);
 
   type LRow = {
@@ -164,6 +173,22 @@ export async function fetchCompanyDetail(id: string): Promise<CompanyDetail | nu
   const ebitda = num(c.ebitda);
   const comparison = await computeMarketCheck(c.industry, ebitda, deal?.asking ?? null);
 
+  // Channels the lead carries that NO contact on the company has — surfaced
+  // with provenance instead of reading as blank. (Lane C's write-path sync
+  // will close the gap at promotion time; this catches the interim.)
+  const contactList = contacts ?? [];
+  const has = (k: "email" | "phone" | "linkedin") => contactList.some((p) => p[k]);
+  let leadChannels: CompanyDetail["leadChannels"] = null;
+  for (const l of (leadRows ?? []) as { owner_name: string | null; owner_email: string | null; owner_phone: string | null; owner_linkedin: string | null }[]) {
+    const email = !has("email") ? l.owner_email : null;
+    const phone = !has("phone") ? l.owner_phone : null;
+    const linkedin = !has("linkedin") ? l.owner_linkedin : null;
+    if (email || phone || linkedin) {
+      leadChannels = { ownerName: l.owner_name, email, phone, linkedin };
+      break;
+    }
+  }
+
   return {
     company: {
       id: c.id,
@@ -185,5 +210,6 @@ export async function fetchCompanyDetail(id: string): Promise<CompanyDetail | nu
     activities: activities ?? [],
     listings,
     comparison,
+    leadChannels,
   };
 }
