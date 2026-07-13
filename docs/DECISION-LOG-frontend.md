@@ -365,6 +365,23 @@ also executed the two swaps previously flagged as PM actions:
   build). Hoisted the fonts import above the tailwind import in globals.css.
 - Did NOT reintroduce the $0.11 tier-2 tooltip (PM hot-fixed rate honored).
 
+## 2026-07-13 — 🔥🔥🔥 Improvements dialogue (John's approve-with-eyes-open ask)
+
+- **FeedbackThread** on every suggestion AND submitted-feedback card
+  (💬 Open thread): comments render as a conversation — humans neutral,
+  agents 🤖 purple, status changes italic, build plans sky-bordered,
+  completion summaries green-bordered "what was actually done". Reply
+  composer (John/Tom picker + dictation mic) posts to Lane C's
+  `/api/feedback/[id]/comments` when live (it is — verified consuming a real
+  dated agent revision) and falls back to the body-append "— X adds:" PATCH
+  when not; the pseudo-thread parser renders legacy appended segments as
+  dialogue either way. "⏳ agent reply pending" badge when a human spoke
+  last. **"✓ Approve latest spec"** names exactly which revision it approves
+  ("approves the 7/12 11:41 PM agent revision — that reply is the build
+  contract"); plain Approve is gone.
+- Verified live: 11 threads, composer + revision caption + styled agent
+  bubbles. Did NOT post test replies into John's real threads.
+
 ## Lane B session setup
 
 - Lane B works in a git worktree (`C:\Users\johnd\Pronghorn-frontend`, branch
