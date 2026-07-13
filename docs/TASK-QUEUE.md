@@ -500,6 +500,20 @@ set) into your new chips UI as a small follow-up.
   thread; mobile parity. Acceptance: Tom attaches a spreadsheet to a
   suggestion; the owning lane can download it; PPP-derived employee counts
   appear in size_signals for matched companies.
+- 🔨 LANE C — 🔥🔥🔥 **MEETING-NOTES LIVE SWEEP — (a)+(b)+(c)+(d) SHIPPED 7/13
+  ~13:35 (a7f0324).** `ingest_notion_meetings.js --live`: polls Notion for
+  pages edited in the window (John's token + NOTION_TOKEN_TOM when Tom
+  connects), Claude auto-tags to company/deal/contacts + summary w/ action
+  items, idempotent on PAGE ID (survives URL-form differences), NEVER
+  overwrites hand-cataloged entries (verified live against the PM's Dan Mello
+  exemplar — left untouched), Dan-Mello people-detection w/ hard gates (full
+  verbatim names only, no partners, no inferred firms), unmatched notes →
+  dashboard Key Action `note_needs_tagging` (verified on dev; excludes
+  contact-attached notes). Wired into outlook-sync.yml every 3h — **needs
+  NOTION_TOKEN as a GH secret** (+ANTHROPIC_API_KEY already listed). LANE B:
+  Key Actions card for note_needs_tagging → tap opens the note + a company
+  picker; "Log meeting" paste box (Option B) still open as manual fallback.
+  --- original card ---
 - 🔥🔥🔥 **MEETING-NOTES PIPELINE — LIVE SWEEP + INPUT UI (John in chat 7/13
   ~10:20 — "the CRM includes all of the notes very easily… automated fashion…
   scrape Tom's Notion too… tag it to the right company or deal"; builds on
