@@ -2,22 +2,27 @@
 
 ## 🤝 HANDOFF (keep current — replacement session resumes from this)
 
-**State (2026-07-13 ~12:55, session ACTIVE, main merged in):** Worktree
+**State (2026-07-13 ~14:00, session ACTIVE):** Worktree
 `C:\Users\johnd\Pronghorn-integrations`, branch `lane/integrations`. Migrations
-0004–0010 LIVE; **0011 + 0012 + 0013 (outreach_rules) pending PM — apply in
-order.** ⚠️ AUTO-DRAFTING IS PAUSED (John 7/13 ~11:15 — too broad, not
-tailored): leadgen.yml step if:false; do NOT draft locally either. The
-rules-gated rewrite is SHIPPED (75f9a5e): zero rules = zero drafts; 5 tailored
-samples posted to /improvements — resume only after John approves + first rule
-exists. Sunday-daytime shipped: draft rules+tailoring+samples (75f9a5e), AZ
-owner-name resolver via ROC posting list (0e2448f), role-mailbox guard
-(375b266), Lawn Care list fully enriched+promoted+tier-2'd (91 leads → 90
-companies, 29 owner contacts, +16 LinkedIn, +2 emails, +5 size bands),
-broker_id backfill (2/18 linked; other 16 = relationship contacts not in
-directory, correct), NC recon (no free path). Still open on my queue:
-MEETING-NOTES LIVE SWEEP (NOTION_TOKEN live, top item now), PPP size import,
-size-proxy tier math (card 37450f11) + nightly digest (9bb9d925) both still
-awaiting John.
+0004–0010 LIVE; **0011+0012+0013+0014 pending PM — apply in order.**
+⚠️ AUTO-DRAFTING PAUSED (John 7/13 ~11:15): leadgen.yml step if:false; never
+draft locally; rules-gated rewrite shipped (75f9a5e), 5 tailored samples on
+/improvements (card 611290ff) — resume ONLY on John's approval + first
+outreach_rule. 🎉 JOHN APPROVED both size-proxy (37450f11) and nightly-digest
+(9bb9d925) ~13:00 — BOTH BUILT + SHIPPED (5673241) with completion summaries
+on the cards: size tiers A/B/C served by /api/leads + /api/companies (?tier=
+filter, tierCounts, A-first sort; benchmarks editable via 0014, JSON
+fallback); nightly digest = receipt + rules-gated plan w/ one-tap pause
+(/api/digest + nightly-digest.yml 19:00/05:00 Phoenix; zero auto_enrich_rules
+= zero spend, verified). Sunday shipped, in order: list-build visibility
+(6641c89), size-signal capture (1507f29), AZ ROC owner resolver (0e2448f),
+role-mailbox guard (375b266), Lawn Care list worked end-to-end (91→90
+companies), broker_id backfill (2/18, rest correctly unlinkable), draft
+rules+samples (75f9a5e), Notion meeting-notes live sweep (a7f0324; wired into
+outlook-sync.yml, needs NOTION_TOKEN GH secret), size tiers + digest
+(5673241). Still open: PPP size-signal import (last big queued item); Lane B
+renders tier chips, digest card, note_needs_tagging Key Action, draft-rules
+editor.
 
 **SHIPPED THIS SESSION (7/13 ~00:45):**
 (1) LIST-BUILD RUN VISIBILITY + 15-MIN DRAIN (6641c89): leadgen.yml cron */15

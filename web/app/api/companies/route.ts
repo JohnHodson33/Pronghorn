@@ -8,6 +8,7 @@
 import { NextResponse } from "next/server";
 import { hasDb, serverDb } from "@/lib/db";
 import { companyCompleteness, LEVELS, type Completeness } from "@/lib/completeness";
+import { sizeEstimate, TIERS } from "@/lib/size";
 
 export const dynamic = "force-dynamic";
 
@@ -31,26 +32,53 @@ export async function GET(req: Request) {
   const { data, error } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+  // size signals live on the source LEAD's enrichment — one join by company_id
+  const { data: leadRows } = await db
+    .from("leads")
+    .select("company_id, enrichment, review_count, industry_verified")
+    .not("company_id", "is", null)
+    .limit(3000);
+  const leadByCompany = new Map((leadRows ?? []).map((l) => [l.company_id as string, l]));
+
   const levelFilter = url.searchParams.get("level") as Completeness | null;
   let companies = (data ?? []).map((c) => {
     const { contacts, ...rest } = c as typeof c & { contacts: unknown };
+    const lead = leadByCompany.get(c.id as string);
+    const size = lead
+      ? sizeEstimate(
+          (lead.industry_verified as string | null) ?? (c.industry as string | null),
+          (lead.enrichment as { size_signals?: Record<string, unknown> } | null)?.size_signals,
+          lead.review_count as number | null,
+        )
+      : null;
     return {
       ...rest,
       ownerContactCount: (c.contacts ?? []).filter((x) => (x.role ?? "").toLowerCase() === "owner").length,
       completeness: companyCompleteness(c),
+      size, size_tier: size?.tier ?? "unsized",
     };
   });
 
-  // counts BEFORE applying the level filter (so the header shows the full split)
+  // counts BEFORE applying filters (so the header shows the full split)
   const counts = Object.fromEntries(
     LEVELS.map((lv) => [lv, companies.filter((c) => c.completeness === lv).length]),
+  );
+  const tierCounts = Object.fromEntries(
+    TIERS.map((t) => [t, companies.filter((c) => c.size_tier === t).length]),
   );
   if (levelFilter && LEVELS.includes(levelFilter)) {
     companies = companies.filter((c) => c.completeness === levelFilter);
   }
-  // most-complete first, matching the leads list convention
-  companies.sort((a, b) => LEVELS.indexOf(a.completeness) - LEVELS.indexOf(b.completeness));
+  const tierFilter = url.searchParams.get("tier");
+  if (tierFilter && TIERS.includes(tierFilter as (typeof TIERS)[number])) {
+    companies = companies.filter((c) => c.size_tier === tierFilter);
+  }
+  // most-complete first, tier A floats above within a level (outreach A-first)
+  const tierRank = (t: string) => ({ A: 0, B: 1, C: 3, unsized: 2 })[t] ?? 2;
+  companies.sort((a, b) =>
+    LEVELS.indexOf(a.completeness) - LEVELS.indexOf(b.completeness) ||
+    tierRank(a.size_tier) - tierRank(b.size_tier));
 
   const industries = [...new Set((data ?? []).map((c) => c.industry).filter(Boolean))].sort();
-  return NextResponse.json({ companies, counts, industries, total: companies.length });
+  return NextResponse.json({ companies, counts, tierCounts, industries, total: companies.length });
 }

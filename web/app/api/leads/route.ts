@@ -4,6 +4,7 @@
 import { NextResponse } from "next/server";
 import { hasDb, serverDb } from "@/lib/db";
 import { completeness, LEVELS, type Completeness } from "@/lib/completeness";
+import { sizeEstimate, TIERS } from "@/lib/size";
 
 export async function GET(req: Request) {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
@@ -12,7 +13,7 @@ export async function GET(req: Request) {
 
   let q = serverDb()
     .from("leads")
-    .select("id, lead_list_id, name, website, phone, address, city, state, owner_name, owner_email, owner_phone, owner_linkedin, enrichment, license_ids, source_tags, status, company_id, created_at")
+    .select("id, lead_list_id, name, website, phone, address, city, state, owner_name, owner_email, owner_phone, owner_linkedin, enrichment, license_ids, source_tags, status, company_id, created_at, review_count, rating, industry_verified, off_target")
     .order("created_at", { ascending: false })
     .limit(1000);
   if (list) q = q.eq("lead_list_id", list);
@@ -22,8 +23,21 @@ export async function GET(req: Request) {
 
   // completeness = the demarcation John reads; computed server-side once,
   // default order = most complete first (results float to the top post-run)
-  const rows = (data ?? []).map((l) => ({ ...l, completeness: completeness(l) }));
+  const rows = (data ?? []).map((l) => {
+    const size = sizeEstimate(
+      (l as { industry_verified?: string }).industry_verified,
+      (l.enrichment as { size_signals?: Record<string, unknown> } | null)?.size_signals,
+      (l as { review_count?: number }).review_count,
+    );
+    return { ...l, completeness: completeness(l), size, size_tier: size?.tier ?? "unsized" };
+  });
   rows.sort((a, b) => LEVELS.indexOf(a.completeness as Completeness) - LEVELS.indexOf(b.completeness as Completeness));
+  let out = rows;
+  const tierFilter = url.searchParams.get("tier");
+  if (tierFilter && TIERS.includes(tierFilter as (typeof TIERS)[number])) {
+    out = rows.filter((r) => r.size_tier === tierFilter);
+  }
   const counts = Object.fromEntries(LEVELS.map((lv) => [lv, rows.filter((r) => r.completeness === lv).length]));
-  return NextResponse.json({ leads: rows, counts, total: rows.length });
+  const tierCounts = Object.fromEntries(TIERS.map((t) => [t, rows.filter((r) => r.size_tier === t).length]));
+  return NextResponse.json({ leads: out, counts, tierCounts, total: out.length });
 }
