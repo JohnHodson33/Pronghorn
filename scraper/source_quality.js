@@ -8,7 +8,19 @@
 // how usable the records are for the multiples engine and outreach.
 
 require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
 const { supabase } = require('./core/db.js');
+
+// Enabled source_ids (config key = source_id). Used to distinguish a
+// deliberately-disabled source (stale by design) from an ENABLED source that
+// has gone stale — the latter means its scraper silently stopped producing.
+function enabledSources() {
+  try {
+    const cfg = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json'), 'utf8'));
+    return new Set(Object.entries(cfg.sources || {}).filter(([, v]) => v.enabled !== false).map(([k]) => k));
+  } catch { return null; }
+}
 
 async function fetchAll() {
   const cols = 'source_id, tier, cash_flow, asking_price, broker_id, priority_state, delisted_at, last_seen_at';
@@ -82,6 +94,27 @@ async function main() {
   if (brokerGap.length) {
     console.log('\n📇 Broker-contact gaps (≥3 Tier1/2 but 0 broker contacts — enrich these for outreach):');
     for (const s of brokerGap) console.log(`   ${s.source} (${s.t1 + s.t2} thesis-fit, 0 brokers)`);
+  }
+  // Flag stale/broken ENABLED sources: if a source that's turned on in config
+  // has no row seen in >STALE_HOURS, its nightly scrape silently stopped
+  // producing (parse break, site change, blocked). This is the automated
+  // replacement for eyeballing each scraper by hand — only exceptions surface.
+  const STALE_HOURS = 48;
+  const enabled = enabledSources();
+  if (enabled) {
+    const cutoff = Date.now() - STALE_HOURS * 3600 * 1000;
+    const stale = ranked
+      .filter((s) => enabled.has(s.source) && (!s.lastSeen || Date.parse(s.lastSeen) < cutoff))
+      .sort((a, b) => (Date.parse(a.lastSeen || 0)) - (Date.parse(b.lastSeen || 0)));
+    // Enabled sources that produced zero rows at all (never in the DB) also count.
+    const missing = [...enabled].filter((src) => !bySource.has(src));
+    if (stale.length || missing.length) {
+      console.log(`\n🔴 STALE/BROKEN (enabled but no rows in >${STALE_HOURS}h — likely broken scraper, CHECK THESE):`);
+      for (const s of stale) console.log(`   ${s.source} (last seen ${s.lastSeen ? s.lastSeen.slice(0, 10) : 'never'}, ${s.active} active)`);
+      for (const src of missing) console.log(`   ${src} (no rows in DB at all — never scraped or fully broken)`);
+    } else {
+      console.log(`\n✅ Freshness: all ${enabled.size} enabled sources have rows within ${STALE_HOURS}h.`);
+    }
   }
   console.log('');
 }

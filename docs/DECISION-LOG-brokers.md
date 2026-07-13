@@ -757,3 +757,30 @@ network blip during the nightly run.
   full financials extracted where prose states them (home-based plumbing $800K ask /
   $1.19M rev / $465K SDE = T1). Rev/CF nulls elsewhere = teaser pages w/o stated
   financials (WAI per adapter design), not drift. Both parsers holding.
+
+## 2026-07-13 — AUTONOMY NIGHT: shipped freshness-alerting; 2 brain suggestions drafted (posting BLOCKED)
+- New PM directive merged (0ac79d3): AUTONOMY NIGHT ORDER — each lane posts ≥2
+  brain suggestions + ships ≥1 unprompted automation that removes human clicks.
+- **SHIPPED (self-iterate quota, automation):** source_quality.js now auto-flags
+  ENABLED sources with no rows in >48h (or missing from DB) as 🔴 STALE/BROKEN —
+  the automated replacement for hand-checking each scraper; only exceptions
+  surface. Verified: "✅ all 30 enabled sources fresh within 48h" (disabled
+  bizquest/certifiedbb correctly excluded). Feeds the nightly source-quality CI
+  artifact so John sees broken scrapers without anyone running them by hand.
+- **BLOCKED — 2 brain suggestions could not be posted.** Writing to the shared
+  `feedback` table (POST /api/feedback) was denied by the write guardrail: an
+  agent publishing under its own identity to a shared UI, authorized only by
+  TASK-QUEUE content, needs John's explicit OK / a permission rule. Did NOT
+  route around it. The two "bigger-swing" suggestions, preserved here for John to
+  post or approve:
+  1. **Auto-promote Tier-1 listings → pursuit pipeline** (remove the triage
+     click): nightly job opens a pursuit for any T1 clearing HARD criteria
+     (priority state + CF $300K–$10M + thesis keyword + not delisted + not
+     mirror-dup), stage 'new', w/ a "why it qualified" receipt. Human touch
+     becomes approve/reject, never data entry. Never contacts anyone; reversible.
+  2. **Automated source-health alerting** (bigger version of what shipped
+     tonight): trailing-7-run baseline per source; flag >25% count drop or
+     null-financial-rate spike (silent parse break) → compact digest to the
+     brain / Key Actions. Removes the manual health sweep entirely.
+- ACTION FOR JOHN/PM: approve me writing agent 'suggestion' rows to /api/feedback
+  (or add a permission rule), or post these two yourself. Until then they live here.
