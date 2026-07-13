@@ -1,9 +1,9 @@
 # Morning brief — overnight of 2026-07-12 → 07-13 (PM session, rewritten nightly)
 
 ## ☀️ YOUR MORNING (5 quick actions + 1 heads-up)
-0. **Migrations 0011 + 0012 (~2 min, in order):** same SQL-editor routine —
+0. **Migrations 0011 + 0012 + 0013 (~3 min, in order):** same SQL-editor routine —
    `0011_feedback_comments.sql` (real threaded dialogue on /improvements)
-   then `0012_lead_list_progress.sql` (live per-source progress on list
+   then `0012_lead_list_progress.sql` (live list progress) then `0013_outreach_rules.sql` (your outreach draft rules + provenance —
    builds — the "queued · 0 found" fix; runner degrades gracefully until
    then).
 0b. **Lane A unblock — one direct line (~30 sec):** the auto-promote-T1
