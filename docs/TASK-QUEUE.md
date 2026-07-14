@@ -467,6 +467,28 @@ set) into your new chips UI as a small follow-up.
   inert, delete at leisure. Lane B: rules editor + "why drafted" line remain
   yours.
   --- original card ---
+- 🔥🔥🔥 **SIZE MODEL AMENDMENT 4 (John 7/13 ~17:45 — RESTRUCTURE THE
+  ASSUMPTIONS; supersedes the rev-per-employee input display):** (Lane C
+  model + Lane B tab, top priority):
+  (a) **PRIMARY editable input per industry = PAYROLL % OF REVENUE** — the
+  metric John & Tom actually reason in (matches Tom's offline PPP analysis).
+  Revenue math: PPP loan → annual payroll (×4.8) → revenue = payroll ÷
+  payroll%. Do NOT display revenue-per-employee as an input ("I don't have
+  a great way to look at rev/employee and know if it makes sense").
+  (b) **EBITDA margin = FLAT 20% for every industry** (conservative),
+  single editable value — retire the low/high band display (John: bands
+  directionally fine but specific values not trusted; HVAC 10-18 reads
+  wrong). est_ebitda = est_revenue × margin.
+  (c) **CPI-ADJUST PPP-derived revenue**: loans are 2020/2021 snapshots —
+  grow by cumulative CPI from loan date → today (seed factors ≈ 1.25 for
+  2020 draws, ≈ 1.20 for 2021; keep as an editable per-year factor pair).
+  Nothing fancier — conservative by design.
+  (d) **ONE mental model**: employee-only estimates (LinkedIn/site counts,
+  no PPP) flow through the SAME payroll-% math via an internal avg
+  fully-burdened wage per industry (seed ~$55-70K by trade; internal, not
+  the headline input). Payroll-% seeds per the SIZE ROLLOUT EXPANSION item
+  below. Tab shows: payroll % (editable) · EBITDA margin (editable, 20) ·
+  tier thresholds (editable) — nothing else as inputs.
 - 🔥🔥 **SIZE ROLLOUT EXPANSION (John 7/13 ~17:30 — "roll out with the
   industries we laid out then expand to others on the site"):** (Lane C)
   (a) add **Fencing** as a first-class taxonomy industry + benchmarks entry
