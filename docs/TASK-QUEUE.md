@@ -467,6 +467,14 @@ set) into your new chips UI as a small follow-up.
   inert, delete at leisure. Lane B: rules editor + "why drafted" line remain
   yours.
   --- original card ---
+- 🔥 **ATTACHMENT UPLOADS >4.5MB FAIL ON PROD (PM found live 7/14):** Vercel
+  caps request bodies at 4.5MB — the 22MB AAFE CIM bounced off the new
+  upload route (FUNCTION_PAYLOAD_TOO_LARGE) even though the app allows
+  25MB. LANE B FIX: browser uploads go DIRECT to Supabase Storage via
+  createSignedUploadUrl (API route only mints the signed URL + validates
+  name/type), listing stays as-is. PM interim: uploaded the AAFE CIM
+  server-side — it renders on deal ed791a49 + company 35a33893 now.
+  Lane C's Outlook ingest is unaffected (server-side writes).
 - 🔥🔥🔥 **BROKER-LISTING OUTREACH OVERHAUL (John 7/13 eve, screenshots of the
   Rockwall TX lawn-care listing — three parts):**
   (A) **(Lane A) SCRAPE THE LISTING BROKER**: BizBuySell pages carry a
