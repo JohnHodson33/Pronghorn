@@ -3,6 +3,8 @@
 // multiple comparison against the company's industry.
 import { hasDb, serverDb } from "./db";
 import { computeMarketCheck, type MarketCheck } from "./market-check";
+import { sizeEstimate, type SizeEstimate } from "./size";
+import { loadSizeModel } from "./size-model";
 
 const num = (v: number | string | null | undefined) =>
   v === null || v === undefined ? null : Number(v);
@@ -64,6 +66,7 @@ export type CompanyDetail = {
   // channels the source LEAD has that no contact carries yet (promotion/sync
   // gap — John 7/13: show with provenance rather than reading as blank)
   leadChannels: { ownerName: string | null; email: string | null; phone: string | null; linkedin: string | null } | null;
+  size: SizeEstimate | null; // size-proxy tier for the header (null = unsized)
 };
 
 export async function fetchCompanyDetail(id: string): Promise<CompanyDetail | null> {
@@ -112,10 +115,10 @@ export async function fetchCompanyDetail(id: string): Promise<CompanyDetail | nu
             .from("listings")
             .select("id, name, url, source_id, tier, asking_price, cash_flow, first_seen_at, last_seen_at, delisted_at")
             .eq("company_id", id),
-      // the source lead's owner channels (promotion/sync gap detection)
+      // the source lead: owner channels (sync-gap detection) + size signals
       db
         .from("leads")
-        .select("owner_name, owner_email, owner_phone, owner_linkedin")
+        .select("owner_name, owner_email, owner_phone, owner_linkedin, enrichment, review_count, industry_verified")
         .eq("company_id", id)
         .limit(5),
     ]);
@@ -189,6 +192,19 @@ export async function fetchCompanyDetail(id: string): Promise<CompanyDetail | nu
     }
   }
 
+  // size-proxy estimate from the source lead's signals (same math as every
+  // other surface) — null when no lead/signals, so the header reads "Unsized"
+  const sizeLead = ((leadRows ?? []) as { enrichment?: unknown; review_count?: number | null; industry_verified?: string | null }[])
+    .find((l) => l.enrichment || l.review_count);
+  const size = sizeLead
+    ? sizeEstimate(
+        sizeLead.industry_verified ?? c.industry,
+        (sizeLead.enrichment as { size_signals?: Record<string, unknown> } | null)?.size_signals,
+        sizeLead.review_count ?? null,
+        await loadSizeModel(),
+      )
+    : null;
+
   return {
     company: {
       id: c.id,
@@ -211,5 +227,6 @@ export async function fetchCompanyDetail(id: string): Promise<CompanyDetail | nu
     listings,
     comparison,
     leadChannels,
+    size,
   };
 }

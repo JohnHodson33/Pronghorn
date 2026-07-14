@@ -22,6 +22,7 @@ export type LiveDeal = {
   passReason: string | null;
   nextStep: string | null;
   nextStepDue: string | null;
+  size: SizeEstimate | null; // size-proxy estimate for the deal's company (null = unsized)
 };
 
 type DealRow = {
@@ -35,6 +36,7 @@ type DealRow = {
   next_step: string | null;
   next_step_due: string | null;
   companies: {
+    id: string;
     name: string;
     industry: string | null;
     city: string | null;
@@ -58,7 +60,7 @@ export async function fetchDeals(): Promise<LiveDeal[] | null> {
     .from("deals")
     .select(
       "id, name, stage, asking_price, our_valuation, fit_score, closed_lost_reason, next_step, next_step_due, " +
-        "companies(name, industry, city, state, revenue, ebitda, ebitda_type, contacts(role, name), " +
+        "companies(id, name, industry, city, state, revenue, ebitda, ebitda_type, contacts(role, name), " +
         "origin_listing:listings!companies_listing_id_fkey(brokers(name, brokerage)))"
     )
     .order("created_at", { ascending: false });
@@ -66,12 +68,30 @@ export async function fetchDeals(): Promise<LiveDeal[] | null> {
     console.error("fetchDeals failed:", error.message);
     return null;
   }
+
+  // size estimate for each deal's company — same lead join + math as the
+  // companies/enrichment surfaces (blank where the company has no lead signals)
+  const [{ data: leadRows }, model] = await Promise.all([
+    serverDb().from("leads").select("company_id, enrichment, review_count, industry_verified").not("company_id", "is", null).limit(3000),
+    loadSizeModel(),
+  ]);
+  const leadByCo = new Map((leadRows ?? []).map((l) => [l.company_id as string, l]));
+
   return (data as unknown as DealRow[]).map((d) => {
     // Broker: the company's role=broker contact first, listing broker fallback.
     const contactBroker = d.companies?.contacts?.find((c) => c.role === "broker")?.name ?? undefined;
     const owner = d.companies?.contacts?.find((c) => c.role === "owner" || c.role === "seller")?.name ?? undefined;
     const ol = Array.isArray(d.companies?.origin_listing) ? d.companies?.origin_listing[0] : d.companies?.origin_listing;
     const lb = Array.isArray(ol?.brokers) ? ol?.brokers[0] : ol?.brokers;
+    const lead = d.companies?.id ? leadByCo.get(d.companies.id) : undefined;
+    const size = lead
+      ? sizeEstimate(
+          (lead.industry_verified as string | null) ?? d.companies?.industry ?? null,
+          (lead.enrichment as { size_signals?: Record<string, unknown> } | null)?.size_signals,
+          lead.review_count as number | null,
+          model,
+        )
+      : null;
     return {
       id: d.id,
       company: d.companies?.name ?? d.name,
@@ -91,6 +111,7 @@ export async function fetchDeals(): Promise<LiveDeal[] | null> {
       passReason: d.closed_lost_reason,
       nextStep: d.next_step,
       nextStepDue: d.next_step_due,
+      size,
     };
   });
 }

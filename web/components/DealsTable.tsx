@@ -8,6 +8,18 @@ import { useRouter } from "next/navigation";
 import { money, STAGES } from "@/lib/mock";
 import type { LiveDeal } from "@/lib/crm";
 import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
+import { TIER_LABELS } from "@/lib/size";
+
+const tierChip: Record<string, string> = {
+  platform: "bg-emerald-100 text-emerald-800",
+  tuckin: "bg-sky-100 text-sky-800",
+  toosmall: "bg-zinc-100 text-zinc-500",
+  unsized: "bg-zinc-50 text-zinc-400 border border-zinc-200",
+};
+const estShort = (r: [number, number]) => {
+  const f = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : `$${Math.round(n / 1000)}K`);
+  return `~${f(r[0])}–${f(r[1])}`;
+};
 
 const stageChip: Record<string, string> = {
   Sourced: "bg-zinc-100 text-zinc-600",
@@ -56,11 +68,13 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
       `pronghorn-deals-${csvDate()}.csv`,
       buildCsv(
         ["company", "stage", "industry", "city", "state", "owner", "broker", "brokerage",
+         "size_tier", "est_ebitda_low", "est_ebitda_high",
          "revenue", "ebitda", "ebitda_type", "asking", "our_valuation", "fit_score",
          "pass_reason", "next_step", "next_step_due"],
         rows.map((d) => [
           d.company, d.stage, d.industry, d.city, d.state, d.owner ?? null, d.broker ?? null,
-          d.brokerage ?? null, d.revenue, d.ebitda, d.ebitdaType, d.asking, d.ourValuation,
+          d.brokerage ?? null, TIER_LABELS[d.size?.tier ?? "unsized"], d.size?.ebitda[0] ?? null, d.size?.ebitda[1] ?? null,
+          d.revenue, d.ebitda, d.ebitdaType, d.asking, d.ourValuation,
           d.fitScore, d.passReason, d.nextStep, d.nextStepDue,
         ])
       )
@@ -118,6 +132,7 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
               <th className="px-4 py-3">Stage</th>
               <th className="px-4 py-3">Owner</th>
               <th className="px-4 py-3">Broker</th>
+              <th className="px-4 py-3">Size</th>
               <th className="px-4 py-3 text-right">EBITDA</th>
               <th className="px-4 py-3 text-right">Asking</th>
               <th className="px-4 py-3 text-right">Our val</th>
@@ -145,9 +160,27 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">{d.owner ?? <span className="text-xs text-zinc-300">—</span>}</td>
                 <td className="max-w-40 truncate px-4 py-3">{d.broker ?? <span className="text-xs text-zinc-300">—</span>}</td>
-                <td className="px-4 py-3 text-right tabular-nums">
-                  <span className={d.stage === "Passed" ? "" : "font-semibold text-emerald-800"}>{money(d.ebitda)}</span>
-                  <span className="ml-1 text-xs text-zinc-400">{d.ebitdaType}</span>
+                <td className="whitespace-nowrap px-4 py-3">
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-semibold ${tierChip[d.size?.tier ?? "unsized"]}`}
+                    title={d.size
+                      ? `~${d.size.employees[0]}–${d.size.employees[1]} employees (${d.size.basis}) → ${estShort(d.size.revenue)} rev → ${estShort(d.size.ebitda)} EBITDA · ${d.size.confidence} confidence`
+                      : "no usable size signal — estimate needs enrichment (or the deal has actual financials)"}
+                  >
+                    {TIER_LABELS[d.size?.tier ?? "unsized"]}
+                  </span>
+                </td>
+                <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+                  {d.ebitda !== null ? (
+                    <>
+                      <span className={d.stage === "Passed" ? "" : "font-semibold text-emerald-800"}>{money(d.ebitda)}</span>
+                      <span className="ml-1 text-xs text-zinc-400">{d.ebitdaType}</span>
+                    </>
+                  ) : d.size ? (
+                    <span className="text-xs text-zinc-500" title={`estimated via ${d.size.basis}`}>{estShort(d.size.ebitda)}</span>
+                  ) : (
+                    money(null)
+                  )}
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums">{money(d.asking)}</td>
                 <td className="px-4 py-3 text-right tabular-nums">{money(d.ourValuation)}</td>
@@ -156,7 +189,7 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-10 text-center text-sm text-zinc-400">
+                <td colSpan={9} className="px-4 py-10 text-center text-sm text-zinc-400">
                   No deals match the current filters.
                 </td>
               </tr>
