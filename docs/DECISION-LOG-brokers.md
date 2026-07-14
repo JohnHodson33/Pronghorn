@@ -922,3 +922,8 @@ network blip during the nightly run.
 - Health: bizben 4,349/0 err — token-chained AWS pagination + retry fix holding
   at full scale (DB 4,695 incl. churn toward delisting). Heavy rotation now only
   transworld + bizbuysell remaining.
+
+## 2026-07-14 — loop iter (terse): transworld health clean (background)
+- Health: transworld 3,663/0 err, 150 detail-enriched (DB 3,529 → growth). Heavy
+  browser adapter + broker enrichment holding at scale. Only bizbuysell remains
+  unchecked this chain — after it the full portfolio is parse-verified once.
