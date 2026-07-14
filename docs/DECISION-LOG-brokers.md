@@ -927,3 +927,19 @@ network blip during the nightly run.
 - Health: transworld 3,663/0 err, 150 detail-enriched (DB 3,529 → growth). Heavy
   browser adapter + broker enrichment holding at scale. Only bizbuysell remains
   unchecked this chain — after it the full portfolio is parse-verified once.
+
+## 2026-07-14 — MILESTONE: full portfolio parse-verified; shifting to automated monitoring
+- bizbuysell clean (1,580/0 err, 30 pages) — the LAST unchecked source. Every one
+  of the ~34 sources has now been individually health-checked this chain with
+  ZERO parse errors: all fetch/API adapters, all 4 reusable platforms
+  (bizmls/bbf, Tupelo, DealRelations×13, wpbdp), all browser adapters
+  (transworld 3663, bizben 4349, linkbusiness, sunbelt, viking, gabb, bizbuysell),
+  and every priority-state standalone broker (zion/alliant/intermountain/azbb/
+  southernmergers/empire/thefirm/calder/sunacquisitions/…). Parse QUALITY spot-
+  checked on the fragile ones (Wix, glued-label, K/M prose, entity-escaped).
+- **Mode switch:** routine per-source re-scraping has hit diminishing returns.
+  Going forward the nightly source_health.js drift alerting + source_quality.js
+  (both in CI) are the monitoring system — manual checks only when something
+  flags. Loop weight moves to: John-unblock watch, opportunistic new-source
+  probes, incoming PM tasks. This is the intended end-state: a self-monitoring
+  broker prong, not a hand-swept one.
