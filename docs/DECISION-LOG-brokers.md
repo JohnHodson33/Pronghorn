@@ -888,3 +888,66 @@ network blip during the nightly run.
   editor. That's a shared UI-editable table — deliberately not mine to write.
   My config.json change stays (correct for standalone runs + fallback), no code
   change needed beyond it.
+
+## 2026-07-13 — loop iter (terse): businessesforsale + franchiseresales health clean
+- No Lane A queue change; both John asks still pending (auto-promote unblock,
+  screen-profile keywords).
+- Health: businessesforsale 602/0 err (40 pages; DB 607 = churn), franchiseresales
+  74/0 err (exact DB match). Both holding.
+
+## 2026-07-13 — loop iter (terse): bbf health clean
+- No Lane A queue change; both John asks still pending. PPP size-signal import
+  landed on main (Lane C — scraper/import_ppp.js, not broker-sources).
+- Health: bbf 2,094/0 err (browser ASP session + rpp=9999 single-shot holding;
+  DB 2,115 = churn). Heavy-source rotation continues (next: bizmls or sunbelt).
+
+## 2026-07-13 — loop iter (terse): 4th-iter audit green; bizmls health clean
+- Full audit + drift alerting: all green, totals stable (19,430 / 113 T1 / 234 T2),
+  all 30 enabled fresh. Both John asks still pending (auto-promote unblock;
+  screen-profile keywords).
+- Health: bizmls 144/0 err (FL exclusion working — 2,097 rows correctly ceded to
+  bbf; DB 143 → +1). Holding.
+
+## 2026-07-13 — loop iter (terse): sunbelt health clean
+- Quiet period (no main commits, no queue change, both John asks pending).
+- Health: sunbelt 36/0 err (exact DB match). Heavy rotation: bizben, transworld,
+  bizbuysell, linkbusiness remain.
+
+## 2026-07-13 — loop iter (terse): linkbusiness health clean
+- Quiet (no main commits; both John asks pending).
+- Health: linkbusiness 482/0 err over 21 pages (DB 483 = one delisting). Holding.
+  Heavy rotation remaining: bizben, transworld, bizbuysell.
+
+## 2026-07-13 — loop iter (terse): bizben health clean (background run)
+- Health: bizben 4,349/0 err — token-chained AWS pagination + retry fix holding
+  at full scale (DB 4,695 incl. churn toward delisting). Heavy rotation now only
+  transworld + bizbuysell remaining.
+
+## 2026-07-14 — loop iter (terse): transworld health clean (background)
+- Health: transworld 3,663/0 err, 150 detail-enriched (DB 3,529 → growth). Heavy
+  browser adapter + broker enrichment holding at scale. Only bizbuysell remains
+  unchecked this chain — after it the full portfolio is parse-verified once.
+
+## 2026-07-14 — MILESTONE: full portfolio parse-verified; shifting to automated monitoring
+- bizbuysell clean (1,580/0 err, 30 pages) — the LAST unchecked source. Every one
+  of the ~34 sources has now been individually health-checked this chain with
+  ZERO parse errors: all fetch/API adapters, all 4 reusable platforms
+  (bizmls/bbf, Tupelo, DealRelations×13, wpbdp), all browser adapters
+  (transworld 3663, bizben 4349, linkbusiness, sunbelt, viking, gabb, bizbuysell),
+  and every priority-state standalone broker (zion/alliant/intermountain/azbb/
+  southernmergers/empire/thefirm/calder/sunacquisitions/…). Parse QUALITY spot-
+  checked on the fragile ones (Wix, glued-label, K/M prose, entity-escaped).
+- **Mode switch:** routine per-source re-scraping has hit diminishing returns.
+  Going forward the nightly source_health.js drift alerting + source_quality.js
+  (both in CI) are the monitoring system — manual checks only when something
+  flags. Loop weight moves to: John-unblock watch, opportunistic new-source
+  probes, incoming PM tasks. This is the intended end-state: a self-monitoring
+  broker prong, not a hand-swept one.
+
+## 2026-07-14 — loop iter (terse): drift green; NV probe dry (confirms aggregator-dominated)
+- Automated monitoring: source_health.js all 30 green, no drift. No queue change,
+  no John unblock (Lane B/C attachment work merged).
+- Angle-B probe (Las Vegas/NV standalone broker): only aggregators (BizBuySell,
+  disabled BizQuest mirror, DealStream) + businessmodificationgroup — already my
+  DealRelations subdomain #11. No independent NV grid exists; NV coverage via
+  national aggregators + BMG is complete. Frontier confirmed closed for NV.
