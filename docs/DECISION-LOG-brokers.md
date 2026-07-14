@@ -912,3 +912,8 @@ network blip during the nightly run.
 - Quiet period (no main commits, no queue change, both John asks pending).
 - Health: sunbelt 36/0 err (exact DB match). Heavy rotation: bizben, transworld,
   bizbuysell, linkbusiness remain.
+
+## 2026-07-13 — loop iter (terse): linkbusiness health clean
+- Quiet (no main commits; both John asks pending).
+- Health: linkbusiness 482/0 err over 21 pages (DB 483 = one delisting). Holding.
+  Heavy rotation remaining: bizben, transworld, bizbuysell.
