@@ -917,3 +917,8 @@ network blip during the nightly run.
 - Quiet (no main commits; both John asks pending).
 - Health: linkbusiness 482/0 err over 21 pages (DB 483 = one delisting). Holding.
   Heavy rotation remaining: bizben, transworld, bizbuysell.
+
+## 2026-07-13 — loop iter (terse): bizben health clean (background run)
+- Health: bizben 4,349/0 err — token-chained AWS pagination + retry fix holding
+  at full scale (DB 4,695 incl. churn toward delisting). Heavy rotation now only
+  transworld + bizbuysell remaining.
