@@ -124,6 +124,24 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 - All shipped work is browser-verified except paths requiring live paid runs
   or prod-data mutation; those verify on John's first real use.
 
+## 2026-07-14 — Est. size on the deals index + company profile header (amendment 3 "every surface")
+
+- Amendment 3(b) required est. Revenue/EBITDA + tier on EVERY company/deal
+  surface; companies + enrichment shipped earlier, this adds the **deals
+  index** (Size chip column w/ derivation tooltip + est-EBITDA fallback +
+  size_tier/est in CSV) and the **company profile header** (tier chip beside
+  the completeness chip; Revenue/EBITDA stat cards fall back to ~est ranges
+  when no reported figure). fetchDeals + fetchCompanyDetail compute size via
+  the same lead-join + model as the other surfaces (no drift).
+- Verified live: deals index Size column (19 CRM deals correctly Unsized —
+  they have real CIM financials, no source-lead signals); company profile —
+  Tyger's Lawn & Tree (246 reviews, null revenue) shows "Too small" + est
+  ~$95K–$950K rev / ~$11K–$190K EBITDA; a 5-review company correctly shows
+  no chip. Sanity confirmed the null path (no lead signal = Unsized, blank).
+- REMAINING amendment-3 surface: deal DETAIL financial cards (lowest value —
+  deals there have actual CIM figures; small follow-up). Outreach views get
+  it when those surfaces gain size sorting.
+
 ## 2026-07-14 — Attachment uploads bypass Vercel's 4.5MB cap (PM bug flag)
 
 - **Bug (PM found live):** the 22MB AAFE CIM bounced off the new upload route

@@ -13,6 +13,7 @@ import DealControls from "@/components/DealControls";
 import MarketCheckCard from "@/components/MarketCheckCard";
 import { fetchCompanyDetail } from "@/lib/company-detail";
 import { companyLevel } from "@/lib/company-level";
+import { TIER_LABELS } from "@/lib/size";
 import { LEVEL_META } from "@/lib/completeness";
 import { money } from "@/lib/mock";
 
@@ -38,7 +39,17 @@ const eventLabel: Record<string, string> = {
 export default async function CompanyDetailV2({ id }: { id: string }) {
   const data = await fetchCompanyDetail(id);
   if (!data) notFound();
-  const { company: c, deal, contacts, activities, listings, comparison, leadChannels } = data;
+  const { company: c, deal, contacts, activities, listings, comparison, leadChannels, size } = data;
+  const estRange = (r: [number, number]) => {
+    const f = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : `$${Math.round(n / 1000)}K`);
+    return `~${f(r[0])}–${f(r[1])}`;
+  };
+  const tierChipCls: Record<string, string> = {
+    platform: "bg-emerald-100 text-emerald-800",
+    tuckin: "bg-sky-100 text-sky-800",
+    toosmall: "bg-zinc-100 text-zinc-500",
+    unsized: "bg-zinc-50 text-zinc-400 border border-zinc-200",
+  };
 
   return (
     <div className="max-w-4xl p-4 md:p-8 space-y-6">
@@ -71,6 +82,14 @@ export default async function CompanyDetailV2({ id }: { id: string }) {
                 </span>
               );
             })()}
+            {size && (
+              <span
+                className={`rounded-full px-2.5 py-1 text-xs font-semibold ${tierChipCls[size.tier]}`}
+                title={`~${size.employees[0]}–${size.employees[1]} employees (${size.basis}) → ${estRange(size.revenue)} rev → ${estRange(size.ebitda)} EBITDA · ${size.confidence} confidence`}
+              >
+                {TIER_LABELS[size.tier]}
+              </span>
+            )}
             <CompanyEditor
               companyId={c.id}
               name={c.name}
@@ -107,14 +126,18 @@ export default async function CompanyDetailV2({ id }: { id: string }) {
 
       <section className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {[
-          { label: "Revenue", value: money(c.revenue) },
-          { label: c.ebitdaType, value: money(c.ebitda) },
-          { label: "Asking", value: money(deal?.asking ?? null) },
-          { label: "Origin", value: c.origin ?? "—" },
+          { label: "Revenue", value: money(c.revenue), est: c.revenue === null && size ? estRange(size.revenue) : null },
+          { label: c.ebitdaType, value: money(c.ebitda), est: c.ebitda === null && size ? estRange(size.ebitda) : null },
+          { label: "Asking", value: money(deal?.asking ?? null), est: null },
+          { label: "Origin", value: c.origin ?? "—", est: null },
         ].map((s) => (
           <div key={s.label} className="rounded-xl border border-zinc-200 bg-white p-4">
             <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">{s.label}</div>
-            <div className="mt-1 text-xl font-bold tabular-nums">{s.value}</div>
+            {s.est ? (
+              <div className="mt-1 text-lg font-semibold tabular-nums text-zinc-500" title="PPP/signal-derived estimate — no reported figure yet">{s.est}</div>
+            ) : (
+              <div className="mt-1 text-xl font-bold tabular-nums">{s.value}</div>
+            )}
           </div>
         ))}
       </section>
