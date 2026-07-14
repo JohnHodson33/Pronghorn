@@ -467,6 +467,44 @@ set) into your new chips UI as a small follow-up.
   inert, delete at leisure. Lane B: rules editor + "why drafted" line remain
   yours.
   --- original card ---
+- 🔥 **ATTACHMENT UPLOADS >4.5MB FAIL ON PROD (PM found live 7/14):** Vercel
+  caps request bodies at 4.5MB — the 22MB AAFE CIM bounced off the new
+  upload route (FUNCTION_PAYLOAD_TOO_LARGE) even though the app allows
+  25MB. LANE B FIX: browser uploads go DIRECT to Supabase Storage via
+  createSignedUploadUrl (API route only mints the signed URL + validates
+  name/type), listing stays as-is. PM interim: uploaded the AAFE CIM
+  server-side — it renders on deal ed791a49 + company 35a33893 now.
+  Lane C's Outlook ingest is unaffected (server-side writes).
+- 🔥🔥🔥 **BROKER-LISTING OUTREACH OVERHAUL (John 7/13 eve, screenshots of the
+  Rockwall TX lawn-care listing — three parts):**
+  (A) **(Lane A) SCRAPE THE LISTING BROKER**: BizBuySell pages carry a
+  "Business Listed By" block (e.g. William Pala · 954-289-9634) we currently
+  DROP. Parse broker name/phone/profile-link at ingest on bizbuysell (+
+  every source exposing it) → upsert into brokers table → set the listing's
+  broker link so the broker is tagged to the listing/company FROM SCRAPE
+  (never gated on becoming a deal). Backfill pass over live listings.
+  (Lane B small: render the broker + phone on listing detail w/ link to
+  the directory record.)
+  (B) **(Lane C) INQUIRY TEMPLATE — John's verbatim message is the contract**
+  (inquiry_profiles row 774f21ce now seeds identity: John Hodson ·
+  jhodson@pronghornequity.com · (503) 899-0058 — NEVER the gmail):
+  Greeting: "Hi {broker first name}," when known, else "Hello," (no name
+  guessing). Body: "My name is John Hodson, and I am a Managing Director at
+  Pronghorn Equity Partners. We are a lower middle market private equity
+  fund that focuses on business services assets across the US. We are
+  spending a lot of time in the {industry} space and would love to get some
+  additional information on the below listing. / Are you able to share the
+  NDA and any initial materials? It would also be helpful to hop on an
+  introductory call to learn more and introduce myself. / Looking forward
+  to it. / Best, / John Hodson" — customize ONLY {broker name} + {industry}
+  (natural phrasing, e.g. "landscaping / lawn care"). Applies to: co-pilot
+  contact block, outbox inquiry drafts, request-info drafts. Kill the old
+  "I'm a private investor…" copy everywhere.
+  (C) **CIM ATTACHMENTS ON LISTINGS TOO**: extend the deal/company
+  attachments + email CIM-ingest item to BROKER LISTINGS (the FCBB Tree
+  Service CIM John received must attach to its listing/company record —
+  today it isn't saved anywhere visible). Same bucket pattern; auto-pull
+  from Outlook traffic and tag to the matched listing/company/deal.
 - 🔥🔥🔥 **SIZE MODEL AMENDMENT 4 (John 7/13 ~17:45 — RESTRUCTURE THE
   ASSUMPTIONS; supersedes the rev-per-employee input display):** (Lane C
   model + Lane B tab, top priority):
