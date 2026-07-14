@@ -57,15 +57,18 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   Companies/Contacts toolbars (prompts for a label, captures current path +
   filter params). Verified round-trip live. Promote to a table later if
   John wants cross-device sync.
-- **Verdict batch (e234a44): ALL unblocked Lane B items shipped 7/13 eve**
-  — pinned views 4c2354c · note-tagging card c3bf3a7 · provenance strip
-  a5b6833. REMAINING (blocked): Size Estimation settings tab + ~est.
-  revenue/EBITDA columns + Platform/Tuck-in/Too-small tier labels
-  (amendment 3, 77a6cbf) — starts when Lane C lands the assumptions
-  storage + estimates contract; size-tier chips ride the same contract.
-  Also still waiting: 0011/0012/0013 application (thread API, list
-  progress, outreach rules all self-upgrade); 'needs tagging' dedicated
-  page only if volume outgrows the Key Actions card.
+- **SIZE BUILD COMPLETE 7/13 eve (amendment 3 end-to-end):** Size
+  Estimation tab (0fcf124) · companies tier chips+est columns (0fcf124) ·
+  enrichment/list-detail tier chips (44e33a5). Also done this session:
+  pinned views 4c2354c · note-tagging card c3bf3a7 · provenance strip
+  a5b6833 · outreach rules ae622da · attachments 977fa21 · notes input
+  db8bd1c · status_detail d4d1417.
+- **REMAINING (all blocked/waiting on others):** 0011/0012/0013/0014
+  application (thread API, list progress, outreach rules, size DB-edits
+  all self-upgrade on apply — no code change); PPP size-signal import
+  (Lane C) will populate more tiers; 'needs tagging' dedicated page only if
+  volume outgrows the Key Actions card. Next self-iterate: dead-end sweep
+  vs END-STATE GOAL when polling turns up nothing actionable.
 - **7/13 ~19:45 — OUTREACH RULES SURFACE SHIPPED** (Lane C's 75f9a5e landed
   the backend; Lane B's half same evening): new `/api/outreach-rules`
   (GET/POST/PATCH/DELETE, degrades w/ honest note pre-0013) + rules editor
