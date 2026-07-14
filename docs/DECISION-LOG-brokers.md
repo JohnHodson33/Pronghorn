@@ -907,3 +907,8 @@ network blip during the nightly run.
   screen-profile keywords).
 - Health: bizmls 144/0 err (FL exclusion working — 2,097 rows correctly ceded to
   bbf; DB 143 → +1). Holding.
+
+## 2026-07-13 — loop iter (terse): sunbelt health clean
+- Quiet period (no main commits, no queue change, both John asks pending).
+- Health: sunbelt 36/0 err (exact DB match). Heavy rotation: bizben, transworld,
+  bizbuysell, linkbusiness remain.
