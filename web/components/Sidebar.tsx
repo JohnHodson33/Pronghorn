@@ -100,6 +100,7 @@ const nav: { section: string; items: { label: string; href: string | null }[] }[
     items: [
       { label: "Proprietary Outreach", href: "/list-building" },
       { label: "Enrichment", href: "/enrichment" },
+      { label: "Size Estimation", href: "/size-estimation" },
     ],
   },
   {

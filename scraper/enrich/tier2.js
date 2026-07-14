@@ -169,4 +169,4 @@ async function runTier2(leads, budget, log, onProgress) {
   return { processed, emails, linkedins, names, bands };
 }
 
-module.exports = { runTier2, isComplete };
+module.exports = { runTier2, isComplete, exaCompanyBand };

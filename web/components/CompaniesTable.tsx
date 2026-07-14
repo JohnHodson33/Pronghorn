@@ -11,6 +11,19 @@ import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 import { companyLevel } from "@/lib/company-level";
 import { LEVELS, LEVEL_META, type Completeness } from "@/lib/completeness";
 import { PinButton } from "@/components/PinnedViews";
+import { TIERS, TIER_LABELS, type SizeTier } from "@/lib/size";
+
+// ~$X.XM–$Y.YM display for estimate ranges (never fake precision)
+const estRange = (r: [number, number]) => {
+  const f = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : `$${Math.round(n / 1000)}K`);
+  return `~${f(r[0])}–${f(r[1])}`;
+};
+const tierChip: Record<string, string> = {
+  platform: "bg-emerald-100 text-emerald-800",
+  tuckin: "bg-sky-100 text-sky-800",
+  toosmall: "bg-zinc-100 text-zinc-500",
+  unsized: "bg-zinc-50 text-zinc-400 border border-zinc-200",
+};
 
 const levelChip: Record<Completeness, string> = {
   full: "bg-emerald-700 text-white",
@@ -36,6 +49,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
   const [stage, setStage] = useState("all");
   const [level, setLevel] = useState<Completeness | null>(null);
   const [withDealOnly, setWithDealOnly] = useState(false);
+  const [tier, setTier] = useState<string | null>(null);
 
   // Filters ↔ URL params (?q= ?industry= ?level= ?stage= ?deal=1): filtered
   // views are shareable and deep-linkable ("CONTACTABLE owners in Tree Care"
@@ -47,6 +61,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
     if (p.get("stage")) setStage(p.get("stage")!);
     if (p.get("level")) setLevel(p.get("level") as Completeness);
     if (p.get("deal") === "1") setWithDealOnly(true);
+    if (p.get("tier")) setTier(p.get("tier"));
   }, []);
   useEffect(() => {
     const p = new URLSearchParams();
@@ -55,9 +70,10 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
     if (stage !== "all") p.set("stage", stage);
     if (level) p.set("level", level);
     if (withDealOnly) p.set("deal", "1");
+    if (tier) p.set("tier", tier);
     const qs = p.toString();
     window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
-  }, [q, industry, stage, level, withDealOnly]);
+  }, [q, industry, stage, level, withDealOnly, tier]);
 
   const levels = useMemo(() => {
     const m = new Map<string, ReturnType<typeof companyLevel>>();
@@ -80,10 +96,17 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
         if (level && levels.get(c.id)!.level !== level) return false;
         if (stage !== "all" && c.deals?.[0]?.stage !== stage) return false;
         if (withDealOnly && !c.deals?.[0]) return false;
+        if (tier && (c.size?.tier ?? "unsized") !== tier) return false;
         return true;
       }),
-    [companies, q, industry, stage, level, levels, withDealOnly]
+    [companies, q, industry, stage, level, levels, withDealOnly, tier]
   );
+
+  const tierCounts = useMemo(() => {
+    const m: Record<string, number> = { platform: 0, tuckin: 0, toosmall: 0, unsized: 0 };
+    for (const c of companies) m[c.size?.tier ?? "unsized"]++;
+    return m;
+  }, [companies]);
 
   const inputCls = "rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-600";
 
@@ -162,6 +185,22 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
       </div>
 
       <div className="flex flex-wrap items-center gap-1.5">
+        <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-zinc-400">Size</span>
+        {TIERS.map((t) => (
+          <button
+            key={t}
+            onClick={() => setTier(tier === t ? null : t)}
+            className={`rounded-full px-2.5 py-1 text-xs font-semibold transition ${
+              tier === t ? "ring-2 ring-emerald-600 " : ""
+            }${tierChip[t]}`}
+            title={t === "unsized" ? "no usable size signal yet — enrichment adds them" : `estimated ${TIER_LABELS[t]}`}
+          >
+            {TIER_LABELS[t]} · {tierCounts[t]}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-1.5">
         <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-zinc-400">Industry</span>
         <button
           onClick={() => setIndustry(null)}
@@ -190,6 +229,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
             <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500">
               <th className="px-4 py-3">Company</th>
               <th className="px-4 py-3">Owner reach</th>
+              <th className="px-4 py-3">Size</th>
               <th className="px-4 py-3">Industry</th>
               <th className="px-4 py-3">Location</th>
               <th className="px-4 py-3 text-right">Revenue</th>
@@ -224,6 +264,16 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
                     );
                   })()}
                 </td>
+                <td className="whitespace-nowrap px-4 py-3">
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-semibold ${tierChip[c.size?.tier ?? "unsized"]}`}
+                    title={c.size
+                      ? `~${c.size.employees[0]}–${c.size.employees[1]} employees (${c.size.basis}) → ${estRange(c.size.revenue)} revenue → ${estRange(c.size.ebitda)} EBITDA · ${c.size.confidence} confidence`
+                      : "no usable size signal yet — enrichment adds them"}
+                  >
+                    {TIER_LABELS[c.size?.tier ?? "unsized"]}
+                  </span>
+                </td>
                 <td className="px-4 py-3">
                   {c.industry ? (
                     <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700">{c.industry}</span>
@@ -234,14 +284,26 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
                 <td className="whitespace-nowrap px-4 py-3">
                   {[c.city, c.state].filter(Boolean).join(", ") || "—"}
                 </td>
-                <td className="px-4 py-3 text-right tabular-nums">
-                  {money(c.revenue === null ? null : Number(c.revenue))}
+                <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+                  {c.revenue !== null ? (
+                    money(Number(c.revenue))
+                  ) : c.size ? (
+                    <span className="text-xs text-zinc-500" title={`PPP/signal-derived estimate — ${c.size.basis}`}>{estRange(c.size.revenue)}</span>
+                  ) : (
+                    money(null)
+                  )}
                 </td>
-                <td className="px-4 py-3 text-right tabular-nums">
-                  <span className="font-semibold text-emerald-800">
-                    {money(c.ebitda === null ? null : Number(c.ebitda))}
-                  </span>
-                  {c.ebitda_type && <span className="ml-1 text-xs text-zinc-500">{c.ebitda_type}</span>}
+                <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+                  {c.ebitda !== null ? (
+                    <>
+                      <span className="font-semibold text-emerald-800">{money(Number(c.ebitda))}</span>
+                      {c.ebitda_type && <span className="ml-1 text-xs text-zinc-500">{c.ebitda_type}</span>}
+                    </>
+                  ) : c.size ? (
+                    <span className="text-xs text-zinc-500" title={`estimated via ${c.size.basis} × industry margin band`}>{estRange(c.size.ebitda)}</span>
+                  ) : (
+                    money(null)
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   {c.deals?.[0]?.stage ? (
@@ -258,7 +320,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-4 py-10 text-center text-sm text-zinc-400">
+                <td colSpan={10} className="px-4 py-10 text-center text-sm text-zinc-400">
                   No companies match the current filters.
                 </td>
               </tr>
