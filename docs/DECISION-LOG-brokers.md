@@ -943,3 +943,11 @@ network blip during the nightly run.
   flags. Loop weight moves to: John-unblock watch, opportunistic new-source
   probes, incoming PM tasks. This is the intended end-state: a self-monitoring
   broker prong, not a hand-swept one.
+
+## 2026-07-14 — loop iter (terse): drift green; NV probe dry (confirms aggregator-dominated)
+- Automated monitoring: source_health.js all 30 green, no drift. No queue change,
+  no John unblock (Lane B/C attachment work merged).
+- Angle-B probe (Las Vegas/NV standalone broker): only aggregators (BizBuySell,
+  disabled BizQuest mirror, DealStream) + businessmodificationgroup — already my
+  DealRelations subdomain #11. No independent NV grid exists; NV coverage via
+  national aggregators + BMG is complete. Frontier confirmed closed for NV.
