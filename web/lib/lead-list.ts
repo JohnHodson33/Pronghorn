@@ -2,6 +2,8 @@
 // in the EnrichmentLead shape (so LeadsTable renders them directly).
 import { hasDb, serverDb } from "./db";
 import type { EnrichmentLead } from "./enrichment";
+import { sizeEstimate } from "./size";
+import { loadSizeModel } from "./size-model";
 
 export type LeadListDetail = {
   id: string;
@@ -45,6 +47,8 @@ export async function fetchLeadList(id: string): Promise<LeadListDetail | null> 
   }
   if (!list) return null;
 
+  const model = await loadSizeModel();
+
   const l = list as {
     id: string; query_industry: string; query_geography: string | null;
     radius_miles: number | null; target_count: number; sources_enabled: string[];
@@ -64,7 +68,7 @@ export async function fetchLeadList(id: string): Promise<LeadListDetail | null> 
     costEstimate: l.cost_estimate === null ? null : Number(l.cost_estimate),
     costActual: l.cost_actual === null ? null : Number(l.cost_actual),
     createdAt: l.created_at,
-    leads: ((leads ?? []) as unknown as (Omit<EnrichmentLead, "list" | "rating" | "industry_verified" | "off_target"> & {
+    leads: ((leads ?? []) as unknown as (Omit<EnrichmentLead, "list" | "rating" | "industry_verified" | "off_target" | "size"> & {
       rating: number | string | null;
       industry_verified?: string | null;
       off_target?: boolean | null;
@@ -74,6 +78,12 @@ export async function fetchLeadList(id: string): Promise<LeadListDetail | null> 
       industry_verified: r.industry_verified ?? null,
       off_target: !!r.off_target,
       list: { industry: l.query_industry, geography: l.query_geography },
+      size: sizeEstimate(
+        r.industry_verified ?? l.query_industry,
+        (r.enrichment as { size_signals?: Record<string, unknown> } | null)?.size_signals,
+        r.review_count,
+        model,
+      ),
     })),
   };
 }

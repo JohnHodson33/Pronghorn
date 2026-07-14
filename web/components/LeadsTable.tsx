@@ -9,6 +9,18 @@ import { useRouter } from "next/navigation";
 import type { EnrichmentLead } from "@/lib/enrichment";
 import { completeness, LEVELS, LEVEL_META, type Completeness } from "@/lib/completeness";
 import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
+import { TIERS, TIER_LABELS } from "@/lib/size";
+
+const tierChip: Record<string, string> = {
+  platform: "bg-emerald-100 text-emerald-800",
+  tuckin: "bg-sky-100 text-sky-800",
+  toosmall: "bg-zinc-100 text-zinc-500",
+  unsized: "bg-zinc-50 text-zinc-400 border border-zinc-200",
+};
+const estShort = (r: [number, number]) => {
+  const f = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : `$${Math.round(n / 1000)}K`);
+  return `~${f(r[0])}–${f(r[1])}`;
+};
 
 const statusLabel: Record<string, string> = {
   new: "New",
@@ -75,15 +87,16 @@ export default function LeadsTable({
   const [state, setState] = useState(saved.state ?? "all");
   const [list, setList] = useState(saved.list ?? "all");
   const [level, setLevel] = useState<Completeness | "all">((saved.level as Completeness) ?? "all");
+  const [tier, setTier] = useState<string>(saved.tier ?? "all");
   const [showOffTarget, setShowOffTarget] = useState(saved.offTarget === "1");
   useEffect(() => {
     try {
       sessionStorage.setItem(
         FILTER_KEY,
-        JSON.stringify({ q, industry, state, list, level, offTarget: showOffTarget ? "1" : "0" })
+        JSON.stringify({ q, industry, state, list, level, tier, offTarget: showOffTarget ? "1" : "0" })
       );
     } catch {}
-  }, [q, industry, state, list, level, showOffTarget]);
+  }, [q, industry, state, list, level, tier, showOffTarget]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -110,10 +123,17 @@ export default function LeadsTable({
     return c;
   }, [leads]);
 
+  const tierCounts = useMemo(() => {
+    const c: Record<string, number> = { platform: 0, tuckin: 0, toosmall: 0, unsized: 0 };
+    for (const l of leads) if (!l.off_target) c[l.size?.tier ?? "unsized"]++;
+    return c;
+  }, [leads]);
+
   const rows = useMemo(() => {
     const filtered = leads.filter((l) => {
       if (!showOffTarget && l.off_target) return false;
       if (level !== "all" && levelOf(l) !== level) return false;
+      if (tier !== "all" && (l.size?.tier ?? "unsized") !== tier) return false;
       if (industry !== "all" && effIndustry(l) !== industry) return false;
       if (state !== "all" && l.state !== state) return false;
       if (list !== "all" && `${l.list?.industry}${l.list?.geography ? ` — ${l.list.geography}` : ""}` !== list) return false;
@@ -131,7 +151,7 @@ export default function LeadsTable({
       const d = LEVELS.indexOf(levelOf(a)) - LEVELS.indexOf(levelOf(b));
       return d !== 0 ? d : b.created_at.localeCompare(a.created_at);
     });
-  }, [leads, q, industry, state, list, level, showOffTarget]);
+  }, [leads, q, industry, state, list, level, tier, showOffTarget]);
 
   const enrichingCount = useMemo(() => leads.filter((l) => l.status === "enriching").length, [leads]);
 
@@ -243,10 +263,10 @@ export default function LeadsTable({
     downloadCsv(
       `pronghorn-leads-${csvDate()}.csv`,
       buildCsv(
-        ["name", "completeness", "industry_verified", "list", "website", "phone", "city", "state",
+        ["name", "completeness", "size_tier", "industry_verified", "list", "website", "phone", "city", "state",
          "owner_name", "owner_email", "owner_phone", "owner_linkedin", "status", "off_target"],
         rows.map((l) => [
-          l.name, levelOf(l), effIndustry(l), l.list ? `${l.list.industry}${l.list.geography ? ` — ${l.list.geography}` : ""}` : null,
+          l.name, levelOf(l), TIER_LABELS[l.size?.tier ?? "unsized"], effIndustry(l), l.list ? `${l.list.industry}${l.list.geography ? ` — ${l.list.geography}` : ""}` : null,
           l.website, l.phone, l.city, l.state,
           l.owner_name, l.owner_email, l.owner_phone, l.owner_linkedin, l.status, l.off_target ? "yes" : "no",
         ])
@@ -291,6 +311,18 @@ export default function LeadsTable({
             off-target · {offTargetCount}
           </button>
         )}
+        <span className="mx-1 text-zinc-300">|</span>
+        <span className="font-semibold text-zinc-500">size:</span>
+        {TIERS.map((t) => (
+          <button
+            key={t}
+            onClick={() => setTier(tier === t ? "all" : t)}
+            className={`rounded-full px-2.5 py-0.5 font-semibold transition ${tier === t ? "ring-2 ring-emerald-600 " : ""}${tierChip[t]}`}
+            title={t === "unsized" ? "no usable size signal yet — enrichment adds them" : `estimated ${TIER_LABELS[t]}`}
+          >
+            {TIER_LABELS[t]} · {tierCounts[t]}
+          </button>
+        ))}
       </div>
 
       {/* live job progress — clicking Enrich must never feel like nothing happened */}
@@ -402,6 +434,7 @@ export default function LeadsTable({
                 </th>
                 <th className="px-2 py-2 font-medium">Level</th>
                 <th className="px-2 py-2 font-medium">Company</th>
+                <th className="px-2 py-2 font-medium">Size</th>
                 <th className="px-3 py-2 font-medium">Industry</th>
                 <th className="px-3 py-2 font-medium">Location</th>
                 <th className="px-3 py-2 font-medium">Owner</th>
@@ -458,6 +491,16 @@ export default function LeadsTable({
                           </a>
                         )}
                       </div>
+                    </td>
+                    <td className="whitespace-nowrap px-2 py-2.5">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${tierChip[l.size?.tier ?? "unsized"]}`}
+                        title={l.size
+                          ? `~${l.size.employees[0]}–${l.size.employees[1]} employees (${l.size.basis}) → ${estShort(l.size.revenue)} rev → ${estShort(l.size.ebitda)} EBITDA · ${l.size.confidence} confidence`
+                          : "no usable size signal yet — enrichment adds them"}
+                      >
+                        {TIER_LABELS[l.size?.tier ?? "unsized"]}
+                      </span>
                     </td>
                     <td className="whitespace-nowrap px-3 py-2.5">
                       {effIndustry(l) ? (
