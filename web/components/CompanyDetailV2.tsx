@@ -5,6 +5,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ActivityForm from "@/components/ActivityForm";
+import { AttachmentPanel } from "@/components/Attachments";
 import BackLink from "@/components/BackLink";
 import CompanyEditor from "@/components/CompanyEditor";
 import ContactsSection from "@/components/ContactsSection";
@@ -189,6 +190,8 @@ export default async function CompanyDetailV2({ id }: { id: string }) {
           </ul>
         )}
       </section>
+
+      <AttachmentPanel endpoint={`/api/companies/${c.id}/attachments`} heading="Documents" hint="No documents yet — attach a CIM, NDA, LOI, or analysis to this company." />
 
       <section className="space-y-3">
         <h2 className="font-semibold">Activity</h2>

@@ -57,15 +57,23 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   Companies/Contacts toolbars (prompts for a label, captures current path +
   filter params). Verified round-trip live. Promote to a table later if
   John wants cross-device sync.
-- **Verdict batch (e234a44): ALL unblocked Lane B items shipped 7/13 eve**
-  — pinned views 4c2354c · note-tagging card c3bf3a7 · provenance strip
-  a5b6833. REMAINING (blocked): Size Estimation settings tab + ~est.
-  revenue/EBITDA columns + Platform/Tuck-in/Too-small tier labels
-  (amendment 3, 77a6cbf) — starts when Lane C lands the assumptions
-  storage + estimates contract; size-tier chips ride the same contract.
-  Also still waiting: 0011/0012/0013 application (thread API, list
-  progress, outreach rules all self-upgrade); 'needs tagging' dedicated
-  page only if volume outgrows the Key Actions card.
+- **SIZE BUILD COMPLETE 7/13 eve (amendment 3 end-to-end):** Size
+  Estimation tab (0fcf124) · companies tier chips+est columns (0fcf124) ·
+  enrichment/list-detail tier chips (44e33a5). Also done this session:
+  pinned views 4c2354c · note-tagging card c3bf3a7 · provenance strip
+  a5b6833 · outreach rules ae622da · attachments 977fa21 · notes input
+  db8bd1c · status_detail d4d1417.
+- **7/14 — company+deal attachments shipped** (AAFE CIM card, lib/
+  attachments-store.ts + AttachmentPanel; verified). Lane C owns the CIM
+  ingest sweep into the same `deal-attachments` bucket.
+- **REMAINING (blocked/waiting on others):** SIZE AMENDMENT 4 (payroll-% as
+  THE input, flat 20% EBITDA margin, CPI-adjust) — the Size Estimation tab
+  rebuild WAITS on Lane C restructuring size.ts/size-model/0014 (verified
+  7/14: model still revenue-per-employee + margin band, NOT yet payroll-%).
+  Approved cards needing Lane-C-first backends: company DEDUPE review queue
+  (fuzzy-match + merge API), STALE-PURSUIT auto-nudge (drafter). 0011-0014
+  application self-upgrades affected UI. Next self-iterate when polling is
+  dry: dead-end sweep vs END-STATE GOAL.
 - **7/13 ~19:45 — OUTREACH RULES SURFACE SHIPPED** (Lane C's 75f9a5e landed
   the backend; Lane B's half same evening): new `/api/outreach-rules`
   (GET/POST/PATCH/DELETE, degrades w/ honest note pre-0013) + rules editor
@@ -115,6 +123,25 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
     pointer previously named a nonexistent session id.
 - All shipped work is browser-verified except paths requiring live paid runs
   or prod-data mutation; those verify on John's first real use.
+
+## 2026-07-14 — Company + deal document attachments (AAFE CIM card)
+
+- **CIMs/NDAs/LOIs attach to their records** (John 7/13, AAFE CIM via Axial):
+  new `GET/POST /api/companies/[id]/attachments` + `/api/deals/[id]/attachments`
+  on a private `deal-attachments` bucket, prefixed `company/{id}/` and
+  `deal/{id}/` so a company and its deal never collide. 25MB cap (CIMs run
+  large), doc-oriented allowlist (pdf/docx/xlsx/pptx/images/zip).
+- Shared `lib/attachments-store.ts` (list/upload/ensureBucket) — the feedback
+  route was left untouched (verified path); this is the reusable half for
+  record profiles. New `AttachmentPanel` in Attachments.tsx = endpoint-driven
+  labeled document section (heading + count + 📎 Attach + download chips);
+  mounted on the company profile ("Documents") and deal detail ("Deal
+  documents"). Verified end-to-end: upload/list/signed-download/extension-
+  reject on both routes + UI render (test files removed).
+- **Turbopack gotcha bit again:** the two new route dirs 404'd after a plain
+  restart — needed `rm -rf .next/dev` + restart (confirms the HANDOFF note).
+- LANE C owns (b): the CIM/document ingest sweep from Outlook into this same
+  bucket — the storage + UI half is ready for it to write into.
 
 ## 2026-07-13 — [self-iterate] Filtered views become URLs (contacts + companies)
 
