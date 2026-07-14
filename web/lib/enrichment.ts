@@ -2,6 +2,8 @@
 // outreach. Counts by status plus the working set of leads with their
 // per-company enrichment state.
 import { hasDb, serverDb } from "./db";
+import { sizeEstimate, type SizeEstimate } from "./size";
+import { loadSizeModel } from "./size-model";
 
 // Mirrors the leads.status check progression in the schema.
 export const LEAD_STATUSES = [
@@ -37,6 +39,7 @@ export type EnrichmentLead = {
   industry_verified: string | null; // what the company ACTUALLY does (enrichment)
   off_target: boolean; // classified off the list's intent
   list: { industry: string; geography: string | null } | null;
+  size: SizeEstimate | null; // size-proxy tier from enrichment signals (null = unsized)
 };
 
 export type EnrichmentOverview = {
@@ -87,19 +90,30 @@ export async function fetchEnrichmentOverview(statusFilter?: string): Promise<En
     return { counts, leads: [] };
   }
 
-  type Raw = Omit<EnrichmentLead, "list" | "industry_verified" | "off_target"> & {
+  type Raw = Omit<EnrichmentLead, "list" | "industry_verified" | "off_target" | "size"> & {
     industry_verified?: string | null;
     off_target?: boolean | null;
     lead_lists: { query_industry: string; query_geography: string | null } | { query_industry: string; query_geography: string | null }[] | null;
   };
+  // shared size model + math (same as /api/companies + fetchCompanies) so the
+  // tier a lead shows here matches the company it becomes after promotion
+  const model = await loadSizeModel();
   const leads = ((data ?? []) as unknown as Raw[]).map((r) => {
     const ll = Array.isArray(r.lead_lists) ? r.lead_lists[0] : r.lead_lists;
+    const industry = r.industry_verified ?? ll?.query_industry ?? null;
+    const size = sizeEstimate(
+      industry,
+      (r.enrichment as { size_signals?: Record<string, unknown> } | null)?.size_signals,
+      r.review_count,
+      model,
+    );
     return {
       ...r,
       rating: r.rating === null ? null : Number(r.rating),
       industry_verified: r.industry_verified ?? null,
       off_target: !!r.off_target,
       list: ll ? { industry: ll.query_industry, geography: ll.query_geography } : null,
+      size,
     };
   });
 
