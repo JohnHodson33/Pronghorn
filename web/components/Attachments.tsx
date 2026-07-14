@@ -35,12 +35,28 @@ export function AttachmentChip({ a }: { a: Attachment }) {
   );
 }
 
+// Two-step upload: our API mints a signed URL, then the browser PUTs the file
+// straight to Supabase Storage — bypasses Vercel's 4.5MB serverless body cap
+// (a 22MB CIM bounced off the old server-side multipart path). Returns an
+// error string, or null on success.
+export async function uploadViaSignedUrl(endpoint: string, file: File): Promise<string | null> {
+  const res = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ filename: file.name, contentType: file.type }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.signedUrl) return j.error ?? "upload failed";
+  const put = await fetch(j.signedUrl, {
+    method: "PUT",
+    headers: { "content-type": file.type || "application/octet-stream" },
+    body: file,
+  });
+  return put.ok ? null : `storage upload failed (${put.status})`;
+}
+
 export async function uploadAttachment(feedbackId: string, file: File): Promise<string | null> {
-  const form = new FormData();
-  form.append("file", file);
-  const res = await fetch(`/api/feedback/${feedbackId}/attachments`, { method: "POST", body: form });
-  if (res.ok) return null;
-  return (await res.json().catch(() => ({}))).error ?? "upload failed";
+  return uploadViaSignedUrl(`/api/feedback/${feedbackId}/attachments`, file);
 }
 
 // Chip strip for a feedback item, with an optional paperclip that uploads on
@@ -148,10 +164,8 @@ export function AttachmentPanel({
     setBusy(true);
     setError(null);
     for (const f of Array.from(files)) {
-      const form = new FormData();
-      form.append("file", f);
-      const res = await fetch(endpoint, { method: "POST", body: form });
-      if (!res.ok) setError((await res.json().catch(() => ({}))).error ?? "upload failed");
+      const err = await uploadViaSignedUrl(endpoint, f);
+      if (err) setError(err);
     }
     setBusy(false);
     if (fileRef.current) fileRef.current.value = "";

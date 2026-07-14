@@ -2,7 +2,7 @@
 // Private bucket `deal-attachments`, prefix deal/{id}/. GET list · POST upload.
 import { NextResponse } from "next/server";
 import { hasDb } from "@/lib/db";
-import { listAttachments, uploadAttachment, DOC_EXTENSIONS } from "@/lib/attachments-store";
+import { listAttachments, signedUploadUrl } from "@/lib/attachments-store";
 
 export const dynamic = "force-dynamic";
 
@@ -15,13 +15,14 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   return NextResponse.json({ attachments: await listAttachments(BUCKET, owner(id)) });
 }
 
+// Mints a signed upload URL; the browser uploads DIRECT to storage (bypasses
+// Vercel's 4.5MB body cap — CIMs run to 20MB+).
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
   const { id } = await params;
-  const form = await req.formData().catch(() => null);
-  const file = form?.get("file");
-  if (!(file instanceof File)) return NextResponse.json({ error: "multipart 'file' field required" }, { status: 400 });
-  const err = await uploadAttachment(BUCKET, owner(id), file);
-  if (err) return NextResponse.json({ error: `${err} (${DOC_EXTENSIONS.join(", ")})` }, { status: 400 });
-  return NextResponse.json({ ok: true });
+  const { filename } = await req.json().catch(() => ({}));
+  if (!filename) return NextResponse.json({ error: "filename required" }, { status: 400 });
+  const res = await signedUploadUrl(BUCKET, owner(id), String(filename));
+  if ("error" in res) return NextResponse.json(res, { status: 400 });
+  return NextResponse.json(res);
 }

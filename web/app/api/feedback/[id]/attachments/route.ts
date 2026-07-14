@@ -4,69 +4,31 @@
 // is the metadata, so no migration is required and threads pick attachments
 // up the moment they land.
 //
-// GET  → attachments for a feedback item: { name, size, created_at, url }
-//        (url = 1h signed download link)
-// POST multipart form-data { file } → upload (15MB cap, allowlisted extensions)
+// GET  → attachments: { name, size, created_at, url } (url = 1h signed download)
+// POST { filename } → mint a signed upload URL; the browser PUTs the file
+//        DIRECT to storage (bypasses Vercel's 4.5MB serverless body cap).
 import { NextResponse } from "next/server";
-import { hasDb, serverDb } from "@/lib/db";
+import { hasDb } from "@/lib/db";
+import { listAttachments, signedUploadUrl } from "@/lib/attachments-store";
 
 export const dynamic = "force-dynamic";
 
 const BUCKET = "feedback-attachments";
-const MAX_BYTES = 15 * 1024 * 1024;
 // Tom's analyses (spreadsheets/PDFs) + bug screenshots (incl. iPhone formats)
 const EXTENSIONS = ["csv", "xlsx", "xls", "pdf", "png", "jpg", "jpeg", "gif", "webp", "heic", "txt", "json", "docx", "pptx"];
 
-const ext = (name: string) => name.split(".").pop()?.toLowerCase() ?? "";
-const sanitize = (name: string) => name.replace(/[^\w.\- ]+/g, "_").slice(-120);
-
-async function ensureBucket() {
-  // idempotent: "already exists" is success
-  const { error } = await serverDb().storage.createBucket(BUCKET, {
-    public: false,
-    fileSizeLimit: MAX_BYTES,
-  });
-  if (error && !/already exists|duplicate/i.test(error.message)) throw error;
-}
-
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
-  if (!hasDb()) return NextResponse.json({ error: "no db", attachments: [] }, { status: 200 });
+  if (!hasDb()) return NextResponse.json({ attachments: [] });
   const { id } = await params;
-  const store = serverDb().storage.from(BUCKET);
-  const { data, error } = await store.list(id, { sortBy: { column: "created_at", order: "asc" } });
-  // a missing bucket just means nothing was ever attached
-  if (error || !data?.length) return NextResponse.json({ attachments: [] });
-
-  const { data: signed } = await store.createSignedUrls(data.map((f) => `${id}/${f.name}`), 3600);
-  const attachments = data.map((f, i) => ({
-    // strip the {ts}_ upload prefix back off for display
-    name: f.name.replace(/^\d{13}_/, ""),
-    size: (f.metadata as { size?: number } | null)?.size ?? null,
-    created_at: f.created_at,
-    url: signed?.[i]?.signedUrl ?? null,
-  }));
-  return NextResponse.json({ attachments });
+  return NextResponse.json({ attachments: await listAttachments(BUCKET, id) });
 }
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
   const { id } = await params;
-  const form = await req.formData().catch(() => null);
-  const file = form?.get("file");
-  if (!(file instanceof File)) return NextResponse.json({ error: "multipart 'file' field required" }, { status: 400 });
-  if (file.size > MAX_BYTES) return NextResponse.json({ error: "file too large (15MB max)" }, { status: 400 });
-  if (!EXTENSIONS.includes(ext(file.name))) {
-    return NextResponse.json({ error: `file type .${ext(file.name)} not allowed (${EXTENSIONS.join(", ")})` }, { status: 400 });
-  }
-
-  try {
-    await ensureBucket();
-  } catch (e) {
-    return NextResponse.json({ error: `storage unavailable: ${(e as Error).message}` }, { status: 503 });
-  }
-  const path = `${id}/${Date.now()}_${sanitize(file.name)}`;
-  const { error } = await serverDb().storage.from(BUCKET)
-    .upload(path, await file.arrayBuffer(), { contentType: file.type || "application/octet-stream" });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ ok: true, path });
+  const { filename } = await req.json().catch(() => ({}));
+  if (!filename) return NextResponse.json({ error: "filename required" }, { status: 400 });
+  const res = await signedUploadUrl(BUCKET, id, String(filename), EXTENSIONS);
+  if ("error" in res) return NextResponse.json(res, { status: 400 });
+  return NextResponse.json(res);
 }

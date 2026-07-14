@@ -124,6 +124,25 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 - All shipped work is browser-verified except paths requiring live paid runs
   or prod-data mutation; those verify on John's first real use.
 
+## 2026-07-14 — Attachment uploads bypass Vercel's 4.5MB cap (PM bug flag)
+
+- **Bug (PM found live):** the 22MB AAFE CIM bounced off the new upload route
+  with FUNCTION_PAYLOAD_TOO_LARGE — Vercel caps serverless request bodies at
+  4.5MB, and my routes streamed the file THROUGH the function. Same latent
+  defect on the feedback route (Tom's larger PPP spreadsheets).
+- **Fix:** two-step signed-URL upload. The API route now mints a signed
+  upload URL (`createSignedUploadUrl`, validating name/ext + ensuring the
+  bucket) and the browser PUTs the file DIRECT to Supabase Storage — nothing
+  large passes through Vercel. `signedUploadUrl()` in attachments-store.ts +
+  `uploadViaSignedUrl()` client helper in Attachments.tsx; company/deal AND
+  feedback routes converted; the bucket fileSizeLimit still enforces the max
+  at the storage layer. Verified end-to-end incl. an 8MB (server) and 6MB
+  (browser) file — both PUT 200 and list at full size; extension rejection
+  intact on all three routes (test files removed).
+- Pattern note: any future upload surface uses `uploadViaSignedUrl(endpoint)`
+  against a route returning `{signedUrl, path}` — never stream a file body
+  through a Vercel function again.
+
 ## 2026-07-14 — Company + deal document attachments (AAFE CIM card)
 
 - **CIMs/NDAs/LOIs attach to their records** (John 7/13, AAFE CIM via Axial):

@@ -31,17 +31,26 @@ export async function listAttachments(bucket: string, ownerId: string): Promise<
   }));
 }
 
-// Returns an error string, or null on success.
-export async function uploadAttachment(bucket: string, ownerId: string, file: File): Promise<string | null> {
-  if (file.size > MAX_BYTES) return `file too large (${Math.round(MAX_BYTES / 1024 / 1024)}MB max)`;
-  if (!DOC_EXTENSIONS.includes(ext(file.name))) return `file type .${ext(file.name)} not allowed`;
+// Mint a direct-to-storage signed upload URL. The browser PUTs the file
+// straight to Supabase, bypassing Vercel's 4.5MB serverless body cap (a 22MB
+// CIM bounced off the old server-side upload — PM flag 7/14). The API route
+// only validates the name/type and mints the URL; the bucket's fileSizeLimit
+// still enforces the max at the storage layer. Extensions validated here so a
+// bad name never gets a URL.
+export async function signedUploadUrl(
+  bucket: string,
+  ownerId: string,
+  filename: string,
+  extensions: string[] = DOC_EXTENSIONS,
+): Promise<{ signedUrl: string; path: string } | { error: string }> {
+  if (!extensions.includes(ext(filename))) return { error: `file type .${ext(filename)} not allowed (${extensions.join(", ")})` };
   try {
     await ensureBucket(bucket);
   } catch (e) {
-    return `storage unavailable: ${(e as Error).message}`;
+    return { error: `storage unavailable: ${(e as Error).message}` };
   }
-  const path = `${ownerId}/${Date.now()}_${sanitize(file.name)}`;
-  const { error } = await serverDb().storage.from(bucket)
-    .upload(path, await file.arrayBuffer(), { contentType: file.type || "application/octet-stream" });
-  return error ? error.message : null;
+  const path = `${ownerId}/${Date.now()}_${sanitize(filename)}`;
+  const { data, error } = await serverDb().storage.from(bucket).createSignedUploadUrl(path);
+  if (error || !data) return { error: error?.message ?? "could not mint upload url" };
+  return { signedUrl: data.signedUrl, path };
 }
