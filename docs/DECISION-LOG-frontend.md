@@ -23,8 +23,16 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   (actuals always win); `?tier=` URL param combinable with level/industry —
   `/companies?tier=platform&level=contactable` = 5 rows, verified live.
   fetchCompanies reuses the exact /api/companies join+math so surfaces
-  can't drift. NEXT: same chips on /enrichment (leads API already serves
-  size_tier + tierCounts).
+  can't drift.
+- **7/13 ~22:50 — SIZE TIER CHIPS ON /enrichment SHIPPED** (same build,
+  next surface): fetchEnrichmentOverview + fetchLeadList now compute `size`
+  per lead from the SAME model/math, so a lead's tier here matches the
+  company it becomes. LeadsTable: size filter-chip row (live 7 Platform ·
+  25 Tuck-in · 7 Too small · 113 Unsized), Size chip column w/ derivation
+  tooltip, tier in the CSV/VA-handoff export, filter persisted in the
+  session-storage set. Verified live: Platform filter → 7 rows, all
+  Platform. This covers "size-tier chips" on ALL three list surfaces
+  (companies + enrichment + list-detail) — queue item complete.
 - **7/13 ~21:45 — LEAD-CHANNEL PROVENANCE ON COMPANY PROFILE SHIPPED:**
   when the source lead holds an owner channel no contact carries (the
   promotion/sync gap Lane C is root-causing), the profile shows a sky strip
