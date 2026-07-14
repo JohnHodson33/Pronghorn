@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ActivityForm from "@/components/ActivityForm";
+import { AttachmentPanel } from "@/components/Attachments";
 import ContactsSection from "@/components/ContactsSection";
 import DealControls from "@/components/DealControls";
 import MarketCheckCard from "@/components/MarketCheckCard";
@@ -139,6 +140,8 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
       )}
 
       <ContactsSection companyId={c.id} contacts={deal.contacts} />
+
+      <AttachmentPanel endpoint={`/api/deals/${deal.id}/attachments`} heading="Deal documents" hint="No documents yet — attach the CIM, NDA, LOI, or teaser for this deal." />
 
       <section className="space-y-3">
         <h2 className="font-semibold">Activity</h2>
