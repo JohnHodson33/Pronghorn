@@ -467,6 +467,18 @@ set) into your new chips UI as a small follow-up.
   inert, delete at leisure. Lane B: rules editor + "why drafted" line remain
   yours.
   --- original card ---
+- 🔥🔥 **SIZE ROLLOUT EXPANSION (John 7/13 ~17:30 — "roll out with the
+  industries we laid out then expand to others on the site"):** (Lane C)
+  (a) add **Fencing** as a first-class taxonomy industry + benchmarks entry
+  (AAFE-class targets currently hit 'default'); (b) add per-industry
+  **ppp_payroll_pct** to size-benchmarks/size-model (editable in the tab w/
+  0014) and use it in the PPP payroll→revenue math. Researched seeds: tree
+  40 · lawn 35 · pest 33 · fencing 30; PM-proposed for the rest
+  (labor-intensity based, John tunes in the tab): Landscaping 38 · Pool 32 ·
+  Irrigation 32 · Lake/Pond 33 · HVAC 30 · Plumbing 32 · Electrical 34 ·
+  Roofing 25 · Windows&Doors 26 · Cleaning/Janitorial 50 · Restoration 32 ·
+  Property Maintenance 40 · default 33. Computed-on-read means each
+  assumption activates instantly — no re-import needed.
 - 🔥🔥 **DEAL/COMPANY ATTACHMENTS + CIM INGEST (John 7/13 ~15:15 — received
   the All American Fence Erectors CIM via Axial; PM hand-built the records:
   company 35a33893 w/ CIM financials, deal ed791a49 stage 'CIM Received',
