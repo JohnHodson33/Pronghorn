@@ -63,11 +63,18 @@ async function main() {
         execFileSync('node', args, { stdio: 'inherit' });
         processed += fresh.length;
       }
-      // TIER 2 CASCADE: enriched-but-incomplete → channel hunt (never a no-op)
+      // TIER 2 CASCADE: enriched-but-incomplete → channel hunt (never a no-op).
+      // A digest-queued job carries its own Hunter/Exa caps (job.counts set at
+      // queue time, before the running-status overwrite) — honor them so the
+      // nightly budget John set actually binds; fall back to the env default.
+      const budget = {
+        hunter: job.counts?.hunter_budget ?? TIER2_BUDGET.hunter,
+        exa: job.counts?.exa_budget ?? TIER2_BUDGET.exa,
+      };
       let t2 = { processed: 0, emails: 0, linkedins: 0 };
       if (enrichedSet.length) {
-        log.info(`  cascading tier 2 over ${enrichedSet.length} incomplete leads`);
-        t2 = await runTier2(enrichedSet, { ...TIER2_BUDGET }, log, async (i) => {
+        log.info(`  cascading tier 2 over ${enrichedSet.length} incomplete leads (hunter cap ${budget.hunter}, exa cap ${budget.exa})`);
+        t2 = await runTier2(enrichedSet, { ...budget }, log, async (i) => {
           if (i % 5 === 0) {
             const { data: j } = await supabase.from('enrichment_jobs').select('counts').eq('id', job.id).single();
             await setProgress(job.id, { counts: { ...(j?.counts || {}), processed: processed + i, found_email: (j?.counts?.found_email || 0) } });

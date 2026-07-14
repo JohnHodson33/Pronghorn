@@ -162,10 +162,16 @@ async function main() {
   if (status === 'paused') { log.info('Tonight is PAUSED by John — not queueing anything.'); return; }
   if (!rules.length || !plan.lead_ids.length) { log.info('Zero rules / zero matching leads — nothing queued (by design).'); return; }
 
-  // queue the proven cascade (enrichment_jobs runner picks it up within 15 min)
+  // queue the proven cascade (enrichment_jobs runner picks it up within 15 min).
+  // Carry the digest's Hunter/Exa caps on the job so the runner honors THIS
+  // night's budget instead of its own env default — the cap is why John
+  // approved the digest, so it must actually bind end-to-end.
   const { error } = await supabase.from('enrichment_jobs').insert({
     lead_ids: plan.lead_ids, status: 'queued', cost_estimate: plan.est_usd_total,
-    counts: { source: 'nightly_digest', rules: plan.rules_fired.map((r) => r.rule) },
+    counts: {
+      source: 'nightly_digest', rules: plan.rules_fired.map((r) => r.rule),
+      hunter_budget: plan.hunter_cap_total, exa_budget: plan.lead_ids.length,
+    },
   });
   if (error) { log.error(`job queue failed: ${error.message}`); return; }
   await upsertDigest({ status: 'ran' });
