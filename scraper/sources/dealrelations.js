@@ -17,6 +17,30 @@ const { STATE_CODES, stateFromText } = require('../core/states');
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 
+// Brokers often put only a regional shorthand in the TITLE when the structured
+// State/Prov field is blank ("SOCAL", "Bay Area", "DFW"). When we can't read a
+// state the normal way, infer it from the title — conservatively, only from
+// unambiguous macros/metros (a wrong state is worse than a blank one).
+const REGION_HINTS = [
+  [/\bso(?:uthern)?\.?\s?cal(?:ifornia)?\b|\bnor(?:thern)?\.?\s?cal(?:ifornia)?\b|\bbay area\b|\bsilicon valley\b|\binland empire\b|\blos angeles\b|\bsan diego\b|\borange county\b|\bsacramento\b|\bfresno\b/i, 'CA'],
+  [/\bdfw\b|\bdallas\b|\bfort worth\b|\bhouston\b|\baustin, ?tx\b|\bsan antonio\b/i, 'TX'],
+  [/\bphoenix\b|\bscottsdale\b|\btucson\b|\bmesa, ?az\b/i, 'AZ'],
+  [/\blas vegas\b|\breno, ?nv\b/i, 'NV'],
+  [/\bdenver\b|\bcolorado springs\b|\bboulder, ?co\b/i, 'CO'],
+  [/\b(?:metro )?atlanta\b/i, 'GA'],
+  [/\bnashville\b|\bmemphis\b|\bknoxville\b|\bchattanooga\b/i, 'TN'],
+  [/\bcharlotte\b|\braleigh\b|\bgreensboro\b/i, 'NC'],
+  [/\bsalt lake city\b|\bslc, ?ut\b/i, 'UT'],
+  [/\balbuquerque\b|\bsanta fe, ?nm\b/i, 'NM'],
+  [/\bsouth florida\b|\bmiami\b|\borlando\b|\btampa\b|\bjacksonville, ?fl\b|\bfort lauderdale\b/i, 'FL'],
+  [/\bchicagoland\b/i, 'IL'],
+];
+function regionState(text) {
+  if (!text) return null;
+  for (const [re, code] of REGION_HINTS) if (re.test(text)) return code;
+  return null;
+}
+
 class DealRelationsScraper extends SourceScraper {
   async scrape() {
     const brokers = this.config.subdomains || [];
@@ -110,7 +134,12 @@ class DealRelationsScraper extends SourceScraper {
       ? og
       : this.titleCase(slug.replace(/^\d+-/, '').replace(/-/g, ' '));
     const stateName = (fields['state/prov'] || '').toLowerCase();
-    const state = STATE_CODES[stateName] || stateFromText(fields['state/prov']) || null;
+    // Structured field first; then fall back to a regional hint in the title
+    // (e.g. "SOCAL" → CA) so listings that only name a region still get a state.
+    const readState = STATE_CODES[stateName] || stateFromText(fields['state/prov']) || null;
+    const inferredState = readState || regionState(title) || regionState(fields['detail']);
+    const state = inferredState;
+    const stateInferred = !readState && !!inferredState;
 
     // Agent: <strong>NAME</strong> preceding an "Office :" phone.
     let agentName = null;
@@ -146,6 +175,7 @@ class DealRelationsScraper extends SourceScraper {
       raw: {
         listing_no: fields['listing no'] || null,
         sic: fields['sic'] || null,
+        state_inferred: stateInferred || undefined, // state came from a title region hint, not a structured field
         down_payment: this.parseMoney(fields['down']),
         view_status: this.viewStatus($),
       },
