@@ -968,3 +968,23 @@ network blip during the nightly run.
 - **Ask (a) STILL OPEN:** auto_promoted events = 0 → auto-promote T1→pursuits
   not yet built/run. Still blocked at my permission layer (needs John's direct
   line in THIS session, or another lane builds it). Spec in DECISION-LOG 7/13.
+
+## 2026-07-15 — painting self-heal STALLED behind screen backlog; added backlog monitor
+- Merged PM's NUL-byte fix (b3abcbd: dirty bizben record was killing the nightly
+  PERSIST step). DB now persisting again — all sources last_seen clustered 7/15.
+- **Follow-up on painting heal: NOT healed.** 95 painting rows still tier=null,
+  only 4 tiered; portfolio T1/T2 flat at 113/234. Root cause found: a **77-row
+  re-screen backlog** — active rows raw.relevant=true but tier=null that the
+  screen step never processed. Likely the NUL persist failures blocked the
+  nightly BEFORE the screen step for days, so untieredIds never drained. Some
+  painting rows also still show relevant=false w/ 7/15 last_seen (re-annotation
+  gap on rows last touched by a pre-keyword run) — those flip relevant on their
+  next scrape then need a screen pass.
+- **Shipped (in-lane automation):** source_health.js now flags the re-screen
+  backlog (🟠 when >40 relevant-but-untiered active rows) — the automated catch
+  for "criteria changed but rows never re-tiered." Verified: flags the current 77.
+- **FOR PM (owns pipeline; just fixed NUL):** confirm the next FULL nightly runs
+  the SCREEN step to completion and drains the 77 backlog (painting T1/T2 should
+  then rise above 113/234). If it doesn't drain, the screener isn't re-screening
+  untieredIds — a run_supabase/screener look (your lane). Auto-promote (ask a)
+  still 0 events / unbuilt.
