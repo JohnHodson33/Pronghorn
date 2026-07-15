@@ -17,6 +17,12 @@ doc + the repo docs restore full state with zero loss. Boot prompt for John:_
   web/.env.local>`; web/.vercel/project.json must say projectName "pronghorn".
   Site: https://pronghorn-green.vercel.app (basic auth: pronghorn-green-2026).
 - PM-owned files: Sidebar.tsx, shared docs, deploys, this handoff.
+- **PM recurring duty — SCRAPE CATCH-UP (John 7/15):** every loop pass,
+  check `max(listings.last_seen_at)`; if older than ~20h, kick
+  `node run_supabase.js` locally (background) so a missed/failed nightly
+  never costs a full day of listings. Note: the nightly runs on GitHub's
+  servers (John's laptop off ≠ missed scrape), but local worker coverage
+  DOES depend on his machine — this catch-up covers both failure modes.
 - **PM recurring duty — NOTION NOTES TIDY (John confirmed 7/13):** each loop
   pass (or at least every few hours), search John's Notion for new AI meeting
   notes sitting at the Private ROOT (they land there, not in the folder),
