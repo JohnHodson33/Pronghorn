@@ -488,6 +488,25 @@ set) into your new chips UI as a small follow-up.
   (e) Exemplar fix done by PM: All Turf (a087c894) wrong link nulled;
   correct = Gary Wilson, Co-Founder Turf Masters Brands, Loganville GA —
   ALSO a PE-flag candidate (Turf Masters = roll-up), see PE item below.
+- 🔥🔥🔥 **CONTACT HIT-RATE PROGRAM (John 7/15 ~12:15 — "way too many blanks
+  to actually source off this"; PHONE > EMAIL priority):**
+  (Lane C) (a) **EMAIL PATTERN ENGINE (ships first — $0 marginal, PM
+  live-proved on treeprosaz.com: pattern={first}@, staff emails at 93-94
+  conf):** new tier-2.5 step — Hunter DOMAIN-SEARCH per company domain
+  (1 quota search) → store pattern + published emails on the company →
+  CONSTRUCT owner email from pattern + owner first/last → VERIFY via
+  Hunter verifier → only verified writes to owner_email (else
+  business_email w/ 'pattern-guess' provenance). Cache pattern per domain
+  forever. Backfill over every IDENTIFIED lead w/ domain + owner name.
+  (b) **PHONE (higher priority, needs John's ~$2 sample):** revive the
+  DEFERRED skip-trace decision — run Tracerfy pay-per-hit (~$0.02/rec) on
+  a 50-lead sample of named owners w/ addresses; measure hit rate +
+  spot-check accuracy; report cost-per-verified-cell vs Apollo
+  (~$49-99/mo, mobile credits) as step 2. ZoomInfo-class ($15-30K/yr) is
+  NOT cost-effective at this stage — revisit only if cheap tiers fail.
+  (c) published role-emails from domain-search (service@/accounting@)
+  store as business channels — useful for pattern + never owner channels
+  (role-mailbox guard already enforces).
 - 🔥🔥🔥 **US-PRESENCE VALIDATION + "TOO BIG" TIER (John 7/15 ~11:55 —
   Irrigation Excellence exemplar: Europe/S.America HQ, ~12-company group,
   slipped into a national irrigation list AND read as an attractive
