@@ -951,3 +951,20 @@ network blip during the nightly run.
   disabled BizQuest mirror, DealStream) + businessmodificationgroup — already my
   DealRelations subdomain #11. No independent NV grid exists; NV coverage via
   national aggregators + BMG is complete. Frontier confirmed closed for NV.
+
+## 2026-07-14 — RESOLVED: painting/restore now in screen_profiles (ask b done); 92 rows queued to self-heal
+- Deferred git sync completed (classifier was down last iter). Merged Lane B/C
+  work (LinkedIn match quality, PE-ownership flag, US-presence/Too-Big tiers).
+- **Ask (b) DONE (John/PM actioned the Screen Criteria editor):** the Green
+  Industry Default profile now carries 13 painting keywords + `restore`
+  (painting/painters/painting contractor/service/company, house/interior/
+  exterior/commercial/residential painting, paint contractor, professional
+  painter, restore) — richer than my 3-keyword ask. Verified in DB.
+- **Self-heal queued:** 92 active painting rows currently sit tier=null. The
+  nightly's re-screen set (untieredIds = existing tier-null rows now marked
+  relevant) will pick them up → they get Haiku-tiered on the NEXT nightly. No
+  action needed from me; recovery is automatic. The intake gap is now closed
+  end-to-end (config.json for standalone runs + screen_profiles for production).
+- **Ask (a) STILL OPEN:** auto_promoted events = 0 → auto-promote T1→pursuits
+  not yet built/run. Still blocked at my permission layer (needs John's direct
+  line in THIS session, or another lane builds it). Spec in DECISION-LOG 7/13.
