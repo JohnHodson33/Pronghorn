@@ -988,3 +988,21 @@ network blip during the nightly run.
   then rise above 113/234). If it doesn't drain, the screener isn't re-screening
   untieredIds — a run_supabase/screener look (your lane). Auto-promote (ask a)
   still 0 events / unbuilt.
+
+## 2026-07-15 — John direct feedback: SOCAL parse fix (mine, DONE) + 2 frontend asks (routed to PM)
+- John flagged a $13M SOCAL landscaping dealrelations listing showing empty
+  location. **IN-LANE FIX SHIPPED:** dealrelations.js now infers state from a
+  title region hint (SOCAL/NorCal/Bay Area/DFW/Metro Atlanta/Las Vegas/…) when
+  the structured State/Prov field is blank; word-bounded, 11/11 unit tests,
+  flags raw.state_inferred. Existing SOCAL rows update to CA on next scrape.
+- **RECOMMEND (graduate to core):** regionState() lives in dealrelations.js for
+  now (my lane); it would help every adapter's title parsing if moved to
+  core/states.js stateFromText. Flagged for PM to bless a core move.
+- **Two FRONTEND asks (Lane B, NOT mine — relayed to PM):** (1) inline-edit any
+  field on a deal/listing/company/enrichment record (location, owner name,
+  email, phone) — click + type + save, so John adds found data himself without
+  an agent. (2) Filter/sort STATE PERSISTENCE on back-navigation — filtering +
+  sorting a list (broker listings/companies/enrichment), clicking into a record,
+  then Back must retain the filter+sort (today it resets → re-filter every time).
+  Both apply across broker listings, companies, and proprietary-outreach
+  enrichment. I do not touch web/ (Lane B's active worktree).
