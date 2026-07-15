@@ -116,13 +116,27 @@ async function syncListings(listings) {
     const toInsert = group.filter((l) => !existing.has(l.source_listing_id));
     const toUpdate = group.filter((l) => existing.has(l.source_listing_id));
 
-    // --- Inserts (bulk, chunked) ---
+    // --- Inserts (bulk, chunked; one poisoned row must never kill the run) ---
     for (const c of chunks(toInsert, CHUNK)) {
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('listings')
         .insert(c.map(toRow))
         .select('id, external_id');
-      if (error) throw new Error(`Insert failed for ${source}: ${error.message}`);
+      if (error) {
+        // Chunk failed (e.g. un-serializable scraped bytes): retry row-by-row,
+        // skip + log the poisoned row(s) so the rest of the run survives.
+        log.warn(`Chunk insert failed for ${source} (${error.message}) — retrying row-by-row`);
+        data = [];
+        for (const l of c) {
+          const { data: one, error: rowErr } = await supabase
+            .from('listings').insert(toRow(l)).select('id, external_id');
+          if (rowErr) {
+            log.error(`  SKIPPED poisoned row ${source}:${l.source_listing_id} ("${String(l.name).slice(0, 60)}") — ${rowErr.message}`);
+            continue;
+          }
+          data.push(one[0]);
+        }
+      }
       for (const row of data) {
         const l = c.find((x) => x.source_listing_id === row.external_id);
         if (l) {
