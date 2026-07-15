@@ -467,6 +467,39 @@ set) into your new chips UI as a small follow-up.
   inert, delete at leisure. Lane B: rules editor + "why drafted" line remain
   yours.
   --- original card ---
+- 🔥🔥🔥 **LINKEDIN MATCH QUALITY OVERHAUL (John 7/15 ~11:40 — found All Turf's
+  owner LinkedIn was a WRONG-PERSON match he disproved in 30 seconds; "every
+  representative example I look at seems to be wrong… I'd be trusting it for
+  automated outreach"; TOP of Lane C):** the 7/13 tightening was not enough.
+  (a) **REPLACE the matcher**: Serper `site:linkedin.com/in "{owner name}"
+  "{company}"` (+city/state variants) → Claude VERIFIES the snippet — accept
+  ONLY with 2+ corroborations (company-name token AND geo/title match);
+  compound names ("Gary Wilson Sr. and Gary Wilson Jr.") must be SPLIT into
+  individual people before matching, never matched as a string. (b)
+  **verified-only counting**: add linkedin_verified flag; ONLY verified
+  links count as owner channels (FULL/CONTACTABLE math + outreach
+  eligibility) — an unverified link is displayed greyed w/ "unverified".
+  (c) **FULL RE-AUDIT of every existing owner_linkedin** with the new
+  validator: null everything that fails corroboration (wrong > none —
+  John's trust standard); report before/after counts + measured accuracy
+  on a hand-checkable sample of 20. (d) If verified hit-rate lands too low,
+  bring John a paid-lookup comparison (Proxycurl-class person API / Apollo)
+  w/ per-lookup cost + sample accuracy — HIS decision, don't subscribe.
+  (e) Exemplar fix done by PM: All Turf (a087c894) wrong link nulled;
+  correct = Gary Wilson, Co-Founder Turf Masters Brands, Loganville GA —
+  ALSO a PE-flag candidate (Turf Masters = roll-up), see PE item below.
+- 🔥🔥 **COMPANY SHORTLIST / STAR (John 7/15 ~11:45 — "flag or heart
+  companies I've looked at that might be good potential targets… so I'm
+  not scrolling annually and forgetting what I did"; explicitly NOT a deal
+  stage):** (Lane C) migration `0015_shortlist.sql`: `company_shortlist`
+  (company_id, person John|Tom, note text nullable, created_at; PK
+  company+person) + GET/POST/DELETE on /api/companies/[id]/shortlist +
+  shortlist state joined into /api/companies rows. (Lane B) ★ toggle on
+  every Companies row + profile header (one tap, optimistic), filter
+  "★ Shortlisted" (mine / Tom's / any), shortlisted-first sort option, and
+  the star + who/when visible so future outreach passes know it already
+  passed John's smell test. Later hook: outreach/draft-rules can prioritize
+  shortlisted companies — do NOT wire that until John says so.
 - 🔥🔥 **PE-OWNERSHIP FLAG (John 7/15 ~11:20 — "PE-owned targets are not
   good targets for us… at the very least a column to filter them out"):**
   (Lane C) (a) add `pe_owned` boolean + `pe_owner` text to companies/leads
