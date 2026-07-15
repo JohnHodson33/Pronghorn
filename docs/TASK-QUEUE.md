@@ -488,6 +488,22 @@ set) into your new chips UI as a small follow-up.
   (e) Exemplar fix done by PM: All Turf (a087c894) wrong link nulled;
   correct = Gary Wilson, Co-Founder Turf Masters Brands, Loganville GA —
   ALSO a PE-flag candidate (Turf Masters = roll-up), see PE item below.
+- 🔥🔥🔥 **US-PRESENCE VALIDATION + "TOO BIG" TIER (John 7/15 ~11:55 —
+  Irrigation Excellence exemplar: Europe/S.America HQ, ~12-company group,
+  slipped into a national irrigation list AND read as an attractive
+  'Platform' because we couldn't size it; PM flagged it off_target):**
+  (Lane C) (a) **US-presence check in enrichment classification**: from the
+  site scrape + address signals, classify hq_us true/false/uncertain —
+  non-US (or primarily non-US) → off_target w/ reason, excluded from
+  coverage math + all automation; backfill over existing enriched leads.
+  (b) **TOO BIG tier above Platform**: editable threshold in the Size
+  Estimation tab (seed: est. EBITDA > $10M) → tier 'too_big' — stays on the
+  list, clearly tagged, filterable out. (c) **QUALITATIVE bigness detection
+  — sizing can't rely on PPP alone**: during enrichment, flag conglomerate
+  signals (multi-continent presence, 'group of companies', N subsidiaries,
+  'offices in', franchise networks) → too_big even with NO numeric
+  estimate + a reason string. (Lane B) (d) tier chip/filter for Too big;
+  threshold input in the tab; off-target reason shown on hover.
 - 🔥🔥 **COMPANY SHORTLIST / STAR (John 7/15 ~11:45 — "flag or heart
   companies I've looked at that might be good potential targets… so I'm
   not scrolling annually and forgetting what I did"; explicitly NOT a deal
