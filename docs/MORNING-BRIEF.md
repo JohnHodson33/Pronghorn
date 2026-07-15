@@ -57,7 +57,16 @@
 - **Ops:** dashboards, pinned views, URL-filterable everything, PWA, brand
   pass, rollover protocol proven twice, session roster current.
 
-## Watch items
+## Watch items (updated Wed 7/15 ~11:10)
+- ⚠️ **All three lane sessions context-died Tue ~2 PM** (clean unit
+  boundaries). One-paste restarts: Lanes A/C resume from their
+  DECISION-LOG HANDOFF sections; Lane B same. PM is covering urgent items.
+- ⚠️ **This morning's 06:00 nightly scrape did NOT run** (yesterday's did).
+  PM ran it locally as a stopgap + drained a 36-lead enrichment job that
+  sat queued since Mon (likely your first UI Enrich click — the runner
+  never picked it up). **Check your GitHub failure emails / repo → Actions
+  tab** — scheduled workflows may be failing or disabled; this plus the
+  5-secret batch is what makes the platform self-driving.
 - **Fable 5 → billing:** Frontend lane now runs Opus 4.8 (per your switch).
   PM + other lanes still on their original models — swap at your discretion.
 - 45 inert drafts in Outlook Drafts — delete at leisure.
