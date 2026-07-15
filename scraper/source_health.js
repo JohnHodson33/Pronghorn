@@ -90,9 +90,27 @@ async function main() {
   fs.mkdirSync(path.dirname(HIST_PATH), { recursive: true });
   fs.writeFileSync(HIST_PATH, JSON.stringify(history.slice(-KEEP_RUNS), null, 1));
 
+  // Re-screen backlog: active rows the relevance filter passed (raw.relevant
+  // true) that never got a tier. A healthy pipeline drains this each nightly via
+  // untieredIds; a rising backlog means the screen step is stalling or being
+  // skipped (e.g. the persist step failing before screening runs). This is the
+  // automated catch for "keywords/criteria changed but rows never re-tiered".
+  const BACKLOG_FLAG = 40;
+  let backlog = null;
+  try {
+    const { count, error } = await supabase.from('listings')
+      .select('*', { count: 'exact', head: true })
+      .is('tier', null).is('delisted_at', null).filter('raw->>relevant', 'eq', 'true');
+    if (!error) backlog = count;
+  } catch { /* non-fatal */ }
+  if (backlog != null && backlog > BACKLOG_FLAG) {
+    flags.push(`🟠 re-screen backlog: ${backlog} active rows are relevant but tier=null (screen step stalling/skipped — check nightly persist+screen)`);
+  }
+
   const green = [...enabled].filter((s) => current[s]).length - flags.filter((f) => f.startsWith('🔴')).length;
   const digest = `SOURCE HEALTH ${new Date().toISOString().slice(0, 10)}: ${enabled.size} enabled — ` +
     (flags.length ? `${Math.max(green, 0)} green, ${flags.length} FLAGGED` : `all green`) +
+    (backlog != null ? ` · re-screen backlog ${backlog}` : '') +
     (history.length <= 1 ? ' (first run — baseline recording)' : '');
   console.log('\n' + digest);
   for (const f of flags) console.log('  ' + f);

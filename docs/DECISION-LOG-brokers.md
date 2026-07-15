@@ -951,3 +951,40 @@ network blip during the nightly run.
   disabled BizQuest mirror, DealStream) + businessmodificationgroup — already my
   DealRelations subdomain #11. No independent NV grid exists; NV coverage via
   national aggregators + BMG is complete. Frontier confirmed closed for NV.
+
+## 2026-07-14 — RESOLVED: painting/restore now in screen_profiles (ask b done); 92 rows queued to self-heal
+- Deferred git sync completed (classifier was down last iter). Merged Lane B/C
+  work (LinkedIn match quality, PE-ownership flag, US-presence/Too-Big tiers).
+- **Ask (b) DONE (John/PM actioned the Screen Criteria editor):** the Green
+  Industry Default profile now carries 13 painting keywords + `restore`
+  (painting/painters/painting contractor/service/company, house/interior/
+  exterior/commercial/residential painting, paint contractor, professional
+  painter, restore) — richer than my 3-keyword ask. Verified in DB.
+- **Self-heal queued:** 92 active painting rows currently sit tier=null. The
+  nightly's re-screen set (untieredIds = existing tier-null rows now marked
+  relevant) will pick them up → they get Haiku-tiered on the NEXT nightly. No
+  action needed from me; recovery is automatic. The intake gap is now closed
+  end-to-end (config.json for standalone runs + screen_profiles for production).
+- **Ask (a) STILL OPEN:** auto_promoted events = 0 → auto-promote T1→pursuits
+  not yet built/run. Still blocked at my permission layer (needs John's direct
+  line in THIS session, or another lane builds it). Spec in DECISION-LOG 7/13.
+
+## 2026-07-15 — painting self-heal STALLED behind screen backlog; added backlog monitor
+- Merged PM's NUL-byte fix (b3abcbd: dirty bizben record was killing the nightly
+  PERSIST step). DB now persisting again — all sources last_seen clustered 7/15.
+- **Follow-up on painting heal: NOT healed.** 95 painting rows still tier=null,
+  only 4 tiered; portfolio T1/T2 flat at 113/234. Root cause found: a **77-row
+  re-screen backlog** — active rows raw.relevant=true but tier=null that the
+  screen step never processed. Likely the NUL persist failures blocked the
+  nightly BEFORE the screen step for days, so untieredIds never drained. Some
+  painting rows also still show relevant=false w/ 7/15 last_seen (re-annotation
+  gap on rows last touched by a pre-keyword run) — those flip relevant on their
+  next scrape then need a screen pass.
+- **Shipped (in-lane automation):** source_health.js now flags the re-screen
+  backlog (🟠 when >40 relevant-but-untiered active rows) — the automated catch
+  for "criteria changed but rows never re-tiered." Verified: flags the current 77.
+- **FOR PM (owns pipeline; just fixed NUL):** confirm the next FULL nightly runs
+  the SCREEN step to completion and drains the 77 backlog (painting T1/T2 should
+  then rise above 113/234). If it doesn't drain, the screener isn't re-screening
+  untieredIds — a run_supabase/screener look (your lane). Auto-promote (ask a)
+  still 0 events / unbuilt.
