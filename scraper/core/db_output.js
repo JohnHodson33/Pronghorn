@@ -51,15 +51,20 @@ async function loadRelevanceFromDb() {
   };
 }
 
+// Postgres rejects NUL (\u0000) in text and jsonb — one dirty scraped string
+// poisons an entire insert chunk and kills the nightly run (bizben, 7/15).
+const stripNul = (s) => (typeof s === 'string' ? s.replace(/\u0000/g, '') : s);
+const sanitizeJson = (o) => JSON.parse(JSON.stringify(o ?? {}).replace(/\\u0000/g, ''));
+
 function toRow(l) {
   return {
     source_id:        l.source,
     external_id:      l.source_listing_id,
     url:              l.url,
-    name:             l.name,
-    description:      l.description,
-    industry_raw:     l.industry,
-    city:             l.location?.city ?? null,
+    name:             stripNul(l.name),
+    description:      stripNul(l.description),
+    industry_raw:     stripNul(l.industry),
+    city:             stripNul(l.location?.city ?? null),
     state:            l.location?.state ?? null,
     asking_price:     l.asking_price,
     gross_revenue:    l.gross_revenue,
@@ -68,12 +73,12 @@ function toRow(l) {
     implied_multiple: l.implied_multiple,
     multiple_flag:    !!l.multiple_flag,
     priority_state:   !!l.priority_state,
-    raw: {
+    raw: sanitizeJson({
       ...l.raw,
       relevant:      l.relevant ?? null,
       filter_reason: l.filter_reason ?? null,
       date_listed:   l.date_listed ?? null,
-    },
+    }),
   };
 }
 

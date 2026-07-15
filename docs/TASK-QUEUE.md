@@ -488,6 +488,30 @@ set) into your new chips UI as a small follow-up.
   (e) Exemplar fix done by PM: All Turf (a087c894) wrong link nulled;
   correct = Gary Wilson, Co-Founder Turf Masters Brands, Loganville GA —
   ALSO a PE-flag candidate (Turf Masters = roll-up), see PE item below.
+- 🔥🔥🔥 **CONTACT HIT-RATE PROGRAM (John 7/15 ~12:15 — "way too many blanks
+  to actually source off this"; PHONE > EMAIL priority):**
+  (Lane C) (a) **EMAIL PATTERN ENGINE (ships first — $0 marginal, PM
+  live-proved on treeprosaz.com: pattern={first}@, staff emails at 93-94
+  conf):** new tier-2.5 step — Hunter DOMAIN-SEARCH per company domain
+  (1 quota search) → store pattern + published emails on the company →
+  CONSTRUCT owner email from pattern + owner first/last → VERIFY via
+  Hunter verifier → only verified writes to owner_email (else
+  business_email w/ 'pattern-guess' provenance). Cache pattern per domain
+  forever. Backfill over every IDENTIFIED lead w/ domain + owner name.
+  (b) **PHONE (higher priority) — JOHN APPROVED THE SAMPLE 7/15 ~12:30:**
+  PM built the 49-lead file (38 tree care + 11 lawn care, named owners w/
+  addresses) → saved to John's Downloads as
+  pronghorn-skiptrace-sample-50.csv. AWAITING: John's Tracerfy signup
+  (account creation = his step) → he uploads the CSV OR sends
+  TRACERFY_API_KEY and a session runs it via their /trace API. Then:
+  measure hit rate + spot-check 10 numbers, report cost-per-verified-cell.
+  Tracerfy = $0.02/hit pay-as-you-go, no subscription, credits never
+  expire, bulk CSV + API — vs Apollo Basic $49/mo (~75 mobile credits,
+  ~8 credits/mobile in practice → effectively $0.50-1+/mobile).
+  ZoomInfo-class ($15-30K/yr) NOT cost-effective at this stage.
+  (c) published role-emails from domain-search (service@/accounting@)
+  store as business channels — useful for pattern + never owner channels
+  (role-mailbox guard already enforces).
 - 🔥🔥🔥 **US-PRESENCE VALIDATION + "TOO BIG" TIER (John 7/15 ~11:55 —
   Irrigation Excellence exemplar: Europe/S.America HQ, ~12-company group,
   slipped into a national irrigation list AND read as an attractive
