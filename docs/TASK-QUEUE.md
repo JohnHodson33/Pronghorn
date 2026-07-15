@@ -467,6 +467,28 @@ set) into your new chips UI as a small follow-up.
   inert, delete at leisure. Lane B: rules editor + "why drafted" line remain
   yours.
   --- original card ---
+- 🔥🔥 **PE-OWNERSHIP FLAG (John 7/15 ~11:20 — "PE-owned targets are not
+  good targets for us… at the very least a column to filter them out"):**
+  (Lane C) (a) add `pe_owned` boolean + `pe_owner` text to companies/leads
+  enrichment; DETECT during enrichment classification — site scrape + Exa
+  snippets carry the signals ("a portfolio company of…", "backed by…",
+  "acquired by [PE firm]", "[Firm] company"); AAFE's CIM showed a live
+  example (competitor "Acquired by Gemspring Capital"). (b) backfill pass
+  over existing enriched companies/leads (Claude over stored enrichment
+  jsonb + one Exa check for Platform-tier companies — PE ownership is most
+  likely exactly in the big ones). (c) PE-owned leads are EXCLUDED from
+  auto-enrich rules + auto-draft eligibility by default. (Lane B) (d)
+  pe_owned filter + badge on Companies/Enrichment; show pe_owner in the
+  tooltip/profile.
+- 🔥🔥 **COMPANIES TABLE FILTER/SORT OVERHAUL (John 7/15 ~11:20):** (Lane B)
+  (a) industry chips → a DROPDOWN (multi-select w/ counts) — chips won't
+  scale as industries grow; (b) **column-header dropdown filters** on the
+  list headers: owner-reach level (raw/basic/identified/contactable/full),
+  size tier, stage — click the header, pick values; (c) **sortable
+  est. Revenue + est. EBITDA columns** (asc/desc toggles on header click);
+  (d) keep pinnable URLs in sync with all of it (filters serialize to
+  params as today); (e) same pattern on Enrichment where headers overlap.
+  Mobile parity per standing rule.
 - 🔥 **ATTACHMENT UPLOADS >4.5MB FAIL ON PROD (PM found live 7/14):** Vercel
   caps request bodies at 4.5MB — the 22MB AAFE CIM bounced off the new
   upload route (FUNCTION_PAYLOAD_TOO_LARGE) even though the app allows
