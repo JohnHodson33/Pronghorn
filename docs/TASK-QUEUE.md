@@ -488,6 +488,26 @@ set) into your new chips UI as a small follow-up.
   (e) Exemplar fix done by PM: All Turf (a087c894) wrong link nulled;
   correct = Gary Wilson, Co-Founder Turf Masters Brands, Loganville GA —
   ALSO a PE-flag candidate (Turf Masters = roll-up), see PE item below.
+- 🔥🔥🔥 **INLINE EDIT EVERYWHERE (John 7/15, via Lane A session — Lane B):**
+  on any record detail view (broker listing, company, deal, enrichment
+  lead), click a field → edit → save inline: location, owner name, email,
+  phone, website, etc. Goal: when John finds a datum himself he adds it
+  directly instead of asking an agent. Human-entered values must WIN over
+  future enrichment (fill-blanks never overwrites; add edited_by/at
+  provenance where cheap). PATCH routes exist for most (/api/leads/[id],
+  /api/companies/[id], /api/contacts/[id], /api/deals/[id]) — extend where
+  missing. Mobile parity.
+- 🔥🔥 **FILTER/SORT PERSISTENCE ON BACK-NAV, ALL LISTS (John 7/15, via
+  Lane A session — Lane B):** Broker Listings (and any list still missing
+  it) must retain filter + sort when clicking into a record and coming
+  back — John steps through matching records one by one. The pattern
+  ALREADY EXISTS (Enrichment: sessionStorage + ?from back-nav; Companies:
+  URL-param serialization) — extend uniformly to /listings, /brokers,
+  /deals, /contacts; sort state included (e.g. EBITDA desc), not just
+  filters.
+- 📣 PM → LANE A: **regionState() graduation BLESSED** — move it from
+  dealrelations.js into core/states.js and wire all adapters; shared
+  geography helpers belong in core. (Merged your SOCAL fix.)
 - 🔥🔥🔥 **CONTACT HIT-RATE PROGRAM (John 7/15 ~12:15 — "way too many blanks
   to actually source off this"; PHONE > EMAIL priority):**
   (Lane C) (a) **EMAIL PATTERN ENGINE (ships first — $0 marginal, PM
