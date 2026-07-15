@@ -498,12 +498,17 @@ set) into your new chips UI as a small follow-up.
   Hunter verifier → only verified writes to owner_email (else
   business_email w/ 'pattern-guess' provenance). Cache pattern per domain
   forever. Backfill over every IDENTIFIED lead w/ domain + owner name.
-  (b) **PHONE (higher priority, needs John's ~$2 sample):** revive the
-  DEFERRED skip-trace decision — run Tracerfy pay-per-hit (~$0.02/rec) on
-  a 50-lead sample of named owners w/ addresses; measure hit rate +
-  spot-check accuracy; report cost-per-verified-cell vs Apollo
-  (~$49-99/mo, mobile credits) as step 2. ZoomInfo-class ($15-30K/yr) is
-  NOT cost-effective at this stage — revisit only if cheap tiers fail.
+  (b) **PHONE (higher priority) — JOHN APPROVED THE SAMPLE 7/15 ~12:30:**
+  PM built the 49-lead file (38 tree care + 11 lawn care, named owners w/
+  addresses) → saved to John's Downloads as
+  pronghorn-skiptrace-sample-50.csv. AWAITING: John's Tracerfy signup
+  (account creation = his step) → he uploads the CSV OR sends
+  TRACERFY_API_KEY and a session runs it via their /trace API. Then:
+  measure hit rate + spot-check 10 numbers, report cost-per-verified-cell.
+  Tracerfy = $0.02/hit pay-as-you-go, no subscription, credits never
+  expire, bulk CSV + API — vs Apollo Basic $49/mo (~75 mobile credits,
+  ~8 credits/mobile in practice → effectively $0.50-1+/mobile).
+  ZoomInfo-class ($15-30K/yr) NOT cost-effective at this stage.
   (c) published role-emails from domain-search (service@/accounting@)
   store as business channels — useful for pattern + never owner channels
   (role-mailbox guard already enforces).
