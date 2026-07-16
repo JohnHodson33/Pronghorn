@@ -99,6 +99,7 @@ const nav: { section: string; items: { label: string; href: string | null }[] }[
     section: "Proprietary Sourcing",
     items: [
       { label: "Proprietary Outreach", href: "/list-building" },
+      { label: "River Guides", href: "/river-guides" },
       { label: "Enrichment", href: "/enrichment" },
       { label: "Size Estimation", href: "/size-estimation" },
     ],
