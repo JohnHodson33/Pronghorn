@@ -2,9 +2,50 @@
 
 ## 🤝 HANDOFF (keep current — replacement session resumes from this)
 
-**State (2026-07-13 ~14:00, session ACTIVE):** Worktree
-`C:\Users\johnd\Pronghorn-integrations`, branch `lane/integrations`. Migrations
-0004–0010 LIVE; **0011+0012+0013+0014 pending PM — apply in order.**
+**State (2026-07-16 ~01:00, replacement session ACTIVE — resumed post-7/15
+context death):** Worktree `C:\Users\johnd\Pronghorn-integrations`, branch
+`lane/integrations`, merged with main (PM rollover: durable channel =
+TASK-QUEUE + branch polling, NO session ids). **Migrations 0011–0014 APPLIED
++ verified live (John ran 7/16 am); 0015 (shortlist + toobig threshold)
+AUTHORED — John runs it next.** First digest receipt row seeded
+(receipt-only, zero rules = zero spend). GH secrets set — runners
+self-driving. ⚠️ AUTO-DRAFTING still PAUSED (sample card 611290ff STILL
+unreviewed — the unlock).
+
+**SHIPPED 7/16 (this session, through b48d05d + flags backfill running):**
+(1) TRACERFY SKIP-TRACE CASCADE TIER (44abd46, John's #1): enrich/skiptrace.js
+batch person-mode only (landlord trap structurally impossible), cascade-wired
+in run_jobs after Hunter, $0.02/hit metered service 'tracerfy', DNC flags
+informational-only + scrub OUT of cascade (--scrub = manual tool). Debug trail
+in the commit (415 on JSON→multipart; fixed result schema→street+name match;
+float-coerced zip kills matching; PM's 7/15 misses had no provenance → pool
+recycled known-misses). Both PM queues imported: 136 rows stamped, +3 owner
+phones recovered, cost ledger trued to $1.60. Remaining eligible pool is now
+honest (~1 lead); tier fires on new leads automatically.
+(2) LINKEDIN OVERHAUL COMPLETE (44abd46+b48d05d, John's #2): v3 matcher =
+Serper site:linkedin.com/in + Claude 2-corroboration verify (company AND
+geo/title), compound names split, code-enforced acceptance. VERIFIED-ONLY
+COUNTING everywhere (completeness ladder, isComplete, draft eligibility,
+promotion). FULL RE-AUDIT: 69 links → 45 verified (1 replaced) / 24 nulled;
+contacts resynced (29 kept/11 updated/24 nulled); 20-sample verdicts logged.
+(3) PE/US/TOO-BIG (b48d05d): tier-1 detects pe_owned/pe_owner + hq_us +
+too_big_signals; hq_us=false→off_target; TOO BIG tier above Platform
+(editable toobig_min_ebitda seed $10M, 0015) + qualitative override; HARD
+exclusions from auto-enrich rules + auto-draft; served on both list APIs.
+flags_backfill.js running over ~300 enriched leads (background).
+(4) SHORTLIST BACKEND (b48d05d): 0015 migration + GET/POST/DELETE
+/api/companies/[id]/shortlist + shortlist[] on /api/companies +
+?shortlisted= filter. Lane B renders the ★.
+
+**NEXT (in order):** email pattern engine tier-2.5 (Hunter domain-search →
+construct+verify owner email, $0 marginal) · size model amendment 4
+(payroll-% THE input, flat 20% margin, CPI factors, Fencing industry +
+ppp_payroll_pct seeds) · flags-backfill results check · broker inquiry
+template (John's verbatim copy, inquiry_profiles 774f21ce identity).
+
+--- prior session's handoff (7/13) below for history ---
+**State (2026-07-13 ~14:00):** Migrations
+0004–0010 LIVE; 0011+0012+0013+0014 were pending PM.
 ⚠️ AUTO-DRAFTING PAUSED (John 7/13 ~11:15): leadgen.yml step if:false; never
 draft locally; rules-gated rewrite shipped (75f9a5e), 5 tailored samples on
 /improvements (card 611290ff) — resume ONLY on John's approval + first
