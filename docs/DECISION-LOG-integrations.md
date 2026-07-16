@@ -37,8 +37,18 @@ flags_backfill.js running over ~300 enriched leads (background).
 /api/companies/[id]/shortlist + shortlist[] on /api/companies +
 ?shortlisted= filter. Lane B renders the ★.
 
-**RIVER GUIDES (John's direct directive 7/16 ~00:45 — built overnight, he
-reviews in the morning):** third sourcing channel fully built on branch —
+**RIVER GUIDES — LIVE END-TO-END (7/16 ~12:10):** John's SQL pass applied
+0015+0016 (the PM-authored 0016 is canonical — vertical_raw/industry_group/
+contact jsonb; my workers adapted). SEEDED: 433/433 rows, 0 errors; 236
+contacts (role river_guide) + 236 former companies in the CRM. First
+batches: 13/30 CALL_NOW verified · 14/25 TBD resolved w/ sources · tier-1
+running. 0017_companies_pe.sql authored (pe columns didn't survive into
+applied 0016) — John's next SQL pass. Discover bar needs SERPER+ANTHROPIC
+in web env. river-guides.yml nightly keeps the lifecycle churning.
+EMAIL PATTERN ENGINE also SHIPPED + first pass ran (+3 verified owner
+emails at 100, 7 guesses correctly held as business-only).
+
+**Original build notes (7/16 overnight):** third sourcing channel fully built on branch —
 migration 0016 (river_guides table per spec §4) + 4 workers
 (scraper/riverguides/: ingest / verify_status / resolve_names / enrich_t1)
 + /api/river-guides + river-guides.yml nightly. Dry-run validated against

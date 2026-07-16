@@ -64,11 +64,12 @@ async function main() {
     try {
       const nm = nameParts(g.full_name);
       if (!nm) continue;
+      const contact = { ...(g.contact || {}) }; // live schema: contact jsonb {email, phone, linkedin_url}
       const patch = {};
       const status = g.company_website_status || 'NOT_FOUND';
 
       // email: domain-first routing
-      if (!g.email && process.env.HUNTER_API_KEY) {
+      if (!contact.email && process.env.HUNTER_API_KEY) {
         const domains = [];
         if (status === 'LIVE') domains.push(domainOf(g.company_website));
         if (status === 'REDIRECTS' || g.exit_status === 'EMPLOYED') domains.push(domainOf(g.acquirer_website));
@@ -76,21 +77,22 @@ async function main() {
           try {
             const r = await hunterFind(d, nm); hunterUsed++;
             await recordUsage('hunter', 'email_finding', 1, 0, { river_guide: g.deal_id, domain: d });
-            if (r.email) { patch.email = r.email; emails++; break; }
+            if (r.email) { contact.email = r.email; emails++; break; }
           } catch (e) { if (e.response?.status === 429) break; }
         }
       }
 
       // linkedin: verified matcher (LinkedIn-first routes rely on this entirely)
-      if (!g.linkedin_url) {
+      if (!contact.linkedin_url) {
         const v = await findVerifiedLinkedin(anthropic, {
           id: g.deal_id, name: g.their_company, owner_name: g.full_name,
           city: g.location_city, state: g.location_state, industry_verified: g.industry,
         }, { industry: g.industry }, log);
-        if (v) { patch.linkedin_url = v.url; linkedins++; }
+        if (v) { contact.linkedin_url = v.url; linkedins++; }
       }
 
-      const gotAnything = patch.email || patch.linkedin_url || g.email || g.linkedin_url;
+      const gotAnything = contact.email || contact.linkedin_url || contact.phone;
+      patch.contact = contact;
       patch.enrichment_status = gotAnything ? 'T1_DONE' : 'NEEDS_PAID';
       patch.updated_at = new Date().toISOString();
       if (!gotAnything) toPaid++;
@@ -101,14 +103,14 @@ async function main() {
       done++;
 
       // sync onto the CRM contact (fill blanks only)
-      if (g.contact_id && (patch.email || patch.linkedin_url)) {
+      if (g.contact_id && (contact.email || contact.linkedin_url)) {
         const { data: c } = await supabase.from('contacts').select('email,linkedin').eq('id', g.contact_id).maybeSingle();
         const cPatch = {};
-        if (patch.email && !c?.email) cPatch.email = patch.email;
-        if (patch.linkedin_url && !c?.linkedin) cPatch.linkedin = patch.linkedin_url;
+        if (contact.email && !c?.email) cPatch.email = contact.email;
+        if (contact.linkedin_url && !c?.linkedin) cPatch.linkedin = contact.linkedin_url;
         if (Object.keys(cPatch).length) await supabase.from('contacts').update(cPatch).eq('id', g.contact_id);
       }
-      log.info(`  ${gotAnything ? '✓' : '→paid'} ${g.full_name} (${status})${patch.email ? ' email ' + patch.email : ''}${patch.linkedin_url ? ' li' : ''}`);
+      log.info(`  ${gotAnything ? '✓' : '→paid'} ${g.full_name} (${status})${contact.email ? ' email ' + contact.email : ''}${contact.linkedin_url ? ' li' : ''}`);
     } catch (e) { log.error(`  ${g.full_name}: ${e.message}`); }
   }
 
