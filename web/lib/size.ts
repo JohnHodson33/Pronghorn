@@ -21,7 +21,7 @@
 import benchmarks from "./size-benchmarks.json";
 
 export type SizeConfidence = "high" | "medium" | "low";
-export type SizeTier = "platform" | "tuckin" | "toosmall";
+export type SizeTier = "platform" | "tuckin" | "toosmall" | "too_big";
 
 export interface SizeEstimate {
   tier: SizeTier;
@@ -38,6 +38,7 @@ export interface Thresholds {
   platform_min_revenue: number | null;  // null = EBITDA-only test
   toosmall_max_ebitda: number;
   toosmall_max_revenue: number | null;
+  toobig_min_ebitda?: number;           // TOO BIG above platform (John 7/15; seed $10M)
 }
 export interface SizeModel { benchmarks: Record<string, Bench>; thresholds: Thresholds }
 
@@ -46,6 +47,7 @@ export const DEFAULT_THRESHOLDS: Thresholds = {
   platform_min_revenue: null,
   toosmall_max_ebitda: 200_000,     // below tuck-in floor even optimistically
   toosmall_max_revenue: null,
+  toobig_min_ebitda: 10_000_000,    // conglomerate territory — tagged, filterable
 };
 
 interface SizeSignals {
@@ -110,14 +112,15 @@ export function sizeEstimate(
     Math.round(revenue[0] * b.ebitda_margin[0]),
     Math.round(revenue[1] * b.ebitda_margin[1]),
   ];
-  // PLATFORM: optimistic end clears the bar in EBITDA terms OR (when set)
-  // revenue terms. TOO SMALL: optimistic end under the floor on every set
-  // metric. Everything between = TUCK-IN.
+  // TOO BIG first (conservative end must clear it — no accidental demotion of
+  // a wide range), then PLATFORM on the optimistic end (EBITDA OR revenue when
+  // set), TOO SMALL under the floor on every set metric, else TUCK-IN.
+  const isTooBig = ebitda[0] >= (t.toobig_min_ebitda ?? 10_000_000);
   const isPlatform = ebitda[1] >= t.platform_min_ebitda ||
     (t.platform_min_revenue != null && revenue[1] >= t.platform_min_revenue);
   const isTooSmall = !isPlatform && ebitda[1] < t.toosmall_max_ebitda &&
     (t.toosmall_max_revenue == null || revenue[1] < t.toosmall_max_revenue);
-  const tier: SizeTier = isPlatform ? "platform" : isTooSmall ? "toosmall" : "tuckin";
+  const tier: SizeTier = isTooBig ? "too_big" : isPlatform ? "platform" : isTooSmall ? "toosmall" : "tuckin";
   return {
     tier,
     employees: [Math.round(emp.range[0]), Math.round(emp.range[1])],
@@ -127,7 +130,19 @@ export function sizeEstimate(
   };
 }
 
-export const TIERS: (SizeTier | "unsized")[] = ["platform", "tuckin", "toosmall", "unsized"];
+export const TIERS: (SizeTier | "unsized")[] = ["platform", "tuckin", "toosmall", "too_big", "unsized"];
 export const TIER_LABELS: Record<string, string> = {
-  platform: "Platform", tuckin: "Tuck-in", toosmall: "Too small", unsized: "Unsized",
+  platform: "Platform", tuckin: "Tuck-in", toosmall: "Too small", too_big: "Too big", unsized: "Unsized",
 };
+
+/** Qualitative bigness override: conglomerate signals detected during
+ *  enrichment (multi-continent, 'group of companies', franchise networks)
+ *  mark a company TOO BIG even with no numeric estimate (John 7/15 —
+ *  "sizing can't rely on PPP alone"). */
+export function applyQualitativeFlags(size: SizeEstimate | null, enrichment?: { too_big?: boolean | null } | null): SizeEstimate | null {
+  if (enrichment?.too_big !== true) return size;
+  if (!size) {
+    return { tier: "too_big", employees: [0, 0], revenue: [0, 0], ebitda: [0, 0], confidence: "low", basis: "conglomerate signals (no numeric estimate)" };
+  }
+  return size.tier === "too_big" ? size : { ...size, tier: "too_big", basis: `${size.basis} + conglomerate signals` };
+}

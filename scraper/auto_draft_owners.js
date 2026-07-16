@@ -75,7 +75,10 @@ function extractFacts(lead) {
 }
 
 function completeness(owner, lead) {
-  const channels = [owner?.email, lead?.owner_phone, lead?.owner_linkedin].filter(Boolean).length;
+  // verified-only LinkedIn counting (John 7/15) — outreach eligibility must
+  // never rest on an unverified link
+  const li = lead?.owner_linkedin && lead?.enrichment?.linkedin_verified === true ? lead.owner_linkedin : null;
+  const channels = [owner?.email, lead?.owner_phone, li].filter(Boolean).length;
   if (owner?.email && channels >= 2) return 'full';
   if (owner?.email) return 'contactable';
   return 'identified';
@@ -114,6 +117,9 @@ async function loadTargets({ includeDrafted = false } = {}) {
     const owner = (c.contacts || []).find((ct) => ct.role === 'owner' && ct.email && !GENERIC.test(ct.email) && !ROLE_MBOX(ct.email));
     if (!owner) continue;
     const lead = leadByCompany.get(c.id) || null;
+    // hard exclusions (John 7/15): PE-owned / too-big / non-US never drafted
+    const le = lead?.enrichment || {};
+    if (le.pe_owned === true || le.too_big === true || le.hq_us === false) continue;
     targets.push({
       company: c, owner, lead,
       industry: lead?.industry_verified || c.industry,

@@ -64,14 +64,16 @@ async function main() {
     // CONTACT-CARRY (John 7/12, Sage Tree Care case): orphaned owner CHANNELS
     // without a name must still reach the company — as an Unknown-owner
     // contact, never dropped.
-    const hasChannels = l.owner_email || l.owner_phone || l.owner_linkedin;
+    // LinkedIn flows to contacts ONLY when verified (John 7/15: wrong > none)
+    const verifiedLi = l.owner_linkedin && l.enrichment?.linkedin_verified === true ? l.owner_linkedin : null;
+    const hasChannels = l.owner_email || l.owner_phone || verifiedLi;
     const { data: exOwner } = (l.owner_name || hasChannels) ? await supabase.from('contacts')
       .select('id').eq('company_id', companyId).eq('role', 'owner').maybeSingle() : { data: true };
     if (!exOwner) {
       const { error: ctErr } = await supabase.from('contacts').insert({
         company_id: companyId, role: 'owner',
         name: l.owner_name || `Unknown owner (${l.name})`,
-        email: l.owner_email, phone: l.owner_phone, linkedin: l.owner_linkedin,
+        email: l.owner_email, phone: l.owner_phone, linkedin: verifiedLi,
         notes: l.owner_name
           ? `Owner of ${l.name} · from proprietary list-building enrichment`
           : `Owner channels found for ${l.name} but name unknown — VA/tier-2 fills the name`,

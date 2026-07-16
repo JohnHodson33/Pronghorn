@@ -13,11 +13,16 @@ export type LeadChannels = {
   owner_linkedin?: string | null;
   website?: string | null;
   city?: string | null;
+  // John 7/15 ("wrong > none"): a LinkedIn link counts as an owner channel
+  // ONLY when it passed 2-corroboration verification. Unverified links stay
+  // visible but greyed, and never advance completeness or outreach eligibility.
+  enrichment?: { linkedin_verified?: boolean | null } | null;
 };
 
 export function completeness(l: LeadChannels): Completeness {
-  const channels = [l.owner_email, l.owner_phone, l.owner_linkedin].filter(Boolean).length;
-  if (l.owner_name && l.owner_email && (l.owner_phone || l.owner_linkedin)) return "full";
+  const linkedin = l.owner_linkedin && l.enrichment?.linkedin_verified === true ? l.owner_linkedin : null;
+  const channels = [l.owner_email, l.owner_phone, linkedin].filter(Boolean).length;
+  if (l.owner_name && l.owner_email && (l.owner_phone || linkedin)) return "full";
   if (l.owner_name && channels >= 1) return "contactable";
   if (l.owner_name) return "identified";
   if (l.website || l.city) return "basic";

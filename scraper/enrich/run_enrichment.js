@@ -44,7 +44,10 @@ OUTPUT — valid JSON only:
  "city": "HQ city if stated, else null", "state": "2-letter state if stated, else null",
  "industry_verified": "one value from the list", "industry_confidence": "high|medium|low",
  "on_target": true/false,
- "years_in_business": 12 or null, "pe_backed": true/false/null,
+ "years_in_business": 12 or null,
+ "pe_owned": true/false/null, "pe_owner": "the PE firm/platform named in phrases like 'a portfolio company of X', 'backed by X', 'acquired by X', 'an X company' — VERBATIM from the text, else null",
+ "hq_us": true/false/"uncertain" — is this company's headquarters/primary operation in the US? (address, phone formats, service areas, 'offices in' lists),
+ "too_big_signals": ["conglomerate markers found VERBATIM: multi-continent presence, 'group of companies', N subsidiaries, franchise network, 'offices in <many cities>' — empty array if none"],
  "size_signals": {"employees_stated": 25 or null, "crew_count": 4 or null, "fleet_size": 10 or null, "locations": 2 or null},
  "overview": "1-2 sentences: what the company does, service mix, recurring-revenue signals",
  "signals": ["notable acquisition-relevant facts: owner near retirement, second location, fleet size, family-owned, hiring, awards"],
@@ -248,6 +251,15 @@ async function main() {
         const { snapIndustry } = require('../core/industry_taxonomy');
         patch.industry_verified = snapIndustry(out.industry_verified); // canonical label (no chip fragmentation)
         patch.off_target = out.on_target === false;
+      }
+      // Sourcing-screen flags (John 7/15): non-US HQ → off_target with reason;
+      // PE-owned + conglomerate signals persist in jsonb and gate automation.
+      if (out.hq_us === false) {
+        patch.off_target = true;
+        out.off_target_reason = 'non-US headquarters';
+      }
+      if (Array.isArray(out.too_big_signals) && out.too_big_signals.length) {
+        out.too_big = true; // qualitative bigness — tier math also honors this
       }
       const { error: uErr } = await supabase.from('leads').update(patch).eq('id', lead.id);
       if (uErr) { log.error(`  ${lead.name}: ${uErr.message}`); continue; }

@@ -8,7 +8,7 @@
 import { NextResponse } from "next/server";
 import { hasDb, serverDb } from "@/lib/db";
 import { companyCompleteness, LEVELS, type Completeness } from "@/lib/completeness";
-import { sizeEstimate, TIERS } from "@/lib/size";
+import { sizeEstimate, applyQualitativeFlags, TIERS } from "@/lib/size";
 import { loadSizeModel } from "@/lib/size-model";
 
 export const dynamic = "force-dynamic";
@@ -42,19 +42,31 @@ export async function GET(req: Request) {
   const leadByCompany = new Map((leadRows ?? []).map((l) => [l.company_id as string, l]));
   const model = await loadSizeModel();
 
+  // shortlist ★ state (0015; tolerated absent pre-migration)
+  const shortlistRes = await db.from("company_shortlist").select("company_id, person, note, created_at");
+  const shortlistByCompany = new Map<string, { person: string; note: string | null; created_at: string }[]>();
+  for (const s of shortlistRes.data ?? []) {
+    const arr = shortlistByCompany.get(s.company_id as string) ?? [];
+    arr.push({ person: s.person as string, note: s.note as string | null, created_at: s.created_at as string });
+    shortlistByCompany.set(s.company_id as string, arr);
+  }
+
   const levelFilter = url.searchParams.get("level") as Completeness | null;
   let companies = (data ?? []).map((c) => {
     const { contacts, ...rest } = c as typeof c & { contacts: unknown };
     const lead = leadByCompany.get(c.id as string);
+    const leadEnrich = (lead?.enrichment ?? null) as { size_signals?: Record<string, unknown>; too_big?: boolean; pe_owned?: boolean; pe_owner?: string } | null;
     const size = lead
-      ? sizeEstimate(
+      ? applyQualitativeFlags(sizeEstimate(
           (lead.industry_verified as string | null) ?? (c.industry as string | null),
-          (lead.enrichment as { size_signals?: Record<string, unknown> } | null)?.size_signals,
+          leadEnrich?.size_signals,
           lead.review_count as number | null,
           model,
-        )
+        ), leadEnrich)
       : null;
     return {
+      pe_owned: leadEnrich?.pe_owned === true,
+      pe_owner: leadEnrich?.pe_owner ?? null,
       ...rest,
       ownerContactCount: (c.contacts ?? []).filter((x) => (x.role ?? "").toLowerCase() === "owner").length,
       completeness: companyCompleteness(c),
@@ -62,6 +74,7 @@ export async function GET(req: Request) {
       // always-present columns (John amendment 3): actuals win over estimates
       est_revenue: size?.revenue ?? null,
       est_ebitda: size?.ebitda ?? null,
+      shortlist: shortlistByCompany.get(c.id as string) ?? [],
     };
   });
 
@@ -78,6 +91,12 @@ export async function GET(req: Request) {
   const tierFilter = url.searchParams.get("tier");
   if (tierFilter && TIERS.includes(tierFilter as (typeof TIERS)[number])) {
     companies = companies.filter((c) => c.size_tier === tierFilter);
+  }
+  // ?shortlisted=any|John|Tom — "★ Shortlisted (mine / Tom's / any)"
+  const shortlisted = url.searchParams.get("shortlisted");
+  if (shortlisted) {
+    companies = companies.filter((c) =>
+      shortlisted === "any" ? c.shortlist.length > 0 : c.shortlist.some((s) => s.person === shortlisted));
   }
   // most-complete first, platform floats above within a level (outreach order)
   const tierRank = (t: string) => ({ platform: 0, tuckin: 1, toosmall: 3, unsized: 2 })[t] ?? 2;
