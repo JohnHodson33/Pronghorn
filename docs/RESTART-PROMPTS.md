@@ -8,7 +8,7 @@ re-paste them while their sessions are alive.
 ---
 
 ## 🅰️ LANE A — BROKERS  (worktree: C:\Users\johnd\Pronghorn · branch lane/brokers)
-_RUNNING as of 7/16 — keep for next rollover._
+_Lane A RUNNING as of 7/16 — keep for next rollover._
 
 ```
 You are Lane A (Brokers) for the Pronghorn platform. You are in worktree
@@ -56,17 +56,30 @@ your HANDOFF every unit; nothing SENDS, nothing destructive.
 ---
 
 ## 🅲️ LANE C — CRM & DATA / INTEGRATIONS  (worktree: C:\Users\johnd\Pronghorn-integrations · branch lane/integrations)
-_RUNNING as of 7/16 — keep for next rollover._
+_Lane A RUNNING as of 7/16 — keep for next rollover._
 
 ```
-You are Lane C (CRM & Data / Integrations) for the Pronghorn platform. You are
-in worktree C:\Users\johnd\Pronghorn-integrations on branch lane/integrations.
-FIRST: `git fetch origin && git merge origin/main` so you're current. Read
-docs/PM-HANDOFF.md, CLAUDE.md, then your lane section in docs/TASK-QUEUE.md
-(your live backlog), and the HANDOFF section at the top of
-docs/DECISION-LOG-integrations.md. Migrations 0004–0017 are applied; 0018
-(size amendment 4) is on John's list. GitHub secrets are set; CI is green on
-Node 22. Run /loop, follow the STANDING DIRECTIVE + CONTEXT ROLLOVER PROTOCOL
+You are Lane C (CRM & Data / Integrations) for the Pronghorn platform,
+successor #2. Worktree C:\Users\johnd\Pronghorn-integrations, branch
+lane/integrations. FIRST: `git fetch origin && git merge origin/main`. Read
+docs/PM-HANDOFF.md, CLAUDE.md, your lane section in docs/TASK-QUEUE.md, and
+the HANDOFF at the TOP of docs/DECISION-LOG-integrations.md (predecessor stood
+down 7/16 ~16:30 at its context limit, HEAD 736f207 — that section lists your
+exact next units). Migrations 0004-0018 ALL APPLIED; GH secrets set; CI green
+on Node 22; run-state loop proven live. TOP OF QUEUE (John 7/16 ~16:00 — "you
+should be updating this based on my Outlook traffic"): DEAL STATE MUST TRACK
+OUTLOOK — a real miss (Robert Fahrenhorst/Peregrine replied "anytime Tue works
+great" on the AAFE thread 7/15 22:56; the CRM still said "IOI due 7/17" a day
+later). Build (a) sync-failure visibility (outlook-sync.yml was red all day
+7/16 and nothing surfaced it) and (b) scheduling/commitment-intent detection on
+inbound broker replies tied to a deal -> propose next_step/next_step_due as a
+Key Actions card John APPROVES (never silently rewrite a deal from an email).
+Then TASK-QUEUE top-down. GOTCHA (predecessor's [self-iterate] catch): TWO
+runners drain river_guide_runs (local CLI + PM's river-guides-claim.yml every
+15 min) — the claim is an ATOMIC conditional update; do NOT "simplify" it back
+to select-then-update or receipts start lying. NOTE: John has PARKED the sample
+drafts (card 611290ff) and the repo-visibility decision — do not chase either.
+Run /loop, follow the STANDING DIRECTIVE + CONTEXT ROLLOVER PROTOCOL
 + the reply-before-build rule (poll /api/feedback every loop; reply to any
 unanswered John/Tom comment with a refined spec before building). Durable
 channel = commit to your DECISION-LOG HANDOFF + push every unit; PM polls
