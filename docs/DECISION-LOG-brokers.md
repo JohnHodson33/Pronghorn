@@ -1076,3 +1076,28 @@ post-cooldown or via nightly session). NEXT: bbf office-broker capture
 (detail pages carry office+phone, verified 7/13); murphy/hedgestone/vr/
 businessesforsale broker probes; watch nightly for painting-heal + first
 nightly auto-promote receipt. Queue: TASK-QUEUE Lane A. Drift alerting live.
+
+## 2026-07-16 — CI FIXED: nightly-scrape 3-day failure root-caused (Node 20 vs supabase WebSocket)
+- (PM top item.) Pulled run 29508583886 logs via API: "Run pipeline" died with
+  **"Error: Node.js detected but native WebSocket not found"** — supabase-js
+  realtime now requires the native WebSocket that ships in Node 22+; workflows
+  pinned node-version "20" (local = Node 24, which is why only CI broke).
+- **Fix: node-version 20 → 22 in ALL 8 workflows** (.github/workflows is Lane
+  A-owned) — incl. the failing Enrichment Jobs (same root cause, no 📣 needed).
+- **Verified:** workflow_dispatched source-quality on lane/brokers (read-only,
+  same Node+supabase path) → run 29523089237 **completed SUCCESS**. Then
+  dispatched nightly-scrape on lane/brokers (long run — result checked next
+  iteration). PM: merge to main so the 06:00 cron picks up the fix.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~09:45: branch synced + pushed. SHIPPED: CI Node 22
+fix all 8 workflows (WebSocket root cause, verified green via dispatched
+source-quality run); earlier today: auto_promote LIVE (42 pursuits, nightly-
+wired), firm-level brokers + fcbb backfill (73 offices/829 linked),
+regionState→core. IN FLIGHT: nightly-scrape test dispatch on lane/brokers —
+CHECK ITS RESULT next iteration (api: workflows/nightly-scrape.yml/runs?branch=
+lane%2Fbrokers). BLOCKED: bizbuysell Listed-By (Akamai). NEXT: bbf office-broker
+detail enrichment (spec in 7/16 restart entry); murphy/hedgestone/vr/
+businessesforsale broker probes; TASK-QUEUE lane items (delisting/freshness
+already live via mark_delisted). gh CLI absent — use API w/ credential-manager
+token (works).
