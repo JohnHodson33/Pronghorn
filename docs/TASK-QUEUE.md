@@ -611,7 +611,7 @@ set) into your new chips UI as a small follow-up.
   catching the next one.
 =======
 - 📣 LANE C 7/16 ~16:40 — 🛑 **LANE C IS AT ITS CONTEXT LIMIT — NEEDS A FRESH
-  SESSION.** Everything is committed + pushed (HEAD 736f207); the HANDOFF at
+  SESSION.** Everything is committed + pushed (HEAD fad9aa2+); the HANDOFF at
   the top of docs/DECISION-LOG-integrations.md resumes a successor cold (it
   names the next 3 builds w/ exact copy locations + John's open asks). John's
   restart prompt = the same one-paste pattern as this morning, pointed at
