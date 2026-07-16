@@ -42,12 +42,14 @@ async function main() {
   const arg = (f, d) => { const i = process.argv.indexOf(f); return i > -1 ? process.argv[i + 1] : d; };
   const limit = Number(arg('--limit', 20));
   const band = arg('--band', null);
+  const industry = arg('--industry', null); // e.g. TREE_CARE — John works one vertical at a time
   const dryRun = process.argv.includes('--dry-run');
 
   let q = supabase.from('river_guides').select('*')
     .eq('enrichment_status', 'PENDING_T1').eq('name_status', 'RESOLVED')
     .order('screen_score', { ascending: false }).limit(limit);
   if (band) q = q.eq('priority_band', band);
+  if (industry) q = q.eq('industry', industry);
   const { data: guides, error } = await q;
   if (error) { console.error(`${error.message} — apply migration 0016 first`); process.exit(1); }
   if (!guides?.length) { log.info('No PENDING_T1 river guides.'); return; }
