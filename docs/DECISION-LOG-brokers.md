@@ -1276,3 +1276,33 @@ fix. IN FLIGHT: bizmls office run (task bwg177xl5 — config enrich-enabled,
 reuses bbf.js code; verify offices land). NEXT: opportunistic new-source hunt
 (frontier mostly closed: NV/GA/NM aggregator-dominated, TX-assoc + FL-green =
 mirrors — don't repeat) / TASK-QUEUE SELF-ITERATE.
+
+## 2026-07-16 — bizmls 0/39 diagnosed → enrich_folder fix (opposite outcome to tupelo)
+- bizmls office run returned **0 enriched / 0 errors** — fetches succeeded but
+  the block never matched. Diagnosed instead of assuming it was another
+  structural dead end (as tupelo turned out to be):
+  - The **national BIZMLS folder's detail template omits the contact block**
+    (no BROKER/ASSOC, no ASSOCIATE, no Agent Direct — though disp_color confirms
+    it IS the detail page).
+  - But the LIST_NUMBERs are BBF-prefixed, and **the same ids DO render the
+    block under folder=bbfnew** — verified on 2 (both → SUNBELT BUSINESS
+    BROKERS OF SOUTH FLORIDA). So bizmls listings ARE enrichable.
+- **Fix: `enrich_folder` config option** — the detail-fetch folder is now
+  independent of the searched folder; bizmls sets enrich_folder=bbfnew. Re-run
+  in flight.
+- Worth noting the contrast: identical symptom (0 enriched) as tupelomarket, but
+  opposite cause — tupelo = data genuinely absent (disabled), bizmls = we were
+  asking the wrong folder (fixed). Measuring each one is what separated them.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~16:15: branch synced + pushed. CI Node-22 merged to
+main (06:00 cron self-drives). IN FLIGHT: bizmls re-run w/ enrich_folder=bbfnew
+(task bd7i121m2) — verify offices land; if still 0, probe whether the bizmls
+targets' ids exist in bbfnew. BROKER SWEEP: gap list 9→3, all residuals
+structural + documented (bizbuysell=Akamai, hedgestone=form-gated,
+tupelomarket=measured 0/90, disabled). Coverage 39%, 21,965 listings, T1 126/T2
+248, backlog 37, all 30 green. SHIPPED today: murphy (96/100, 59 agents), vr
+(89/100, 33 agents, 22 emails), bbf (113/41), fcbb (73/829), auto_promote LIVE +
+self-driving (45 events), regionState→core, CI fix, tupelo measured+disabled.
+NEXT: TASK-QUEUE SELF-ITERATE / opportunistic new-source hunt (frontier mostly
+closed — don't re-probe NV/GA/NM/TX-assoc/FL-green).

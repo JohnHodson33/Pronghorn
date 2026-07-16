@@ -76,9 +76,10 @@
       "entry": "https://bizmls.com/business-search.asp",
       "exclude_states": ["FL"],
       "enrich_details": true,
+      "enrich_folder": "bbfnew",
       "enrich_min_cash_flow": 300000,
       "max_detail_enrich": 80,
-      "_comment": "National bizmls member search — non-FL inventory (TX-heavy). FL excluded: bbf source is authoritative there."
+      "_comment": "National bizmls member search — non-FL inventory (TX-heavy). FL excluded: bbf source is authoritative there. enrich_folder=bbfnew: the BIZMLS detail template omits the broker block, but the same LIST_NUMBERs render it under bbfnew (verified 7/16)."
     },
     "murphy": {
       "enabled": true,

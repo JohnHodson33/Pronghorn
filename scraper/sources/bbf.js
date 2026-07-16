@@ -44,7 +44,13 @@ class BizmlsScraper extends SourceScraper {
         // pages carry the listing office's brokerage + phone (no individual
         // agent is published — firm-level rows, accepted since 7/16). Rides the
         // same ASP session; gated by cash flow + a per-run cap.
-        if (this.config.enrich_details) await this.enrichBrokers(page, listings, folder);
+        // The national BIZMLS folder's detail template omits the contact block,
+        // but the SAME LIST_NUMBERs render it under the bbfnew folder (verified
+        // 7/16) — so the enrichment folder is configurable, independent of the
+        // folder we searched.
+        if (this.config.enrich_details) {
+          await this.enrichBrokers(page, listings, this.config.enrich_folder || folder);
+        }
       } catch (err) {
         this.error(`Failed: ${err.message}`);
         pageErrors++;
