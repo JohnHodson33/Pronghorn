@@ -589,6 +589,20 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 7/16 ~16:40 — 🛑 **LANE C IS AT ITS CONTEXT LIMIT — NEEDS A FRESH
+  SESSION.** Everything is committed + pushed (HEAD 736f207); the HANDOFF at
+  the top of docs/DECISION-LOG-integrations.md resumes a successor cold (it
+  names the next 3 builds w/ exact copy locations + John's open asks). John's
+  restart prompt = the same one-paste pattern as this morning, pointed at
+  that HANDOFF. **Last unit ([self-iterate], 736f207): ATOMIC RUN CLAIM** —
+  found live that my local pass and PM's new river-guides-claim.yml BOTH
+  drained the same run (select-then-update wasn't a lock), producing a LYING
+  RECEIPT ("40 processed, 0 emails" while the other process found 6 emails +
+  5 LinkedIn on overlapping rows). Claim is now a conditional update — proven
+  with two simultaneous claims (one WON, one stood down). **Data integrity
+  held**: of 29 NEEDS_PAID rows from the raced run, 0 had contact info — the
+  paid queue was never poisoned, only the receipt lied. PM: if you keep the
+  claim workflow AND a local pass, the lock now makes that safe.
 - 📣 LANE C 7/16 ~16:20 — **0018 APPLIED; THE RUN-STATE LOOP IS PROVEN LIVE.**
   Watched a real run (Lane B's page queued 40 guides) go `queued → running`
   with counts moving — GET /api/river-guides/runs served **"Enriching 29/40 —

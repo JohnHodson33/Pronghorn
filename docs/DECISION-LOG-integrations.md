@@ -96,6 +96,17 @@ verified with the PM's exact fabricated probe (0 inserted) and real sweeps
 the Lane C TASK-QUEUE section after every merge before claiming clear —
 John's newest asks land there, not in my head.
 
+🛑 **SESSION STOOD DOWN 7/16 ~16:40 (context limit). Branch clean + fully
+pushed, HEAD 736f207. A successor resumes from THIS section — the NEXT block
+below is written to be actionable cold.** Last unit (736f207, [self-iterate]):
+ATOMIC RUN CLAIM — the local pass and PM's river-guides-claim.yml both drained
+the same run (select-then-update wasn't a lock) and produced a lying receipt
+("40 processed, 0 emails" while the other process found 6 emails/5 LinkedIn).
+Claim is now a conditional update, proven with two simultaneous claims. Data
+integrity held (0 of 29 NEEDS_PAID rows had contact info — queue never
+poisoned, only the receipt lied). Gotcha for the successor: TWO runners drain
+river_guide_runs (local + CI); the lock makes that safe, don't "simplify" it.
+
 **7/16 ~16:20 — 0018 APPLIED + RUN-STATE PROVEN LIVE.** Watched a real
 Lane B-queued run go queued→running ("Enriching 29/40…") and a prior run
 close with a receipt ("Done: 3 processed — 1 verified LinkedIn, 2 need the
