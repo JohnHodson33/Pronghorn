@@ -5,17 +5,42 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 
 ## 🔄 HANDOFF — successor #2 live 7/16 (loop running; 7/15 backlog)
 
-- **Working the 7/15 directives** (TASK-QUEUE Lane B is the priority
-  source): (1) ✅ INLINE EDIT EVERYWHERE; (2) ✅ FILTER/SORT PERSISTENCE;
-  (3) ✅ COMPANIES TABLE OVERHAUL (all three shipped 7/16, entries below);
-  (4) REMAINING: LeadsTable header-filter parity (item e, next unit) +
-  Too-big/PE-owned/★Shortlist chips as Lane C ships flags + 0015.
+- **7/15+7/16 directives**: (1) ✅ INLINE EDIT EVERYWHERE; (2) ✅ FILTER/
+  SORT PERSISTENCE; (3) ✅ COMPANIES TABLE OVERHAUL; (4) ✅ RIVER GUIDES
+  PAGE (John's 7/16 top-of-lane; degrade mode until Lane C's 0016+ingest+
+  API — lights up automatically). REMAINING: River Guides items (b)/(c)
+  (contacts chip + profile panels — need the contact_id/company_id FKs
+  live) · LeadsTable header-filter parity (item e) · Too-big/PE-owned/
+  ★Shortlist chips as Lane C ships flags + 0015. **PM: wire "River
+  Guides" into Sidebar under Proprietary Sourcing on merge.**
 - **State facts**: migrations 0011–0014 APPLIED (threads, list progress,
   outreach rules, size assumptions all serve real data now — degrade
   paths retired naturally). Dev server = pronghorn-web-laneB, port 3311;
   new route dirs need `rm -rf .next/dev` + restart (bit again 7/16).
   Server components can't pass function props to client components —
   InlineField takes declarative `format="money"` instead.
+
+## 2026-07-16 — River Guides page (John 7/16 ~00:50 top-of-lane)
+
+- **New route `/river-guides`** (client page against Lane C's documented
+  contract — archetype spec §4 field names verbatim, read from the LOCAL
+  research folder per the privacy rule; nothing personal committed):
+  band counts header (Call now / Enrich & assess / Nurture / Resolve name,
+  spec ordering + screen_score desc default sort), search + Industry/
+  Status/Exit/State FilterDropdowns (URL-synced via the shared hook),
+  exit chips show ⚠ at-close vs ✓ verified w/ the no-outreach-until-✓
+  tooltip, TBD names amber-flagged, contact dots, checkbox select →
+  "Enrich selected" (fires POST /api/river-guides/enrich; honest note
+  until Lane C's waterfall), **"Find more" discovery bar** (industry +
+  consolidator → POST /api/river-guides/discover; honest note until the
+  sweep endpoint exists), CSV export = the VA paid-tier handoff.
+- **Degrade verified live**: API absent → amber banner ("lights up
+  automatically when 0016 + ingest land"), zero counts, sweep/enrich
+  return honest notes; mobile 375px clean. When Lane C ships GET
+  /api/river-guides {guides:[...]}, the page is done — no code change.
+- Items (b)/(c) — Contacts "River Guide" chip + profile panels — wait on
+  the contact_id/company_id FKs actually populating (ingest step 2).
+- **PM: wire "River Guides" into Sidebar** under Proprietary Sourcing.
 
 ## 2026-07-16 — Companies table filter/sort overhaul (John 7/15)
 
