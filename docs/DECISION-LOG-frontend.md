@@ -6,17 +6,33 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — successor #2 live 7/16 (loop running; 7/15 backlog)
 
 - **Working the 7/15 directives** (TASK-QUEUE Lane B is the priority
-  source): (1) ✅ INLINE EDIT EVERYWHERE shipped; (2) ✅ FILTER/SORT
-  PERSISTENCE shipped (see 7/16 entries below); (3) NEXT: companies table
-  filter/sort overhaul (multi-select industry dropdown, header-dropdown
-  filters, sortable est columns); (4) Too-big/PE-owned/★Shortlist chips as
-  Lane C ships flags + 0015.
+  source): (1) ✅ INLINE EDIT EVERYWHERE; (2) ✅ FILTER/SORT PERSISTENCE;
+  (3) ✅ COMPANIES TABLE OVERHAUL (all three shipped 7/16, entries below);
+  (4) REMAINING: LeadsTable header-filter parity (item e, next unit) +
+  Too-big/PE-owned/★Shortlist chips as Lane C ships flags + 0015.
 - **State facts**: migrations 0011–0014 APPLIED (threads, list progress,
   outreach rules, size assumptions all serve real data now — degrade
   paths retired naturally). Dev server = pronghorn-web-laneB, port 3311;
   new route dirs need `rm -rf .next/dev` + restart (bit again 7/16).
   Server components can't pass function props to client components —
   InlineField takes declarative `format="money"` instead.
+
+## 2026-07-16 — Companies table filter/sort overhaul (John 7/15)
+
+- **NEW `components/FilterDropdown.tsx`** — multi-select dropdown w/ counts,
+  Clear action, outside-click close; `header` variant renders compact inside
+  table `<th>`s (stopPropagation so header clicks don't collide).
+- **CompaniesTable rebuilt**: industry chips → toolbar multi-select dropdown
+  (options sorted by count: Tree Care 167 · HVAC 116…); Owner reach / Size /
+  Deal stage become **header dropdown filters** (chips rows removed — the
+  split lives in the dropdown counts now); **Revenue + EBITDA headers sort**
+  (click: desc → asc → off; sort value = actual figure, else estimate
+  midpoint, blanks always last). All state URL-synced; multi-values as csv
+  (?industry=Tree+Care,HVAC) and OLD singular pinned URLs still hydrate.
+- Verified live: 3-industry × 2-level filter = 87/557 w/ URL round-trip,
+  EBITDA desc ordering correct, dropdown toggle updates rows+URL, mobile
+  375px (no overflow, panel fits). Item (e) — same header pattern on
+  Enrichment — is the next unit.
 
 ## 2026-07-16 — Filter/sort persistence on back-nav, all lists (John 7/15)
 

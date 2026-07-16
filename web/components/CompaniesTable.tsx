@@ -1,8 +1,9 @@
 "use client";
 
-// Companies table with John's requested controls: search bar, industry filter
-// chips, Industry as its own column, and whole-row click-through to the
-// company profile.
+// Companies table — 7/15 overhaul: industry multi-select dropdown w/ counts
+// (chips don't scale), column-header dropdown filters (owner reach, size
+// tier, deal stage), sortable est. Revenue/EBITDA columns, everything
+// URL-param synced (pinnable). Whole-row click-through to the profile.
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { money } from "@/lib/mock";
@@ -11,7 +12,8 @@ import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 import { companyLevel } from "@/lib/company-level";
 import { LEVELS, LEVEL_META, type Completeness } from "@/lib/completeness";
 import { PinButton } from "@/components/PinnedViews";
-import { TIERS, TIER_LABELS, type SizeTier } from "@/lib/size";
+import { TIERS, TIER_LABELS } from "@/lib/size";
+import FilterDropdown from "@/components/FilterDropdown";
 
 // ~$X.XM–$Y.YM display for estimate ranges (never fake precision)
 const estRange = (r: [number, number]) => {
@@ -33,47 +35,49 @@ const levelChip: Record<Completeness, string> = {
   raw: "bg-zinc-50 text-zinc-400",
 };
 
+type SortKey = "revenue" | "ebitda" | null;
+
+const csv = (s: Set<string>) => (s.size ? [...s].join(",") : null);
+const fromCsv = (v: string | null) => new Set((v ?? "").split(",").filter(Boolean));
+
 export default function CompaniesTable({ companies }: { companies: CompanyRow[] }) {
   const router = useRouter();
-  const industries = useMemo(
-    () => [...new Set(companies.map((c) => c.industry).filter(Boolean))].sort() as string[],
-    [companies]
-  );
-  const stages = useMemo(
-    () => [...new Set(companies.map((c) => c.deals?.[0]?.stage).filter(Boolean))].sort() as string[],
-    [companies]
-  );
 
   const [q, setQ] = useState("");
-  const [industry, setIndustry] = useState<string | null>(null);
-  const [stage, setStage] = useState("all");
-  const [level, setLevel] = useState<Completeness | null>(null);
+  const [industriesSel, setIndustriesSel] = useState<Set<string>>(new Set());
+  const [levelsSel, setLevelsSel] = useState<Set<string>>(new Set());
+  const [tiersSel, setTiersSel] = useState<Set<string>>(new Set());
+  const [stagesSel, setStagesSel] = useState<Set<string>>(new Set());
   const [withDealOnly, setWithDealOnly] = useState(false);
-  const [tier, setTier] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
-  // Filters ↔ URL params (?q= ?industry= ?level= ?stage= ?deal=1): filtered
-  // views are shareable and deep-linkable ("CONTACTABLE owners in Tree Care"
-  // is a URL). Read once on mount so SSR markup matches first client render.
+  // Filters/sort ↔ URL params (pinnable; multi-values as csv). Reads the old
+  // singular params too so pre-overhaul pinned views keep working.
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
     if (p.get("q")) setQ(p.get("q")!);
-    if (p.get("industry")) setIndustry(p.get("industry"));
-    if (p.get("stage")) setStage(p.get("stage")!);
-    if (p.get("level")) setLevel(p.get("level") as Completeness);
+    if (p.get("industry")) setIndustriesSel(fromCsv(p.get("industry")));
+    if (p.get("level")) setLevelsSel(fromCsv(p.get("level")));
+    if (p.get("tier")) setTiersSel(fromCsv(p.get("tier")));
+    if (p.get("stage")) setStagesSel(fromCsv(p.get("stage")));
     if (p.get("deal") === "1") setWithDealOnly(true);
-    if (p.get("tier")) setTier(p.get("tier"));
+    if (p.get("sort") === "revenue" || p.get("sort") === "ebitda") setSortKey(p.get("sort") as SortKey);
+    if (p.get("dir") === "asc") setSortDir("asc");
   }, []);
   useEffect(() => {
     const p = new URLSearchParams();
     if (q) p.set("q", q);
-    if (industry) p.set("industry", industry);
-    if (stage !== "all") p.set("stage", stage);
-    if (level) p.set("level", level);
+    const pairs: [string, string | null][] = [
+      ["industry", csv(industriesSel)], ["level", csv(levelsSel)],
+      ["tier", csv(tiersSel)], ["stage", csv(stagesSel)],
+    ];
+    for (const [k, v] of pairs) if (v) p.set(k, v);
     if (withDealOnly) p.set("deal", "1");
-    if (tier) p.set("tier", tier);
+    if (sortKey) { p.set("sort", sortKey); if (sortDir === "asc") p.set("dir", "asc"); }
     const qs = p.toString();
     window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
-  }, [q, industry, stage, level, withDealOnly, tier]);
+  }, [q, industriesSel, levelsSel, tiersSel, stagesSel, withDealOnly, sortKey, sortDir]);
 
   const levels = useMemo(() => {
     const m = new Map<string, ReturnType<typeof companyLevel>>();
@@ -81,32 +85,63 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
     return m;
   }, [companies]);
 
-  const levelCounts = useMemo(() => {
-    const counts: Record<Completeness, number> = { full: 0, contactable: 0, identified: 0, basic: 0, raw: 0 };
-    for (const c of companies) counts[levels.get(c.id)!.level]++;
-    return counts;
-  }, [companies, levels]);
-
-  const rows = useMemo(
-    () =>
-      companies.filter((c) => {
-        if (q && !`${c.name} ${c.industry ?? ""} ${c.city ?? ""} ${c.state ?? ""}`.toLowerCase().includes(q.toLowerCase()))
-          return false;
-        if (industry && c.industry !== industry) return false;
-        if (level && levels.get(c.id)!.level !== level) return false;
-        if (stage !== "all" && c.deals?.[0]?.stage !== stage) return false;
-        if (withDealOnly && !c.deals?.[0]) return false;
-        if (tier && (c.size?.tier ?? "unsized") !== tier) return false;
-        return true;
-      }),
-    [companies, q, industry, stage, level, levels, withDealOnly, tier]
-  );
-
-  const tierCounts = useMemo(() => {
-    const m: Record<string, number> = { platform: 0, tuckin: 0, toosmall: 0, unsized: 0 };
-    for (const c of companies) m[c.size?.tier ?? "unsized"]++;
-    return m;
+  // option lists with counts (counts over the UNFILTERED set so the split is visible)
+  const industryOptions = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const c of companies) if (c.industry) m[c.industry] = (m[c.industry] ?? 0) + 1;
+    return Object.entries(m).sort((a, b) => b[1] - a[1]).map(([value, count]) => ({ value, label: value, count }));
   }, [companies]);
+  const levelOptions = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const c of companies) { const lv = levels.get(c.id)!.level; m[lv] = (m[lv] ?? 0) + 1; }
+    return LEVELS.map((lv) => ({ value: lv, label: `${LEVEL_META[lv].dot} ${lv}`, count: m[lv] ?? 0 }));
+  }, [companies, levels]);
+  const tierOptions = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const c of companies) { const t = c.size?.tier ?? "unsized"; m[t] = (m[t] ?? 0) + 1; }
+    return TIERS.map((t) => ({ value: t, label: TIER_LABELS[t], count: m[t] ?? 0 }));
+  }, [companies]);
+  const stageOptions = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const c of companies) { const s = c.deals?.[0]?.stage; if (s) m[s] = (m[s] ?? 0) + 1; }
+    return Object.entries(m).sort().map(([value, count]) => ({ value, label: value, count }));
+  }, [companies]);
+
+  // sort value: actual figure wins; else the estimate midpoint; null sorts last
+  const sortVal = (c: CompanyRow, k: "revenue" | "ebitda"): number | null => {
+    const actual = k === "revenue" ? c.revenue : c.ebitda;
+    if (actual !== null && actual !== undefined) return Number(actual);
+    const est = k === "revenue" ? c.size?.revenue : c.size?.ebitda;
+    return est ? (est[0] + est[1]) / 2 : null;
+  };
+
+  const rows = useMemo(() => {
+    const filtered = companies.filter((c) => {
+      if (q && !`${c.name} ${c.industry ?? ""} ${c.city ?? ""} ${c.state ?? ""}`.toLowerCase().includes(q.toLowerCase()))
+        return false;
+      if (industriesSel.size && !industriesSel.has(c.industry ?? "")) return false;
+      if (levelsSel.size && !levelsSel.has(levels.get(c.id)!.level)) return false;
+      if (tiersSel.size && !tiersSel.has(c.size?.tier ?? "unsized")) return false;
+      if (stagesSel.size && !stagesSel.has(c.deals?.[0]?.stage ?? "")) return false;
+      if (withDealOnly && !c.deals?.[0]) return false;
+      return true;
+    });
+    if (!sortKey) return filtered;
+    return [...filtered].sort((a, b) => {
+      const av = sortVal(a, sortKey), bv = sortVal(b, sortKey);
+      if (av === null && bv === null) return 0;
+      if (av === null) return 1; // nulls last regardless of direction
+      if (bv === null) return -1;
+      return sortDir === "asc" ? av - bv : bv - av;
+    });
+  }, [companies, q, industriesSel, levelsSel, tiersSel, stagesSel, withDealOnly, levels, sortKey, sortDir]);
+
+  function toggleSort(k: "revenue" | "ebitda") {
+    if (sortKey !== k) { setSortKey(k); setSortDir("desc"); }
+    else if (sortDir === "desc") setSortDir("asc");
+    else setSortKey(null); // third click clears
+  }
+  const sortArrow = (k: "revenue" | "ebitda") => (sortKey === k ? (sortDir === "desc" ? " ▼" : " ▲") : "");
 
   const inputCls = "rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-600";
 
@@ -119,12 +154,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
           placeholder="Search companies…"
           className={`w-56 ${inputCls}`}
         />
-        <select value={stage} onChange={(e) => setStage(e.target.value)} className={inputCls}>
-          <option value="all">All stages</option>
-          {stages.map((s) => (
-            <option key={s}>{s}</option>
-          ))}
-        </select>
+        <FilterDropdown label="Industry" options={industryOptions} selected={industriesSel} onChange={setIndustriesSel} />
         <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
           <input
             type="checkbox"
@@ -138,7 +168,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
           <span className="text-sm text-zinc-500 tabular-nums">
             {rows.length} of {companies.length}
           </span>
-          <PinButton defaultLabel={[level, industry, "companies"].filter(Boolean).join(" ")} />
+          <PinButton defaultLabel={[[...levelsSel].join("/"), [...industriesSel].join("/"), "companies"].filter(Boolean).join(" ")} />
           <button
             onClick={() =>
               downloadCsv(
@@ -168,73 +198,34 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
         </span>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5">
-        <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-zinc-400">Owner reach</span>
-        {LEVELS.map((lv) => (
-          <button
-            key={lv}
-            onClick={() => setLevel(level === lv ? null : lv)}
-            className={`rounded-full px-2.5 py-1 text-xs font-semibold transition ${
-              level === lv ? "ring-2 ring-emerald-600 " : ""
-            }${levelChip[lv]}`}
-            title={LEVEL_META[lv].label}
-          >
-            {LEVEL_META[lv].dot} {levelCounts[lv]} {lv}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-1.5">
-        <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-zinc-400">Size</span>
-        {TIERS.map((t) => (
-          <button
-            key={t}
-            onClick={() => setTier(tier === t ? null : t)}
-            className={`rounded-full px-2.5 py-1 text-xs font-semibold transition ${
-              tier === t ? "ring-2 ring-emerald-600 " : ""
-            }${tierChip[t]}`}
-            title={t === "unsized" ? "no usable size signal yet — enrichment adds them" : `estimated ${TIER_LABELS[t]}`}
-          >
-            {TIER_LABELS[t]} · {tierCounts[t]}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-1.5">
-        <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-zinc-400">Industry</span>
-        <button
-          onClick={() => setIndustry(null)}
-          className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-            industry === null ? "bg-emerald-700 text-white" : "bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-50"
-          }`}
-        >
-          All
-        </button>
-        {industries.map((i) => (
-          <button
-            key={i}
-            onClick={() => setIndustry(industry === i ? null : i)}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-              industry === i ? "bg-emerald-700 text-white" : "bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-50"
-            }`}
-          >
-            {i}
-          </button>
-        ))}
-      </div>
-
       <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500">
               <th className="px-4 py-3">Company</th>
-              <th className="px-4 py-3">Owner reach</th>
-              <th className="px-4 py-3">Size</th>
+              {/* column-header dropdown filters (John 7/15) */}
+              <th className="px-4 py-3">
+                <FilterDropdown header label="Owner reach" options={levelOptions} selected={levelsSel} onChange={setLevelsSel} />
+              </th>
+              <th className="px-4 py-3">
+                <FilterDropdown header label="Size" options={tierOptions} selected={tiersSel} onChange={setTiersSel} />
+              </th>
               <th className="px-4 py-3">Industry</th>
               <th className="px-4 py-3">Location</th>
-              <th className="px-4 py-3 text-right">Revenue</th>
-              <th className="px-4 py-3 text-right">EBITDA</th>
-              <th className="px-4 py-3">Deal stage</th>
+              {/* sortable est columns: click toggles desc → asc → off */}
+              <th className="px-4 py-3 text-right">
+                <button onClick={() => toggleSort("revenue")} className={`uppercase tracking-wide ${sortKey === "revenue" ? "font-bold text-emerald-800" : "hover:text-zinc-700"}`} title="Sort by revenue (actuals win, then estimate midpoint; blanks last)">
+                  Revenue{sortArrow("revenue")}
+                </button>
+              </th>
+              <th className="px-4 py-3 text-right">
+                <button onClick={() => toggleSort("ebitda")} className={`uppercase tracking-wide ${sortKey === "ebitda" ? "font-bold text-emerald-800" : "hover:text-zinc-700"}`} title="Sort by EBITDA (actuals win, then estimate midpoint; blanks last)">
+                  EBITDA{sortArrow("ebitda")}
+                </button>
+              </th>
+              <th className="px-4 py-3">
+                <FilterDropdown header label="Deal stage" options={stageOptions} selected={stagesSel} onChange={setStagesSel} />
+              </th>
               <th className="px-4 py-3">Origin</th>
               <th className="px-4 py-3">Added</th>
             </tr>
