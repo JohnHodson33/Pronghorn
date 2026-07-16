@@ -7,12 +7,14 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 
 - **7/15+7/16 directives**: (1) ✅ INLINE EDIT; (2) ✅ FILTER/SORT
   PERSISTENCE; (3) ✅ COMPANIES OVERHAUL; (4) ✅ RIVER GUIDES PAGE;
-  (5) ✅ LeadsTable header parity; (6) ✅ ★SHORTLIST + TOO-BIG UI (this
-  unit — see 7/16 entry). NEXT: (a) /improvements thread polish (0011
-  comments real now); (b) PE-owned chips when Lane C's detection ships;
-  (c) River Guides lights up when /api/river-guides lands. NOTE for PM:
-  the >4.5MB direct-to-storage upload fix ALREADY SHIPPED 7/14 (363547f,
-  verified 8MB/6MB) — queue item is stale.
+  (5) ✅ LeadsTable header parity; (6) ✅ ★SHORTLIST + TOO-BIG UI;
+  (7) ✅ /improvements thread polish on real 0011 (this unit —
+  completion_summary kind now styles + badges correctly; verified with a
+  live comment round-trip, test row deleted; 💬 counts + reply_pending
+  confirmed real). NEXT: (a) PE-owned chips when Lane C's detection
+  ships; (b) River Guides lights up when /api/river-guides lands;
+  (c) dead-end sweep when dry. NOTE for PM: the >4.5MB direct-to-storage
+  upload fix ALREADY SHIPPED 7/14 (363547f) — queue item is stale.
 
 ## 2026-07-16 — ★Shortlist + Too-big tier UI (0015 backend, John 7/15)
 
