@@ -96,13 +96,32 @@ verified with the PM's exact fabricated probe (0 inserted) and real sweeps
 the Lane C TASK-QUEUE section after every merge before claiming clear —
 John's newest asks land there, not in my head.
 
-**NEXT:** broker inquiry template (John's verbatim copy, inquiry_profiles
-774f21ce identity, kill the old "private investor" copy everywhere) · wire
-the Tracerfy person-mode tier into river-guide enrichment (phones — the run
-receipt already counts them) · watch first river-guides.yml nightly run.
-**JOHN'S ASKS:** 0018 SQL (amendment-4 cols + app_config + river_guide_runs
-— one file) · SERPER+ANTHROPIC in Vercel env (discover bar; live-tested
-locally) · sample card 611290ff (auto-draft unlock).
+**7/16 ~16:20 — 0018 APPLIED + RUN-STATE PROVEN LIVE.** Watched a real
+Lane B-queued run go queued→running ("Enriching 29/40…") and a prior run
+close with a receipt ("Done: 3 processed — 1 verified LinkedIn, 2 need the
+paid tier"). /api/size-model now source=db with amendment-4 payroll pcts
+(Tree Care 40%/$65k, Fencing 30%/$60k), flat 20% margin, CPI 1.25/1.20.
+app_config live → the Graph token store heals Outlook Sync CI on the next
+rotation (run any local Graph script to seed it).
+
+**NEXT (successor picks up here):** (1) BROKER INQUIRY TEMPLATE — John's
+verbatim copy is in TASK-QUEUE (Lane C section, "BROKER-LISTING OUTREACH
+OVERHAUL" item B): "Hi {broker first name}," else "Hello,"; body starts "My
+name is John Hodson, and I am a Managing Director at Pronghorn Equity
+Partners. We are a lower middle market private equity fund that focuses on
+business services assets across the US…"; customize ONLY {broker name} +
+{industry}; identity from inquiry_profiles row 774f21ce
+(jhodson@pronghornequity.com, (503) 899-0058 — NEVER the gmail). Apply to
+the co-pilot contact block, outbox inquiry drafts, request-info drafts; kill
+the old "I'm a private investor…" copy repo-wide (grep it). (2) Wire the
+Tracerfy person-mode tier into river-guide enrichment (phones — the run
+receipt already counts found_phone). (3) Watch the first river-guides.yml
+nightly run (02:30 PHX) + the new river-guides-claim.yml PM added.
+**JOHN'S REMAINING ASKS:** SERPER+ANTHROPIC in Vercel env (discover bar is
+proven locally, 503s cleanly without them) · sample card 611290ff review
+(the ONLY gate on tailored auto-drafting; on approval: create his first
+outreach_rule, flip leadgen.yml draft step off if:false, regenerate the 35
+old drafts under the tailored engine).
 
 --- prior session's handoff (7/13) below for history ---
 **State (2026-07-13 ~14:00):** Migrations

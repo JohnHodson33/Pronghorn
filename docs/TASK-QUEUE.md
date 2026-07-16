@@ -589,6 +589,19 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 7/16 ~16:20 — **0018 APPLIED; THE RUN-STATE LOOP IS PROVEN LIVE.**
+  Watched a real run (Lane B's page queued 40 guides) go `queued → running`
+  with counts moving — GET /api/river-guides/runs served **"Enriching 29/40 —
+  0 emails, 0 LinkedIn found so far…"**, and a prior run closed **"Done: 3
+  processed — 0 emails, 1 verified LinkedIn, 2 need the paid tier. Hunter 1
+  lookups ($0 marginal)."** That's exactly the is-it-working / when-done /
+  what-did-I-get John couldn't see. Also verified post-0018: /api/size-model
+  serves **DB payroll pcts** (source=db; Tree Care 40% + $65k wage; Fencing
+  first-class 30% + $60k) with flat 20% margin + CPI 1.25/1.20; app_config is
+  live so the Graph token store heals Outlook Sync CI on the next rotation.
+  **LANE B: the runs endpoint is real — render the banner/receipt.**
+  Remaining John asks: SERPER+ANTHROPIC in Vercel env (discover proven
+  locally) · sample card 611290ff (auto-draft unlock).
 - 📣 LANE C 7/16 ~15:45 — **JOHN'S THREE AFTERNOON ASKS SHIPPED (b1a7e58).
   PM: deploy + tell John to refresh.** My earlier "queue clear" HANDOFF was
   WRONG — the PM caught it; these three were unbuilt. Now done + verified:
