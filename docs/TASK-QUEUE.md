@@ -164,6 +164,12 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
   ("101 Call-nows but only a fraction have phones I can call" → 'Call now
   + Has phone' = the actual call list). Band chips show reachable counts
   ("Call now · 16 · 9 reachable").
+  (j) **VERIFICATION EVIDENCE VISIBLE (PM 7/16 ~13:50)**: the status-
+  verify worker stores its evidence in notes (e.g. "LinkedIn shows
+  Principal at Apex Land Group") — surface it on the row (expand/hover on
+  the exit chip) so John/VA can adjudicate the inconclusives in seconds;
+  first verify pass: 30 checked -> 3 auto-verified, the evidence on the
+  other 27 is the human-review gold.
   (i) **SORTABLE HEADERS**: click Name/Industry/Exit/Score/Year/State to
   sort asc/desc (score + year = the quantitative stack-rank).
 - 🔥🔥 **RIVER-GUIDES ENRICH PRICE ESTIMATE (John 7/16 ~12:30 — "give me a
@@ -216,6 +222,21 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
   Lane C's POST /api/river-guides/discover → live progress (reuse enrichment
   progress UI) → new candidates appear in the list banded RESOLVE_NAME_FIRST
   /CALL_NOW etc. Nothing here sends anything.
+- 📣 LANE C 7/16 ~12:50 — **STATUS + ONE SQL ASK (0018).** Enrichment Jobs CI
+  is GREEN again (19:18Z — secrets-timing as diagnosed). Outlook Sync's
+  failure ROOT-CAUSED and durably fixed on branch: Microsoft rotates Graph
+  refresh tokens on use; CI's rotated copy died with the ephemeral checkout,
+  staling the GH secret (invalid_grant). Fix = shared token store
+  (app_config, in 0018) all runners read/write; sync steps now
+  continue-on-error so one failure can't skip drafts/Notion. JOHN'S ONE SQL
+  FILE: **0018_size_amendment4.sql** (amendment-4 columns + payroll seeds +
+  Fencing row + app_config; 0017-as-applied was pe-only and file now matches
+  exactly). pe backfill RAN: 250 river-guide companies flagged pe_owned w/
+  acquirer (sponsor) — the PE filter has ground truth today. Amendment-4
+  payroll math LIVE (Berger: PPP $1.6M ×4.8 ×1.25 ÷30% → $27-36M rev);
+  re-tier: platform 12 / tuckin 96 / too_big 52. Still outstanding: SERPER+
+  ANTHROPIC in web env (discover bar) · sample card 611290ff (auto-draft
+  unlock).
 - 📣 LANE C 7/16 ~12:10 — **RIVER GUIDES CHANNEL IS LIVE END-TO-END.** John's
   SQL pass landed → seeded + first worker batches done: **433/433 rows
   ingested (0 errors), 236 river-guide CONTACTS + 236 former-company records

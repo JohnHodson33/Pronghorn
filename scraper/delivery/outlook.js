@@ -128,6 +128,29 @@ async function runAuthCodeFlow(clientId) {
 }
 
 // ---------------------------------------------------------------------------
+// Shared token store (Supabase app_config, migration 0018) — Microsoft
+// ROTATES refresh tokens on use. Local runs used to save the new token only
+// to the local .env; in CI the rotated token landed in the EPHEMERAL checkout
+// and was lost when the job ended, so the GH secret went stale and the next
+// run got invalid_grant. The DB row is the single live copy every runner
+// (local + CI) reads first and writes back to; env is the bootstrap fallback.
+// ---------------------------------------------------------------------------
+async function dbTokenGet() {
+  try {
+    const { supabase } = require('../core/db');
+    const { data } = await supabase.from('app_config').select('value').eq('key', 'graph_refresh_token').maybeSingle();
+    return data?.value || null;
+  } catch { return null; }
+}
+async function dbTokenSet(value) {
+  try {
+    const { supabase } = require('../core/db');
+    const { error } = await supabase.from('app_config').upsert({ key: 'graph_refresh_token', value, updated_at: new Date().toISOString() });
+    return !error;
+  } catch { return false; }
+}
+
+// ---------------------------------------------------------------------------
 // Token refresh — exchanges stored refresh token for a new access token
 // ---------------------------------------------------------------------------
 async function refreshAccessToken(clientId, refreshToken) {
@@ -140,9 +163,12 @@ async function refreshAccessToken(clientId, refreshToken) {
 
   const { access_token, refresh_token: newRefresh } = res.data;
 
-  // Microsoft rotates refresh tokens — always save the newest one
+  // Microsoft rotates refresh tokens — persist the newest one to the SHARED
+  // store first (survives CI), then best-effort to the local .env
   if (newRefresh && newRefresh !== refreshToken) {
-    updateEnv('GRAPH_REFRESH_TOKEN', newRefresh);
+    const saved = await dbTokenSet(newRefresh);
+    try { updateEnv('GRAPH_REFRESH_TOKEN', newRefresh); } catch { /* read-only fs */ }
+    if (!saved) log.warn('graph token rotated but app_config store unavailable (apply 0018) — CI secret will go stale');
   }
 
   return access_token;
@@ -153,7 +179,8 @@ async function refreshAccessToken(clientId, refreshToken) {
 // ---------------------------------------------------------------------------
 async function getAccessToken() {
   const clientId     = process.env.GRAPH_CLIENT_ID;
-  const refreshToken = process.env.GRAPH_REFRESH_TOKEN;
+  // shared store first (the live rotating copy), env as bootstrap fallback
+  const refreshToken = (await dbTokenGet()) || process.env.GRAPH_REFRESH_TOKEN;
 
   if (!clientId) {
     throw new Error(
