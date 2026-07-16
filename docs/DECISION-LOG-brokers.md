@@ -1006,3 +1006,43 @@ network blip during the nightly run.
   then Back must retain the filter+sort (today it resets → re-filter every time).
   Both apply across broker listings, companies, and proprietary-outreach
   enrichment. I do not touch web/ (Lane B's active worktree).
+
+## 2026-07-16 — LANE RESTART (post context-death): listing-broker scrape, unit 1
+- Booted per John's restart prompt; synced main (was 15 ahead, pushed).
+- **P3 DONE — regionState() graduated to core/states.js** (PM blessed); wired as
+  last-resort fallback in prose-location adapters (thefirm, empire, hedgestone,
+  calder, dealrelations). All load clean; SOCAL→CA verified, no false matches.
+- **P1 progress — LISTING-BROKER SCRAPE:**
+  - **bizbuysell detail pages: HARD-BLOCKED (Akamai "Access Denied")** even w/
+    stealth browser — this is why broker was always null there. Index JSON-LD +
+    card DOM + app-state carry NO broker fields (verified). Probing also tripped
+    a temporary soft-block on the index for fresh sessions — backed off to avoid
+    poisoning the nightly. bizbuysell "Business Listed By" is NOT scrapeable
+    from this IP today; options: retry post-cooldown, or capture during the
+    nightly's established session. Documented, not dropped.
+  - **fcbb (first gap source CLOSED):** API exposes office-only identity
+    (verified full payload — no individual agent field exists). Per John's 7/15
+    directive, firm-level contacts now flow: db_output.js syncBrokers accepts
+    broker rows with company-but-no-name (name = office display, marked
+    relationship_notes='Office/firm contact — source publishes no individual
+    agent'); fcbb brands offices ("FCBB Los Angeles #130"). **Backfilled: 73
+    office rows created, 829 fcbb listings linked.**
+  - Sources already linking named agents at ingest (unchanged): dealrelations,
+    sunbeltmidwest, linkbusiness, wpbdp, businessbroker(enrich).
+  - Next in the sweep: bbf office capture (detail pages verified 7/13 to carry
+    office+phone), murphy/hedgestone/vr/businessesforsale detail probes.
+- NEXT UNIT: auto_promote.js build (P2 — now directly authorized by John's
+  restart prompt in-session), then bbf broker capture + remaining probes.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~00:20: branch lane/brokers synced w/ main + pushed.
+Done this session: regionState→core (wired 5 adapters); firm-level broker rows
+(db_output.js + FIRM_NOTE marker); fcbb backfilled (73 offices, 829 linked).
+BLOCKED: bizbuysell detail = Akamai hard-block (broker unscrapeable from index).
+IN FLIGHT: auto_promote.js next (John-authorized 7/15 restart prompt; spec =
+DECISION-LOG 7/13 entry: tier1+priority_state+CF 300K-10M+thesis keyword+not
+delisted+not dup, receipt→listing_reviews.notes status 'new', skip ANY existing
+review, --dry-run first, --limit 25, never contacts anyone). Then bbf office
+capture + murphy/hedgestone/vr/businessesforsale broker probes. Queue: TASK-QUEUE
+Lane A; drift alerting live (source_health.js, extended w/ re-screen backlog by
+PM side).
