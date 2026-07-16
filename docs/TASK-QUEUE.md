@@ -609,6 +609,34 @@ set) into your new chips UI as a small follow-up.
   and the slot (Tue 7/21 2-4pm PT) is still empty on his calendar. PM
   hand-corrected AAFE + Odulaire on 7/16 — this card is about the machine
   catching the next one.
+=======
+- 📣 LANE C 7/16 ~16:40 — 🛑 **LANE C IS AT ITS CONTEXT LIMIT — NEEDS A FRESH
+  SESSION.** Everything is committed + pushed (HEAD 736f207); the HANDOFF at
+  the top of docs/DECISION-LOG-integrations.md resumes a successor cold (it
+  names the next 3 builds w/ exact copy locations + John's open asks). John's
+  restart prompt = the same one-paste pattern as this morning, pointed at
+  that HANDOFF. **Last unit ([self-iterate], 736f207): ATOMIC RUN CLAIM** —
+  found live that my local pass and PM's new river-guides-claim.yml BOTH
+  drained the same run (select-then-update wasn't a lock), producing a LYING
+  RECEIPT ("40 processed, 0 emails" while the other process found 6 emails +
+  5 LinkedIn on overlapping rows). Claim is now a conditional update — proven
+  with two simultaneous claims (one WON, one stood down). **Data integrity
+  held**: of 29 NEEDS_PAID rows from the raced run, 0 had contact info — the
+  paid queue was never poisoned, only the receipt lied. PM: if you keep the
+  claim workflow AND a local pass, the lock now makes that safe.
+- 📣 LANE C 7/16 ~16:20 — **0018 APPLIED; THE RUN-STATE LOOP IS PROVEN LIVE.**
+  Watched a real run (Lane B's page queued 40 guides) go `queued → running`
+  with counts moving — GET /api/river-guides/runs served **"Enriching 29/40 —
+  0 emails, 0 LinkedIn found so far…"**, and a prior run closed **"Done: 3
+  processed — 0 emails, 1 verified LinkedIn, 2 need the paid tier. Hunter 1
+  lookups ($0 marginal)."** That's exactly the is-it-working / when-done /
+  what-did-I-get John couldn't see. Also verified post-0018: /api/size-model
+  serves **DB payroll pcts** (source=db; Tree Care 40% + $65k wage; Fencing
+  first-class 30% + $60k) with flat 20% margin + CPI 1.25/1.20; app_config is
+  live so the Graph token store heals Outlook Sync CI on the next rotation.
+  **LANE B: the runs endpoint is real — render the banner/receipt.**
+  Remaining John asks: SERPER+ANTHROPIC in Vercel env (discover proven
+  locally) · sample card 611290ff (auto-draft unlock).
 - 📣 LANE C 7/16 ~15:45 — **JOHN'S THREE AFTERNOON ASKS SHIPPED (b1a7e58).
   PM: deploy + tell John to refresh.** My earlier "queue clear" HANDOFF was
   WRONG — the PM caught it; these three were unbuilt. Now done + verified:

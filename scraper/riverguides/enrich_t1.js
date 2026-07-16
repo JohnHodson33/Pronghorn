@@ -41,16 +41,21 @@ async function hunterFind(domain, nm) {
 // --- run state (John 7/16: the page must answer "is it working / when is it
 // done / what did I get"). A run created by POST /api/river-guides/enrich is
 // CLAIMED here; ad-hoc CLI passes just skip this (no run to update).
+// ATOMIC claim — the local pass and the CI claim workflow both drain this
+// queue, so select-then-update let BOTH grab the same run (seen live 7/16:
+// one receipt said "40 processed, 0 emails" while the other process was
+// finding 6 emails on overlapping rows). The conditional update below is the
+// lock: only the process whose `state='queued'` predicate still matches gets
+// a row back; the loser sees [] and moves on.
 async function claimRun() {
-  const { data, error } = await supabase.from('river_guide_runs')
-    .select('*').eq('state', 'queued').order('created_at', { ascending: true }).limit(1);
-  if (error || !data?.length) return null; // pre-0018 or nothing queued
-  const run = data[0];
-  await supabase.from('river_guide_runs').update({
+  const { data: queued, error } = await supabase.from('river_guide_runs')
+    .select('id, deal_ids').eq('state', 'queued').order('created_at', { ascending: true }).limit(1);
+  if (error || !queued?.length) return null; // pre-0018 or nothing queued
+  const { data: won } = await supabase.from('river_guide_runs').update({
     state: 'running', started_at: new Date().toISOString(),
-    note: `Enriching 0/${run.deal_ids?.length ?? 0}…`,
-  }).eq('id', run.id);
-  return run;
+    note: `Enriching 0/${queued[0].deal_ids?.length ?? 0}…`,
+  }).eq('id', queued[0].id).eq('state', 'queued').select('*');
+  return won?.length ? won[0] : null; // lost the race — another runner has it
 }
 async function updateRun(runId, counts, note) {
   if (!runId) return;
