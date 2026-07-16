@@ -41,10 +41,15 @@ is half right. The resolution:
      "<acquirer> (<sponsor>)"` — the 433 rows are ground-truth for Lane C's
      PE-ownership backfill (John called this out himself).
    - Contact↔company link carries relationship `former_owner_sold_<year>`.
-3. **NO new scraping section** (John's redundancy worry was correct here): the
-   consolidator-sweep refresh is a future Lane A job (query-generator per
-   consolidator map, spec §7), not a new UI form. Sourcing UI = the River Guides
-   page below, not a list-builder clone.
+3. **Discovery IS in scope — but lightweight (John's clarification 7/16 ~01:15:
+   "not just a repository… I want the functionality to find additional river
+   guides").** No company-list-builder clone; instead the River Guides page gets
+   a **"Find more" bar**: pick industry/consolidator → on-demand consolidator
+   sweep (Serper/Exa "<X> acquires…" + press/portfolio pages, Claude-extracted,
+   hallucination-guarded) → new candidates enter the same lifecycle. LinkedIn
+   recipe searches (quiet Archetype A + Archetype B, spec §5) are the second
+   query mode. Periodic auto-refresh of known consolidators is the later Lane A
+   job; on-demand discovery ships with the page.
 4. **Existing enrichment plumbing, person-mode:** the waterfall reuses the
    cascade tiers already built/being built — Hunter (domain-first, routed by
    `company_website_status`: LIVE→own domain, REDIRECTS→acquirer domain,

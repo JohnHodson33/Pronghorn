@@ -134,7 +134,12 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
   Guide" filter chip** + river-guide panel on contact profiles (band, exit
   status, former company + acquirer/sponsor, verification state). (c) Show
   the former-company link on company profiles ("sold to <acquirer>, <year> —
-  former owner is a River Guide prospect"). Nothing here sends anything.
+  former owner is a River Guide prospect"). (d) **"Find more" discovery bar**
+  on the River Guides page (John 7/16 ~01:15 — the page is a sourcing tool,
+  not a repository): pick industry / consolidator (or type a new one) → runs
+  Lane C's POST /api/river-guides/discover → live progress (reuse enrichment
+  progress UI) → new candidates appear in the list banded RESOLVE_NAME_FIRST
+  /CALL_NOW etc. Nothing here sends anything.
 - 📣 PM 7/13 ~15:00 — **LANE B: THE SIZE CONTRACT IS UP, START THE BUILD.**
   Lane C shipped it (merged + deployed): `/api/size-model` GET/PATCH =
   assumptions + Platform/Too-small thresholds (all editable, cascade on
@@ -457,6 +462,21 @@ set) into your new chips UI as a small follow-up.
   eligibility = CALL_NOW + VERIFIED only; nothing sends; river-guide draft
   template (equity-not-fees positioning, spec §8) is a SEPARATE template
   awaiting John's approval — do not wire drafts yet.
+  **(7) DISCOVERY — John's clarification 7/16 ~01:15: "not just a repository
+  to house these people — I want the functionality to find additional river
+  guides."** Build an on-demand **consolidator-sweep worker** (this is the
+  channel's list-builder, much lighter than company scraping): input =
+  industry or consolidator name (spec §7 maps seed the dropdown; free-text
+  for new ones) → Serper/Exa queries ("<X> acquires", "<X> acquired",
+  acquirer press/portfolio pages) → Claude extracts candidate add-on deals
+  (company, year, seller if NAMED IN THE SOURCE) → dedupe vs existing
+  (person, company) → new rows enter the SAME lifecycle (NEEDS_NAME or
+  RESOLVED w/ provenance). HALLUCINATION GUARD is hard law: a name/domain
+  not literally present in a fetched source = TBD, never a guess. Also
+  support the spec §5 "quiet Archetype A" + Archetype B LinkedIn recipe
+  searches as a second query mode (results land as candidates w/ source
+  links, same guard). POST /api/river-guides/discover queues it; reuse the
+  enrichment-jobs progress pattern so John watches it run.
 - 🔨 LANE C — **BROKER_ID BACKFILL — RAN 7/13 (~12:45); honest result: 2/18
   linked** (James Feng, Phil Handke — both by email). The other 16 broker
   contacts are CURATED RELATIONSHIP people (Notion/HubSpot/deal imports:
