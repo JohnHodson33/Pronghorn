@@ -242,6 +242,10 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
               <th className="px-4 py-3">
                 <FilterDropdown header label="Size" options={tierOptions} selected={tiersSel} onChange={setTiersSel} />
               </th>
+              {/* dots retired → the actual owner channels (John 7/16) */}
+              <th className="px-4 py-3">Email</th>
+              <th className="px-4 py-3">Phone</th>
+              <th className="px-4 py-3">LinkedIn</th>
               <th className="px-4 py-3">Industry</th>
               <th className="px-4 py-3">Location</th>
               {/* sortable est columns: click toggles desc → asc → off */}
@@ -287,25 +291,8 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
                   {(() => {
                     const lv = levels.get(c.id)!;
                     return (
-                      <span className="inline-flex items-center gap-2">
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${levelChip[lv.level]}`} title={LEVEL_META[lv.level].label}>
-                          {LEVEL_META[lv.level].dot} {lv.level}
-                        </span>
-                        {/* dots RETIRED (John 7/16: "I don't even know what all three of
-                            the dots are"). A company row aggregates its contacts — the
-                            actual values live on the profile — so at least NAME the
-                            channels here instead of showing anonymous dots. */}
-                        <span className="inline-flex gap-1 text-[10px] font-semibold">
-                          {(["phone", "email", "in"] as const).map((label, i) => (
-                            <span
-                              key={label}
-                              className={`rounded px-1 py-px ${lv.channels[i] ? "bg-emerald-100 text-emerald-800" : "bg-zinc-100 text-zinc-300 line-through"}`}
-                              title={`owner ${label === "in" ? "LinkedIn" : label}: ${lv.channels[i] ? "on file" : "missing"}`}
-                            >
-                              {label}
-                            </span>
-                          ))}
-                        </span>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${levelChip[lv.level]}`} title={LEVEL_META[lv.level].label}>
+                        {LEVEL_META[lv.level].dot} {lv.level}
                       </span>
                     );
                   })()}
@@ -320,6 +307,37 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
                     {TIER_LABELS[c.size?.tier ?? "unsized"]}
                   </span>
                 </td>
+                {/* the owner's real channels — values, not dots (John 7/16) */}
+                {(() => {
+                  const ct = levels.get(c.id)!.contact;
+                  const dash = <span className="text-xs text-zinc-300">—</span>;
+                  return (
+                    <>
+                      {/* stopPropagation on the LINKS only — clicking blank
+                          space in the cell still opens the row like every
+                          other column */}
+                      <td className="max-w-52 px-4 py-3 text-xs">
+                        {ct.email ? (
+                          <a href={`mailto:${ct.email}`} onClick={(e) => e.stopPropagation()} className="block truncate text-emerald-800 hover:underline" title={ct.email}>
+                            {ct.email}
+                          </a>
+                        ) : dash}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-xs">
+                        {ct.phone ? (
+                          <a href={`tel:${ct.phone}`} onClick={(e) => e.stopPropagation()} className="text-emerald-800 hover:underline">{ct.phone}</a>
+                        ) : dash}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-xs">
+                        {ct.linkedin ? (
+                          <a href={ct.linkedin} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-emerald-800 hover:underline" title={ct.linkedin}>
+                            profile ↗
+                          </a>
+                        ) : dash}
+                      </td>
+                    </>
+                  );
+                })()}
                 <td className="px-4 py-3">
                   {c.industry ? (
                     <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700">{c.industry}</span>
@@ -366,7 +384,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={11} className="px-4 py-10 text-center text-sm text-zinc-400">
+                <td colSpan={14} className="px-4 py-10 text-center text-sm text-zinc-400">
                   No companies match the current filters.
                 </td>
               </tr>

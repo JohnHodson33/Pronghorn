@@ -6,9 +6,11 @@
 // with per-option counts. Used in toolbars AND table headers (stopPropagation
 // so header sort clicks don't fire). Mobile: panel is fixed-width but capped
 // to viewport, options are thumb-sized.
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 export type FilterOption = { value: string; label: string; count?: number };
+
+const PANEL_W = 224; // must track the w-56 on the panel below
 
 export default function FilterDropdown({
   label,
@@ -24,7 +26,17 @@ export default function FilterDropdown({
   header?: boolean; // compact style for table headers
 }) {
   const [open, setOpen] = useState(false);
+  // Header dropdowns live inside the table's horizontal scroller, so a
+  // left-aligned panel on a right-hand column runs off the screen (mobile:
+  // the counts were cut off). Flip to right-aligned when there isn't room.
+  const [alignRight, setAlignRight] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (!open || !ref.current) return;
+    const { left } = ref.current.getBoundingClientRect();
+    setAlignRight(left + PANEL_W > window.innerWidth - 8);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -63,7 +75,7 @@ export default function FilterDropdown({
         <span aria-hidden className="text-[9px] opacity-60">▼</span>
       </button>
       {open && (
-        <div className="absolute left-0 z-30 mt-1 max-h-72 w-56 max-w-[85vw] overflow-y-auto rounded-lg border border-zinc-200 bg-white py-1 shadow-lg">
+        <div className={`absolute z-30 mt-1 max-h-72 w-56 max-w-[85vw] overflow-y-auto rounded-lg border border-zinc-200 bg-white py-1 shadow-lg ${alignRight ? "right-0" : "left-0"}`}>
           {active && (
             <button
               onClick={() => onChange(new Set())}

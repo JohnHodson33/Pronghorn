@@ -3,26 +3,53 @@
 Per-lane log per PARALLEL-SESSIONS.md; the PM/integrator folds these into
 DECISION-LOG.md and wires routes into Sidebar.tsx.
 
-## 🔄 HANDOFF — ROLLED OVER 7/16 ~13:25 — successor resumes here
+## 🔄 HANDOFF — session #3 (7/16 ~13:40) — successor resumes here
 
-- **State**: nothing in flight. Last commit `081ff20` (brokers → LIST-UX
-  STANDARD) — pushed to lane/frontend, typecheck green, browser-verified.
-  Session #2 shipped 15 units 7/16 (inline edit b04bbad · filter/sort
-  persistence 2a39bc7 · companies overhaul 4904c6f · river-guides page
-  c3b42d7 · leads parity d1e0aa5 · shortlist+too-big 9e2b021 · thread
-  polish 580d68c · PE-owned UI 1a4ca54 · river-guides→standard 28b468d ·
-  listings→standard d702e40 · contacts→standard+cap-fix 8bd3511 ·
-  brokers→standard 081ff20).
-- **NEXT (in order)**: (1) DEALS → LIST-UX STANDARD (DealsTable: stage
-  chips row → Stage header dropdown; SortHeaders on Company/EBITDA/
-  Asking/Our-val/Fit; Size header dropdown; csv-string state pattern —
-  copy the brokers commit as the template); (2) ENRICHMENT →
-  standard (LeadsTable: state/list selects → header dropdowns; keep the
-  counts chips + sessionStorage); (3) River Guides item (c): company
-  profile former-company line ("sold to <acquirer>, <year> — former
-  owner is a River Guide prospect" — river_guides has company_id FKs) +
-  contact-profile river-guide panel (band/exit/former co/verification);
-  (4) watch TASK-QUEUE for John's next directives.
+- **State**: nothing in flight. Last commit `090de21` (companies dots →
+  real channel columns) — pushed to lane/frontend, typecheck green,
+  browser-verified on 809 live companies + mobile 375. Session #3 units:
+  deals→standard 6dbfd35 (+ FilterDropdown edge-flip fix, platform-wide)
+  · enrichment→standard bbc54f1 · enrichment dots→columns 8e0e25b
+  (+ InlineField `emptyLabel`) · companies dots→columns 090de21
+  (+ companyLevel now returns values, aggregated across owners).
+  **LIST-UX STANDARD is applied to all 7 list pages** (listings,
+  companies, contacts, brokers, river-guides, deals, enrichment).
+  **Contact dots are DEAD platform-wide** — `grep -rn "h-2 w-2
+  rounded-full" web/ --include=*.tsx` returns nothing. PM did
+  /river-guides (34186b1); this session did LeadsTable + CompaniesTable
+  (that second holdout was only found BY running the grep — run it
+  before believing any "done" claim). Directive item (f) is DONE.
+- **NEXT (in order)**: (1) River Guides item (c) — the last piece of the
+  original 7/16 list still mine: company profile former-company line
+  ("sold to <acquirer>, <year> — former owner is a River Guide prospect"
+  — river_guides has company_id FKs) + contact-profile river-guide panel
+  (band/exit/former co/verification);
+  (2) directive item (j): surface the status-verify worker's evidence
+  (stored in river_guides notes) on the row — expand/hover on the exit
+  chip — so John/VA can adjudicate the 27 inconclusives fast;
+  (3) TASK-QUEUE top-down. The run-visibility banner (items b/c) and the
+  river-guides columns are DONE — PM took them in 34186b1; don't redo.
+- **⚠️ Pre-existing bug someone should own**: React logs "Can't perform a
+  state update on a component that hasn't mounted yet… side-effect in
+  your render function" on EVERY route including `/` — so it's a layout
+  component (Sidebar/MobileNav/GlobalSearch), not the tables. Predates
+  this session; verified it fires on pages this lane never touched.
+  Sidebar is PM's, so it wasn't chased here.
+- **Deviation flagged for John/PM**: on Enrichment the *source list*
+  filter stayed in the toolbar — it's row provenance with no column to
+  hang a header on. Everything else on the page is header-driven.
+- **Learned this session (worth keeping)**:
+  - **The live DB carries stages the `STAGES` constant doesn't know**
+    (e.g. "CIM Received"). Any UI that builds stage filters from the
+    constant silently drops those deals. Derive from the data; the same
+    trap likely exists for other enum-ish columns mirrored in mock.ts.
+  - **FilterDropdown header panels live inside the table's
+    `overflow-x-auto`**, so left-aligned panels on right-hand columns run
+    off-screen (mobile). Fixed once in the shared component (edge-aware
+    right-align) — don't re-patch per page.
+  - Browser pane: `resize_window preset:"desktop"` put the pane in a
+    `innerWidth === 0` state (screenshots timed out). Recover with an
+    explicit `width/height` (1280x800), not the preset.
 - **Environment**: worktree C:\Users\johnd\Pronghorn-frontend, branch
   lane/frontend; dev server = launch config pronghorn-web-laneB port
   3311; NEW ROUTE DIRS need `rm -rf .next/dev` + restart (bit twice).
