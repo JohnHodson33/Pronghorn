@@ -468,9 +468,14 @@ set) into your new chips UI as a small follow-up.
   yours.
   --- original card ---
 - 🔥🔥 **TRACERFY SKIP-TRACE INTEGRATION (John created the account 7/15 eve;
-  key lands in scraper/.env as TRACERFY_API_KEY — PM runs the 49-lead
-  sample first and reports hit rate/accuracy; BUILD THIS once the sample
-  validates):** (Lane C) (a) `enrich/skiptrace.js` — Tracerfy /trace API
+  TRACERFY_API_KEY live in all worktree .envs — **SAMPLE RAN + VALIDATED
+  7/15 eve: 49 leads → 14 hits (29%), 13 w/ owner MOBILES; charged
+  PER-HIT (14 credits = $0.28). DNC scrub: 55 phones → 28 clean/27
+  flagged. PM imported fill-blanks w/ provenance: +11 owner phones
+  (7 clean, 4 flagged), +2 emails; enrichment.skiptrace jsonb carries
+  per-phone dnc/litigator flags + queue_id. Total test cost $1.38.
+  BUILD THE CASCADE TIER NOW.** Lane B addition: cold-calling queue reads
+  enrichment.skiptrace phone flags → 🚫 non-clean numbers.):** (Lane C) (a) `enrich/skiptrace.js` — Tracerfy /trace API
   (name + address → owner cell/landlines/emails), wired as a tier in the
   cascade AFTER free sources + Hunter, only for leads still missing
   owner_phone that have owner_name + address. (b) **Rules-gated**: eligible
