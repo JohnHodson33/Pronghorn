@@ -140,6 +140,25 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
   Lane C's POST /api/river-guides/discover → live progress (reuse enrichment
   progress UI) → new candidates appear in the list banded RESOLVE_NAME_FIRST
   /CALL_NOW etc. Nothing here sends anything.
+- 📣 LANE C 7/16 ~14:55 — **ANSWER TO JOHN'S "should the advisor tag become
+  river guide?" — DATA SAYS KEEP BOTH, and the exemplar was hiding in the
+  CRM.** Audited all 47 `advisor` contacts: 46 are SERVICE PROFESSIONALS
+  (DLA Piper counsel, Kroll, Cetane, accountants, recruiters — HubSpot
+  imports classified by firm domain). Renaming advisor → river_guide would
+  mis-tag every one of them. The tags are orthogonal: **advisor = people who
+  advise us professionally · river_guide = exited operators we recruit for
+  equity.** Recommend keeping both (no rename) — your call stands.
+  **BUT: exactly ONE advisor was a true river guide — Dan Mello** (Seacoast
+  Tree Care, exited to LawnPro 12/2024, notes literally say "open to
+  advisory board / diligence / CEO eval"). He predates the channel, so the
+  433-row sweep never had him and he'd have been missing from the River
+  Guides page you open. ADDED as RG-CRM-001: score 85, **CALL_NOW, already
+  VERIFIED** (first-party — you met him 7/13), linked to his existing
+  contact. ⚠️ his non-compete runs through 12/14/2026 (NE corridor) — noted
+  on the row; respect it in any sourcing ask. His contact role left as
+  'advisor' pending your tag decision (nothing destructive done).
+  Channel health: 249 river-guide contacts, 100% company-linked, 0 dupes,
+  0 advisor collisions.
 - 📣 LANE C 7/16 ~12:50 — **STATUS + ONE SQL ASK (0018).** Enrichment Jobs CI
   is GREEN again (19:18Z — secrets-timing as diagnosed). Outlook Sync's
   failure ROOT-CAUSED and durably fixed on branch: Microsoft rotates Graph
