@@ -482,6 +482,20 @@ set) into your new chips UI as a small follow-up.
   guard applies (never count a traced number that matches the company
   main line as an owner channel). (e) GH secret TRACERFY_API_KEY joins
   John's batch (now 6). Sample CSV: Downloads/pronghorn-skiptrace-sample-50.csv.
+  **API SPECIFICS (Tracerfy docs, Downloads/tracerfy-api-docs.md):** Bearer
+  auth; base https://tracerfy.com/v1/api. Use **batch person-mode**: POST
+  /trace/ w/ csv_file + column mappings, trace_type='normal' (1 credit ≈
+  $0.02/lead); poll GET /queues/ (max 1/20s) or account webhook; results
+  CSV at download_url includes misses. Instant person lookup = POST
+  /trace/lookup/ find_owner:false (5 credits/hit, 0/miss, 500 RPM) for the
+  in-cascade single-lead path. ⚠️ NEVER use find_owner:true / 'advanced' on
+  business addresses — returns the PROPERTY owner (often the landlord, not
+  the business owner). **BONUS — DNC/TCPA COMPLIANCE:** trace responses
+  carry per-phone dnc/tcpa-litigator flags, and POST /dnc/scrub-from-queue/
+  (1 credit/phone) scrubs Federal/State DNC + litigator lists. INTEGRATE:
+  store dnc/litigator flags on every traced phone; cold-calling queue shows
+  🚫 on flagged numbers + excluded from all automated-outreach eligibility.
+  Rate limits: 10 batch posts / 5 min.
 - 🔥🔥🔥 **LINKEDIN MATCH QUALITY OVERHAUL (John 7/15 ~11:40 — found All Turf's
   owner LinkedIn was a WRONG-PERSON match he disproved in 30 seconds; "every
   representative example I look at seems to be wrong… I'd be trusting it for
