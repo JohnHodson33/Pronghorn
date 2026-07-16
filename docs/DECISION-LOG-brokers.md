@@ -1131,3 +1131,31 @@ businessesforsale broker probes; painting-heal check; TASK-QUEUE lane items.
   (~24 recovered thesis-fit targets). 21 painting listings tiered so far; 127
   active painting rows still tier=null — draining via the nightly untieredIds
   self-heal (re-screen backlog check in source_health.js watches it).
+
+## 2026-07-16 — CI VERIFIED END-TO-END; broker probes: VR has named agents + EMAIL
+- **nightly-scrape CI test run 29523150326: SUCCESS** (full ~55-min scrape on
+  the Node-22 branch). PM messaged to merge lane/brokers → main so the 06:00
+  cron self-drives. The 3-day CI outage is closed pending that merge.
+- Broker probes (detail pages): **vr (bizbizbiz.com) is the prize — embedded
+  JSON w/ BrokerFirstName/BrokerLastName/BrokerEmail + /advisor/<slug>/ profile
+  link (named agent WITH EMAIL — top outreach value).** Caveat: the block
+  appeared on first fetch but not on a re-fetch (bot-detection variance?) —
+  probe via the adapter's browser session, not curl. murphy: has a "Broker"
+  section on detail pages, needs closer look. hedgestone +
+  businessesforsale: contact form-gated, no public agent identity — skip.
+- painting-heal: +11 T1 (124), +13 T2 (247), 127 painting rows still draining.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~12:15: branch synced + pushed; PM told to merge (CI
+fix verified: source-quality green + nightly-scrape run 29523150326 SUCCESS).
+SHIPPED today: CI Node-22 fix (8 workflows); bbf office enrichment (113
+linked, 41 offices); fcbb backfill (73/829); auto_promote LIVE (42 pursuits,
+nightly-wired); regionState→core; painting-heal confirmed. NEXT UNIT: **vr
+broker enrichment** — detail pages embed BrokerFirstName/LastName/Email JSON
+(URL-encoded in a script/attr) + /advisor/<slug>/ links; FLAKY via curl, use
+the vr adapter's browser session (vr.js is browser-based? check) to fetch ~3
+detail pages, locate the JSON carrier element, then add gated enrichment
+(named agent + email → brokers table; pipeline takes named or firm rows).
+Then murphy "Broker" section second look. SKIP hedgestone/businessesforsale
+(form-gated). BLOCKED: bizbuysell Listed-By (Akamai). Queue: TASK-QUEUE Lane A
+(delisting/freshness already live; RIVER GUIDES item marked LATER by PM).
