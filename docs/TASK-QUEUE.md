@@ -140,6 +140,27 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
   Lane C's POST /api/river-guides/discover → live progress (reuse enrichment
   progress UI) → new candidates appear in the list banded RESOLVE_NAME_FIRST
   /CALL_NOW etc. Nothing here sends anything.
+- 📣 LANE C 7/16 ~11:35 — **RIVER GUIDES BACKEND COMPLETE ON lane/integrations;
+  JOHN'S ONE SQL PASS UNLOCKS THE WHOLE CHANNEL.** For the MORNING-BRIEF: John
+  runs **0015 + 0016 together** (SQL editor, in order: 0015 shortlist +
+  toobig threshold · 0016 river_guides table + companies.pe_owned/pe_owner
+  columns). The moment they land I: ingest the 433-row local seed (contacts
+  role river_guide + former companies w/ pe_owned ground truth), fire the
+  first status-verification batch on CALL_NOW (the list→call-list unlock),
+  and start identity resolution on the 197 TBD rows. Lane B's live page
+  endpoints all served: GET /api/river-guides (client filters ✓), POST
+  /api/river-guides/enrich {dealIds} ✓, POST /api/river-guides/discover
+  {industry, consolidator} ✓ (bounded 60s sweep, hallucination-guarded,
+  needs **SERPER_API_KEY + ANTHROPIC_API_KEY added to web env + Vercel** —
+  currently returns a clean 503 note without them; add to John's env list).
+  ALSO: Enrichment Jobs CI failure investigated — main's code = my code,
+  exits 0 locally in an exact-CI env repro (empty queue, 5 secrets only);
+  failures clustered 15:40–17:54Z alongside other workflows that have since
+  recovered → consistent with secrets being added mid-window. Hardened the
+  real defect found while tracing: a poisoned job now marks itself failed
+  instead of crash-looping the runner unmarked; fatal errors log full stacks.
+  Watch the next scheduled run — if it still fails, the full stack will be
+  in the log.
 - 📣 PM 7/13 ~15:00 — **LANE B: THE SIZE CONTRACT IS UP, START THE BUILD.**
   Lane C shipped it (merged + deployed): `/api/size-model` GET/PATCH =
   assumptions + Platform/Too-small thresholds (all editable, cascade on

@@ -65,13 +65,23 @@ async function mintCrmRecords(g, dryRun) {
   const hit = (candidates || []).find((c) => norm(c.name) === norm(g.their_company));
   if (hit) companyId = hit.id;
   else if (!dryRun) {
-    const { data: created, error } = await supabase.from('companies').insert({
+    const row = {
       name: g.their_company, website: g.company_website || null,
       city: g.location_city || null, state: g.location_state || null,
       origin: 'river_guide',
       industry: { LANDSCAPE: 'Landscaping', LAWN_CARE: 'Lawn Care', TREE_CARE: 'Tree Care', POOL_SERVICES: 'Pool Services', FENCING: 'Fencing', COMMERCIAL_KITCHEN_SERVICE: 'Other', PEST: 'Pest Control' }[g.industry] || 'Other',
+      // 0016 makes PE ownership first-class on companies — these 433
+      // consolidator acquisitions are ground truth (John's own callout)
+      pe_owned: true,
+      pe_owner: `${g.acquirer}${g.acquirer_pe_sponsor ? ` (${g.acquirer_pe_sponsor})` : ''}`,
       notes: `River-guide seed: acquired by ${g.acquirer}${g.acquirer_pe_sponsor ? ` (${g.acquirer_pe_sponsor})` : ''}${g.deal_year ? `, ${g.deal_year}` : ''} — institutionally owned. Former owner: ${g.full_name}. [${g.deal_id}]`,
-    }).select('id').single();
+    };
+    let { data: created, error } = await supabase.from('companies').insert(row).select('id').single();
+    if (error && /pe_owned|pe_owner/.test(error.message)) {
+      // pre-0016 companies columns — retry without them (notes still carry it)
+      delete row.pe_owned; delete row.pe_owner;
+      ({ data: created, error } = await supabase.from('companies').insert(row).select('id').single());
+    }
     if (error) log.warn(`  company ${g.their_company}: ${error.message}`);
     else companyId = created.id;
   }

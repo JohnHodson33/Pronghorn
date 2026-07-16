@@ -48,6 +48,13 @@ create table if not exists river_guides (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+-- PE-ownership becomes first-class on companies (PM architecture decision):
+-- the 433 consolidator acquisitions are ground truth, and Lane C's
+-- enrichment-detected flags graduate from lead jsonb to queryable columns.
+alter table companies
+  add column if not exists pe_owned boolean,
+  add column if not exists pe_owner text;
+
 create index if not exists river_guides_band_idx on river_guides (priority_band);
 create index if not exists river_guides_status_idx on river_guides (enrichment_status);
 create index if not exists river_guides_state_idx on river_guides (location_state);
