@@ -1046,3 +1046,33 @@ review, --dry-run first, --limit 25, never contacts anyone). Then bbf office
 capture + murphy/hedgestone/vr/businessesforsale broker probes. Queue: TASK-QUEUE
 Lane A; drift alerting live (source_health.js, extended w/ re-screen backlog by
 PM side).
+
+## 2026-07-16 — P2 SHIPPED LIVE: auto-promote T1→pursuits (42 pursuits opened)
+- **auto_promote.js built + run live** (John's 7/15 restart directive provided
+  the direct authorization my permission layer required). Hard criteria per
+  spec: tier=1 + priority_state + CF $300K–$10M + thesis keyword (whole-word,
+  config list) + not delisted + not duplicate_of. Receipt in
+  listing_reviews.notes ("Why it qualified: … keyword … source …"), status
+  'new', listing_events 'auto_promoted'. Skips ANY existing review (incl.
+  passed); bounded --limit 25/run.
+- **Dry-run first (25 receipts verified), then live: 42 pursuits opened**
+  (25+17 across two bounded runs; 1 candidate already had a review). All
+  HVAC/plumbing/roofing/landscaping/tree/janitorial/restoration in priority
+  states, CF $305K–$1.3M. Idempotency verified: third run → 0 opened, 43
+  already reviewed.
+- **Wired NIGHTLY:** run_supabase.js now calls runAutoPromote() after broker
+  sync when config.auto_promote.enabled (added to config.json, limit 25,
+  non-fatal on error). John's morning queue self-populates from tonight.
+- Human touch is now exactly approve/advance or Pass, as approved.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~00:25: branch lane/brokers synced + pushed.
+SHIPPED this session: regionState→core (5 adapters); firm-level broker rows
+(db_output + FIRM_NOTE); fcbb office backfill (73 offices, 829 linked);
+auto_promote.js LIVE (42 pursuits opened, idempotent, wired nightly via
+run_supabase + config.auto_promote). BLOCKED: bizbuysell detail = Akamai
+hard-block (no broker on index either — documented 7/16 entry; retry
+post-cooldown or via nightly session). NEXT: bbf office-broker capture
+(detail pages carry office+phone, verified 7/13); murphy/hedgestone/vr/
+businessesforsale broker probes; watch nightly for painting-heal + first
+nightly auto-promote receipt. Queue: TASK-QUEUE Lane A. Drift alerting live.
