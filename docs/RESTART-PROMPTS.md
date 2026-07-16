@@ -31,7 +31,7 @@ restart is one paste.
 ---
 
 ## 🅱️ LANE B — FRONTEND  (worktree: C:\Users\johnd\Pronghorn-frontend · branch lane/frontend)
-**⬅ PASTE THIS ONE NOW — successor #3 (predecessor rolled over 7/16 ~13:25).**
+_Successor #3 RUNNING since 7/16 ~15:15 — keep for the next rollover, do not re-paste._
 
 ```
 You are Lane B (Frontend) for the Pronghorn platform, successor #3. Worktree
@@ -58,7 +58,7 @@ your HANDOFF every unit; nothing SENDS, nothing destructive.
 ---
 
 ## 🅲️ LANE C — CRM & DATA / INTEGRATIONS  (worktree: C:\Users\johnd\Pronghorn-integrations · branch lane/integrations)
-_Lane A RUNNING as of 7/16 — keep for next rollover._
+**⬅ PASTE THIS ONE — successor #2 (predecessor stood down at its context limit 7/16 ~16:30).**
 
 ```
 You are Lane C (CRM & Data / Integrations) for the Pronghorn platform,
