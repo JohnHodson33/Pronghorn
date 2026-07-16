@@ -37,11 +37,27 @@ flags_backfill.js running over ~300 enriched leads (background).
 /api/companies/[id]/shortlist + shortlist[] on /api/companies +
 ?shortlisted= filter. Lane B renders the ★.
 
-**NEXT (in order):** email pattern engine tier-2.5 (Hunter domain-search →
-construct+verify owner email, $0 marginal) · size model amendment 4
-(payroll-% THE input, flat 20% margin, CPI factors, Fencing industry +
-ppp_payroll_pct seeds) · flags-backfill results check · broker inquiry
-template (John's verbatim copy, inquiry_profiles 774f21ce identity).
+**RIVER GUIDES (John's direct directive 7/16 ~00:45 — built overnight, he
+reviews in the morning):** third sourcing channel fully built on branch —
+migration 0016 (river_guides table per spec §4) + 4 workers
+(scraper/riverguides/: ingest / verify_status / resolve_names / enrich_t1)
++ /api/river-guides + river-guides.yml nightly. Dry-run validated against
+the 433-row seed (236 resolved/197 TBD; CALL_NOW 95). Source files live in
+C:\Users\johnd\CRM Set up\river-guides\ (handoff, spec, CSV — CSV is source
+of truth). MORNING SEQUENCE: John runs 0015+0016 → `node
+riverguides/ingest_river_guides.js "C:\Users\johnd\CRM Set
+up\river-guides\river-guides-seed-all.csv"` → verify_status --band CALL_NOW
+first batch. Key nuances honored: exit_status is point-in-time (verification
+gate before ANY outreach), no-guess identity bar, waterfall by website
+status, NEEDS_PAID never auto-pays, flags backfill results: 14 PE-owned /
+21 non-US / 51 too-big of 400.
+
+**NEXT (in order):** river-guides ingest+first batches the moment 0016 lands
+· email pattern engine tier-2.5 (Hunter domain-search → construct+verify
+owner email, $0 marginal) · size model amendment 4 (payroll-% THE input,
+flat 20% margin, CPI factors, Fencing industry + ppp_payroll_pct seeds) ·
+broker inquiry template (John's verbatim copy, inquiry_profiles 774f21ce
+identity).
 
 --- prior session's handoff (7/13) below for history ---
 **State (2026-07-13 ~14:00):** Migrations

@@ -409,6 +409,39 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+- 🔨 LANE C — 🔥🔥🔥 **RIVER GUIDES CHANNEL — BACKEND BUILT 7/16 overnight
+  (John's direct directive ~00:45, "run with this, I'll look in the
+  morning"). AWAITING: John runs migration 0016 (with 0015) → I ingest the
+  433-row seed + fire the first worker batches immediately.** Architecture
+  per John's instinct: NO separate scraping section — `river_guides` table =
+  the channel's workstream state (lifecycle NEEDS_NAME→PENDING_T1→T1_DONE|
+  NEEDS_PAID→ENRICHED→VERIFIED, spec §4 schema, scoring §3, provenance);
+  RESOLVED people also become CRM CONTACTS (role 'river_guide') tagged to a
+  COMPANY record for the business they sold (origin 'river_guide', website
+  anchored; notes carry "acquired by <consolidator> (<sponsor>)" — direct
+  PE-ownership input as John noted). Workers (scraper/riverguides/):
+  `ingest_river_guides.js` (idempotent on deal_id; dry-run validated: 433
+  rows = 236 resolved/197 TBD, bands CALL_NOW 95 · ENRICH 127 · NURTURE 14 ·
+  RESOLVE_NAME_FIRST 197; top states FL 72, TX 31, CO 25, GA 25) ·
+  `verify_status.js` (THE high-leverage job: exit_status is point-in-time at
+  close → fresh LinkedIn/web re-check sets current_status_verified, flips
+  EMPLOYED→EXITED, rescores; NOBODY contacted unverified) ·
+  `resolve_names.js` (identity resolution w/ code-enforced no-guess bar:
+  name + source URL + non-low confidence or stays TBD — the hallucination
+  guard from the research) · `enrich_t1.js` (waterfall routed by website
+  status: LIVE→Hunter domain-first, REDIRECTS→acquirer domain,
+  DEFUNCT/NOT_FOUND→verified-LinkedIn-first; failures → NEEDS_PAID review
+  queue, nothing auto-pays). API: GET/PATCH/POST /api/river-guides (filters
+  band/status/industry/state/name_status/q + counts incl. state M&A density;
+  POST queue_enrichment/queue_verification = John's "select for enrichment").
+  river-guides.yml nightly 02:30 Phoenix (verify 30 → resolve 25 → t1 20).
+  LANE B: "River Guides" page under Proprietary Sourcing off /api/river-guides
+  (band chips, lifecycle columns, select→queue actions, state density view);
+  contacts page: role filter now includes river_guide.
+  OPEN FOR JOHN (morning): (a) run 0015+0016; (b) existing 'advisor' contacts
+  (e.g. Dan Mello) — flip to river_guide or keep advisor as the broader tag?
+  (c) Archetype B (ex-corp-dev) intake is deliberately NOT built yet —
+  separate LinkedIn-recipe path per spec §5, say go when wanted.
 - 🔨 LANE C — **BROKER_ID BACKFILL — RAN 7/13 (~12:45); honest result: 2/18
   linked** (James Feng, Phil Handke — both by email). The other 16 broker
   contacts are CURATED RELATIONSHIP people (Notion/HubSpot/deal imports:
