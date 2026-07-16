@@ -26,7 +26,7 @@ export async function PATCH(req: Request) {
   const b = await req.json();
 
   if (b.thresholds && typeof b.thresholds === "object") {
-    const allowed = ["platform_min_ebitda", "platform_min_revenue", "toosmall_max_ebitda", "toosmall_max_revenue"];
+    const allowed = ["platform_min_ebitda", "platform_min_revenue", "toosmall_max_ebitda", "toosmall_max_revenue", "toobig_min_ebitda"];
     const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
     for (const k of allowed) if (k in b.thresholds) patch[k] = b.thresholds[k];
     const { error } = await db.from("size_thresholds").update(patch).eq("id", true);

@@ -6,16 +6,31 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — successor #2 live 7/16 (loop running; 7/15 backlog)
 
 - **7/15+7/16 directives**: (1) ✅ INLINE EDIT; (2) ✅ FILTER/SORT
-  PERSISTENCE; (3) ✅ COMPANIES OVERHAUL; (4) ✅ RIVER GUIDES PAGE (merged
-  + deployed, Sidebar wired by PM); (5) ✅ LeadsTable header-filter parity
-  (this unit). NEXT per PM 7/16: (a) /improvements thread polish — 0011
-  comments are REAL now, retire pseudo-thread quirks; (b) ★Shortlist chips
-  — Lane C's /api/companies/[id]/shortlist route is merged, 0015 migration
-  awaits John (degrade gracefully); Too-big tier chip rides 0015 too;
-  (c) PE-owned chips when Lane C's detection ships; (d) River Guides
-  lights up when /api/river-guides lands. NOTE for PM: the >4.5MB
-  direct-to-storage upload fix ALREADY SHIPPED 7/14 (363547f, verified
-  8MB/6MB) — queue item is stale.
+  PERSISTENCE; (3) ✅ COMPANIES OVERHAUL; (4) ✅ RIVER GUIDES PAGE;
+  (5) ✅ LeadsTable header parity; (6) ✅ ★SHORTLIST + TOO-BIG UI (this
+  unit — see 7/16 entry). NEXT: (a) /improvements thread polish (0011
+  comments real now); (b) PE-owned chips when Lane C's detection ships;
+  (c) River Guides lights up when /api/river-guides lands. NOTE for PM:
+  the >4.5MB direct-to-storage upload fix ALREADY SHIPPED 7/14 (363547f,
+  verified 8MB/6MB) — queue item is stale.
+
+## 2026-07-16 — ★Shortlist + Too-big tier UI (0015 backend, John 7/15)
+
+- **StarButton** (compact = one-tap ★ on Companies rows, toggles John's
+  star; full = John+Tom buttons w/ who/when on the profile header),
+  optimistic w/ revert — verified the pre-0015 degrade: POST returns the
+  apply-note, the star un-lights. fetchCompanies/fetchCompanyDetail join
+  company_shortlist tolerantly (two-shape select / separate query).
+- **★ Shortlist filter** (by John / by Tom, counts) in the Companies
+  toolbar, `?star=` URL param; **shortlisted-first is the standing
+  tiebreak** when no column sort is active (stable sort keeps today's
+  order until stars exist).
+- **Too-big tier**: violet chip color in all three tier maps + LeadsTable
+  count init (was a NaN waiting for the first too_big lead); Size
+  Estimation tab gains the editable "Too big: min EBITDA" boundary (seed
+  $10M); size-model PATCH whitelist gains toobig_min_ebitda (Lane C's
+  route missed it — flagged here for their awareness).
+- Everything activates the moment John applies 0015; zero code change.
 - **State facts**: migrations 0011–0014 APPLIED (threads, list progress,
   outreach rules, size assumptions all serve real data now — degrade
   paths retired naturally). Dev server = pronghorn-web-laneB, port 3311;

@@ -15,6 +15,7 @@ const tierChip: Record<string, string> = {
   platform: "bg-emerald-100 text-emerald-800",
   tuckin: "bg-sky-100 text-sky-800",
   toosmall: "bg-zinc-100 text-zinc-500",
+  too_big: "bg-violet-100 text-violet-800",
   unsized: "bg-zinc-50 text-zinc-400 border border-zinc-200",
 };
 const estShort = (r: [number, number]) => {

@@ -17,6 +17,7 @@ const tierChip: Record<string, string> = {
   platform: "bg-emerald-100 text-emerald-800",
   tuckin: "bg-sky-100 text-sky-800",
   toosmall: "bg-zinc-100 text-zinc-500",
+  too_big: "bg-violet-100 text-violet-800",
   unsized: "bg-zinc-50 text-zinc-400 border border-zinc-200",
 };
 const estShort = (r: [number, number]) => {
@@ -134,7 +135,7 @@ export default function LeadsTable({
   }, [leads]);
 
   const tierCounts = useMemo(() => {
-    const c: Record<string, number> = { platform: 0, tuckin: 0, toosmall: 0, unsized: 0 };
+    const c: Record<string, number> = { platform: 0, tuckin: 0, toosmall: 0, too_big: 0, unsized: 0 };
     for (const l of leads) if (!l.off_target) c[l.size?.tier ?? "unsized"]++;
     return c;
   }, [leads]);
