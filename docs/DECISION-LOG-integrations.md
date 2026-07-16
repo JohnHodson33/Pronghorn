@@ -2,6 +2,50 @@
 
 ## 🤝 HANDOFF (keep current — replacement session resumes from this)
 
+🛑 **SESSION STOOD DOWN 7/16 ~16:45 (context limit). READ THIS BLOCK FIRST —
+everything below it is older.** Branch `lane/integrations` clean + fully
+pushed, **HEAD fad9aa2**. Worktree `C:\Users\johnd\Pronghorn-integrations`.
+
+**TRUE STATE RIGHT NOW (supersedes every "State (…)" line below):**
+- **Migrations 0011–0018 ALL APPLIED + verified live.** Nothing is pending
+  John on the SQL side. (0015 shortlist+toobig · 0016 river_guides · 0017
+  companies.pe_owned/pe_owner · 0018 amendment-4 payroll cols + app_config +
+  river_guide_runs.)
+- **RIVER GUIDES channel is LIVE end-to-end**: 433 seeded + Dan Mello
+  (RG-CRM-001) · 249 river-guide contacts, 100% company-linked, 250
+  companies flagged pe_owned (ground truth) · run-state loop PROVEN live
+  (queued→running→receipt) · discover sweep corroboration-guarded (PM's
+  fabricated-consolidator probe inserts 0; Senske/SavATree still work).
+- **Size amendment 4 LIVE** (`/api/size-model` source=db): payroll-% is THE
+  input, flat 20% margin, CPI 1.25/1.20, Fencing first-class.
+- **AUTO-DRAFTING STILL PAUSED** (leadgen.yml `if: false`) — the ONLY gate is
+  John's review of the 5 sample drafts on /improvements card **611290ff**.
+  On approval: create his first `outreach_rule`, flip that step on, and
+  regenerate his 35 old drafts under the tailored engine.
+- **JOHN'S ONLY REMAINING ASKS**: (1) sample card 611290ff; (2)
+  SERPER_API_KEY + ANTHROPIC_API_KEY in the **Vercel** env (the discover bar
+  is proven locally and 503s cleanly without them).
+- ⚠️ **GOTCHA — two runners drain `river_guide_runs`** (local pass + PM's
+  river-guides-claim.yml). The claim is an ATOMIC conditional update
+  (736f207) — that IS the lock; do not "simplify" it back to
+  select-then-update (it produced a lying receipt on 7/16).
+- ⚠️ **LESSON**: I once wrote "queue clear" here while 3 John directives sat
+  unbuilt. ALWAYS re-read the TOP of the Lane C TASK-QUEUE section after
+  every `git merge origin/main` before claiming clear.
+
+**NEXT 3 (actionable cold — full detail in the NEXT block further down):**
+1. **Broker inquiry template** — John's verbatim copy lives in TASK-QUEUE,
+   Lane C section, item **"BROKER-LISTING OUTREACH OVERHAUL" part (B)**.
+   Identity from `inquiry_profiles` row 774f21ce (jhodson@pronghornequity.com
+   · (503) 899-0058 — NEVER the gmail). Apply to the co-pilot contact block,
+   outbox inquiry drafts, request-info drafts; grep + kill the old "I'm a
+   private investor…" copy repo-wide.
+2. **Tracerfy person-mode for river-guide phones** (`enrich/skiptrace.js`
+   exists; the run receipt already counts `found_phone`).
+3. Watch `river-guides.yml` (02:30 PHX) + `river-guides-claim.yml`.
+
+--- history below (older states; the block above wins) ---
+
 **State (2026-07-16 ~01:00, replacement session ACTIVE — resumed post-7/15
 context death):** Worktree `C:\Users\johnd\Pronghorn-integrations`, branch
 `lane/integrations`, merged with main (PM rollover: durable channel =
