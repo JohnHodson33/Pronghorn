@@ -13,6 +13,15 @@ import SortHeader from "@/components/SortHeader";
 import { useUrlFilterSync } from "@/lib/use-url-filters";
 import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 
+type Run = {
+  id: string;
+  state: "queued" | "running" | "done" | "failed";
+  counts: { total?: number; processed?: number; found_email?: number; found_linkedin?: number; found_phone?: number; escalated_paid?: number } | null;
+  note: string | null;
+  stale?: boolean;
+  finished_at: string | null;
+};
+
 type Guide = {
   deal_id: string;
   full_name: string | null;
@@ -52,6 +61,23 @@ const bandChip: Record<string, string> = {
   NURTURE: "bg-zinc-100 text-zinc-600",
   RESOLVE_NAME_FIRST: "bg-amber-100 text-amber-800",
 };
+// John's terms, not the raw enum (7/16): what happened to this person?
+const STATUS_LABEL: Record<string, string> = {
+  NEEDS_NAME: "Name first",
+  PENDING_T1: "Queued",
+  T1_DONE: "Enriched",
+  NEEDS_PAID: "Needs paid",
+  ENRICHED: "Enriched",
+  VERIFIED: "Verified",
+};
+const STATUS_CHIP: Record<string, string> = {
+  NEEDS_NAME: "bg-amber-100 text-amber-800",
+  PENDING_T1: "bg-sky-100 text-sky-800",
+  T1_DONE: "bg-emerald-100 text-emerald-800",
+  NEEDS_PAID: "bg-violet-100 text-violet-800",
+  ENRICHED: "bg-emerald-100 text-emerald-800",
+  VERIFIED: "bg-emerald-700 text-white",
+};
 const ARCHETYPE_LABEL: Record<string, string> = {
   A_EXITED_OPERATOR: "★ Exited operator",
   B_EX_CONSOLIDATOR_DEALMAKER: "Ex-consolidator",
@@ -73,10 +99,23 @@ export default function RiverGuides() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [notice, setNotice] = useState<string | null>(null);
+  const [runs, setRuns] = useState<{ active: Run[]; recent: Run[]; note: string | null }>({ active: [], recent: [], note: null });
   const [busy, setBusy] = useState(false);
   // Find-more discovery bar
   const [discIndustry, setDiscIndustry] = useState("");
   const [discConsolidator, setDiscConsolidator] = useState("");
+
+  // Run visibility (John 7/16): the page must say what's happening and what
+  // happened — without asking an agent. Polls while a run is active.
+  async function loadRuns() {
+    try {
+      const res = await fetch("/api/river-guides/runs", { cache: "no-store" });
+      if (!res.ok) return;
+      const j = await res.json();
+      setRuns({ active: j.active ?? [], recent: j.recent ?? [], note: j.note ?? null });
+      if ((j.active ?? []).length) setTimeout(() => { loadRuns(); load(); }, 5000);
+    } catch { /* runs API optional — page still works */ }
+  }
 
   async function load() {
     try {
@@ -90,7 +129,7 @@ export default function RiverGuides() {
       setGuides([]);
     }
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); loadRuns(); }, []);
 
   const csvSet = (s: Set<string>) => (s.size ? [...s].join(",") : null);
   const fromCsv = (v: string | null) => new Set((v ?? "").split(",").filter(Boolean));
@@ -282,6 +321,47 @@ export default function RiverGuides() {
         <span className="text-xs text-zinc-400">runs the consolidator acquisition-log sweep; new candidates land in the list below</span>
       </section>
 
+      {/* RUN VISIBILITY (John 7/16 ~12:50): "I click the button and have no idea
+          if it's working, when it's done, or what happened." Active run =
+          sticky live banner; last finished run = durable receipt anyone can
+          read cold (Tom included). */}
+      {runs.active.map((r) => {
+        const c = r.counts ?? {};
+        return (
+          <div key={r.id} className="sticky top-2 z-10 rounded-md border border-sky-300 bg-sky-50 px-3 py-2 text-sm text-sky-900 shadow-sm">
+            <span className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-sky-600 align-middle" />
+            <span className="font-semibold">
+              {r.state === "queued" ? "Enrichment queued" : `Enriching river guides: ${c.processed ?? 0}/${c.total ?? 0}`}
+            </span>
+            {r.state === "running" && (
+              <span className="ml-2 tabular-nums">
+                — {c.found_email ?? 0} emails · {c.found_linkedin ?? 0} LinkedIns
+                {c.found_phone ? ` · ${c.found_phone} phones` : ""}
+                {c.escalated_paid ? ` · ${c.escalated_paid} → paid queue` : ""}
+              </span>
+            )}
+            {r.note && <span className={`ml-2 text-xs ${r.stale ? "font-semibold text-amber-800" : "text-sky-700"}`}>{r.note}</span>}
+          </div>
+        );
+      })}
+      {!runs.active.length && runs.recent[0] && (
+        <div className="flex flex-wrap items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+          <span className="font-semibold">Last run:</span>
+          <span>{runs.recent[0].note}</span>
+          {(runs.recent[0].counts?.escalated_paid ?? 0) > 0 && (
+            <button
+              onClick={() => setStatusSel(new Set(["NEEDS_PAID"]))}
+              className="rounded border border-emerald-300 px-2 py-0.5 text-xs font-semibold hover:bg-emerald-100"
+            >
+              view the {runs.recent[0].counts?.escalated_paid} needing paid lookup →
+            </button>
+          )}
+        </div>
+      )}
+      {runs.note && !runs.active.length && !runs.recent.length && (
+        <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">{runs.note}</div>
+      )}
+
       {notice && <div className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-800">{notice}</div>}
 
       {/* band counts header — the working split */}
@@ -354,8 +434,10 @@ export default function RiverGuides() {
                 <SortHeader label="Score" numeric active={sortKey === "score"} dir={sortDir} onChange={sortSet("score")} />
               </th>
               <th className="px-3 py-2">
-                <FilterDropdown header label="Contact" options={reachOptions} selected={reachSel} onChange={setReachSel} />
+                <FilterDropdown header label="Email" options={reachOptions} selected={reachSel} onChange={setReachSel} />
               </th>
+              <th className="px-3 py-2">Phone</th>
+              <th className="px-3 py-2">LinkedIn</th>
               <th className="px-3 py-2">
                 <FilterDropdown header label="Status" options={statusOptions} selected={statusSel} onChange={setStatusSel} />
               </th>
@@ -369,9 +451,9 @@ export default function RiverGuides() {
           </thead>
           <tbody className="divide-y divide-zinc-100">
             {guides === null ? (
-              <tr><td colSpan={9} className="px-4 py-10 text-center text-sm text-zinc-400">Loading…</td></tr>
+              <tr><td colSpan={11} className="px-4 py-10 text-center text-sm text-zinc-400">Loading…</td></tr>
             ) : rows.length === 0 ? (
-              <tr><td colSpan={9} className="px-4 py-10 text-center text-sm text-zinc-400">
+              <tr><td colSpan={11} className="px-4 py-10 text-center text-sm text-zinc-400">
                 {apiDown ? "Waiting on the backend — nothing to show yet." : "No river guides match the filters."}
               </td></tr>
             ) : (
@@ -418,14 +500,38 @@ export default function RiverGuides() {
                       </span>
                     </td>
                     <td className="px-3 py-2.5 text-right tabular-nums">{g.fit_score ?? g.screen_score ?? "—"}</td>
+                    {/* real values, not dots (John 7/16: "I'd rather just have the actual
+                        contacts — phone, email, LinkedIn — and see if they're filled") */}
+                    <td className="max-w-56 px-3 py-2.5">
+                      {g.contact?.email ? (
+                        <a href={`mailto:${g.contact.email}`} className="block truncate text-emerald-800 hover:underline" title={g.contact.email}>
+                          {g.contact.email}
+                        </a>
+                      ) : (
+                        <span className="text-zinc-300">—</span>
+                      )}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2.5">
+                      {g.contact?.phone ? (
+                        <a href={`tel:${g.contact.phone}`} className="text-emerald-800 hover:underline">{g.contact.phone}</a>
+                      ) : (
+                        <span className="text-zinc-300">—</span>
+                      )}
+                    </td>
                     <td className="px-3 py-2.5">
-                      <span className="inline-flex gap-1" title="email · phone · LinkedIn">
-                        {[g.contact?.email, g.contact?.phone, g.contact?.linkedin_url].map((v, i) => (
-                          <span key={i} className={`h-2 w-2 rounded-full ${v ? "bg-emerald-600" : "bg-zinc-200"}`} />
-                        ))}
+                      {g.contact?.linkedin_url ? (
+                        <a href={g.contact.linkedin_url} target="_blank" rel="noreferrer" className="text-emerald-800 hover:underline" title={g.contact.linkedin_url}>
+                          profile ↗
+                        </a>
+                      ) : (
+                        <span className="text-zinc-300">—</span>
+                      )}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2.5">
+                      <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${STATUS_CHIP[g.enrichment_status] ?? "bg-zinc-100 text-zinc-600"}`}>
+                        {STATUS_LABEL[g.enrichment_status] ?? g.enrichment_status}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-3 py-2.5 text-[11px] text-zinc-500">{g.enrichment_status}</td>
                     <td className="whitespace-nowrap px-3 py-2.5 text-xs text-zinc-500">
                       {[g.location_city, g.location_state].filter(Boolean).join(", ") || "—"}
                     </td>

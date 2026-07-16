@@ -36,3 +36,24 @@ create table if not exists app_config (
 alter table app_config enable row level security;
 create policy "authenticated_full_access" on app_config
   for all to authenticated using (true) with check (true);
+
+-- RIVER-GUIDE RUN STATE (John 7/16 ~12:50, his loudest complaint: "I click
+-- the button, I have no idea if it's actually working, no idea when it's
+-- complete, no idea what has actually occurred… if Tom were to use it he'd
+-- have no idea"). Same shape as enrichment_jobs, one row per enrich click.
+create table if not exists river_guide_runs (
+  id uuid primary key default gen_random_uuid(),
+  deal_ids text[] not null default '{}',
+  state text not null default 'queued',   -- queued | running | done | failed
+  counts jsonb,                           -- {total, processed, found_email, found_linkedin, found_phone, escalated_paid}
+  cost_estimate numeric,
+  cost_actual numeric,
+  note text,                              -- the human receipt line
+  created_at timestamptz not null default now(),
+  started_at timestamptz,
+  finished_at timestamptz
+);
+create index if not exists river_guide_runs_state_idx on river_guide_runs (state);
+alter table river_guide_runs enable row level security;
+create policy "authenticated_full_access" on river_guide_runs
+  for all to authenticated using (true) with check (true);
