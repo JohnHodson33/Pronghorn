@@ -436,6 +436,17 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+- 📣 PM 7/16 ~12:00 — **RIVER GUIDES: PM SHIPPED THE CRITICAL PATH** (John's
+  #1 today; lanes were down): migration `0016_river_guides.sql` authored
+  (John runs it w/ 0015) · `scraper/ingest_river_guides.js` (parser verified
+  on all 433 rows) · GET `/api/river-guides` (deployed). **LANE C: do NOT
+  rebuild those three — your river-guides scope is now: (a) CRM linking unit
+  (RESOLVED rows → contacts tag river_guide + companies w/ pe_owned ground
+  truth, then backfill contact_id/company_id on river_guides); (b) POST
+  /api/river-guides/enrich (page already sends {dealIds}) → tier-1 waterfall
+  person-mode w/ website-status routing; (c) POST /api/river-guides/discover
+  (consolidator sweep, hallucination-guarded); (d) status-verification +
+  identity-resolution workers.** Original card follows:
 - 🔥🔥🔥 **RIVER GUIDES CHANNEL — JOHN'S 7/16 ~00:50 DIRECTIVE, slots ABOVE the
   Tracerfy tier (they share plumbing — build together where natural). READ
   docs/RIVER-GUIDES-INTEGRATION.md FIRST (PM architecture decision), then the
