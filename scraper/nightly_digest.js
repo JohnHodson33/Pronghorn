@@ -47,10 +47,22 @@ function sizeTier(lead) {
   } else if (s.crew_count) range = [s.crew_count * 2.5, s.crew_count * 4.5];
   else if (s.fleet_size) range = [s.fleet_size * 0.8, s.fleet_size * 1.6];
   else if ((lead.review_count ?? 0) >= 100) range = [5, 25];
-  if (!range) return 'unsized';
+  // AMENDMENT 4 mirror of web/lib/size.ts: PPP loan ×4.8 ×CPI ÷ payroll% is
+  // the anchor; employee paths bridge via burdened wage; flat 20% margin.
+  if ((lead.enrichment || {}).too_big === true) return 'too_big';
   const b = BENCH[lead.industry_verified] || BENCH.default;
-  const ebitdaHi = range[1] * b.revenue_per_employee * b.ebitda_margin[1];
-  // mirror of web/lib/size.ts default thresholds (amendment 3 names)
+  const pct = b.payroll_pct || 0.33, wage = b.burdened_wage || 58000, MARGIN = 0.20;
+  let revHi;
+  const loan = s.ppp?.loan && s.ppp.loan > 0 && s.ppp.loan < 10_000_000 ? s.ppp.loan : null;
+  if (loan) {
+    const year = Number(String(s.ppp?.date || '').match(/(20\d\d)/)?.[1]) || null;
+    const cpi = year === 2020 ? 1.25 : year === 2021 ? 1.20 : 1.0;
+    revHi = (loan * 4.8 * cpi / pct) * 1.15;
+  } else if (range) {
+    revHi = range[1] * wage / pct;
+  } else return 'unsized';
+  const ebitdaHi = revHi * MARGIN;
+  if (ebitdaHi * 0.74 >= 10_000_000) return 'too_big';
   return ebitdaHi >= 1_000_000 ? 'platform' : ebitdaHi < 200_000 ? 'toosmall' : 'tuckin';
 }
 

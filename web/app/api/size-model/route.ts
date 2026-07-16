@@ -26,7 +26,8 @@ export async function PATCH(req: Request) {
   const b = await req.json();
 
   if (b.thresholds && typeof b.thresholds === "object") {
-    const allowed = ["platform_min_ebitda", "platform_min_revenue", "toosmall_max_ebitda", "toosmall_max_revenue"];
+    const allowed = ["platform_min_ebitda", "platform_min_revenue", "toosmall_max_ebitda", "toosmall_max_revenue",
+      "toobig_min_ebitda", "ebitda_margin_flat", "cpi_2020", "cpi_2021"]; // amendment 4 inputs
     const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
     for (const k of allowed) if (k in b.thresholds) patch[k] = b.thresholds[k];
     const { error } = await db.from("size_thresholds").update(patch).eq("id", true);
@@ -37,6 +38,10 @@ export async function PATCH(req: Request) {
   const industry = String(b.industry ?? "").trim();
   if (!industry) return NextResponse.json({ error: "industry or thresholds required" }, { status: 400 });
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  // amendment 4: payroll % (per industry) is THE editable benchmark input
+  if (b.payroll_pct != null || b.ppp_payroll_pct != null) patch.ppp_payroll_pct = Number(b.payroll_pct ?? b.ppp_payroll_pct);
+  if (b.burdened_wage != null) patch.burdened_wage = Number(b.burdened_wage);
+  // legacy fields still accepted (not displayed as inputs)
   if (b.revenue_per_employee != null) patch.revenue_per_employee = Number(b.revenue_per_employee);
   if (Array.isArray(b.ebitda_margin) && b.ebitda_margin.length === 2) {
     patch.ebitda_margin_low = Number(b.ebitda_margin[0]);
