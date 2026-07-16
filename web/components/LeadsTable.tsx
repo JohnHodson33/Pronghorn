@@ -95,6 +95,9 @@ export default function LeadsTable({
   const [levelsSel, setLevelsSel] = useState<Set<string>>(toSet(saved.level));
   const [tiersSel, setTiersSel] = useState<Set<string>>(toSet(saved.tier));
   const [showOffTarget, setShowOffTarget] = useState(saved.offTarget === "1");
+  const [hidePe, setHidePe] = useState(saved.hidePe === "1"); // PE-owned aren't targets (John 7/15)
+  const isPe = (l: EnrichmentLead) => !!(l.enrichment as { pe_owned?: boolean } | null)?.pe_owned;
+  const peOwnerOf = (l: EnrichmentLead) => (l.enrichment as { pe_owner?: string } | null)?.pe_owner ?? null;
   useEffect(() => {
     try {
       sessionStorage.setItem(
@@ -102,11 +105,11 @@ export default function LeadsTable({
         JSON.stringify({
           q, industry: [...industriesSel].join(","), state, list,
           level: [...levelsSel].join(","), tier: [...tiersSel].join(","),
-          offTarget: showOffTarget ? "1" : "0",
+          offTarget: showOffTarget ? "1" : "0", hidePe: hidePe ? "1" : "0",
         })
       );
     } catch {}
-  }, [q, industriesSel, state, list, levelsSel, tiersSel, showOffTarget]);
+  }, [q, industriesSel, state, list, levelsSel, tiersSel, showOffTarget, hidePe]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -143,6 +146,7 @@ export default function LeadsTable({
   const rows = useMemo(() => {
     const filtered = leads.filter((l) => {
       if (!showOffTarget && l.off_target) return false;
+      if (hidePe && isPe(l)) return false;
       if (levelsSel.size && !levelsSel.has(levelOf(l))) return false;
       if (tiersSel.size && !tiersSel.has(l.size?.tier ?? "unsized")) return false;
       if (industriesSel.size && !industriesSel.has(effIndustry(l) ?? "")) return false;
@@ -162,7 +166,7 @@ export default function LeadsTable({
       const d = LEVELS.indexOf(levelOf(a)) - LEVELS.indexOf(levelOf(b));
       return d !== 0 ? d : b.created_at.localeCompare(a.created_at);
     });
-  }, [leads, q, industriesSel, state, list, levelsSel, tiersSel, showOffTarget]);
+  }, [leads, q, industriesSel, state, list, levelsSel, tiersSel, showOffTarget, hidePe]);
 
   const enrichingCount = useMemo(() => leads.filter((l) => l.status === "enriching").length, [leads]);
 
@@ -320,6 +324,17 @@ export default function LeadsTable({
             }`}
           >
             off-target · {offTargetCount}
+          </button>
+        )}
+        {leads.some(isPe) && (
+          <button
+            onClick={() => setHidePe((v) => !v)}
+            className={`ml-1 rounded-full px-2.5 py-0.5 font-semibold transition ${
+              hidePe ? "bg-rose-100 text-rose-700 ring-2 ring-rose-300" : "bg-rose-50 text-rose-600 hover:bg-rose-100"
+            }`}
+            title="PE-backed companies aren't acquisition targets"
+          >
+            {hidePe ? "PE hidden" : "hide PE"} · {leads.filter(isPe).length}
           </button>
         )}
         <span className="mx-1 text-zinc-300">|</span>
@@ -502,6 +517,14 @@ export default function LeadsTable({
                     <td className="max-w-52 px-2 py-2.5">
                       <div className="flex items-center gap-1">
                         <span className={`truncate font-medium ${clickable ? "text-emerald-800" : ""}`}>{l.name}</span>
+                        {isPe(l) && (
+                          <span
+                            className="shrink-0 rounded bg-rose-100 px-1 py-0.5 text-[10px] font-bold text-rose-700"
+                            title={peOwnerOf(l) ? `PE-owned: ${peOwnerOf(l)} — not a target` : "PE-owned — not a target"}
+                          >
+                            PE
+                          </span>
+                        )}
                         {l.website && (
                           <a
                             href={l.website}

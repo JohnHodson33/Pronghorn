@@ -8,13 +8,19 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 - **7/15+7/16 directives**: (1) ✅ INLINE EDIT; (2) ✅ FILTER/SORT
   PERSISTENCE; (3) ✅ COMPANIES OVERHAUL; (4) ✅ RIVER GUIDES PAGE;
   (5) ✅ LeadsTable header parity; (6) ✅ ★SHORTLIST + TOO-BIG UI;
-  (7) ✅ /improvements thread polish on real 0011 (this unit —
-  completion_summary kind now styles + badges correctly; verified with a
-  live comment round-trip, test row deleted; 💬 counts + reply_pending
-  confirmed real). NEXT: (a) PE-owned chips when Lane C's detection
-  ships; (b) River Guides lights up when /api/river-guides lands;
-  (c) dead-end sweep when dry. NOTE for PM: the >4.5MB direct-to-storage
-  upload fix ALREADY SHIPPED 7/14 (363547f) — queue item is stale.
+  (7) ✅ /improvements thread polish on real 0011; (8) ✅ RIVER GUIDES
+  LIVE — Lane C's backend landed, page lit up with ZERO code change (433
+  candidates: 106 Call now · 130 Enrich&assess · 14 Nurture · 183 Resolve
+  name; band filter + URL sync verified on real data); 0015 APPLIED —
+  stars verified persisting (star→read→unstar round-trip); (9) ✅
+  PE-OWNED UI (this unit): PE badge w/ pe_owner tooltip + "Hide PE-owned"
+  filter (?pe=hide) on Companies; hide-PE toggle + badge on Enrichment
+  (sessionStorage); PE-owned chip on the company profile header.
+  fetchCompanies reads the 0017 columns tolerantly AND backstops from
+  lead enrichment.pe_owned — 14 companies + 9 leads flag TODAY, before
+  Lane C's column backfill. ALL 7/15+7/16 Lane B directives are now
+  shipped. NEXT: dead-end sweep / new TASK-QUEUE items. NOTE for PM: the
+  >4.5MB upload fix ALREADY SHIPPED 7/14 (363547f) — queue item stale.
 
 ## 2026-07-16 — ★Shortlist + Too-big tier UI (0015 backend, John 7/15)
 

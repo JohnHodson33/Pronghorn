@@ -41,6 +41,8 @@ export type CompanyDetail = {
     notes: string | null;
     listingId: string | null;
     createdAt: string;
+    peOwned: boolean;
+    peOwner: string | null;
   };
   deal: {
     id: string;
@@ -227,6 +229,9 @@ export async function fetchCompanyDetail(id: string): Promise<CompanyDetail | nu
       notes: c.notes,
       listingId: c.listing_id,
       createdAt: c.created_at,
+      // pe columns arrive with 0017 (select * tolerates absence)
+      peOwned: !!(c as Record<string, unknown>).pe_owned,
+      peOwner: ((c as Record<string, unknown>).pe_owner as string | null) ?? null,
     },
     deal,
     contacts: contacts ?? [],
