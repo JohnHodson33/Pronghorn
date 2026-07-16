@@ -84,7 +84,7 @@ export async function POST(req: Request) {
   });
   if (!aiRes.ok) return NextResponse.json({ error: `extraction failed (${aiRes.status})` }, { status: 502 });
   const ai = await aiRes.json();
-  let acquisitions: { company: string; year: number | null; seller_name: string | null; seller_result_index: number | null; city: string | null; state: string | null; result_index: number }[] = [];
+  let acquisitions: { company: string; year: number | null; acquirer_quote: string | null; seller_name: string | null; seller_result_index: number | null; city: string | null; state: string | null; result_index: number }[] = [];
   try { acquisitions = JSON.parse(ai.content[0].text.match(/\{[\s\S]*\}/)[0]).acquisitions ?? []; } catch { /* no valid extraction */ }
 
   const db = serverDb();
