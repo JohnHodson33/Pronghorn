@@ -25,14 +25,12 @@ outbox, outreach_tracks, enrichment_jobs + taxonomy, usage_events, feedback).
 **MISSING: 0011 (feedback_comments) + 0012 (lead_lists.progress)** — both on
 John's morning list. Build against the degrade paths until he runs them.
 
-**📮 PM SESSION CHANGED (7/13 — CORRECTED ~01:20, the 00:15 id was WRONG):**
-the prior PM session (local_29b1759e-…) is DEAD. The ACTIVE PM session id is
-**`local_b552862b-ea9f-4559-8adc-400f0bbf8c58`** ("Pronghorn PM loop") —
-send all cross-session status/reports there. (The earlier-posted
-local_1c8f3b29-… does not exist — PM mis-derived it; replying to any message
-FROM the PM also works.) First loop after pulling this: acknowledge in your
-DECISION-LOG so PM knows the pointer landed. (TASK-QUEUE stays the durable
-channel regardless.)
+**📮 PM ROLLOVER IN PROGRESS (7/15 ~23:20):** the PM session
+local_b552862b-… hit its context limit and handed off (docs/PM-HANDOFF.md
+is current through 7/15 23:20). **Until the NEW PM session posts its id
+here, use TASK-QUEUE.md as the ONLY status channel** — do not send
+cross-session messages to local_b552862b (retiring) or any older id.
+The new PM's first action is updating this block.
 
 **🌙 AUTONOMY NIGHT ORDER (John, logging off 7/12 ~21:00 — verbatim intent:
 "really push for the agents to self direct on creating new functionalities
