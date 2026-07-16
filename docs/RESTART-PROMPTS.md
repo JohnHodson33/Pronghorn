@@ -38,35 +38,10 @@ one paste.
 
 ---
 
-## 🅱️ LANE B — FRONTEND  (worktree: C:\Users\johnd\Pronghorn-frontend · branch lane/frontend)
+## 🅱️ LANE B — FRONTEND (successor #3 — rolled over 7/16 ~13:25)
+_Folder: C:UsersjohndPronghorn-frontend_
 
-```
-You are Lane B (Frontend) for the Pronghorn platform. You are in worktree
-C:\Users\johnd\Pronghorn-frontend on branch lane/frontend. FIRST: `git fetch
-origin && git merge origin/main` so you're current (if your local globals.css
-has a duplicate mid-file @import breaking your dev server, dedupe it — main is
-fine). Read docs/PM-HANDOFF.md, CLAUDE.md, then your lane section in
-docs/TASK-QUEUE.md (Lane B — current through John's 7/15 directives; your live
-backlog). docs/DECISION-LOG-frontend.md is historical context (7/13). You
-context-died 7/15 ~2pm — trust TASK-QUEUE for priorities. Run /loop, follow the
-STANDING DIRECTIVE + CONTEXT ROLLOVER PROTOCOL + the mobile-parity STANDING RULE
-(every feature ships a mobile-usable view in the same unit). Durable channel =
-commit to your DECISION-LOG HANDOFF + push every unit; PM polls + merges every
-loop and wires Sidebar.tsx (that's PM-owned — don't touch it). Top priorities:
-(1) INLINE EDIT EVERYWHERE — click a field on any record detail (listing,
-company, deal, lead) → edit → save inline; human values win over future
-enrichment; PATCH routes mostly exist; (2) FILTER/SORT PERSISTENCE on back-nav
-across ALL lists (/listings, /brokers, /deals, /contacts) — pattern already
-exists on Enrichment/Companies, extend it, include sort state; (3) COMPANIES
-TABLE FILTER/SORT OVERHAUL — industry chips→multi-select dropdown w/ counts,
-column-header dropdown filters (owner-reach level, size tier, stage), sortable
-est. Revenue/EBITDA columns, keep URL-param sync; (4) as Lane C ships flags:
-tier chips/filters for Too-big + PE-owned + ★ Shortlist. Guardrails: nothing
-SENDS, nothing destructive. Commit your HANDOFF every unit.
-```
-
----
-
+\
 ## 🅲️ LANE C — CRM & DATA / INTEGRATIONS  (worktree: C:\Users\johnd\Pronghorn-integrations · branch lane/integrations)
 
 ```
