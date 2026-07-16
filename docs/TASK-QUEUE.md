@@ -467,6 +467,21 @@ set) into your new chips UI as a small follow-up.
   inert, delete at leisure. Lane B: rules editor + "why drafted" line remain
   yours.
   --- original card ---
+- 🔥🔥 **TRACERFY SKIP-TRACE INTEGRATION (John created the account 7/15 eve;
+  key lands in scraper/.env as TRACERFY_API_KEY — PM runs the 49-lead
+  sample first and reports hit rate/accuracy; BUILD THIS once the sample
+  validates):** (Lane C) (a) `enrich/skiptrace.js` — Tracerfy /trace API
+  (name + address → owner cell/landlines/emails), wired as a tier in the
+  cascade AFTER free sources + Hunter, only for leads still missing
+  owner_phone that have owner_name + address. (b) **Rules-gated**: eligible
+  = thesis industry, US, not PE-flagged, within size bounds; per-run budget
+  cap (like Hunter's) honored from digest/job caps. (c) **Metered**: $0.02/
+  hit into usage_events (service 'tracerfy'), quota/cost line on the badge;
+  /api/enrich estimate includes the tracing marginal. (d) **Provenance +
+  honesty**: phones land w/ source:'skip-trace' + confidence; company-line
+  guard applies (never count a traced number that matches the company
+  main line as an owner channel). (e) GH secret TRACERFY_API_KEY joins
+  John's batch (now 6). Sample CSV: Downloads/pronghorn-skiptrace-sample-50.csv.
 - 🔥🔥🔥 **LINKEDIN MATCH QUALITY OVERHAUL (John 7/15 ~11:40 — found All Turf's
   owner LinkedIn was a WRONG-PERSON match he disproved in 30 seconds; "every
   representative example I look at seems to be wrong… I'd be trusting it for
