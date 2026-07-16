@@ -14,12 +14,16 @@ export type CompanyContactLite = {
 
 export function companyLevel(contacts: CompanyContactLite[] | null | undefined, website?: string | null): {
   level: Completeness;
-  channels: [boolean, boolean, boolean]; // phone · email · linkedin (owner's)
+  // The owner's ACTUAL channel values — the dots are retired platform-wide
+  // (John 7/16: "I'd rather just have the actual contacts"). Aggregated as
+  // the first non-null ACROSS owner contacts, matching companyCompleteness in
+  // completeness.ts: a company with the phone on one owner row and the email
+  // on another really is reachable both ways, and showing "—" would lie.
+  contact: { phone: string | null; email: string | null; linkedin: string | null };
 } {
   const owners = (contacts ?? []).filter((c) => c.role === "owner" || c.role === "seller");
   const pool = owners.length > 0 ? owners : [];
   let best: Completeness = website ? "basic" : "raw";
-  let channels: [boolean, boolean, boolean] = [false, false, false];
   for (const c of pool) {
     const lv = completeness({
       owner_name: c.name,
@@ -28,10 +32,14 @@ export function companyLevel(contacts: CompanyContactLite[] | null | undefined, 
       owner_linkedin: c.linkedin,
       website: website ?? null,
     });
-    if (LEVELS.indexOf(lv) < LEVELS.indexOf(best)) {
-      best = lv;
-      channels = [!!c.phone, !!c.email, !!c.linkedin];
-    }
+    if (LEVELS.indexOf(lv) < LEVELS.indexOf(best)) best = lv;
   }
-  return { level: best, channels };
+  return {
+    level: best,
+    contact: {
+      phone: pool.find((c) => c.phone)?.phone ?? null,
+      email: pool.find((c) => c.email)?.email ?? null,
+      linkedin: pool.find((c) => c.linkedin)?.linkedin ?? null,
+    },
+  };
 }
