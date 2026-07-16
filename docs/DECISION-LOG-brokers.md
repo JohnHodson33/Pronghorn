@@ -1401,3 +1401,42 @@ listings). If unpublished, add to NO_BROKER_REASON in source_quality.js w/ the
 measured reason. Then: opportunistic new-source hunt only (frontier closed — do
 NOT re-probe NV/GA/NM, TX-assoc, FL-green; avoid BizBuySell/bbms.info iframe
 mirrors). RIVER GUIDES marked LATER by PM.
+
+## 2026-07-16 — viking advisors SHIPPED (32/42, 21 named) → ACTIONABLE GAP LIST NOW EMPTY ✅
+- viking.js: detail pages embed a Person schema naming the deal advisor.
+  **32/42 enriched, 0 errors → 21 named advisors** (Jackson Payne, Andrew
+  Rehwinkel, Reed Kelly, Tim McGlone…). Also fixed a latent bug in my own patch:
+  viking.js had NO UA constant, which my enrichment referenced — would have
+  thrown at runtime.
+- **PHONE DELIBERATELY NULL.** Viking's only published number is the corporate
+  switchboard (704.676.0940, identical on every listing). Storing it as an
+  advisor's phone would repeat exactly the error Lane C had to unwind on 7/15
+  ("11/25 owner_phones were the company MAIN LINE — inflating contactable").
+  Verified: 0 viking rows carry the switchboard. Name + firm only; better an
+  honest null than a fake direct dial.
+- **`source_quality.js` now reports "Broker-contact gaps: none actionable ✅"** —
+  every fixable gap closed. The 4 residuals print separately as structural, each
+  with its measured reason. Coverage 28% → 40%.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~18:00: branch synced + pushed, tree clean.
+CI Node-22 fix MERGED to main — 06:00 cron self-drives (nightly-scrape run
+29523150326 SUCCESS after the 3-day outage).
+**LISTING-BROKER DIRECTIVE (John 7/15) = DONE.** Every source that publishes
+broker identity captures it at ingest: named agents — murphy 59, vr 33 (22 w/
+direct email), viking 21, empire 2 (w/ email), + dealrelations, sunbeltmidwest,
+linkbusiness, wpbdp, businessbroker; firm offices — fcbb 73 (829 listings), bbf
+41 (113), bizmls 5 (9). Coverage 28%→40%. ACTIONABLE GAPS: none. Structural
+(measured, not open work): bizbuysell=Akamai hard-block, hedgestone +
+businessesforsale=form-gated, tupelomarket=no structured field/prose only on
+sub-gate listings (0/90 → disabled behind flag).
+ALSO TODAY: auto_promote LIVE + self-driving (45 events, nightly-wired);
+regionState→core (5 adapters); source_quality gap de-noising; CI fix (8
+workflows).
+METRICS: 21,967 listings, T1 126 / T2 248, backlog 37 (self-drained from 127),
+all 30 sources green.
+NEXT: no open Lane A work — TASK-QUEUE standing items are all shipped (PM should
+mark them ✅). Do SELF-ITERATE audits (act only on flags) + opportunistic
+new-source hunt ONLY. Frontier closed: do NOT re-probe NV/GA/NM
+(aggregator-dominated), TX-assoc (TABB=BizBuySell mirror), FL-green (=BBF
+members); avoid BizBuySell + bbms.info iframe mirrors. RIVER GUIDES = LATER (PM).

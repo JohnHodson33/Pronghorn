@@ -9,6 +9,7 @@ const SourceScraper = require('../core/source_base');
 const { stateFromText } = require('../core/states');
 
 const URL = 'https://www.vikingmergers.com/businesses-for-sale/';
+const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 
 class VikingScraper extends SourceScraper {
   async scrape() {
@@ -29,8 +30,47 @@ class VikingScraper extends SourceScraper {
       }
     });
 
+    if (this.config.enrich_details) await this.enrichBrokers(listings);
+
     this.info(`Scrape complete — ${listings.length} listings (${pageErrors} errors)`);
     return { listings, stats: { pagesOk: pageErrors ? 0 : 1, pageErrors } };
+  }
+
+  // Listing advisor (John 7/15 directive). Detail pages embed a Person schema
+  // ("name" + "jobTitle") naming the deal's advisor — present on ~half of them.
+  // PHONE, deliberately omitted: the only number on the page is Viking's
+  // corporate line (704.676.0940, identical across listings). Storing it as the
+  // advisor's phone would repeat the "company main line inflates contactable"
+  // error Lane C had to unwind on owner_phone (7/15). Name + firm only.
+  async enrichBrokers(listings) {
+    const minCash = this.config.enrich_min_cash_flow ?? 300000;
+    const cap = this.config.max_detail_enrich ?? 60;
+    const targets = listings
+      .filter((l) => l.cash_flow != null && l.cash_flow >= minCash && l.url)
+      .slice(0, cap);
+    if (targets.length === 0) { this.info('Broker enrichment: no listings meet threshold'); return; }
+    this.info(`Broker enrichment: ${targets.length} listing(s) (cash flow ≥ ${minCash}, cap ${cap})`);
+
+    let enriched = 0;
+    let errors = 0;
+    for (const l of targets) {
+      try {
+        const res = await this.fetchRetry(l.url, { headers: { 'User-Agent': UA } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const html = (await res.text()).replace(/[\r\n]+/g, ' ');
+        const m = html.match(/"name":\s*"([^"]{3,40})",\s*"jobTitle":\s*"([^"]{3,40})"/);
+        if (m && /^[A-Za-z][A-Za-z.'-]+(\s+[A-Za-z][A-Za-z.'-]+)+$/.test(m[1].trim())) {
+          l.broker = { name: m[1].trim(), company: 'Viking Mergers & Acquisitions', phone: null, email: null };
+          l.raw = { ...l.raw, advisor_title: m[2].trim() };
+          enriched++;
+        }
+        await this.sleep(700);
+      } catch (err) {
+        if (errors < 2) this.warn(`Broker enrichment ${l.source_listing_id}: ${err.message}`);
+        if (++errors >= 8) { this.warn('Broker enrichment: too many errors, stopping'); break; }
+      }
+    }
+    this.info(`Broker enrichment complete — ${enriched} enriched (${errors} errors)`);
   }
 
   parsePage(html) {

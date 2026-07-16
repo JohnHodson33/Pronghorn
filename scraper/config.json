@@ -27,7 +27,11 @@
     },
     "viking": {
       "enabled": true,
-      "module": "./sources/viking"
+      "module": "./sources/viking",
+      "enrich_details": true,
+      "enrich_min_cash_flow": 300000,
+      "max_detail_enrich": 60,
+      "_comment": "Detail pages embed a Person schema naming the deal advisor (~half of listings). Phone intentionally not captured — the page's only number is the corporate switchboard, same on every listing."
     },
     "transworld": {
       "enabled": true,
