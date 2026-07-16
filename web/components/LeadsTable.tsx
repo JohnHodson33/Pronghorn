@@ -12,6 +12,7 @@ import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 import { TIERS, TIER_LABELS } from "@/lib/size";
 import InlineField from "@/components/InlineField";
 import FilterDropdown from "@/components/FilterDropdown";
+import SortHeader from "@/components/SortHeader";
 
 const tierChip: Record<string, string> = {
   platform: "bg-emerald-100 text-emerald-800",
@@ -42,6 +43,13 @@ const levelChip: Record<Completeness, string> = {
   basic: "bg-zinc-100 text-zinc-600",
   raw: "bg-zinc-50 text-zinc-400",
 };
+
+type SortKey = "level" | "company" | "size" | "industry" | "location" | "owner" | "status";
+
+// The lead list a row came from ("Tree Care — Phoenix") — provenance, not a
+// column; it filters from the toolbar since there's no header to hang it on.
+const listNameOf = (l: EnrichmentLead) =>
+  l.list ? `${l.list.industry}${l.list.geography ? ` — ${l.list.geography}` : ""}` : null;
 
 type Estimate = { count: number; tier1: number; tier2: number; estimate: number };
 type Job = {
@@ -90,10 +98,15 @@ export default function LeadsTable({
   const toSet = (v: string | undefined) => new Set((v && v !== "all" ? v : "").split(",").filter(Boolean));
   const [q, setQ] = useState(saved.q ?? "");
   const [industriesSel, setIndustriesSel] = useState<Set<string>>(toSet(saved.industry));
-  const [state, setState] = useState(saved.state ?? "all");
-  const [list, setList] = useState(saved.list ?? "all");
+  // LIST-UX STANDARD: the state/list <select>s are retired for multi-select
+  // dropdowns; the old single-value saved shape still hydrates via toSet.
+  const [statesSel, setStatesSel] = useState<Set<string>>(toSet(saved.state));
+  const [listsSel, setListsSel] = useState<Set<string>>(toSet(saved.list));
+  const [statusSel, setStatusSel] = useState<Set<string>>(toSet(saved.status));
   const [levelsSel, setLevelsSel] = useState<Set<string>>(toSet(saved.level));
   const [tiersSel, setTiersSel] = useState<Set<string>>(toSet(saved.tier));
+  const [sortKey, setSortKey] = useState<SortKey | null>((saved.sort as SortKey) || null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">(saved.dir === "asc" ? "asc" : "desc");
   const [showOffTarget, setShowOffTarget] = useState(saved.offTarget === "1");
   const [hidePe, setHidePe] = useState(saved.hidePe === "1"); // PE-owned aren't targets (John 7/15)
   const isPe = (l: EnrichmentLead) => !!(l.enrichment as { pe_owned?: boolean } | null)?.pe_owned;
@@ -103,13 +116,16 @@ export default function LeadsTable({
       sessionStorage.setItem(
         FILTER_KEY,
         JSON.stringify({
-          q, industry: [...industriesSel].join(","), state, list,
+          q, industry: [...industriesSel].join(","),
+          state: [...statesSel].join(","), list: [...listsSel].join(","),
+          status: [...statusSel].join(","),
           level: [...levelsSel].join(","), tier: [...tiersSel].join(","),
           offTarget: showOffTarget ? "1" : "0", hidePe: hidePe ? "1" : "0",
+          sort: sortKey ?? "", dir: sortDir,
         })
       );
     } catch {}
-  }, [q, industriesSel, state, list, levelsSel, tiersSel, showOffTarget, hidePe]);
+  }, [q, industriesSel, statesSel, listsSel, statusSel, levelsSel, tiersSel, showOffTarget, hidePe, sortKey, sortDir]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -125,11 +141,25 @@ export default function LeadsTable({
     for (const l of leads) { const i = effIndustry(l); if (i) m[i] = (m[i] ?? 0) + 1; }
     return Object.entries(m).sort((a, b) => b[1] - a[1]).map(([value, count]) => ({ value, label: value, count }));
   }, [leads]);
-  const states = useMemo(() => [...new Set(leads.map((l) => l.state).filter(Boolean))].sort() as string[], [leads]);
-  const lists = useMemo(
-    () => [...new Set(leads.map((l) => (l.list ? `${l.list.industry}${l.list.geography ? ` — ${l.list.geography}` : ""}` : null)).filter(Boolean))].sort() as string[],
-    [leads]
-  );
+  const countBy = (pick: (l: EnrichmentLead) => string | null) => {
+    const m: Record<string, number> = {};
+    for (const l of leads) { const v = pick(l); if (v) m[v] = (m[v] ?? 0) + 1; }
+    return m;
+  };
+  const stateOptions = useMemo(() => {
+    const m = countBy((l) => l.state);
+    return Object.keys(m).sort().map((value) => ({ value, label: value, count: m[value] }));
+  }, [leads]);
+  const listOptions = useMemo(() => {
+    const m = countBy(listNameOf);
+    return Object.keys(m).sort().map((value) => ({ value, label: value, count: m[value] }));
+  }, [leads]);
+  const statusOptions = useMemo(() => {
+    const m = countBy((l) => l.status);
+    return Object.keys(m)
+      .sort((a, b) => m[b] - m[a])
+      .map((value) => ({ value, label: statusLabel[value] ?? value, count: m[value] }));
+  }, [leads]);
 
   const levelCounts = useMemo(() => {
     const c: Record<Completeness, number> = { full: 0, contactable: 0, identified: 0, basic: 0, raw: 0 };
@@ -150,8 +180,9 @@ export default function LeadsTable({
       if (levelsSel.size && !levelsSel.has(levelOf(l))) return false;
       if (tiersSel.size && !tiersSel.has(l.size?.tier ?? "unsized")) return false;
       if (industriesSel.size && !industriesSel.has(effIndustry(l) ?? "")) return false;
-      if (state !== "all" && l.state !== state) return false;
-      if (list !== "all" && `${l.list?.industry}${l.list?.geography ? ` — ${l.list.geography}` : ""}` !== list) return false;
+      if (statesSel.size && !statesSel.has(l.state ?? "")) return false;
+      if (listsSel.size && !listsSel.has(listNameOf(l) ?? "")) return false;
+      if (statusSel.size && !statusSel.has(l.status)) return false;
       if (
         q &&
         !`${l.name} ${l.city ?? ""} ${l.state ?? ""} ${l.owner_name ?? ""} ${effIndustry(l) ?? ""}`
@@ -161,12 +192,33 @@ export default function LeadsTable({
         return false;
       return true;
     });
-    // Default sort: most complete first (results float to the top), then newest.
-    return filtered.sort((a, b) => {
+    // Default (no explicit column sort): most complete first — results float
+    // to the top — then newest. An explicit SortHeader click wins.
+    const byDefault = (a: EnrichmentLead, b: EnrichmentLead) => {
       const d = LEVELS.indexOf(levelOf(a)) - LEVELS.indexOf(levelOf(b));
       return d !== 0 ? d : b.created_at.localeCompare(a.created_at);
+    };
+    if (!sortKey) return filtered.sort(byDefault);
+    const text = (v: string | null | undefined) => String(v ?? "zzz").toLowerCase();
+    return filtered.sort((a, b) => {
+      let cmp: number;
+      switch (sortKey) {
+        case "level": cmp = LEVELS.indexOf(levelOf(a)) - LEVELS.indexOf(levelOf(b)); break;
+        case "size": cmp = TIERS.indexOf(a.size?.tier ?? "unsized") - TIERS.indexOf(b.size?.tier ?? "unsized"); break;
+        case "company": cmp = text(a.name).localeCompare(text(b.name)); break;
+        case "industry": cmp = text(effIndustry(a)).localeCompare(text(effIndustry(b))); break;
+        case "location": cmp = text([a.state, a.city].filter(Boolean).join(" ")).localeCompare(text([b.state, b.city].filter(Boolean).join(" "))); break;
+        case "owner": cmp = text(a.owner_name).localeCompare(text(b.owner_name)); break;
+        default: cmp = text(statusLabel[a.status] ?? a.status).localeCompare(text(statusLabel[b.status] ?? b.status));
+      }
+      return cmp !== 0 ? (sortDir === "asc" ? cmp : -cmp) : byDefault(a, b);
     });
-  }, [leads, q, industriesSel, state, list, levelsSel, tiersSel, showOffTarget, hidePe]);
+  }, [leads, q, industriesSel, statesSel, listsSel, statusSel, levelsSel, tiersSel, showOffTarget, hidePe, sortKey, sortDir]);
+
+  const sortSet = (key: SortKey) => (d: "asc" | "desc" | null) => {
+    if (!d) setSortKey(null);
+    else { setSortKey(key); setSortDir(d); }
+  };
 
   const enrichingCount = useMemo(() => leads.filter((l) => l.status === "enriching").length, [leads]);
 
@@ -401,21 +453,11 @@ export default function LeadsTable({
           {heading} <span className="font-normal text-zinc-400">({rows.length})</span>
         </span>
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search…" className={`w-40 ${inputCls}`} />
-        <FilterDropdown
-          label="Industry"
-          options={industryOptions}
-          selected={industriesSel}
-          onChange={setIndustriesSel}
-        />
-        <select value={state} onChange={(e) => setState(e.target.value)} className={inputCls}>
-          <option value="all">All states</option>
-          {states.map((s) => <option key={s}>{s}</option>)}
-        </select>
-        {showListFilter && lists.length > 1 && (
-          <select value={list} onChange={(e) => setList(e.target.value)} className={`max-w-48 ${inputCls}`}>
-            <option value="all">All lists</option>
-            {lists.map((s) => <option key={s}>{s}</option>)}
-          </select>
+        {/* LIST-UX STANDARD: industry/state/status filter from their own column
+            headers now — the toolbar keeps only search, the source-list filter
+            (no column to hang it on), and the actions. */}
+        {showListFilter && listOptions.length > 1 && (
+          <FilterDropdown label="Source list" options={listOptions} selected={listsSel} onChange={setListsSel} />
         )}
         <span className="ml-auto flex items-center gap-2">
           <button
@@ -461,24 +503,49 @@ export default function LeadsTable({
                   />
                 </th>
                 <th className="px-2 py-2 font-medium">
-                  <FilterDropdown header label="Level"
-                    options={LEVELS.map((lv) => ({ value: lv, label: `${LEVEL_META[lv].dot} ${lv}`, count: levelCounts[lv] }))}
-                    selected={levelsSel} onChange={setLevelsSel} />
+                  <span className="inline-flex items-center gap-1">
+                    <SortHeader label="Level" active={sortKey === "level"} dir={sortDir} onChange={sortSet("level")} />
+                    <FilterDropdown header label=""
+                      options={LEVELS.map((lv) => ({ value: lv, label: `${LEVEL_META[lv].dot} ${lv}`, count: levelCounts[lv] }))}
+                      selected={levelsSel} onChange={setLevelsSel} />
+                  </span>
                 </th>
-                <th className="px-2 py-2 font-medium">Company</th>
                 <th className="px-2 py-2 font-medium">
-                  <FilterDropdown header label="Size"
-                    options={TIERS.map((t) => ({ value: t, label: TIER_LABELS[t], count: tierCounts[t] }))}
-                    selected={tiersSel} onChange={setTiersSel} />
+                  <SortHeader label="Company" active={sortKey === "company"} dir={sortDir} onChange={sortSet("company")} />
+                </th>
+                <th className="px-2 py-2 font-medium">
+                  <span className="inline-flex items-center gap-1">
+                    <SortHeader label="Size" active={sortKey === "size"} dir={sortDir} onChange={sortSet("size")} />
+                    <FilterDropdown header label=""
+                      options={TIERS.map((t) => ({ value: t, label: TIER_LABELS[t], count: tierCounts[t] }))}
+                      selected={tiersSel} onChange={setTiersSel} />
+                  </span>
                 </th>
                 <th className="px-3 py-2 font-medium">
-                  <FilterDropdown header label="Industry" options={industryOptions}
-                    selected={industriesSel} onChange={setIndustriesSel} />
+                  <span className="inline-flex items-center gap-1">
+                    <SortHeader label="Industry" active={sortKey === "industry"} dir={sortDir} onChange={sortSet("industry")} />
+                    <FilterDropdown header label="" options={industryOptions}
+                      selected={industriesSel} onChange={setIndustriesSel} />
+                  </span>
                 </th>
-                <th className="px-3 py-2 font-medium">Location</th>
-                <th className="px-3 py-2 font-medium">Owner</th>
+                <th className="px-3 py-2 font-medium">
+                  <span className="inline-flex items-center gap-1">
+                    <SortHeader label="Location" active={sortKey === "location"} dir={sortDir} onChange={sortSet("location")} />
+                    <FilterDropdown header label="" options={stateOptions}
+                      selected={statesSel} onChange={setStatesSel} />
+                  </span>
+                </th>
+                <th className="px-3 py-2 font-medium">
+                  <SortHeader label="Owner" active={sortKey === "owner"} dir={sortDir} onChange={sortSet("owner")} />
+                </th>
                 <th className="px-3 py-2 font-medium">Channels</th>
-                <th className="px-3 py-2 font-medium">Status</th>
+                <th className="px-3 py-2 font-medium">
+                  <span className="inline-flex items-center gap-1">
+                    <SortHeader label="Status" active={sortKey === "status"} dir={sortDir} onChange={sortSet("status")} />
+                    <FilterDropdown header label="" options={statusOptions}
+                      selected={statusSel} onChange={setStatusSel} />
+                  </span>
+                </th>
                 <th className="px-4 py-2 text-right font-medium">Actions</th>
               </tr>
             </thead>
