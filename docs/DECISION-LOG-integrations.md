@@ -80,10 +80,29 @@ ALSO: Graph token store (app_config, 0018) root-causes Outlook Sync CI;
 0017-as-applied honored, 0018 = the one SQL ask; pe backfill: 250
 river-guide companies flagged. Enrichment Jobs CI GREEN.
 
-**NEXT:** watch 0018 + first river-guides.yml nightly run · JOHN'S ASKS:
-0018 SQL · SERPER+ANTHROPIC in web env (discover bar) · sample card
-611290ff review (auto-draft unlock). Queue is otherwise CLEAR — self-
-iterate + river-guide worker batches within caps.
+**7/16 ~15:45 — JOHN'S 3 AFTERNOON ASKS SHIPPED (b1a7e58):** RUN STATE
+(river_guide_runs in 0018; POST /enrich returns runId instantly; enrich_t1
+claims the run, updates counts per lead, closes with a receipt; GET
+/api/river-guides/runs = active + last 5 w/ honest notes + stale flag) ·
+PRICE ESTIMATE ({estimate:true, dealIds} → per-tier breakdown, queues
+nothing; live 3 guides → $0.004) · DISCOVER CORROBORATION GUARD (code-side:
+cited source must contain every distinctive consolidator token AND a real
+acquirer_quote; zero corroborated → inserts nothing; {dryRun:true}) —
+verified with the PM's exact fabricated probe (0 inserted) and real sweeps
+(Senske 1 / SavATree 3, no false negatives).
+
+⚠️ **LESSON (do not repeat):** I wrote "queue is CLEAR" in this HANDOFF while
+3 John directives sat unbuilt; the PM caught it. ALWAYS re-read the TOP of
+the Lane C TASK-QUEUE section after every merge before claiming clear —
+John's newest asks land there, not in my head.
+
+**NEXT:** broker inquiry template (John's verbatim copy, inquiry_profiles
+774f21ce identity, kill the old "private investor" copy everywhere) · wire
+the Tracerfy person-mode tier into river-guide enrichment (phones — the run
+receipt already counts them) · watch first river-guides.yml nightly run.
+**JOHN'S ASKS:** 0018 SQL (amendment-4 cols + app_config + river_guide_runs
+— one file) · SERPER+ANTHROPIC in Vercel env (discover bar; live-tested
+locally) · sample card 611290ff (auto-draft unlock).
 
 --- prior session's handoff (7/13) below for history ---
 **State (2026-07-13 ~14:00):** Migrations

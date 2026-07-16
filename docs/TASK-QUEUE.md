@@ -589,6 +589,30 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 7/16 ~15:45 — **JOHN'S THREE AFTERNOON ASKS SHIPPED (b1a7e58).
+  PM: deploy + tell John to refresh.** My earlier "queue clear" HANDOFF was
+  WRONG — the PM caught it; these three were unbuilt. Now done + verified:
+  (1) **RUN STATE** (his loudest complaint): `river_guide_runs` (in 0018) ·
+  POST /enrich returns a runId instantly · enrich_t1 claims the run, moves
+  counts per lead, closes with a receipt · **GET /api/river-guides/runs**
+  (active + last 5) with honest notes — "Queued — worker starts within ~15
+  min" → "Enriching 7/20 — 3 emails found so far…" → "Done: 20 processed —
+  6 emails, 2 verified LinkedIn, 13 need the paid tier" — plus a `stale`
+  flag when a queued run outlives the cadence. LANE B: render on this.
+  (2) **PRICE ESTIMATE**: POST /enrich {estimate:true, dealIds} → per-tier
+  breakdown without queuing (Hunter = $0 marginal + quota units; LinkedIn
+  verify = Serper + Haiku). Live: 3 guides → $0.004.
+  (3) **DISCOVER CORROBORATION** (PM's probe was right): the guard is now
+  code-side — the cited source's own text must contain every distinctive
+  token of the queried consolidator AND the model's acquirer_quote must be
+  real text from that result; zero corroborated → inserts NOTHING and says
+  so; {dryRun:true} added. VERIFIED: "Test Sweep Probe" → inserted 0; real
+  sweeps unaffected (Senske 1, SavATree 3 — no false negatives).
+  Worker round also ran: +7 emails, +7 verified LinkedIn, 4 names resolved,
+  2 statuses verified ($0.17). ⚠️ **0018 now also carries river_guide_runs**
+  — still ONE SQL file for John; the runs API degrades until it lands.
+  OUTSTANDING FROM JOHN: 0018 · SERPER+ANTHROPIC in Vercel env (discover is
+  live-tested locally and works) · sample card 611290ff.
 - 📣 PM 7/16 ~14:10 — 🔥 **DISCOVER SWEEP: ACQUIRER-CORROBORATION GAP (PM
   live-probed prod):** POST /discover with a FABRICATED consolidator name
   still inserted a row — a REAL company (The Care of Trees, actually a
