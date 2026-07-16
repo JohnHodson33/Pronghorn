@@ -21,6 +21,16 @@ All 3 lanes + PM restarted ~10:00–11:00; the ~9h of unmerged overnight work
 session once — it wakes the rest.**
 
 ## ✅ SHIPPED TODAY (overnight burst + today's catch-up)
+- **BROKER IDENTITY SWEEP CLOSED (Lane A, PM-verified live):** every source
+  that publishes broker identity now captures it at ingest → brokers table →
+  listing link. Named agents: murphy 59 (all w/ direct phone) · vr 33 (22 w/
+  DIRECT EMAIL — first named+email source). Firm offices: fcbb 73 (829
+  listings) · bbf 41 (113) · bizmls 5. **Broker coverage 28% → 39.4%**
+  (8,651 of 21,967 listings; 1,652 brokers — 828 w/ phone, 1,391 w/ email).
+  The 3 remaining gaps are STRUCTURAL + measured, not open work (bizbuysell
+  Akamai-blocked · hedgestone/businessesforsale form-gated · tupelomarket
+  broker prose only on sub-00K listings — measured 0/90, disabled rather
+  than burn 90 fetches/night). All 30 sources green.
 - **Lane A:** auto-promote T1→pursuits LIVE (42 opened + receipts; +1 today:
   Raleigh Lawn Care NC) · firm-level brokers + FCBB backfill (73 offices,
   829 listings linked) · BBF listing-broker scrape · regionState graduated.
