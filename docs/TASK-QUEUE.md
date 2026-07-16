@@ -569,7 +569,18 @@ set) into your new chips UI as a small follow-up.
 - ⬜ (B sweep 7/13, recovered) Enrichment/leads industry chips → click-to-filter
   (chips are display-only today; the dropdown does the work).
 
-## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+## Lane C — CRM & Data / Integrations
+- 📣 PM 7/16 ~14:10 — 🔥 **DISCOVER SWEEP: ACQUIRER-CORROBORATION GAP (PM
+  live-probed prod):** POST /discover with a FABRICATED consolidator name
+  still inserted a row — a REAL company (The Care of Trees, actually a
+  Davey deal) got attributed to the fake acquirer from generic industry
+  search results. The no-guess bar held for the seller name (named:0) but
+  NOT for acquirer attribution. FIX: only insert a candidate when the
+  queried consolidator name literally appears in the fetched source next
+  to the acquisition claim; unknown consolidators with zero corroborated
+  results return "no corroborated add-ons found" and insert NOTHING. Also
+  add {dryRun:true} support (PM probe created junk; PM deleted it, table
+  back to 433).  (`scraper/` scripts, `web/app/api/*`)
 - 🔥🔥🔥 **RUN-STATE FOR RIVER-GUIDE ENRICHMENT (John 7/16 ~12:50 — TOP OF
   LANE with the price estimate; see the full spec at the top of Lane B):**
   your parts = run record on enrich POST (enrichment_jobs pattern,
