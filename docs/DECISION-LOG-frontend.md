@@ -30,11 +30,17 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   saved views AND ?industry= deep links back-compatible (verified: 17
   Tree Care of 847, same param shape); every column already sorted;
   full-width already. Also (item j) verify-worker EVIDENCE now shows in
-  the exit-chip tooltip on river-guide rows. NEXT: standard migration
-  continues — contacts → brokers → deals → enrichment (each its own
-  commit); then River Guides items (b)/(c) (236 contacts in CRM now).
-  NOTE for PM: the >4.5MB upload fix ALREADY SHIPPED 7/14 (363547f) —
-  queue item stale.
+  the exit-chip tooltip on river-guide rows; (12) ✅ CONTACTS → the
+  standard: role/industry chip rows retired into Role + Company-industry
+  header dropdowns (multi-select w/ counts), Name/Company SortHeaders,
+  old singular URLs hydrate. River Guides item (b) rode along free —
+  ?role=river_guide filters the 249 ingested guides via the Role
+  dropdown. ALSO fixed real truncation: the contacts fetch capped at 500
+  while the DB now has 654 (154 invisible) — raised to 2000. NEXT:
+  standard migration — brokers → deals → enrichment (each its own
+  commit); then River Guides item (c) (former-company line on company
+  profiles) + contact-profile river-guide panel. NOTE for PM: the >4.5MB
+  upload fix ALREADY SHIPPED 7/14 (363547f) — queue item stale.
 
 ## 2026-07-16 — ★Shortlist + Too-big tier UI (0015 backend, John 7/15)
 
