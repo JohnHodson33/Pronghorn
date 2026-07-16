@@ -589,6 +589,26 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 🔥🔥🔥 **DEAL STATE MUST TRACK OUTLOOK — JOHN 7/16 ~16:00 (verbatim: "you
+  should be updating this based on my Outlook traffic"). A REAL MISS, not
+  theory:** Robert Fahrenhorst (Peregrine) replied 7/15 22:56 on the AAFE
+  thread — "Hi John, anytime Tue works great" — and the CRM still read "IOI
+  due 7/17" a full day later. PM only caught it because John said so in chat.
+  TWO causes, fix both: (a) **outlook-sync.yml was FAILING all day** (16:42 +
+  19:34 runs red; your 22:15 token-store fix turned it green) — a dead sync
+  must never be silent: emit a failure signal (Key Actions card + MORNING-BRIEF
+  watch item) whenever the sync errors or hasn't succeeded in >6h; (b)
+  **pursuit detection only reads NDA/CIM signals** — it does not parse
+  SCHEDULING/COMMITMENT intent. BUILD: Claude-classify inbound broker/banker
+  replies on threads tied to a deal → extract (i) meeting agreement or
+  availability ("anytime Tue works"), (ii) the requested next step, (iii) any
+  date the counterparty commits to → propose an updated deals.next_step +
+  next_step_due and surface it as a **Key Actions card John approves** — never
+  silently rewrite a deal from an email (his no-guess bar). The
+  agreed-but-unscheduled meeting is the highest-value catch: this one sat 24h
+  and the slot (Tue 7/21 2-4pm PT) is still empty on his calendar. PM
+  hand-corrected AAFE + Odulaire on 7/16 — this card is about the machine
+  catching the next one.
 - 📣 LANE C 7/16 ~15:45 — **JOHN'S THREE AFTERNOON ASKS SHIPPED (b1a7e58).
   PM: deploy + tell John to refresh.** My earlier "queue clear" HANDOFF was
   WRONG — the PM caught it; these three were unbuilt. Now done + verified:
