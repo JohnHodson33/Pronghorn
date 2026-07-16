@@ -24,6 +24,7 @@ export default function InlineField({
   value,
   type = "text",
   placeholder = "add…",
+  emptyLabel,
   className = "",
   format,
   refreshOnSave = true,
@@ -32,7 +33,11 @@ export default function InlineField({
   field: string;             // PATCH body key, e.g. "city"
   value: string | number | null;
   type?: "text" | "email" | "tel" | "url" | "number";
-  placeholder?: string;      // shown when the value is blank
+  placeholder?: string;      // hint inside the input while editing
+  // what a blank field READS as when idle (defaults to the placeholder). The
+  // channel columns want a bare "—" so filled-vs-empty is obvious down the
+  // column (John 7/16), while the input still hints "email…".
+  emptyLabel?: string;
   className?: string;        // styles for the display state
   // declarative formatter (server components can't pass functions to client
   // components): "money" renders $1.2M / $850K style
@@ -112,7 +117,7 @@ export default function InlineField({
           empty ? "italic text-zinc-300" : ""
         } ${className}`}
       >
-        {empty ? placeholder : format === "money" ? fmtMoney(local!) : String(local)}
+        {empty ? emptyLabel ?? placeholder : format === "money" ? fmtMoney(local!) : String(local)}
         {busy && <span className="ml-1 animate-pulse text-emerald-600">·</span>}
       </button>
       <span aria-hidden className="hidden shrink-0 text-[10px] text-zinc-300 group-hover/inline:inline">✎</span>

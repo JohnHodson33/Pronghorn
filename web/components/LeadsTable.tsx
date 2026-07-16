@@ -44,7 +44,17 @@ const levelChip: Record<Completeness, string> = {
   raw: "bg-zinc-50 text-zinc-400",
 };
 
-type SortKey = "level" | "company" | "size" | "industry" | "location" | "owner" | "status";
+type SortKey = "level" | "company" | "size" | "industry" | "location" | "owner" | "status" | "email" | "phone" | "linkedin";
+
+// Channel-presence filter (John's "Call now + Has phone = the actual call
+// list", the river-guides reachability filter applied to the enrichment tab).
+const REACH: { value: string; label: string; test: (l: EnrichmentLead) => boolean }[] = [
+  { value: "email", label: "Has email", test: (l) => !!l.owner_email },
+  { value: "phone", label: "Has phone", test: (l) => !!l.owner_phone },
+  { value: "linkedin", label: "Has LinkedIn", test: (l) => !!l.owner_linkedin },
+  { value: "any", label: "Any channel", test: (l) => !!(l.owner_email || l.owner_phone || l.owner_linkedin) },
+  { value: "none", label: "No channel", test: (l) => !(l.owner_email || l.owner_phone || l.owner_linkedin) },
+];
 
 // The lead list a row came from ("Tree Care — Phoenix") — provenance, not a
 // column; it filters from the toolbar since there's no header to hang it on.
@@ -60,12 +70,46 @@ type Job = {
   finished_at: string | null;
 };
 
-function ContactDots({ filled }: { filled: boolean[] }) {
+// The dots are RETIRED platform-wide (John 7/16: "I'd rather just have the
+// actual contacts — phone, email, LinkedIn — and see if they're filled").
+// The VALUE stays an InlineField so John can still type a datum he found;
+// the icon beside it is the real mailto:/tel:/profile link, so one cell does
+// both jobs without the click fighting itself.
+function ChannelCell({
+  leadId, field, value, type, placeholder, href, icon, iconTitle,
+}: {
+  leadId: string;
+  field: "owner_email" | "owner_phone" | "owner_linkedin";
+  value: string | null;
+  type: "email" | "tel" | "url";
+  placeholder: string;
+  href: string | null;
+  icon: string;
+  iconTitle: string;
+}) {
   return (
-    <span className="inline-flex gap-1" title="owner phone · email · LinkedIn (usable channels only)">
-      {filled.map((f, i) => (
-        <span key={i} className={`h-2 w-2 rounded-full ${f ? "bg-emerald-600" : "bg-zinc-200"}`} />
-      ))}
+    <span className="flex items-center gap-1">
+      <InlineField
+        endpoint={`/api/leads/${leadId}`}
+        field={field}
+        value={value}
+        type={type}
+        placeholder={placeholder}
+        emptyLabel="—"
+        className="min-w-0 truncate text-xs"
+      />
+      {href && (
+        <a
+          href={href}
+          target={type === "url" ? "_blank" : undefined}
+          rel={type === "url" ? "noopener noreferrer" : undefined}
+          onClick={(e) => e.stopPropagation()}
+          className="shrink-0 text-xs text-zinc-400 hover:text-emerald-700"
+          title={iconTitle}
+        >
+          {icon}
+        </a>
+      )}
     </span>
   );
 }
@@ -103,6 +147,7 @@ export default function LeadsTable({
   const [statesSel, setStatesSel] = useState<Set<string>>(toSet(saved.state));
   const [listsSel, setListsSel] = useState<Set<string>>(toSet(saved.list));
   const [statusSel, setStatusSel] = useState<Set<string>>(toSet(saved.status));
+  const [reachSel, setReachSel] = useState<Set<string>>(toSet(saved.reach));
   const [levelsSel, setLevelsSel] = useState<Set<string>>(toSet(saved.level));
   const [tiersSel, setTiersSel] = useState<Set<string>>(toSet(saved.tier));
   const [sortKey, setSortKey] = useState<SortKey | null>((saved.sort as SortKey) || null);
@@ -118,14 +163,14 @@ export default function LeadsTable({
         JSON.stringify({
           q, industry: [...industriesSel].join(","),
           state: [...statesSel].join(","), list: [...listsSel].join(","),
-          status: [...statusSel].join(","),
+          status: [...statusSel].join(","), reach: [...reachSel].join(","),
           level: [...levelsSel].join(","), tier: [...tiersSel].join(","),
           offTarget: showOffTarget ? "1" : "0", hidePe: hidePe ? "1" : "0",
           sort: sortKey ?? "", dir: sortDir,
         })
       );
     } catch {}
-  }, [q, industriesSel, statesSel, listsSel, statusSel, levelsSel, tiersSel, showOffTarget, hidePe, sortKey, sortDir]);
+  }, [q, industriesSel, statesSel, listsSel, statusSel, reachSel, levelsSel, tiersSel, showOffTarget, hidePe, sortKey, sortDir]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -154,6 +199,10 @@ export default function LeadsTable({
     const m = countBy(listNameOf);
     return Object.keys(m).sort().map((value) => ({ value, label: value, count: m[value] }));
   }, [leads]);
+  const reachOptions = useMemo(
+    () => REACH.map((r) => ({ value: r.value, label: r.label, count: leads.filter((l) => !l.off_target && r.test(l)).length })),
+    [leads]
+  );
   const statusOptions = useMemo(() => {
     const m = countBy((l) => l.status);
     return Object.keys(m)
@@ -183,6 +232,8 @@ export default function LeadsTable({
       if (statesSel.size && !statesSel.has(l.state ?? "")) return false;
       if (listsSel.size && !listsSel.has(listNameOf(l) ?? "")) return false;
       if (statusSel.size && !statusSel.has(l.status)) return false;
+      // multi-select reach = OR (Has email + Has phone shows either)
+      if (reachSel.size && !REACH.some((r) => reachSel.has(r.value) && r.test(l))) return false;
       if (
         q &&
         !`${l.name} ${l.city ?? ""} ${l.state ?? ""} ${l.owner_name ?? ""} ${effIndustry(l) ?? ""}`
@@ -209,11 +260,16 @@ export default function LeadsTable({
         case "industry": cmp = text(effIndustry(a)).localeCompare(text(effIndustry(b))); break;
         case "location": cmp = text([a.state, a.city].filter(Boolean).join(" ")).localeCompare(text([b.state, b.city].filter(Boolean).join(" "))); break;
         case "owner": cmp = text(a.owner_name).localeCompare(text(b.owner_name)); break;
+        // channel columns sort filled-before-empty, then by value — the point
+        // is seeing who gained a channel, not alphabetising addresses
+        case "email": cmp = text(a.owner_email).localeCompare(text(b.owner_email)); break;
+        case "phone": cmp = text(a.owner_phone).localeCompare(text(b.owner_phone)); break;
+        case "linkedin": cmp = text(a.owner_linkedin).localeCompare(text(b.owner_linkedin)); break;
         default: cmp = text(statusLabel[a.status] ?? a.status).localeCompare(text(statusLabel[b.status] ?? b.status));
       }
       return cmp !== 0 ? (sortDir === "asc" ? cmp : -cmp) : byDefault(a, b);
     });
-  }, [leads, q, industriesSel, statesSel, listsSel, statusSel, levelsSel, tiersSel, showOffTarget, hidePe, sortKey, sortDir]);
+  }, [leads, q, industriesSel, statesSel, listsSel, statusSel, reachSel, levelsSel, tiersSel, showOffTarget, hidePe, sortKey, sortDir]);
 
   const sortSet = (key: SortKey) => (d: "asc" | "desc" | null) => {
     if (!d) setSortKey(null);
@@ -538,7 +594,19 @@ export default function LeadsTable({
                 <th className="px-3 py-2 font-medium">
                   <SortHeader label="Owner" active={sortKey === "owner"} dir={sortDir} onChange={sortSet("owner")} />
                 </th>
-                <th className="px-3 py-2 font-medium">Channels</th>
+                {/* dots → labeled columns with the actual values (John 7/16) */}
+                <th className="px-3 py-2 font-medium">
+                  <span className="inline-flex items-center gap-1">
+                    <SortHeader label="Email" active={sortKey === "email"} dir={sortDir} onChange={sortSet("email")} />
+                    <FilterDropdown header label="" options={reachOptions} selected={reachSel} onChange={setReachSel} />
+                  </span>
+                </th>
+                <th className="px-3 py-2 font-medium">
+                  <SortHeader label="Phone" active={sortKey === "phone"} dir={sortDir} onChange={sortSet("phone")} />
+                </th>
+                <th className="px-3 py-2 font-medium">
+                  <SortHeader label="LinkedIn" active={sortKey === "linkedin"} dir={sortDir} onChange={sortSet("linkedin")} />
+                </th>
                 <th className="px-3 py-2 font-medium">
                   <span className="inline-flex items-center gap-1">
                     <SortHeader label="Status" active={sortKey === "status"} dir={sortDir} onChange={sortSet("status")} />
@@ -640,13 +708,20 @@ export default function LeadsTable({
                     {/* inline-editable owner fields (John 7/15 — type the datum you found) */}
                     <td className="max-w-44 px-3 py-2.5 text-zinc-700" onClick={(e) => e.stopPropagation()}>
                       <InlineField endpoint={`/api/leads/${l.id}`} field="owner_name" value={l.owner_name} placeholder="owner…" className="font-medium" />
-                      <div className="mt-0.5 flex flex-wrap gap-x-2 text-xs text-zinc-500">
-                        <InlineField endpoint={`/api/leads/${l.id}`} field="owner_phone" value={l.owner_phone} type="tel" placeholder="phone…" />
-                        <InlineField endpoint={`/api/leads/${l.id}`} field="owner_email" value={l.owner_email} type="email" placeholder="email…" />
-                      </div>
                     </td>
-                    <td className="px-3 py-2.5">
-                      <ContactDots filled={[!!l.owner_phone, !!l.owner_email, !!l.owner_linkedin]} />
+                    <td className="max-w-52 px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                      <ChannelCell leadId={l.id} field="owner_email" value={l.owner_email} type="email"
+                        placeholder="email…" href={l.owner_email ? `mailto:${l.owner_email}` : null}
+                        icon="✉" iconTitle={`Email ${l.owner_email}`} />
+                    </td>
+                    <td className="max-w-40 px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                      <ChannelCell leadId={l.id} field="owner_phone" value={l.owner_phone} type="tel"
+                        placeholder="phone…" href={l.owner_phone ? `tel:${l.owner_phone}` : null}
+                        icon="☎" iconTitle={`Call ${l.owner_phone}`} />
+                    </td>
+                    <td className="max-w-40 px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                      <ChannelCell leadId={l.id} field="owner_linkedin" value={l.owner_linkedin} type="url"
+                        placeholder="linkedin…" href={l.owner_linkedin} icon="↗" iconTitle="Open LinkedIn profile" />
                     </td>
                     <td className="whitespace-nowrap px-3 py-2.5 text-xs text-zinc-500">
                       {statusLabel[l.status] ?? l.status}
@@ -687,8 +762,8 @@ export default function LeadsTable({
       )}
       <div className="border-t border-zinc-100 px-5 py-2 text-[11px] text-zinc-400">
         Levels: ● full · ◕ contactable · ◑ identified · ◔ basic · ○ raw — most complete sorts first.
-        Enrich cascades free → tier 1 → tier 2 with early exit; the estimate is the max. Channel dots =
-        usable owner channels only.
+        Enrich cascades free → tier 1 → tier 2 with early exit; the estimate is the max. Email/Phone/
+        LinkedIn show the actual owner channel — click a value to edit it, or the icon to use it.
       </div>
     </section>
   );
