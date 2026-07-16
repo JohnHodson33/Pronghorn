@@ -3,7 +3,36 @@
 Per-lane log per PARALLEL-SESSIONS.md; the PM/integrator folds these into
 DECISION-LOG.md and wires routes into Sidebar.tsx.
 
-## 🔄 HANDOFF — successor #2 live 7/16 (loop running; 7/15 backlog)
+## 🔄 HANDOFF — ROLLED OVER 7/16 ~13:25 — successor resumes here
+
+- **State**: nothing in flight. Last commit `081ff20` (brokers → LIST-UX
+  STANDARD) — pushed to lane/frontend, typecheck green, browser-verified.
+  Session #2 shipped 15 units 7/16 (inline edit b04bbad · filter/sort
+  persistence 2a39bc7 · companies overhaul 4904c6f · river-guides page
+  c3b42d7 · leads parity d1e0aa5 · shortlist+too-big 9e2b021 · thread
+  polish 580d68c · PE-owned UI 1a4ca54 · river-guides→standard 28b468d ·
+  listings→standard d702e40 · contacts→standard+cap-fix 8bd3511 ·
+  brokers→standard 081ff20).
+- **NEXT (in order)**: (1) DEALS → LIST-UX STANDARD (DealsTable: stage
+  chips row → Stage header dropdown; SortHeaders on Company/EBITDA/
+  Asking/Our-val/Fit; Size header dropdown; csv-string state pattern —
+  copy the brokers commit as the template); (2) ENRICHMENT →
+  standard (LeadsTable: state/list selects → header dropdowns; keep the
+  counts chips + sessionStorage); (3) River Guides item (c): company
+  profile former-company line ("sold to <acquirer>, <year> — former
+  owner is a River Guide prospect" — river_guides has company_id FKs) +
+  contact-profile river-guide panel (band/exit/former co/verification);
+  (4) watch TASK-QUEUE for John's next directives.
+- **Environment**: worktree C:\Users\johnd\Pronghorn-frontend, branch
+  lane/frontend; dev server = launch config pronghorn-web-laneB port
+  3311; NEW ROUTE DIRS need `rm -rf .next/dev` + restart (bit twice).
+  Server components can't pass function props to client components
+  (InlineField uses format="money"). LIST-UX STANDARD pieces:
+  FilterDropdown + SortHeader + useUrlFilterSync + csv-string state
+  convention (back-compat singular URLs). Feedback poll: 0 submitted all
+  session; 0011-0017 applied. PM session = local_affe9dc4-… .
+
+## 🔄 Previous handoff (successor #2, 7/16 — retired)
 
 - **7/15+7/16 directives**: (1) ✅ INLINE EDIT; (2) ✅ FILTER/SORT
   PERSISTENCE; (3) ✅ COMPANIES OVERHAUL; (4) ✅ RIVER GUIDES PAGE;
