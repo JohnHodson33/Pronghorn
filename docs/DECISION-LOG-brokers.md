@@ -1244,3 +1244,35 @@ hit-rate is 0. BROKER SWEEP: gap list 9→3 (bizbuysell=Akamai BLOCKED,
 hedgestone=form-gated SKIP, tupelomarket=in flight). NEXT after tupelo: bizmls
 office run (config already enrich-enabled, shares bbf.js code — just needs a
 run); then opportunistic new-source hunt (frontier mostly closed) / TASK-QUEUE.
+
+## 2026-07-16 — tupelomarket enrichment MEASURED → DISABLED (honest negative result)
+- Ran it: **0 enriched of 90 targets, 0 errors.** Diagnosed rather than shipped
+  a dud:
+  - The cfemail decoder is CORRECT (real-page check returned
+    tom.freimuth@resultsba.com exactly).
+  - The known-good page is a **$125K listing — below our $300K gate**, so it was
+    never a target. My earlier "1 in 6" sample was unfiltered and that hit WAS
+    the $125K one.
+  - **0 of 8 real high-cash-flow targets carry cfemail OR the Contact-prose.**
+    The pattern is absent from the segment we actually pursue.
+- **DISABLED enrich_details for tupelomarket** (config, with the measurement in
+  the comment). Leaving it on would cost ~90 wasted fetches every nightly for
+  provably zero value. Code + unit tests kept: flip to true only if Tupelo
+  starts publishing broker identity on thesis-scale listings.
+- Net: tupelomarket stays a broker-gap by NATURE (no structured field, prose
+  only on small listings) — same category as bizbuysell (Akamai) and hedgestone
+  (form-gated). All 3 remaining gaps are now explained, not open work.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~16:00: branch synced + pushed. CI Node-22 merged to
+main (06:00 cron self-drives). BROKER SWEEP COMPLETE + measured: gap list 9→3,
+and all 3 residual gaps are structural//documented (bizbuysell=Akamai,
+hedgestone=form-gated, tupelomarket=no structured field + prose only on
+sub-gate listings, enrichment measured 0/90 and disabled). Coverage 28%→39%,
+21,965 listings, T1 126/T2 248, backlog 37, all 30 green. SHIPPED today: murphy
+(96/100, 59 agents), vr (89/100, 33 agents, 22 emails), bbf (113/41), fcbb
+(73/829), auto_promote LIVE + self-driving (45 events), regionState→core, CI
+fix. IN FLIGHT: bizmls office run (task bwg177xl5 — config enrich-enabled,
+reuses bbf.js code; verify offices land). NEXT: opportunistic new-source hunt
+(frontier mostly closed: NV/GA/NM aggregator-dominated, TX-assoc + FL-green =
+mirrors — don't repeat) / TASK-QUEUE SELF-ITERATE.

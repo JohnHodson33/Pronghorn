@@ -137,10 +137,10 @@
     "tupelomarket": {
       "enabled": true,
       "module": "./sources/tupelomarket",
-      "enrich_details": true,
+      "enrich_details": false,
       "enrich_min_cash_flow": 300000,
       "max_detail_enrich": 100,
-      "_comment": "Platform-wide Tupelo SMB marketplace — all brokers, 50 state SSR pages. Broker only appears in sparse detail-page prose (~1 in 6) w/ a Cloudflare-obfuscated email; enrichment is precision-first (requires cfemail + Contact-prose) — each hit is a full name+firm+email+phone."
+      "_comment": "Platform-wide Tupelo SMB marketplace — all brokers, 50 state SSR pages. Broker enrichment DISABLED after measurement (7/16): Tupelo has no structured broker field, and the detail-page Contact-prose+cfemail pattern the code handles is absent from every high-cash-flow listing sampled (0/8 targets; 0/90 enriched live). The one page that carries it is a $125K listing — below our gate. Code kept + unit-tested: flip to true only if Tupelo starts publishing broker identity on thesis-scale listings, else it is 90 wasted fetches/night."
     },
     "sunbeltmidwest": {
       "enabled": true,
