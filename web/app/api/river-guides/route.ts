@@ -51,11 +51,19 @@ export async function PATCH(req: Request) {
   const b = await req.json();
   const dealId = String(b.deal_id ?? "");
   if (!dealId) return NextResponse.json({ error: "deal_id required" }, { status: 400 });
+  const db = serverDb();
   const allowed = ["full_name", "name_status", "exit_status", "priority_band", "enrichment_status",
-    "email", "phone", "linkedin_url", "notes", "archetype", "archetype_subtype", "location_city", "location_state"];
+    "notes", "archetype", "archetype_subtype", "location_city", "location_state"];
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
   for (const k of allowed) if (k in b) patch[k] = b[k];
-  const { error } = await serverDb().from("river_guides").update(patch).eq("deal_id", dealId);
+  // contact fields live in the contact jsonb (live 0016 schema) — merge edits
+  if ("email" in b || "phone" in b || "linkedin_url" in b) {
+    const { data: cur } = await db.from("river_guides").select("contact").eq("deal_id", dealId).maybeSingle();
+    const contact = { ...((cur?.contact as Record<string, unknown>) ?? {}) };
+    for (const k of ["email", "phone", "linkedin_url"]) if (k in b) contact[k] = b[k];
+    patch.contact = contact;
+  }
+  const { error } = await db.from("river_guides").update(patch).eq("deal_id", dealId);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

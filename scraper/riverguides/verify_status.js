@@ -85,11 +85,10 @@ async function main() {
       const patch = {
         exit_status: v.current_status,
         current_status_verified: true,
-        status_verified_at: new Date().toISOString(),
         notes: [g.notes, `status-verify ${new Date().toISOString().slice(0, 10)}: ${v.evidence}${v.second_venture ? ` · second venture: ${v.second_venture}` : ''}`].filter(Boolean).join('\n'),
       };
       if (v.second_venture) patch.archetype_subtype = 'SECOND_TIME_SELLER';
-      if (v.linkedin_url && !g.linkedin_url) patch.linkedin_url = v.linkedin_url;
+      if (v.linkedin_url && !g.contact?.linkedin_url) patch.contact = { ...(g.contact || {}), linkedin_url: v.linkedin_url };
       Object.assign(patch, rescore({ ...g, ...patch }));
 
       const wasEmployed = g.exit_status === 'EMPLOYED';
@@ -98,7 +97,7 @@ async function main() {
       if (uErr) { log.error(`  ${g.full_name}: ${uErr.message}`); continue; }
       verified++;
       if (wasEmployed && v.current_status === 'EXITED') { flipped++; log.info(`  🔓 ${g.full_name}: EMPLOYED→EXITED (${v.evidence?.slice(0, 80)})`); }
-      else log.info(`  ✓ ${g.full_name}: ${v.current_status} (${v.confidence})${patch.linkedin_url ? ' +linkedin' : ''}`);
+      else log.info(`  ✓ ${g.full_name}: ${v.current_status} (${v.confidence})${patch.contact?.linkedin_url ? ' +linkedin' : ''}`);
     } catch (e) { log.error(`  ${g.full_name}: ${e.message}`); }
   }
 

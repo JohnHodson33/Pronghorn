@@ -123,7 +123,8 @@ async function main() {
       archetype: 'A_EXITED_OPERATOR',
       archetype_subtype: r.exit_status === 'EXITED' ? 'FULLY_EXITED' : r.exit_status === 'EMPLOYED' ? 'ROLLED_EQUITY_EMPLOYED' : null,
       industry: industryOf(r),
-      vertical: r.Vertical || null,
+      industry_group: r.industry_group || null,
+      vertical_raw: r.Vertical || null,
       their_company: r.Company,
       role: null,
       acquirer: r.Acquirer || null,
@@ -135,9 +136,9 @@ async function main() {
       company_website: r.company_website || null,
       company_website_status: (r.company_website_status || 'NOT_FOUND').replace('-', '_'),
       exit_status: r.exit_status || 'UNKNOWN',
+      source: !/^https?:/i.test(r.Source || '') ? (r.Source || null) : null,
       source_url: /^https?:/i.test(r.Source || '') ? r.Source : null,
       source_confidence: (r.Confidence || 'MEDIUM').toUpperCase(),
-      notes: !/^https?:/i.test(r.Source || '') && r.Source ? `source: ${r.Source}` : null,
       enrichment_status: r.enrichment_status || (resolvedName ? 'PENDING_T1' : 'NEEDS_NAME'),
     };
     Object.assign(g, rescore(g)); // recompute score/band on ingest (spec §9)
@@ -155,7 +156,11 @@ async function main() {
       const { error } = await supabase.from('river_guides').upsert({
         ...g, contact_id: crm.contactId, company_id: crm.companyId,
       }, { onConflict: 'deal_id' });
-      if (error) { stats.errors++; log.error(`  ${g.deal_id} ${g.their_company}: ${error.message}`); }
+      if (error && /river_guides_person_company_uq|duplicate key/.test(error.message)) {
+        // cross-listed 'Both' rows share (person, company) across industry
+        // lists — the unique index dedupes them by design (spec §6.4)
+        stats.deduped = (stats.deduped || 0) + 1;
+      } else if (error) { stats.errors++; log.error(`  ${g.deal_id} ${g.their_company}: ${error.message}`); }
       else stats.upserted++;
     }
   }
