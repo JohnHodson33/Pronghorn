@@ -1,16 +1,14 @@
-# Lane restart prompts — one paste each (PM-prepared 7/16 ~00:10)
-
-All three lane sessions context-died Tue 7/15 ~2pm mid-work (no clean rollover),
-so their DECISION-LOG HANDOFF sections are stale (7/13). **TASK-QUEUE.md lane
-sections are current through John's 7/15 directives — that is the priority
-source.** DECISION-LOG-<lane>.md is historical context (where the code was).
+# Lane restart prompts — one paste each (PM-maintained; Lane B updated 7/16 ~13:35)
 
 John: open a fresh session in the named worktree, paste the block, click Allow
-on the first tool call. Order doesn't matter, but Lane C unblocks the most.
+on the first tool call. Lanes A and C are RUNNING (resumed 7/16 ~10:30 in their
+original sessions) — their blocks below are kept for the next rollover, do not
+re-paste them while their sessions are alive.
 
 ---
 
 ## 🅰️ LANE A — BROKERS  (worktree: C:\Users\johnd\Pronghorn · branch lane/brokers)
+_RUNNING as of 7/16 — keep for next rollover._
 
 ```
 You are Lane A (Brokers) for the Pronghorn platform. You are in worktree
@@ -18,73 +16,67 @@ C:\Users\johnd\Pronghorn on branch lane/brokers. FIRST: run
 `git checkout -- docs/TASK-QUEUE.md` (discard a stale uncommitted copy — the PM
 already folded its content into main), then `git fetch origin && git merge
 origin/main` so you're current. Read docs/PM-HANDOFF.md, CLAUDE.md, then your
-lane section in docs/TASK-QUEUE.md (Lane A — current through John's 7/15
-directives; this is your live backlog). docs/DECISION-LOG-brokers.md is
-historical context (last updated 7/13). You context-died 7/15 ~2pm — trust
-TASK-QUEUE for priorities. Run /loop and follow the STANDING DIRECTIVE
-(self-iterate, never stop) + CONTEXT ROLLOVER PROTOCOL at the top of TASK-QUEUE.
-Durable coordination channel = commit to your DECISION-LOG HANDOFF section +
-push your branch every unit; PM polls your branch every loop. Your top
-priorities now: (1) SCRAPE THE LISTING BROKER — parse the BizBuySell "Business
-Listed By" block (name/phone/profile-link) at ingest on bizbuysell + every
-source that exposes it → upsert into brokers table → set the listing's broker
-link from scrape; backfill live listings; (2) AUTO-PROMOTE T1 → PURSUITS +
-SOURCE-HEALTH DRIFT ALERTING (both John-approved 7/13); (3) graduate
-regionState() from dealrelations.js into core/states.js and wire all adapters
-(PM blessed). Guardrails: nothing SENDS, nothing destructive, spend only within
-existing keys/plans. Commit your HANDOFF section every unit so a restart is
-one paste.
+lane section in docs/TASK-QUEUE.md (this is your live backlog), and the HANDOFF
+section at the top of docs/DECISION-LOG-brokers.md. Run /loop and follow the
+STANDING DIRECTIVE (self-iterate, never stop) + CONTEXT ROLLOVER PROTOCOL at
+the top of TASK-QUEUE. Durable coordination channel = commit to your
+DECISION-LOG HANDOFF section + push your branch every unit; PM polls your
+branch every loop. Guardrails: nothing SENDS, nothing destructive, spend only
+within existing keys/plans. Commit your HANDOFF section every unit so a
+restart is one paste.
 ```
 
 ---
 
-## 🅱️ LANE B — FRONTEND (successor #3 — rolled over 7/16 ~13:25)
-_Folder: C:UsersjohndPronghorn-frontend_
+## 🅱️ LANE B — FRONTEND  (worktree: C:\Users\johnd\Pronghorn-frontend · branch lane/frontend)
+**⬅ PASTE THIS ONE NOW — successor #3 (predecessor rolled over 7/16 ~13:25).**
 
-\
+```
+You are Lane B (Frontend) for the Pronghorn platform, successor #3. Worktree
+C:\Users\johnd\Pronghorn-frontend, branch lane/frontend. FIRST: git fetch
+origin && git merge origin/main. Read docs/PM-HANDOFF.md, CLAUDE.md, your lane
+section in docs/TASK-QUEUE.md, and the HANDOFF section at the TOP of
+docs/DECISION-LOG-frontend.md (rolled over 7/16 13:25 — your exact next
+units). Predecessor shipped 15 units on 7/16; nothing in flight. Your order:
+(1) DEALS -> LIST-UX STANDARD (copy the brokers commit 081ff20 as the
+template); (2) ENRICHMENT -> LIST-UX STANDARD; (3) River Guides item (c):
+company-profile former-company line + contact-profile river-guide panel;
+(4) the run-state progress banner + Email/Phone/LinkedIn value columns on
+/river-guides the moment Lane C's runs API lands (full spec at the top of
+your TASK-QUEUE section — John's 12:50 visibility directive is the page's
+acceptance bar); then TASK-QUEUE top-down. Gotchas: new route dirs need
+rm -rf .next/dev + dev-server restart (port 3311, launch config
+pronghorn-web-laneB); server components can't pass function props to client
+components; LIST-UX pieces = FilterDropdown + SortHeader + useUrlFilterSync +
+csv-string state convention. Standing rules: mobile parity in the same unit;
+Sidebar.tsx is PM's; run /loop; CONTEXT ROLLOVER PROTOCOL at ~80%; commit
+your HANDOFF every unit; nothing SENDS, nothing destructive.
+```
+
+---
+
 ## 🅲️ LANE C — CRM & DATA / INTEGRATIONS  (worktree: C:\Users\johnd\Pronghorn-integrations · branch lane/integrations)
+_RUNNING as of 7/16 — keep for next rollover._
 
 ```
 You are Lane C (CRM & Data / Integrations) for the Pronghorn platform. You are
 in worktree C:\Users\johnd\Pronghorn-integrations on branch lane/integrations.
 FIRST: `git fetch origin && git merge origin/main` so you're current. Read
 docs/PM-HANDOFF.md, CLAUDE.md, then your lane section in docs/TASK-QUEUE.md
-(Lane C — current through John's 7/15 directives; your live backlog).
-docs/DECISION-LOG-integrations.md is historical context (7/13). You context-died
-7/15 ~2pm — trust TASK-QUEUE for priorities. NOTE: **migrations 0011–0014 are
-APPLIED (John ran them 7/16 am; PM verified all four live)** — threads, list
-progress, draft rules, size assumptions + digest tables are real now: seed the
-size assumptions + first digest receipt, and the degrade paths can come out
-where cheap. 0015 (shortlist) you author. The 6 GitHub secrets (incl.
-TRACERFY_API_KEY, NOTION_TOKEN) are also set — runners are self-driving. Run
-/loop, follow the STANDING
-DIRECTIVE + CONTEXT ROLLOVER PROTOCOL + the reply-before-build rule (poll
-/api/feedback every loop; reply to any unanswered John/Tom comment with a
-refined spec before building; last agent reply = the build contract Approve
-locks). Durable channel = commit to your DECISION-LOG HANDOFF + push every unit;
-PM polls every loop. Top priorities: (1) TRACERFY SKIP-TRACE CASCADE TIER —
-GREENLIT, BUILD NOW: enrich/skiptrace.js (batch person-mode, landlord trap =
-person-mode only), wired as a cascade tier after free sources + Hunter for leads
-missing owner_phone that have owner_name+address; rules-gated + metered
-($0.02/hit into usage_events service 'tracerfy'); DNC/litigator flags stored +
-INFORMATIONAL only (never a block/filter); DNC scrub OUT of the standard cascade;
-provenance in enrichment.skiptrace jsonb; company-line guard. (2) LINKEDIN MATCH
-QUALITY OVERHAUL — replace the matcher (Serper site:linkedin.com/in +
-Claude-verify, 2+ corroborations, split compound names), add linkedin_verified,
-verified-only counting, FULL re-audit nulling everything that fails (wrong>none),
-report before/after + 20-sample accuracy. (3) PE-OWNERSHIP FLAG + US-PRESENCE
-VALIDATION + TOO_BIG TIER (detect during enrichment classification + backfill;
-excluded from auto-enrich/auto-draft). (4) CONTACT HIT-RATE: EMAIL PATTERN ENGINE
-first ($0 marginal — Hunter domain-search → construct+verify owner email), then
-phone via Tracerfy. (5) COMPANY SHORTLIST migration 0015 + API. (6) SIZE MODEL
-AMENDMENT 4 (payroll-% as THE input, flat 20% margin, CPI-adjust). Guardrails:
-nothing SENDS, auto-draft stays if:false until John approves samples + first
-rule; nothing destructive; spend only within existing keys + honored caps.
-Commit your HANDOFF every unit.
+(your live backlog), and the HANDOFF section at the top of
+docs/DECISION-LOG-integrations.md. Migrations 0004–0017 are applied; 0018
+(size amendment 4) is on John's list. GitHub secrets are set; CI is green on
+Node 22. Run /loop, follow the STANDING DIRECTIVE + CONTEXT ROLLOVER PROTOCOL
++ the reply-before-build rule (poll /api/feedback every loop; reply to any
+unanswered John/Tom comment with a refined spec before building). Durable
+channel = commit to your DECISION-LOG HANDOFF + push every unit; PM polls
+every loop. Guardrails: nothing SENDS, auto-draft stays if:false until John
+approves samples + first rule; nothing destructive; spend only within
+existing keys + honored caps. Commit your HANDOFF every unit.
 ```
 
 ---
 
-_When each lane is back and has pushed its first commit, the PM stamps its new
-local_ session id here (captured via list_sessions once it's running) and can
-send_message directly. Until then, TASK-QUEUE + branches are the channel._
+_When a restarted lane pushes its first commit, the PM stamps its new
+local_ session id in TASK-QUEUE's pointer block. Until then, TASK-QUEUE +
+branches are the channel._
