@@ -10,6 +10,7 @@ import type { EnrichmentLead } from "@/lib/enrichment";
 import { completeness, LEVELS, LEVEL_META, type Completeness } from "@/lib/completeness";
 import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 import { TIERS, TIER_LABELS } from "@/lib/size";
+import InlineField from "@/components/InlineField";
 
 const tierChip: Record<string, string> = {
   platform: "bg-emerald-100 text-emerald-800",
@@ -523,8 +524,13 @@ export default function LeadsTable({
                     <td className="max-w-36 truncate whitespace-nowrap px-3 py-2.5 text-zinc-600" title={[l.city, l.state].filter(Boolean).join(", ")}>
                       {[l.city, l.state].filter(Boolean).join(", ") || "—"}
                     </td>
-                    <td className="max-w-36 truncate px-3 py-2.5 text-zinc-700">
-                      {l.owner_name ?? <span className="text-xs text-zinc-300">—</span>}
+                    {/* inline-editable owner fields (John 7/15 — type the datum you found) */}
+                    <td className="max-w-44 px-3 py-2.5 text-zinc-700" onClick={(e) => e.stopPropagation()}>
+                      <InlineField endpoint={`/api/leads/${l.id}`} field="owner_name" value={l.owner_name} placeholder="owner…" className="font-medium" />
+                      <div className="mt-0.5 flex flex-wrap gap-x-2 text-xs text-zinc-500">
+                        <InlineField endpoint={`/api/leads/${l.id}`} field="owner_phone" value={l.owner_phone} type="tel" placeholder="phone…" />
+                        <InlineField endpoint={`/api/leads/${l.id}`} field="owner_email" value={l.owner_email} type="email" placeholder="email…" />
+                      </div>
                     </td>
                     <td className="px-3 py-2.5">
                       <ContactDots filled={[!!l.owner_phone, !!l.owner_email, !!l.owner_linkedin]} />

@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import ActivityForm from "@/components/ActivityForm";
 import { AttachmentPanel } from "@/components/Attachments";
 import ContactsSection from "@/components/ContactsSection";
+import InlineField from "@/components/InlineField";
 import DealControls from "@/components/DealControls";
 import MarketCheckCard from "@/components/MarketCheckCard";
 import { fetchDealDetail } from "@/lib/deal-detail";
@@ -73,17 +74,24 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
         closedLostReason={deal.closedLostReason}
       />
 
+      {/* inline-editable financials (John 7/15): Revenue/EBITDA save to the
+          company, Our valuation to the deal; asking comes from the listing */}
       <section className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {[
-          { label: "Revenue", value: money(c.revenue) },
-          { label: c.ebitdaType, value: money(c.ebitda), accent: true },
-          { label: multiple ? `Asking (${multiple})` : "Asking", value: money(deal.asking) },
-          { label: "Our valuation", value: money(deal.ourValuation) },
+          { label: "Revenue", endpoint: `/api/companies/${c.id}`, field: "revenue", raw: c.revenue },
+          { label: c.ebitdaType, endpoint: `/api/companies/${c.id}`, field: "ebitda", raw: c.ebitda, accent: true },
+          { label: multiple ? `Asking (${multiple})` : "Asking", endpoint: null, field: null, raw: deal.asking },
+          { label: "Our valuation", endpoint: `/api/deals/${deal.id}`, field: "ourValuation", raw: deal.ourValuation },
         ].map((s) => (
           <div key={s.label} className="rounded-xl border border-zinc-200 bg-white p-4">
             <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">{s.label}</div>
             <div className={`mt-1 text-xl font-bold tabular-nums ${s.accent ? "text-emerald-800" : ""}`}>
-              {s.value}
+              {s.endpoint && s.field ? (
+                <InlineField endpoint={s.endpoint} field={s.field} value={s.raw} type="number" placeholder="add…"
+                  format="money" />
+              ) : (
+                money(s.raw)
+              )}
             </div>
           </div>
         ))}

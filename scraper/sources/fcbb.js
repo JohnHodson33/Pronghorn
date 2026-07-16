@@ -112,8 +112,10 @@ class FcbbScraper extends SourceScraper {
       gross_revenue: this.parseMoney(it.GrossSales),
       cash_flow: this.parseMoney(it.TotalIncome), // FCBB "Total Income" = SDE / owner benefit
       cash_flow_type: 'SDE',
+      // Office-level contact (FCBB publishes no individual agent). Branded so
+      // the firm-level broker row reads "FCBB Los Angeles #130", not "#130".
       broker: office.OfficeDisplayNameWithLocationCode
-        ? { name: null, company: office.OfficeDisplayNameWithLocationCode, phone: office.OfficePhoneNumber || null, email: null }
+        ? { name: null, company: `FCBB ${office.OfficeDisplayNameWithLocationCode}`, phone: office.OfficePhoneNumber || null, email: null }
         : null,
       date_listed: this.dateOnly(it.ListingAgreementDate),
       raw: {

@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { margin, money, multiple } from "@/lib/mock";
 import type { UiListing } from "@/lib/types";
+import { useUrlFilterSync } from "@/lib/use-url-filters";
 
 const tierBadge: Record<number, string> = {
   1: "bg-emerald-100 text-emerald-800",
@@ -124,6 +125,36 @@ export default function ListingsTableV2({
   // Default sort: best deals first (tier asc, then newest).
   const [sortKey, setSortKey] = useState<SortKey>("tier");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  // Filters + SORT survive back-nav via URL params (John 7/15 — he steps
+  // through matching listings one by one; e.g. ?sort=cashFlow&dir=desc).
+  useUrlFilterSync(
+    () => ({
+      q, industry: industry !== "all" ? industry : null, state: state !== "all" ? state : null,
+      source: source !== "all" ? source : null,
+      tiers: tiers.length === 4 ? null : tiers.join(","),
+      minCF, maxCF, maxMult,
+      priority: priorityOnly ? "1" : null,
+      relevant: relevantOnly === live ? null : relevantOnly ? "1" : "0",
+      sort: sortKey === "tier" ? null : sortKey,
+      dir: sortDir === "asc" ? null : sortDir,
+    }),
+    (p) => {
+      if (p.get("q")) setQ(p.get("q")!);
+      if (p.get("industry")) setIndustry(p.get("industry")!);
+      if (p.get("state")) setState(p.get("state")!);
+      if (p.get("source")) setSource(p.get("source")!);
+      if (p.get("tiers")) setTiers(p.get("tiers")!.split(",").map(Number).filter((n) => [1, 2, 3, 4].includes(n)));
+      if (p.get("minCF")) setMinCF(p.get("minCF")!);
+      if (p.get("maxCF")) setMaxCF(p.get("maxCF")!);
+      if (p.get("maxMult")) setMaxMult(p.get("maxMult")!);
+      if (p.get("priority") === "1") setPriorityOnly(true);
+      if (p.get("relevant")) setRelevantOnly(p.get("relevant") === "1");
+      if (p.get("sort")) setSortKey(p.get("sort") as SortKey);
+      if (p.get("dir") === "desc") setSortDir("desc");
+    },
+    [q, industry, state, source, tiers, minCF, maxCF, maxMult, priorityOnly, relevantOnly, sortKey, sortDir],
+  );
 
   const [views, setViews] = useState<SavedView[]>([]);
   const [activeView, setActiveView] = useState<string | null>(null);

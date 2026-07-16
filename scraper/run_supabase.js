@@ -108,6 +108,18 @@ async function main() {
   await applyDuplicateLinks(listings, idMap);
   await syncBrokers(listings, idMap);
 
+  // Auto-promote qualifying Tier-1 listings into the pursuit pipeline (John
+  // approved 7/13; nightly per 7/15 directive). Config-gated; never contacts
+  // anyone; skips any listing that already has a review row.
+  if (baseConfig.auto_promote?.enabled) {
+    try {
+      const { runAutoPromote } = require('./auto_promote');
+      await runAutoPromote({ limit: baseConfig.auto_promote.limit || 25 });
+    } catch (err) {
+      log.error(`Auto-promote step failed (non-fatal): ${err.message}`);
+    }
+  }
+
   for (const [name, s] of Object.entries(sourceStats)) {
     await touchSource(name, s.error ? `failed: ${s.error}` : `ok: ${s.listings} listings`);
   }

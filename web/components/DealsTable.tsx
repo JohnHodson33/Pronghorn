@@ -9,6 +9,7 @@ import { money, STAGES } from "@/lib/mock";
 import type { LiveDeal } from "@/lib/crm";
 import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 import { TIER_LABELS } from "@/lib/size";
+import { useUrlFilterSync } from "@/lib/use-url-filters";
 
 const tierChip: Record<string, string> = {
   platform: "bg-emerald-100 text-emerald-800",
@@ -39,6 +40,17 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
   const [q, setQ] = useState("");
   const [stage, setStage] = useState<string | null>(
     initialStage && ALL_STAGES.includes(initialStage) ? initialStage : null
+  );
+
+  // filters survive back-nav via URL params (John 7/15); ?stage= stays the
+  // deep-link param the pipeline board already uses
+  useUrlFilterSync(
+    () => ({ q, stage }),
+    (p) => {
+      if (p.get("q")) setQ(p.get("q")!);
+      if (p.get("stage") && ALL_STAGES.includes(p.get("stage")!)) setStage(p.get("stage"));
+    },
+    [q, stage],
   );
 
   const counts = useMemo(() => {

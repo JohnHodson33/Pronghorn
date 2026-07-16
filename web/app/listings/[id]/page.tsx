@@ -3,6 +3,7 @@
 // promote-to-CRM action (real company name required).
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import InlineField from "@/components/InlineField";
 import PromoteForm from "@/components/PromoteForm";
 import PursuitPanel from "@/components/PursuitPanel";
 import { fetchListingDetail } from "@/lib/listing-detail";
@@ -40,10 +41,15 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
         <div className="mt-2 flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold leading-snug tracking-tight">{l.name}</h1>
-            <p className="mt-1 text-sm text-zinc-500">
-              {[l.industry ?? l.industryRaw, [l.city, l.state].filter(Boolean).join(", ")].filter(Boolean).join(" · ")}
+            {/* inline-editable location (John 7/15 — fix polluted city/state on the spot) */}
+            <p className="mt-1 flex flex-wrap items-center gap-x-1 text-sm text-zinc-500">
+              <span>{l.industry ?? l.industryRaw}</span>
+              <span className="text-zinc-300">·</span>
+              <InlineField endpoint={`/api/listings/${l.id}`} field="city" value={l.city} placeholder="city…" />
+              <span className="text-zinc-300">,</span>
+              <InlineField endpoint={`/api/listings/${l.id}`} field="state" value={l.state} placeholder="ST" />
               {l.priorityState && <span className="ml-1 text-emerald-700">★ priority state</span>}
-              {" · "}
+              <span className="text-zinc-300">·</span>
               {l.url ? (
                 <a href={l.url} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline">
                   {l.sourceId} ↗
@@ -77,21 +83,34 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
 
       <section className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {[
-          { label: "Asking", value: money(l.asking) },
+          { label: "Asking", field: "asking_price", raw: l.asking },
           {
             label: l.cashFlowType && l.cashFlowType !== "unknown" ? l.cashFlowType : "Cash flow",
-            value: money(l.cashFlow),
+            field: "cash_flow", raw: l.cashFlow,
             accent: true,
           },
-          { label: "Revenue", value: money(l.revenue) },
+          { label: "Revenue", field: "gross_revenue", raw: l.revenue },
           {
-            label: "Multiple / Margin",
-            value: `${multiple(l.asking, l.cashFlow)} · ${margin(l.cashFlow, l.revenue)}`,
+            label: "Multiple / Margin", field: null, raw: null,
+            text: `${multiple(l.asking, l.cashFlow)} · ${margin(l.cashFlow, l.revenue)}`,
           },
         ].map((s) => (
           <div key={s.label} className="rounded-xl border border-zinc-200 bg-white p-4">
             <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">{s.label}</div>
-            <div className={`mt-1 text-xl font-bold tabular-nums ${s.accent ? "text-emerald-800" : ""}`}>{s.value}</div>
+            <div className={`mt-1 text-xl font-bold tabular-nums ${s.accent ? "text-emerald-800" : ""}`}>
+              {s.field ? (
+                <InlineField
+                  endpoint={`/api/listings/${l.id}`}
+                  field={s.field}
+                  value={s.raw}
+                  type="number"
+                  placeholder="add…"
+                  format="money"
+                />
+              ) : (
+                "text" in s ? s.text : money(s.raw)
+              )}
+            </div>
           </div>
         ))}
       </section>
