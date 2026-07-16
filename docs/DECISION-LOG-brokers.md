@@ -1306,3 +1306,34 @@ tupelomarket=measured 0/90, disabled). Coverage 39%, 21,965 listings, T1 126/T2
 self-driving (45 events), regionState→core, CI fix, tupelo measured+disabled.
 NEXT: TASK-QUEUE SELF-ITERATE / opportunistic new-source hunt (frontier mostly
 closed — don't re-probe NV/GA/NM/TX-assoc/FL-green).
+
+## 2026-07-16 — bizmls 4/8-errors ROOT-CAUSED (id-prefix routing, not sessions)
+- Two wrong guesses before measuring — worth recording so it isn't repeated:
+  1. enrich_folder=bbfnew (0→4 enriched, but 8 errors).
+  2. enrich_entry to "re-establish a folder-scoped session" → **identical 4/8.
+     Session is NOT folder-scoped. Hypothesis wrong; config REMOVED rather than
+     left in as cargo-cult.**
+- **Actual root cause (measured):** the national search mixes orgs. Of the 39
+  targets: **27 BBF-* (200 OK under bbfnew) + 12 BIZMLS-* (HTTP 500 under
+  bbfnew)** — a folder only answers its own org's ids. The 12 doomed fetches
+  tripped the error cap at 8, which ALSO aborted the remaining good BBF fetches
+  — so the cap turned a partial-coverage issue into a near-total one.
+- **Fixes:** (a) `enrich_id_prefix` limits fetches to ids the folder can answer
+  (skipping is correct, not an error); BIZMLS-* have no published contact in any
+  folder. (b) **enrichBrokers no longer swallows err.message** — the silent
+  catch is exactly why this took three passes; first 2 errors now log verbatim.
+- Lesson banked: 0-enriched + 0-errors vs 0-enriched + N-errors are different
+  diseases. Read the error before theorising.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~16:45: branch synced + pushed. CI Node-22 merged to
+main (06:00 cron self-drives). IN FLIGHT: bizmls re-run w/ enrich_id_prefix
+(task b659zfgju) — expect ~27 targets, 0 errors; verify + log. BROKER SWEEP:
+gap list 9→3, residuals structural+documented (bizbuysell=Akamai,
+hedgestone=form-gated, tupelomarket=measured 0/90 → disabled, code behind flag).
+Coverage 39%, 21,965 listings, T1 126/T2 248, backlog 37, all 30 green. SHIPPED
+today: murphy (96/100, 59 agents), vr (89/100, 33 agents, 22 emails), bbf
+(113/41), fcbb (73/829), auto_promote LIVE + self-driving (45 events),
+regionState→core, CI fix. NEXT: TASK-QUEUE SELF-ITERATE / opportunistic
+new-source hunt (frontier mostly closed — don't re-probe NV/GA/NM/TX-assoc/
+FL-green). RIVER GUIDES marked LATER by PM.

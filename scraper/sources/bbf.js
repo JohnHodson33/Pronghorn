@@ -45,9 +45,11 @@ class BizmlsScraper extends SourceScraper {
         // agent is published — firm-level rows, accepted since 7/16). Rides the
         // same ASP session; gated by cash flow + a per-run cap.
         // The national BIZMLS folder's detail template omits the contact block,
-        // but the SAME LIST_NUMBERs render it under the bbfnew folder (verified
-        // 7/16) — so the enrichment folder is configurable, independent of the
-        // folder we searched.
+        // but the same BBF-* LIST_NUMBERs render it under the bbfnew folder
+        // (verified 7/16) — so the enrichment folder is configurable,
+        // independent of the folder we searched. The session is NOT
+        // folder-scoped (re-entering bbf's entry page changed nothing), but a
+        // folder only answers its own org's ids — see enrich_id_prefix.
         if (this.config.enrich_details) {
           await this.enrichBrokers(page, listings, this.config.enrich_folder || folder);
         }
@@ -116,11 +118,17 @@ class BizmlsScraper extends SourceScraper {
   async enrichBrokers(page, listings, folder) {
     const minCash = this.config.enrich_min_cash_flow ?? 300000;
     const cap = this.config.max_detail_enrich ?? 150;
-    const targets = listings
-      .filter((l) => l.cash_flow != null && l.cash_flow >= minCash)
+    // A detail folder only serves ITS OWN org's listing numbers: the national
+    // search mixes orgs, and e.g. BIZMLS-* ids 500 under bbfnew (verified
+    // 7/16). enrich_id_prefix keeps us to the ids this folder can actually
+    // answer — skipping them is correct, not an error.
+    const prefix = this.config.enrich_id_prefix || null;
+    const eligible = listings.filter((l) => l.cash_flow != null && l.cash_flow >= minCash);
+    const targets = (prefix ? eligible.filter((l) => String(l.source_listing_id).startsWith(prefix)) : eligible)
       .slice(0, cap);
+    const skipped = eligible.length - targets.length;
     if (targets.length === 0) { this.info('Broker enrichment: no listings meet threshold'); return; }
-    this.info(`Broker enrichment: ${targets.length} listing(s) (cash flow ≥ ${minCash}, cap ${cap})`);
+    this.info(`Broker enrichment: ${targets.length} listing(s) (cash flow ≥ ${minCash}, cap ${cap}${skipped > 0 ? `, ${skipped} skipped — not in folder ${folder}` : ''})`);
 
     let enriched = 0;
     let errors = 0;
@@ -156,6 +164,9 @@ class BizmlsScraper extends SourceScraper {
         }
         await this.sleep(700);
       } catch (err) {
+        // Log the first couple verbatim — a silent catch here cost real
+        // diagnosis time on 7/16 (the failures were 500s from wrong-folder ids).
+        if (errors < 2) this.warn(`Broker enrichment ${l.source_listing_id}: ${err.message}`);
         if (++errors >= 8) { this.warn('Broker enrichment: too many errors, stopping'); break; }
       }
     }

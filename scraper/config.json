@@ -77,9 +77,10 @@
       "exclude_states": ["FL"],
       "enrich_details": true,
       "enrich_folder": "bbfnew",
+      "enrich_id_prefix": "BBF",
       "enrich_min_cash_flow": 300000,
       "max_detail_enrich": 80,
-      "_comment": "National bizmls member search — non-FL inventory (TX-heavy). FL excluded: bbf source is authoritative there. enrich_folder=bbfnew: the BIZMLS detail template omits the broker block, but the same LIST_NUMBERs render it under bbfnew (verified 7/16)."
+      "_comment": "National bizmls member search — non-FL inventory (TX-heavy). FL excluded: bbf source is authoritative there. Broker enrichment (verified 7/16): the BIZMLS detail template omits the contact block, but the same BBF-* ids render it under folder=bbfnew — hence enrich_folder. A folder only answers its OWN org's ids (BIZMLS-* 500 under bbfnew), so enrich_id_prefix=BBF limits fetches to the enrichable subset; BIZMLS-* ids have no published contact anywhere."
     },
     "murphy": {
       "enabled": true,
