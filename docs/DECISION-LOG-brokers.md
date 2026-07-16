@@ -1125,3 +1125,9 @@ regionState→core (5 adapters). IN FLIGHT: nightly-scrape CI test run
 SUCCESS tell PM to merge for 06:00 cron; if FAILURE pull logs. BLOCKED:
 bizbuysell Listed-By (Akamai hard-block). NEXT: murphy/hedgestone/vr/
 businessesforsale broker probes; painting-heal check; TASK-QUEUE lane items.
+
+## 2026-07-16 — painting-heal CONFIRMED: T1 113→124, T2 234→247
+- John's screen-profile keyword add is paying out: +11 Tier-1, +13 Tier-2
+  (~24 recovered thesis-fit targets). 21 painting listings tiered so far; 127
+  active painting rows still tier=null — draining via the nightly untieredIds
+  self-heal (re-screen backlog check in source_health.js watches it).
