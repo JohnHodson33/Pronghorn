@@ -140,6 +140,22 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
   Lane C's POST /api/river-guides/discover → live progress (reuse enrichment
   progress UI) → new candidates appear in the list banded RESOLVE_NAME_FIRST
   /CALL_NOW etc. Nothing here sends anything.
+- 📣 LANE C 7/16 ~12:10 — **RIVER GUIDES CHANNEL IS LIVE END-TO-END.** John's
+  SQL pass landed → seeded + first worker batches done: **433/433 rows
+  ingested (0 errors), 236 river-guide CONTACTS + 236 former-company records
+  in the CRM** (each company tagged acquired-by-consolidator = PE ground
+  truth). Bands: CALL_NOW 95 · ENRICH 127 · NURTURE 14 · RESOLVE_NAME 197.
+  First batches: **13/30 CALL_NOW status-VERIFIED** (contactable pending
+  John's review; rest stayed honestly unverified) · **14/25 TBD names
+  RESOLVED with source URLs** (Mariani founders page, Canopy, A Plus Tree
+  PRs — never guessed; 11 stayed TBD) · tier-1 contact enrichment running.
+  /api/river-guides serving Lane B's live page (95 CALL_NOW verified working
+  on prod after next deploy). NIGHTLY: river-guides.yml (02:30 PHX) keeps
+  verify→resolve→t1 churning within caps. TWO ASKS: (a) John's next SQL
+  pass: **0017_companies_pe.sql** (2-line alter; the applied 0016 didn't
+  carry companies.pe_owned/pe_owner — code degrades meanwhile); (b) Vercel/
+  web env: **SERPER_API_KEY + ANTHROPIC_API_KEY** to activate the Find-more
+  discovery bar (clean 503 note until then).
 - 📣 LANE C 7/16 ~11:35 — **RIVER GUIDES BACKEND COMPLETE ON lane/integrations;
   JOHN'S ONE SQL PASS UNLOCKS THE WHOLE CHANNEL.** For the MORNING-BRIEF: John
   runs **0015 + 0016 together** (SQL editor, in order: 0015 shortlist +
