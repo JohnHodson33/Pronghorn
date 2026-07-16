@@ -164,6 +164,12 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
   ("101 Call-nows but only a fraction have phones I can call" → 'Call now
   + Has phone' = the actual call list). Band chips show reachable counts
   ("Call now · 16 · 9 reachable").
+  (j) **VERIFICATION EVIDENCE VISIBLE (PM 7/16 ~13:50)**: the status-
+  verify worker stores its evidence in notes (e.g. "LinkedIn shows
+  Principal at Apex Land Group") — surface it on the row (expand/hover on
+  the exit chip) so John/VA can adjudicate the inconclusives in seconds;
+  first verify pass: 30 checked -> 3 auto-verified, the evidence on the
+  other 27 is the human-review gold.
   (i) **SORTABLE HEADERS**: click Name/Industry/Exit/Score/Year/State to
   sort asc/desc (score + year = the quantitative stack-rank).
 - 🔥🔥 **RIVER-GUIDES ENRICH PRICE ESTIMATE (John 7/16 ~12:30 — "give me a
