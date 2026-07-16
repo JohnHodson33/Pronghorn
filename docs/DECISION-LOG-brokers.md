@@ -1101,3 +1101,27 @@ detail enrichment (spec in 7/16 restart entry); murphy/hedgestone/vr/
 businessesforsale broker probes; TASK-QUEUE lane items (delisting/freshness
 already live via mark_delisted). gh CLI absent — use API w/ credential-manager
 token (works).
+
+## 2026-07-16 — bbf office-broker enrichment SHIPPED (113/150 enriched, 41 offices)
+- bbf.js detail-fetch enrichment live (rides the adapter's ASP session; gated
+  CF ≥ $300K, cap 150 bbf / 80 bizmls; config enrich_details on both entries).
+- First pass hit only 16/150 — diagnosed in-session: the contact table's
+  heading bold varies ("BROKER/ASSOC" OR "ASSOCIATE"); re-anchored on both +
+  label-aware phone preference (Agent Direct > Office > any). **Re-run:
+  113/150 enriched, 41 unique offices (30 new), 113 listings linked.** Sampled
+  rows are clean (TRANSWORLD CENTRAL FL (407) 226-6869, AMERIVEST (561)
+  302-7373, GREEN & COMPANY…). Remaining ~37 = pages w/o a contact block
+  (confidential templates) — expected.
+- Note: the block is SESSION-GATED (sessionless curl no longer renders it) —
+  enrichment must stay inside the adapter's browser session, as built.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~11:30: branch synced + pushed. SHIPPED today: CI
+Node-22 fix (8 workflows; source-quality dispatch VERIFIED green); bbf office
+enrichment (113 linked, 41 offices); auto_promote LIVE (42 pursuits, nightly-
+wired); firm-level brokers + fcbb backfill (73 offices/829 linked);
+regionState→core (5 adapters). IN FLIGHT: nightly-scrape CI test run
+29523150326 on lane/brokers — check via API (token: git credential fill); if
+SUCCESS tell PM to merge for 06:00 cron; if FAILURE pull logs. BLOCKED:
+bizbuysell Listed-By (Akamai hard-block). NEXT: murphy/hedgestone/vr/
+businessesforsale broker probes; painting-heal check; TASK-QUEUE lane items.

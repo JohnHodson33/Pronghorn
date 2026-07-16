@@ -39,6 +39,12 @@ class BizmlsScraper extends SourceScraper {
           return await r.text();
         }, folder, org, state);
         listings.push(...this.parse(html, folder));
+
+        // Office-broker enrichment (John 7/15 listing-broker directive): detail
+        // pages carry the listing office's brokerage + phone (no individual
+        // agent is published — firm-level rows, accepted since 7/16). Rides the
+        // same ASP session; gated by cash flow + a per-run cap.
+        if (this.config.enrich_details) await this.enrichBrokers(page, listings, folder);
       } catch (err) {
         this.error(`Failed: ${err.message}`);
         pageErrors++;
@@ -95,6 +101,59 @@ class BizmlsScraper extends SourceScraper {
 
     if (excluded) this.info(`Skipped ${excluded} rows in excluded states (${[...exclude].join(', ')})`);
     return out;
+  }
+
+  // Fetch detail pages (same ASP session) for listings clearing the cash-flow
+  // gate and attach the office brokerage + phone as a firm-level broker.
+  // Detail block shape (verified 7/13): "BROKER/ASSOC … Agent Direct : …
+  // <b>SUNBELT BUSINESS BROKERS OF SOUTH FLORIDA</b> … Cell : (561) 827-6601".
+  async enrichBrokers(page, listings, folder) {
+    const minCash = this.config.enrich_min_cash_flow ?? 300000;
+    const cap = this.config.max_detail_enrich ?? 150;
+    const targets = listings
+      .filter((l) => l.cash_flow != null && l.cash_flow >= minCash)
+      .slice(0, cap);
+    if (targets.length === 0) { this.info('Broker enrichment: no listings meet threshold'); return; }
+    this.info(`Broker enrichment: ${targets.length} listing(s) (cash flow ≥ ${minCash}, cap ${cap})`);
+
+    let enriched = 0;
+    let errors = 0;
+    for (const l of targets) {
+      try {
+        const html = await page.evaluate(async (f, id) => {
+          const r = await fetch(`/cgi-bin/a-bus-d.asp?folder=${f}&LIST_NUMBER=${id}`);
+          return r.ok ? await r.text() : null;
+        }, folder, l.source_listing_id);
+        if (!html) throw new Error('detail fetch not ok');
+
+        // Contact table: heading bold is "BROKER/ASSOC" OR "ASSOCIATE" (varies
+        // by template); left column = company then address, right column =
+        // "Office : <phone>" / "Agent Direct : <phone>" label rows.
+        const flat = html.replace(/[\r\n]+/g, ' ');
+        const blockM = flat.match(/<b>\s*(?:BROKER\/ASSOC|ASSOCIATE)\s*<\/b>[\s\S]{0,2600}/i);
+        if (blockM) {
+          const block = blockM[0];
+          const LABEL = /^(BROKER\/ASSOC|ASSOCIATE|Agent Direct|Fax|Cell|Email|Office|Phone|:)$/i;
+          // Company: first non-label bold that isn't a street address.
+          const company = (block.match(/<b>\s*([^<]{2,80}?)\s*<\/b>/g) || [])
+            .map((b) => b.replace(/<\/?b>\s*/g, '').trim())
+            .find((t) => t.length >= 8 && !LABEL.test(t) && !/^\d/.test(t) && /[A-Za-z]{3}/.test(t)) || null;
+          // Phone: prefer the Agent Direct line, then Office, then any in block.
+          const phoneAfter = (label) =>
+            (block.match(new RegExp(`${label}[\\s\\S]{0,400}?(\\(?\\d{3}\\)?[\\s.-]\\d{3}[\\s.-]\\d{4})`, 'i')) || [])[1] || null;
+          const phone = phoneAfter('Agent Direct') || phoneAfter('Office')
+            || (block.replace(/<[^>]+>/g, ' ').match(/\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}/) || [])[0] || null;
+          if (company || phone) {
+            l.broker = { name: null, company: company || 'BBF member office', phone, email: null };
+            enriched++;
+          }
+        }
+        await this.sleep(700);
+      } catch (err) {
+        if (++errors >= 8) { this.warn('Broker enrichment: too many errors, stopping'); break; }
+      }
+    }
+    this.info(`Broker enrichment complete — ${enriched} enriched, ${errors} errors`);
   }
 }
 

@@ -62,7 +62,10 @@
       "org": "bbf",
       "folder": "bbfnew",
       "state": "Florida",
-      "entry": "https://bizmls.com/bbf/businesses"
+      "entry": "https://bizmls.com/bbf/businesses",
+      "enrich_details": true,
+      "enrich_min_cash_flow": 300000,
+      "max_detail_enrich": 150
     },
     "bizmls": {
       "enabled": true,
@@ -72,6 +75,9 @@
       "state": "ALL",
       "entry": "https://bizmls.com/business-search.asp",
       "exclude_states": ["FL"],
+      "enrich_details": true,
+      "enrich_min_cash_flow": 300000,
+      "max_detail_enrich": 80,
       "_comment": "National bizmls member search — non-FL inventory (TX-heavy). FL excluded: bbf source is authoritative there."
     },
     "murphy": {
