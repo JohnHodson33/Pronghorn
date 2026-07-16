@@ -1,11 +1,18 @@
 # Pronghorn — complete open-items & explanations for John
-_Updated 2026-07-13 ~02:00 · Single source of truth for everything awaiting
+_Updated 2026-07-16 ~00:10 · Single source of truth for everything awaiting
 you or recently decided. Ask "what's open?" anytime and I'll resend it._
+_(Wed 7/16 short list lives in MORNING-BRIEF.md; this is the fuller ledger.)_
 
 ## ⏳ ON YOU (in priority order)
-1. **Migrations 0011 + 0012 (~2 min, in order):** SQL editor →
-   `0011_feedback_comments.sql` (real threaded comments on /improvements)
-   then `0012_lead_list_progress.sql` (live list-build progress).
+0. **🔴 RESTART THE THREE LANE SESSIONS (one paste each, ~2 min) — the biggest
+   unblock.** All three context-died Tue ~2pm; every queued 🔥 build is stalled.
+   Copy the ready prompts from **docs/RESTART-PROMPTS.md** into a fresh session
+   in each named worktree, click Allow. Lane C unblocks the most.
+1. **Migrations 0011→0014 (~4 min, in order):** SQL editor →
+   `0011_feedback_comments.sql` (threaded /improvements) · `0012_lead_list_progress.sql`
+   (live list-build progress) · `0013_outreach_rules.sql` (draft-rules engine) ·
+   `0014` (size assumptions + digest tables). Files in
+   `C:\Users\johnd\Pronghorn-pm\supabase\migrations\`.
 1b. **Lane A unblock (30 sec):** paste one direct approval line into the
    "Pronghorn - Brokers" session chat for the auto-promote-T1 build
    (exact wording in MORNING-BRIEF item 0b) — its permission layer rightly
@@ -13,14 +20,14 @@ you or recently decided. Ask "what's open?" anytime and I'll resend it._
 1c. **DECISION — GitHub repo is PUBLIC:** strategy docs world-readable (no
    secrets committed). Private = ~3-6k Actions min/mo vs 2k free; details
    in MORNING-BRIEF item 0c.
-2. **GitHub secrets for Outlook automation (~2 min):** repo Settings →
-   Secrets → Actions → add `GRAPH_CLIENT_ID`, `GRAPH_TENANT_ID`,
-   `GRAPH_REFRESH_TOKEN` (values in `Pronghorn\scraper\.env`). Until then
-   the every-3h Outlook sync (pursuit detection + drafts push) only runs
-   when a worker session drives it.
-3. **CRM session swap (in flight):** paste the two prompts from chat (new
-   session boot + old session stand-down); click **Allow** when the new
-   session's hello message arrives; archive the old one after it confirms.
+2. **GitHub secrets ×6 (~2 min):** repo Settings → Secrets → Actions → add
+   `GRAPH_CLIENT_ID`, `GRAPH_TENANT_ID`, `GRAPH_REFRESH_TOKEN`,
+   `GOOGLE_PLACES_API_KEY`, `NOTION_TOKEN`, `TRACERFY_API_KEY` (values in
+   `Pronghorn\scraper\.env`). Makes every runner self-driving — nightly scrape,
+   Outlook sync, Notion sweep, enrichment all run unattended.
+3. **Vercel env:** add `NOTION_TOKEN` (I redeploy after) — Notion-link paste in "+ Note".
+3b. **~~CRM session swap~~ → superseded by item 0** (all three lanes need a full
+   restart now, not just CRM; use docs/RESTART-PROMPTS.md).
 4. **Approve/amend on /improvements:** the **nightly digest** card (Lane C
    answered your thesis question with a rules-based revision — explicit
    auto-enrich rules you create; zero rules = zero auto-spend) and the
@@ -56,8 +63,11 @@ you or recently decided. Ask "what's open?" anytime and I'll resend it._
    stays PARKED.
 
 ## 📅 THIS WEEK
-- **Jack Williams (William Blair) — Tue Jul 14, 3:00–3:30 PM CT, Teams.**
-  Say the word and I'll generate the call-prep one-pager Monday.
+- **Jack Williams (William Blair) intro — Tue Jul 14 call is now PAST.** If it
+  happened, tell me any follow-ups to log; if it slipped, say so and I'll help
+  reschedule. (No deal record — this is an advisor/banker intro.)
+- **AAFE IOI due Thu 7/17** (Fri at latest) — I'll prep the IOI draft the moment
+  you say go.
 
 ## ✅ CLOSED TONIGHT (7/12 eve → 7/13, all live on the site)
 - **Your 6 live-feedback directives, all shipped same-night:**
