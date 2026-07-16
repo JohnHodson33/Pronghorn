@@ -1159,3 +1159,29 @@ detail pages, locate the JSON carrier element, then add gated enrichment
 Then murphy "Broker" section second look. SKIP hedgestone/businessesforsale
 (form-gated). BLOCKED: bizbuysell Listed-By (Akamai). Queue: TASK-QUEUE Lane A
 (delisting/freshness already live; RIVER GUIDES item marked LATER by PM).
+
+## 2026-07-16 — vr NAMED-AGENT enrichment SHIPPED: 89/100 linked, 33 agents, 22 w/ EMAIL
+- vr.js detail enrichment live (gate: asking ≥ $500K — vr cards carry no cash
+  flow; cap 100; fetchRetry). Agent extracted from the office templates' NDA-
+  link JSON (BrokerFirstName/LastName/Email, URL-encoded) with /advisor/<slug>
+  humanization as fallback + tel: phone. **89/100 listings linked; 33 named
+  agents; 22 with DIRECT EMAIL** (llane@vrdallas.com, jluna@vrsanantonio.com,
+  raquel@vrmiamicenter.com…) — the first named-agent+email source in the
+  brokers table; top outreach value.
+- Hardened after first pass: name-sanity guard (malformed JSON fragments →
+  advisor-slug fallback), HTML-entity decode (Ed O&#039;Sullivan → Ed
+  O'Sullivan). Cleaned my 5 imperfect first-pass rows (3 junk, 2 partial);
+  their listings unlinked so the next vr run recreates them correctly.
+- Broker table now: named agents (vr, dealrelations, sunbeltmidwest,
+  linkbusiness, wpbdp, businessbroker) + firm offices (fcbb 73, bbf 41).
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~13:45: branch synced + pushed. CI Node-22 fix MERGED
+to main (4226508) — 06:00 cron self-drives. SHIPPED today: vr named-agent
+enrichment (89 linked/33 agents/22 emails); bbf office enrichment (113/41);
+fcbb backfill (73/829); auto_promote LIVE (42 pursuits, nightly-wired);
+regionState→core; painting-heal (+11 T1 → 124). NEXT: murphy "Broker" section
+second look (probe detail page in-session for name/phone); then TASK-QUEUE
+lane items (new-source hunting = opportunistic; SELF-ITERATE audit). SKIP
+hedgestone/businessesforsale (form-gated). BLOCKED: bizbuysell Listed-By
+(Akamai). Drift alerting + freshness live (source_health.js in CI).

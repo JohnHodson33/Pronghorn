@@ -110,7 +110,11 @@
     "vr": {
       "enabled": true,
       "module": "./sources/vr",
-      "max_pages": 25
+      "max_pages": 25,
+      "enrich_details": true,
+      "enrich_min_asking": 500000,
+      "max_detail_enrich": 100,
+      "_comment": "Cards lack cash flow, so enrichment gates on asking price. Detail pages expose the named agent (NDA-link JSON + /advisor/ slug) w/ email on most office templates."
     },
     "franchiseresales": {
       "enabled": true,
