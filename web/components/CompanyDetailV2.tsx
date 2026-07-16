@@ -11,6 +11,7 @@ import CompanyEditor from "@/components/CompanyEditor";
 import ContactsSection from "@/components/ContactsSection";
 import DealControls from "@/components/DealControls";
 import InlineField from "@/components/InlineField";
+import StarButton from "@/components/StarButton";
 import MarketCheckCard from "@/components/MarketCheckCard";
 import { fetchCompanyDetail } from "@/lib/company-detail";
 import { companyLevel } from "@/lib/company-level";
@@ -40,7 +41,7 @@ const eventLabel: Record<string, string> = {
 export default async function CompanyDetailV2({ id }: { id: string }) {
   const data = await fetchCompanyDetail(id);
   if (!data) notFound();
-  const { company: c, deal, contacts, activities, listings, comparison, leadChannels, size } = data;
+  const { company: c, deal, contacts, activities, listings, comparison, leadChannels, size, shortlist } = data;
   const estRange = (r: [number, number]) => {
     const f = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : `$${Math.round(n / 1000)}K`);
     return `~${f(r[0])}–${f(r[1])}`;
@@ -75,6 +76,15 @@ export default async function CompanyDetailV2({ id }: { id: string }) {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {c.peOwned && (
+              <span
+                className="rounded-full bg-rose-100 px-2.5 py-1 text-xs font-bold text-rose-700"
+                title="PE-backed companies aren't acquisition targets"
+              >
+                PE-owned{c.peOwner ? `: ${c.peOwner}` : ""}
+              </span>
+            )}
+            <StarButton companyId={c.id} shortlist={shortlist} />
             {(() => {
               const lv = companyLevel(contacts, c.website);
               return (
@@ -89,7 +99,7 @@ export default async function CompanyDetailV2({ id }: { id: string }) {
             {size && (
               <span
                 className={`rounded-full px-2.5 py-1 text-xs font-semibold ${tierChipCls[size.tier]}`}
-                title={`~${size.employees[0]}–${size.employees[1]} employees (${size.basis}) → ${estRange(size.revenue)} rev → ${estRange(size.ebitda)} EBITDA · ${size.confidence} confidence`}
+                title={`${size.employees ? `~${size.employees[0]}–${size.employees[1]} employees` : "sized"} (${size.basis}) → ${estRange(size.revenue)} rev → ${estRange(size.ebitda)} EBITDA · ${size.confidence} confidence`}
               >
                 {TIER_LABELS[size.tier]}
               </span>

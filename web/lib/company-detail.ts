@@ -41,6 +41,8 @@ export type CompanyDetail = {
     notes: string | null;
     listingId: string | null;
     createdAt: string;
+    peOwned: boolean;
+    peOwner: string | null;
   };
   deal: {
     id: string;
@@ -67,6 +69,7 @@ export type CompanyDetail = {
   // gap — John 7/13: show with provenance rather than reading as blank)
   leadChannels: { ownerName: string | null; email: string | null; phone: string | null; linkedin: string | null } | null;
   size: SizeEstimate | null; // size-proxy tier for the header (null = unsized)
+  shortlist: { person: string; note: string | null; created_at: string }[]; // ★ 0015; empty pre-migration
 };
 
 export async function fetchCompanyDetail(id: string): Promise<CompanyDetail | null> {
@@ -122,6 +125,12 @@ export async function fetchCompanyDetail(id: string): Promise<CompanyDetail | nu
         .eq("company_id", id)
         .limit(5),
     ]);
+
+  // ★ shortlist (0015) — separate tolerant query so a missing table costs nothing
+  const { data: shortlistRows } = await db
+    .from("company_shortlist")
+    .select("person, note, created_at")
+    .eq("company_id", id);
 
   type LRow = {
     id: string; name: string | null; url: string | null; source_id: string | null;
@@ -220,6 +229,9 @@ export async function fetchCompanyDetail(id: string): Promise<CompanyDetail | nu
       notes: c.notes,
       listingId: c.listing_id,
       createdAt: c.created_at,
+      // pe columns arrive with 0017 (select * tolerates absence)
+      peOwned: !!(c as Record<string, unknown>).pe_owned,
+      peOwner: ((c as Record<string, unknown>).pe_owner as string | null) ?? null,
     },
     deal,
     contacts: contacts ?? [],
@@ -228,5 +240,6 @@ export async function fetchCompanyDetail(id: string): Promise<CompanyDetail | nu
     comparison,
     leadChannels,
     size,
+    shortlist: (shortlistRows as CompanyDetail["shortlist"] | null) ?? [],
   };
 }

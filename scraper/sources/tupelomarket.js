@@ -42,8 +42,67 @@ class TupeloMarketScraper extends SourceScraper {
       }
     }
 
+    // Named-agent enrichment (John 7/15 listing-broker directive). Tupelo has
+    // no structured broker field (7/13 recon: the public API exposes only the
+    // firm; no __NEXT_DATA__). But SOME detail pages name the agent in prose —
+    // "Contact <Name>, <Title>, <Firm>, [email protected], <phone>, for …" —
+    // with the address Cloudflare-obfuscated in data-cfemail (decodable).
+    // Sparse (~1 in 6 pages) but each hit is a FULL contact (name+firm+email+
+    // phone), so we take precision over recall: require BOTH the cfemail
+    // element and the Contact-prose, and read the phone from that same prose
+    // window (a page-wide phone regex matches cuid digit-strings — verified).
+    if (this.config.enrich_details) await this.enrichBrokers(listings);
+
     this.info(`Scrape complete — ${listings.length} listings across ${pagesOk} states (${pageErrors} errors)`);
     return { listings, stats: { pagesOk, pageErrors } };
+  }
+
+  // Cloudflare email obfuscation: first byte is the XOR key.
+  decodeCfEmail(hex) {
+    try {
+      const key = parseInt(hex.slice(0, 2), 16);
+      let out = '';
+      for (let i = 2; i < hex.length; i += 2) out += String.fromCharCode(parseInt(hex.slice(i, i + 2), 16) ^ key);
+      return /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(out) ? out : null;
+    } catch { return null; }
+  }
+
+  async enrichBrokers(listings) {
+    const minCash = this.config.enrich_min_cash_flow ?? 300000;
+    const cap = this.config.max_detail_enrich ?? 100;
+    const targets = listings
+      .filter((l) => l.cash_flow != null && l.cash_flow >= minCash && l.url)
+      .slice(0, cap);
+    if (targets.length === 0) { this.info('Broker enrichment: no listings meet threshold'); return; }
+    this.info(`Broker enrichment: ${targets.length} listing(s) (cash flow ≥ ${minCash}, cap ${cap})`);
+
+    let enriched = 0;
+    let errors = 0;
+    for (const l of targets) {
+      try {
+        const res = await this.fetchRetry(l.url, { headers: { 'User-Agent': UA } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const html = (await res.text()).replace(/[\r\n]+/g, ' ');
+        const cf = html.match(/data-cfemail="([0-9a-f]{6,})"/i);
+        const email = cf ? this.decodeCfEmail(cf[1]) : null;
+
+        const at = html.search(/Contact\s+[A-Z][a-z]/);
+        if (email && at > 0) {
+          const prose = html.slice(at, at + 400).replace(/<[^>]*>/g, ' ').replace(/&#160;|&nbsp;/g, ' ').replace(/\s+/g, ' ');
+          // "Contact <Name>, <Title>, <Firm>, [email protected] , <phone>, …"
+          const m = prose.match(/Contact\s+([A-Z][a-zA-Z.'-]+(?:\s+[A-Z][a-zA-Z.'-]+){1,2})\s*,\s*([^,]{3,40})\s*,\s*([^,]{3,60})\s*,/);
+          const phone = (prose.match(/\(?\d{3}\)?[\s.-]\d{3}[-.\s]\d{4}/) || [])[0] || null;
+          if (m) {
+            l.broker = { name: m[1].trim(), company: m[3].trim(), phone, email };
+            enriched++;
+          }
+        }
+        await this.sleep(700);
+      } catch (err) {
+        if (++errors >= 8) { this.warn('Broker enrichment: too many errors, stopping'); break; }
+      }
+    }
+    this.info(`Broker enrichment complete — ${enriched} enriched (${errors} errors)`);
   }
 
   parse(html, stateCode, seen) {

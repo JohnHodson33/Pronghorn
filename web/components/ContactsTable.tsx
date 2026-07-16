@@ -10,6 +10,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 import { PinButton } from "@/components/PinnedViews";
+import FilterDropdown from "@/components/FilterDropdown";
+import SortHeader from "@/components/SortHeader";
 
 export type DirectoryContact = {
   id: string;
@@ -44,22 +46,28 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
     return counts;
   }, [contacts]);
 
+  // csv-string convention: multi-select UI, back-compatible single-value URLs
+  const asSet = (v: string) => new Set(v ? v.split(",").filter(Boolean) : []);
   const [q, setQ] = useState("");
-  const [role, setRole] = useState<string | null>(null);
-  const [industry, setIndustry] = useState<string | null>(null);
+  const [role, setRole] = useState("");
+  const [industry, setIndustry] = useState("");
   const [withEmail, setWithEmail] = useState(false);
   const [withPhone, setWithPhone] = useState(false);
   const [brokerId, setBrokerId] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<"name" | "company" | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
   // URL → state on mount; state → URL on change (replaceState: no history spam)
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
     if (p.get("q")) setQ(p.get("q")!);
-    if (p.get("role")) setRole(p.get("role"));
-    if (p.get("industry")) setIndustry(p.get("industry"));
+    if (p.get("role")) setRole(p.get("role")!);
+    if (p.get("industry")) setIndustry(p.get("industry")!);
     if (p.get("email") === "1") setWithEmail(true);
     if (p.get("phone") === "1") setWithPhone(true);
     if (p.get("broker")) setBrokerId(p.get("broker"));
+    if (p.get("sort") === "name" || p.get("sort") === "company") setSortKey(p.get("sort") as "name" | "company");
+    if (p.get("dir") === "desc") setSortDir("desc");
   }, []);
   useEffect(() => {
     const p = new URLSearchParams();
@@ -69,9 +77,10 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
     if (withEmail) p.set("email", "1");
     if (withPhone) p.set("phone", "1");
     if (brokerId) p.set("broker", brokerId);
+    if (sortKey) { p.set("sort", sortKey); if (sortDir === "desc") p.set("dir", "desc"); }
     const qs = p.toString();
     window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
-  }, [q, role, industry, withEmail, withPhone, brokerId]);
+  }, [q, role, industry, withEmail, withPhone, brokerId, sortKey, sortDir]);
 
   const industryCounts = useMemo(() => {
     const m: Record<string, number> = {};
@@ -79,20 +88,23 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
     return m;
   }, [contacts]);
 
-  const rows = useMemo(
-    () =>
-      contacts.filter((c) => {
-        if (q && !`${c.name ?? ""} ${c.email ?? ""} ${c.companyName ?? ""} ${c.companyIndustry ?? ""} ${c.notes ?? ""}`.toLowerCase().includes(q.toLowerCase()))
-          return false;
-        if (role && (c.role ?? "other") !== role) return false;
-        if (industry && c.companyIndustry !== industry) return false;
-        if (withEmail && !c.email) return false;
-        if (withPhone && !c.phone) return false;
-        if (brokerId && c.broker_id !== brokerId) return false;
-        return true;
-      }),
-    [contacts, q, role, industry, withEmail, withPhone, brokerId]
-  );
+  const rows = useMemo(() => {
+    const roleSet = asSet(role);
+    const indSet = asSet(industry);
+    const filtered = contacts.filter((c) => {
+      if (q && !`${c.name ?? ""} ${c.email ?? ""} ${c.companyName ?? ""} ${c.companyIndustry ?? ""} ${c.notes ?? ""}`.toLowerCase().includes(q.toLowerCase()))
+        return false;
+      if (roleSet.size && !roleSet.has(c.role ?? "other")) return false;
+      if (indSet.size && !indSet.has(c.companyIndustry ?? "")) return false;
+      if (withEmail && !c.email) return false;
+      if (withPhone && !c.phone) return false;
+      if (brokerId && c.broker_id !== brokerId) return false;
+      return true;
+    });
+    if (!sortKey) return filtered; // server order = name asc already
+    const val = (c: DirectoryContact) => (sortKey === "name" ? c.name ?? "zzz" : c.companyName ?? "zzz").toLowerCase();
+    return [...filtered].sort((a, b) => val(a).localeCompare(val(b)) * (sortDir === "asc" ? 1 : -1));
+  }, [contacts, q, role, industry, withEmail, withPhone, brokerId, sortKey, sortDir]);
 
   function exportCsv() {
     downloadCsv(
@@ -129,63 +141,39 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
         </span>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {brokerId && (
-          <button
-            onClick={() => setBrokerId(null)}
-            className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700 ring-2 ring-blue-400"
-            title="Showing only contacts linked to one Broker Directory record — click to clear"
-          >
-            linked to broker record ✕
-          </button>
-        )}
+      {/* LIST-UX STANDARD (John 7/16): chip rows retired — headers do the work */}
+      {brokerId && (
         <button
-          onClick={() => setRole(null)}
-          className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
-            role === null ? "bg-emerald-700 text-white" : "border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
-          }`}
+          onClick={() => setBrokerId(null)}
+          className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700 ring-2 ring-blue-400"
+          title="Showing only contacts linked to one Broker Directory record — click to clear"
         >
-          all · {contacts.length}
+          linked to broker record ✕
         </button>
-        {Object.entries(roles)
-          .sort((a, b) => b[1] - a[1])
-          .map(([r, n]) => (
-            <button
-              key={r}
-              onClick={() => setRole(role === r ? null : r)}
-              className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
-                role === r ? "ring-2 ring-emerald-600 " : ""
-              }${roleStyle[r] ?? "bg-zinc-100 text-zinc-600"}`}
-            >
-              {r} · {n}
-            </button>
-          ))}
-        {Object.keys(industryCounts).length > 0 && <span className="mx-1 text-zinc-300">|</span>}
-        {Object.entries(industryCounts)
-          .sort((a, b) => b[1] - a[1])
-          .map(([i, n]) => (
-            <button
-              key={i}
-              onClick={() => setIndustry(industry === i ? null : i)}
-              className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
-                industry === i
-                  ? "bg-emerald-700 text-white ring-2 ring-emerald-600"
-                  : "border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
-              }`}
-              title={`Every contact at a ${i} company`}
-            >
-              {i} · {n}
-            </button>
-          ))}
-      </div>
+      )}
 
       <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500">
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Role</th>
-              <th className="px-4 py-3">Company</th>
+              <th className="px-4 py-3">
+                <SortHeader label="Name" active={sortKey === "name"} dir={sortDir}
+                  onChange={(d) => { if (!d) setSortKey(null); else { setSortKey("name"); setSortDir(d); } }} />
+              </th>
+              <th className="px-4 py-3">
+                <FilterDropdown header label="Role"
+                  options={Object.entries(roles).sort((a, b) => b[1] - a[1]).map(([r, n]) => ({ value: r, label: r, count: n }))}
+                  selected={asSet(role)} onChange={(s) => setRole([...s].join(","))} />
+              </th>
+              <th className="px-4 py-3">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Company" active={sortKey === "company"} dir={sortDir}
+                    onChange={(d) => { if (!d) setSortKey(null); else { setSortKey("company"); setSortDir(d); } }} />
+                  <FilterDropdown header label=""
+                    options={Object.entries(industryCounts).sort((a, b) => b[1] - a[1]).map(([i, n]) => ({ value: i, label: i, count: n }))}
+                    selected={asSet(industry)} onChange={(s) => setIndustry([...s].join(","))} />
+                </span>
+              </th>
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Phone</th>
               <th className="px-4 py-3">Notes</th>

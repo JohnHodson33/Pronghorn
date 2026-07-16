@@ -25,7 +25,7 @@ export default async function Contacts() {
       .from("contacts")
       .select("id, name, role, email, phone, notes, company_id, broker_id, companies(name, industry)")
       .order("name")
-      .limit(500);
+      .limit(2000); // 553+ contacts since the river-guide ingest — 500 truncated
     rows = ((data as unknown as Row[]) ?? []).map((r) => {
       const co = Array.isArray(r.companies) ? r.companies[0] : r.companies;
       return {

@@ -51,11 +51,13 @@ export default function SizeEstimation() {
   const setBench = (ind: string, k: "rpe" | "lo" | "hi", v: number) =>
     setBenchmarks((prev) => {
       const b = prev[ind];
+      if (!b) return prev;
+      const margin = b.ebitda_margin ?? [0.2, 0.2]; // amendment 4: flat 20% default
       return {
         ...prev,
         [ind]: {
           revenue_per_employee: k === "rpe" ? v : b.revenue_per_employee,
-          ebitda_margin: [k === "lo" ? v : b.ebitda_margin[0], k === "hi" ? v : b.ebitda_margin[1]],
+          ebitda_margin: [k === "lo" ? v : margin[0], k === "hi" ? v : margin[1]],
         },
       };
     });
@@ -95,6 +97,11 @@ export default function SizeEstimation() {
               <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Too small: max EBITDA</div>
               <input type="number" step={25000} value={thresholds.toosmall_max_ebitda}
                 onChange={(e) => setThresholds({ ...thresholds, toosmall_max_ebitda: Number(e.target.value) })} className={inputCls} />
+            </label>
+            <label className="space-y-1">
+              <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Too big: min EBITDA <span className="normal-case text-zinc-400">(conglomerate territory)</span></div>
+              <input type="number" step={500000} value={thresholds.toobig_min_ebitda ?? 10_000_000}
+                onChange={(e) => setThresholds({ ...thresholds, toobig_min_ebitda: Number(e.target.value) })} className={inputCls} />
             </label>
             <button
               onClick={() => patch({ thresholds }, "thresholds")}
@@ -151,14 +158,14 @@ export default function SizeEstimation() {
                     <input type="number" step={5000} value={b.revenue_per_employee} onChange={(e) => setBench(ind, "rpe", Number(e.target.value))} className={inputCls} />
                   </td>
                   <td className="px-4 py-2 text-right">
-                    <input type="number" step={0.01} min={0} max={1} value={b.ebitda_margin[0]} onChange={(e) => setBench(ind, "lo", Number(e.target.value))} className={inputCls} />
+                    <input type="number" step={0.01} min={0} max={1} value={(b.ebitda_margin ?? [0.2, 0.2])[0]} onChange={(e) => setBench(ind, "lo", Number(e.target.value))} className={inputCls} />
                   </td>
                   <td className="px-4 py-2 text-right">
-                    <input type="number" step={0.01} min={0} max={1} value={b.ebitda_margin[1]} onChange={(e) => setBench(ind, "hi", Number(e.target.value))} className={inputCls} />
+                    <input type="number" step={0.01} min={0} max={1} value={(b.ebitda_margin ?? [0.2, 0.2])[1]} onChange={(e) => setBench(ind, "hi", Number(e.target.value))} className={inputCls} />
                   </td>
                   <td className="px-4 py-2 text-right">
                     <button
-                      onClick={() => patch({ industry: ind, revenue_per_employee: b.revenue_per_employee, ebitda_margin: b.ebitda_margin }, ind)}
+                      onClick={() => patch({ industry: ind, revenue_per_employee: b.revenue_per_employee, ebitda_margin: b.ebitda_margin ?? [0.2, 0.2] }, ind)}
                       disabled={saving === ind}
                       className="rounded-md border border-zinc-300 px-2.5 py-1 text-xs font-semibold text-zinc-600 hover:border-emerald-600 hover:text-emerald-700 disabled:opacity-50"
                     >

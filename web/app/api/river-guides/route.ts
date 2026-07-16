@@ -26,9 +26,14 @@ export async function GET(req: Request) {
   if (f("q")) q = q.or(`full_name.ilike.%${f("q")}%,their_company.ilike.%${f("q")}%,acquirer.ilike.%${f("q")}%`);
 
   const { data, error } = await q;
-  if (error) return NextResponse.json({ guides: [], counts: {}, note: "apply migration 0016 to enable river guides" });
+  if (error) return NextResponse.json({ error: `${error.message} — apply migration 0016/0017` }, { status: 503 });
 
-  const guides = data ?? [];
+  // page contract: contact dots read g.contact.{email,phone,linkedin_url};
+  // canonical storage is the flat columns (0017) — synthesize when absent
+  const guides = (data ?? []).map((g: Record<string, unknown>) => ({
+    ...g,
+    contact: g.contact ?? { email: g.email ?? null, phone: g.phone ?? null, linkedin_url: g.linkedin_url ?? null },
+  }));
   const countBy = (key: string) =>
     guides.reduce((m: Record<string, number>, g: Record<string, unknown>) => {
       const v = String(g[key] ?? "—"); m[v] = (m[v] ?? 0) + 1; return m;

@@ -15,6 +15,7 @@ const tierChip: Record<string, string> = {
   platform: "bg-emerald-100 text-emerald-800",
   tuckin: "bg-sky-100 text-sky-800",
   toosmall: "bg-zinc-100 text-zinc-500",
+  too_big: "bg-violet-100 text-violet-800",
   unsized: "bg-zinc-50 text-zinc-400 border border-zinc-200",
 };
 const estShort = (r: [number, number]) => {
@@ -176,7 +177,7 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-semibold ${tierChip[d.size?.tier ?? "unsized"]}`}
                     title={d.size
-                      ? `~${d.size.employees[0]}–${d.size.employees[1]} employees (${d.size.basis}) → ${estShort(d.size.revenue)} rev → ${estShort(d.size.ebitda)} EBITDA · ${d.size.confidence} confidence`
+                      ? `${d.size.employees ? `~${d.size.employees[0]}–${d.size.employees[1]} employees` : "sized"} (${d.size.basis}) → ${estShort(d.size.revenue)} rev → ${estShort(d.size.ebitda)} EBITDA · ${d.size.confidence} confidence`
                       : "no usable size signal — estimate needs enrichment (or the deal has actual financials)"}
                   >
                     {TIER_LABELS[d.size?.tier ?? "unsized"]}

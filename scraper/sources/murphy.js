@@ -62,8 +62,48 @@ class MurphyScraper extends SourceScraper {
       }
     }
 
+    // Named-agent enrichment (John 7/15 listing-broker directive). The detail
+    // page's "Get More Information" block names the listing agent + their
+    // direct line (the page-header tel: is Murphy corporate — ignore it).
+    if (this.config.enrich_details) await this.enrichBrokers(listings);
+
     this.info(`Scrape complete — ${listings.length} listings (${pageErrors} errors)`);
     return { listings, stats: { pagesOk, pageErrors } };
+  }
+
+  async enrichBrokers(listings) {
+    const minCash = this.config.enrich_min_cash_flow ?? 300000;
+    const cap = this.config.max_detail_enrich ?? 100;
+    const targets = listings
+      .filter((l) => l.cash_flow != null && l.cash_flow >= minCash && l.url)
+      .slice(0, cap);
+    if (targets.length === 0) { this.info('Broker enrichment: no listings meet threshold'); return; }
+    this.info(`Broker enrichment: ${targets.length} listing(s) (cash flow ≥ ${minCash}, cap ${cap})`);
+
+    let enriched = 0;
+    let errors = 0;
+    for (const l of targets) {
+      try {
+        const res = await this.fetchRetry(l.url, { headers: { 'User-Agent': UA } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const html = (await res.text()).replace(/[\r\n]+/g, ' ');
+        const block = (html.match(/Get More Information[\s\S]{0,2500}/) || [])[0];
+        if (block) {
+          const txt = block.replace(/<[^>]*>/g, '|').replace(/\|+/g, '|');
+          // "| William B. White | … | (330) 650-9000 |"
+          const m = txt.match(/\|\s*([A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]*){1,3})\s*\|[^|]*\|?\s*(\(?\d{3}\)?[\s.-]?\d{3}[-.\s]?\d{4})/);
+          const email = (block.match(/mailto:([^"'&?<\s]{4,60})/) || [])[1] || null;
+          if (m) {
+            l.broker = { name: m[1].trim(), company: 'Murphy Business Sales', phone: m[2].trim(), email };
+            enriched++;
+          }
+        }
+        await this.sleep(800);
+      } catch (err) {
+        if (++errors >= 8) { this.warn('Broker enrichment: too many errors, stopping'); break; }
+      }
+    }
+    this.info(`Broker enrichment complete — ${enriched} enriched (${errors} errors)`);
   }
 
   // POST the admin-ajax form with retry + backoff on transient 429/5xx + network

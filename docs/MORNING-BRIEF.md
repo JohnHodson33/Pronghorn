@@ -1,83 +1,54 @@
-# Brief — Wed 7/16 morning (PM session, rewritten each cycle)
+# Brief — Wed 7/16 midday (PM session, rewritten each cycle)
 
-## 🚣 NEW OVERNIGHT: RIVER GUIDES CHANNEL (your ~00:50 directive — integrated)
-Architecture decided (docs/RIVER-GUIDES-INTEGRATION.md), queued top-of-lane:
-dedicated `river_guides` table (channel lifecycle/scoring) + auto-linked
-Contacts (tag **river_guide**) + Companies (former company, pe_owned ground
-truth) — no redundant scraping section; enrichment reuses the existing cascade
-person-mode. **Your morning step: run migration `0016_river_guides.sql`**
-(Lane C authors it overnight) in the same SQL-editor pass, then the 433-row
-seed ingests and the River Guides page lights up. 🔒 The seed data (232 named
-people, scored) stays OUT of the public repo — Supabase only; this also
-strengthens the go-private recommendation below.
+## 🚣 RIVER GUIDES — LIVE END TO END (your #1 today: DONE)
+- 433 candidates on /river-guides (95 CALL_NOW · 141 ENRICH · 197 RESOLVE_NAME);
+  search/filters/CSV working; migrations 0015/0016/0017 all applied by you.
+- **Tree-care tier-1 enrichment RAN today**: 56 resolved candidates → results
+  landing live (≈32 owner emails + 19 verified LinkedIns so far; ~10 escalate
+  to NEEDS_PAID = your VA-export queue). ~$0 marginal (Hunter quota + pennies).
+- Enrich button: hard-refresh the tab once (stale bundle showed the old
+  degrade notice). Price-estimate-before-click is queued top-of-lane (your
+  12:30 directive).
+- Next from lanes: CRM linking (guides → Contacts tagged river_guide +
+  former companies w/ pe_owned) · discovery sweep endpoint · status
+  verification (⚠→✓; outreach stays gated on CALL_NOW + verified).
 
-## ☀️ YOUR SHORT LIST (priority order — ~12 min total)
-0. **🔴 THE BIG ONE — restart the three lane sessions (one paste each, ~2 min).**
-   All three context-died Tue ~2pm; every queued 🔥 build (Tracerfy cascade,
-   LinkedIn overhaul, PE flag, inline edit, size amendment 4, shortlist) is
-   stalled until they're back. Prompts are ready to copy in
-   **docs/RESTART-PROMPTS.md** — open a fresh session in each named worktree,
-   paste, click Allow. Lane C unblocks the most; do it first if you only do one.
-1. **Migrations 0011→0014, in order (~4 min):** Supabase SQL editor, files from
-   `C:\Users\johnd\Pronghorn-pm\supabase\migrations\` — 0011 feedback threads ·
-   0012 list progress · 0013 draft rules · 0014 size assumptions + digest.
-   (0015 shortlist doesn't exist yet — Lane C authors it after restart.)
-2. **GitHub secrets ×6 (~2 min):** `GRAPH_CLIENT_ID`, `GRAPH_TENANT_ID`,
-   `GRAPH_REFRESH_TOKEN`, `GOOGLE_PLACES_API_KEY`, `NOTION_TOKEN`,
-   `TRACERFY_API_KEY` (values in `Pronghorn\scraper\.env`). Makes every runner
-   self-driving.
-3. **Vercel env:** add `NOTION_TOKEN` (then I redeploy) — Notion-link paste in "+ Note".
-4. **Review the 5 sample outreach drafts** (/improvements card 611290ff) — still
-   the ONLY gate on tailored auto-drafting; after 0013, create rule #1 on /outbox.
-5. **Check SPAM for the OneHub data-room invite (Odulaire "Project Lifeline")** →
-   review the data room → IOI ASAP (others already submitted).
-6. **Open decisions:** repo public/private · VA hire go/no-go (Upwork ~$6/hr,
-   200-lead shortlist already in your Downloads).
+## ⚠️ OVERNIGHT OUTAGE — RESOLVED (root cause for the record)
+~01:30 the 5-hr usage limit cut all sessions mid-turn; the overnight computer
+restart then killed every session timer, so nothing self-resumed after reset.
+All 3 lanes + PM restarted ~10:00–11:00; the ~9h of unmerged overnight work
+(12 commits) is merged + deployed. **Lesson: after any reboot, ping the PM
+session once — it wakes the rest.**
 
-## 🎯 DEAL DESK
-- **All American Fence Erectors** (fencing, $5.4M rev / $1.9M AEBITDA @35%): deal
-  @ CIM Received, CIM attached. Next: Q&A call w/ Robert Fahrenhorst (Peregrine),
-  then **IOI due 7/17**.
-- **Odulaire / "Project Lifeline"** (mobile medical, ~6–6.5x ask): @ Info
-  Requested. Next: SPAM → OneHub data room → **IOI ASAP**.
-- **Landmark Pest Management:** IOI submitted 7/10 ($41–45M, 10–11x). Virtual
-  mgmt presentations wk of 7/13 & 7/20; LOIs due shortly after.
-- **Gage Tree Care (FCBB):** @ Info Requested — CIM received, ready to promote.
-  ⚠️ Its next_step is blank in the deal record — confirm this is the FCBB tree
-  CIM and I'll set the follow-up (didn't want to guess wrong data).
+## ✅ SHIPPED TODAY (overnight burst + today's catch-up)
+- **Lane A:** auto-promote T1→pursuits LIVE (42 opened + receipts; +1 today:
+  Raleigh Lawn Care NC) · firm-level brokers + FCBB backfill (73 offices,
+  829 listings linked) · BBF listing-broker scrape · regionState graduated.
+- **Lane B:** River Guides page + Find-more bar · inline edit everywhere ·
+  filter/sort persistence on back-nav (listings/brokers/deals) · companies
+  table overhaul (dropdowns, header filters, sortable est. columns) ·
+  ★ shortlist StarButton · improvements-thread polish on real 0011.
+- **Lane C:** river-guides full backend (enrich/discover/PATCH + workers:
+  tier-1 waterfall, identity resolution, status verification, scoring) ·
+  Tracerfy skip-trace cascade tier · LinkedIn verified-only counting +
+  re-audit · PE/US/too-big detection + flags backfill · email pattern engine
+  (tier 2.5, $0 marginal).
+- **PM:** 3 recovery merges + deploys · 0016/0017 reconcile · seed ingest
+  (433) · catch-up scrape (46 new, 17k refreshed) · Sidebar wiring.
 
-## 💰 TRACERFY SKIP-TRACE — VALIDATED & LIVE-ISH (your 7/15 sample program)
-Key live in all scraper/.env files. PM ran two batches: **49-lead sample (14
-hits, 13 owner mobiles) + 87-lead backlog (11 hits) → +18 owner phones, +10
-emails, ~$1.60 total; ~931 credits remain.** Per-hit billing ≈ $0.02. Compliance
-posture (your call): pull everything, DNC flags **informational only** (badge on
-the cold-call queue, never a block), scrub OUT of the standard cascade. Lane C's
-top build is the in-cascade tier (enrich/skiptrace.js) — greenlit, waiting on
-the restart.
+## ⏳ ON YOU (short list)
+1. **Review the 5 sample outreach drafts** (/improvements card 611290ff) →
+   then rule #1 on /outbox. Still the only gate on tailored auto-drafting.
+2. **Odulaire**: SPAM check for the OneHub data-room invite; IOI pen-to-paper.
+3. **AAFE IOI due TOMORROW 7/17** — say go and PM drafts it.
+4. Decisions: repo public→private (PM recommends private + $30 Actions
+   spending limit; river-guide privacy strengthens this) · VA hire (cohort
+   says 80-85% hit at ~$6/hr; your NEEDS_PAID queue is the natural first task).
+5. FYI: **Nightly-scrape GH workflow failing 3 days** (setup fine, pipeline
+   step fails) — Lane A is on it; PM ran today's catch-up locally.
 
-## ✅ OVERNIGHT PM STATE (7/15 23:20 → 7/16 00:10)
-- Rollover from the prior PM absorbed; new PM live and looping.
-- All lane branches merged to main (0 ahead); nothing outstanding to integrate.
-- Nightly scrape verified fresh (max last_seen 9.4h; 17,341 listings seen in
-  24h; no queued enrichment jobs or pending lists to drain).
-- Site + /api/feedback healthy (200). Feedback: nothing new to triage (4 shipped,
-  5 suggested, 4 approved, 2 building — the approved/building are stalled on the
-  dead lanes, another reason to restart).
-- Recovered 3 uncommitted Lane B self-iterate items from the brokers worktree
-  before they'd be lost on restart; folded into main TASK-QUEUE.
-- Restart prompts prepared (docs/RESTART-PROMPTS.md); TASK-QUEUE pointer block
-  updated to rollover-complete + id-free coordination.
-
-## 👀 WATCH ITEMS
-- ⚠️ **06:00 nightly scrape reliability:** the 7/15 06:00 GitHub Actions run did
-  NOT fire (7/14 did). Data is currently fine (9.4h fresh from a later run), but
-  **check your GitHub failure emails / repo → Actions tab** — the scheduled
-  workflow may be failing or disabled. This + the secret batch is what makes the
-  platform self-driving. I'll watch the next 06:00 and catch-up locally if it
-  misses again.
-- Lanes remain dead until you restart them — I'm covering merges/deploys/data in
-  the gap but cannot build their queues.
-- Fable 5 billing: swap any agent still on Fable 5 to Opus 4.8 at your discretion
-  (agents can't detect the switch themselves).
-- 45 inert drafts in Outlook Drafts — delete at leisure.
-- Tom: awaiting his first login/feedback + his Notion token (docs/NOTION-CONNECT.md).
+## 🎯 DEAL DESK (unchanged today)
+- **AAFE** (fencing, $5.4M/$1.9M AEBITDA): CIM cataloged, Q&A w/ Robert, IOI 7/17.
+- **Odulaire "Project Lifeline"**: data-room invite likely in SPAM (OneHub).
+- **Landmark**: IOI in ($41–45M), follow-up in Key Actions.
+- **Tree Service (FCBB)**: ready-to-promote in Key Actions.

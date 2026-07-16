@@ -120,9 +120,91 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
-- 🔥🔥🔥 **RIVER GUIDES UI — JOHN'S 7/16 ~00:50 DIRECTIVE (read
-  docs/RIVER-GUIDES-INTEGRATION.md first; builds on Lane C's
-  /api/river-guides — coordinate, degrade gracefully until it's up):**
+- 🔥🔥🔥 **ENRICHMENT RUN VISIBILITY ON RIVER GUIDES + KILL THE DOTS (John
+  7/16 ~12:50 — TOP OF LANE, supersedes ordering below; his words: "I click
+  the button, I have no idea if it's actually working, no idea when it's
+  complete, no idea what has actually occurred… if Tom were to use it he'd
+  have no idea. Too hard to track."):**
+  (Lane C — the state) (a) POST /api/river-guides/enrich creates a RUN
+  record (reuse the enrichment_jobs pattern: kind='river_guides', total,
+  processed, found_email, found_linkedin, found_phone, escalated_paid,
+  state queued|running|done + started/finished_at); enrich_t1.js updates it
+  per lead as it works and closes it with the receipt; GET
+  /api/river-guides/runs serves active + last-5 runs. Worker picks up
+  queued runs within its loop/cron cadence — and the run row must say
+  honestly "queued — worker starts within ~15 min" until it flips running.
+  (Lane B — the visibility) (b) **sticky progress banner** on /river-guides
+  the moment a run exists: "Enriching river guides: 34/54 processed — 22
+  emails, 12 LinkedIns, 6 → paid queue" — live (poll ~5s while active);
+  (c) **completion banner/toast + durable receipt**: "Done 13:17: 52
+  processed → 35 emails, 20 LinkedIns, 15 → paid review (hit rate 71%)"
+  with a 'view results' link that applies the right filter; last-run
+  receipt stays visible on the page (Tom sees what happened without any
+  chat); (d) **REPLACE the 3 contact dots with THREE LABELED COLUMNS —
+  Email / Phone / LinkedIn — showing the ACTUAL VALUES** (truncated,
+  mailto:/tel:/profile links, — when missing) so filled-vs-empty is
+  obvious per row and populates LIVE during a run; (e) **per-row status
+  chip** in John's terms: Pending · Enriching · Enriched · Needs paid ·
+  Name first (not the raw enum); (f) same columns treatment on the
+  ENRICHMENT tab + anywhere else contact dots exist — the dots pattern is
+  RETIRED platform-wide. ACCEPTANCE (John's test): click Enrich → watch
+  numbers move → told when done + what happened → see exactly which people
+  gained which channels, all without asking an agent. Mobile parity.
+  **SAME UNIT — LAYOUT + REACHABILITY + SORT (John 7/16 ~13:00):**
+  (g) **FULL-WIDTH TABLE**: /river-guides drops the max-w-6xl cage — data
+  tables use the whole viewport to the right margin ("an extra forty
+  percent of the page we're just not using"); with Email/Phone/LinkedIn as
+  real columns this should kill horizontal scroll at laptop widths. Where
+  any table still overflows: the h-scrollbar must be USABLE —
+  sticky/always-visible, never only at the foot of a 200-row list ("having
+  to scroll all the way down just to see the right-hand columns is
+  terrible").
+  (h) **REACHABILITY FILTER**: channel-presence dropdown — Has phone / Has
+  email / Has LinkedIn / Any channel / No channel — combinable with band
+  ("101 Call-nows but only a fraction have phones I can call" → 'Call now
+  + Has phone' = the actual call list). Band chips show reachable counts
+  ("Call now · 16 · 9 reachable").
+  (j) **VERIFICATION EVIDENCE VISIBLE (PM 7/16 ~13:50)**: the status-
+  verify worker stores its evidence in notes (e.g. "LinkedIn shows
+  Principal at Apex Land Group") — surface it on the row (expand/hover on
+  the exit chip) so John/VA can adjudicate the inconclusives in seconds;
+  first verify pass: 30 checked -> 3 auto-verified, the evidence on the
+  other 27 is the human-review gold.
+  (i) **SORTABLE HEADERS**: click Name/Industry/Exit/Score/Year/State to
+  sort asc/desc (score + year = the quantitative stack-rank).
+- 🔥🔥 **RIVER-GUIDES ENRICH PRICE ESTIMATE (John 7/16 ~12:30 — "give me a
+  price estimate before I click Enrich, same as companies; I want to be
+  conscious of marginal cost"):** (Lane C) extend POST /api/river-guides/
+  enrich to accept {estimate:true, dealIds} → returns WITHOUT queuing:
+  {count, eligible, breakdown: {hunter: {calls, marginalUsd: 0, quotaUnits},
+  linkedin_verify: {searches, estUsd}}, totalEstUsd} — mirror the
+  /api/enrich estimate math (Hunter = quota units not dollars; Serper/
+  Claude verify = the real pennies; add a skiptrace line only if/when that
+  tier wires in for guides). (Lane B) the button becomes **"Enrich selected
+  (est. $X · N Hunter)"** — fetch the estimate on selection change
+  (debounced), split shown in a tooltip, post-click receipt stays honest
+  vs the estimate. Mobile parity.
+- 🔥🔥 **⚖️ LIST-UX STANDARD — ONE PATTERN EVERYWHERE (John 7/16 ~13:00,
+  STANDING RULE for every list page; his words: "sometimes there are
+  dropdown filters up top, sometimes clickable chip lists off to the side
+  — which I really don't like — sometimes column-header dropdowns… we
+  should just have these consistent across the whole site"):** THE
+  standard for every table (listings, companies, contacts, brokers,
+  deals, enrichment, river-guides, lead lists):
+  (1) top bar = free-text search + count chips for the page's key split
+  (band/level/tier) + CSV export; (2) **column headers do the work**:
+  click to sort asc/desc (every column, quantitative included), dropdown
+  filter on categorical columns (multi-select w/ counts); (3) NO side
+  chip-list filters — retire them wherever they exist; (4) filters+sort
+  serialize to URL params and survive back-nav (pattern exists); (5) data
+  tables are FULL-WIDTH (no reading-width cage) w/ usable overflow
+  scrolling; (6) card collapse under 640px. Extract ONE shared component
+  set (FilterDropdown/SortHeader/ListShell) and MIGRATE page by page —
+  each migrated page ships in its own commit. Where this contradicts
+  older cards below, THIS wins.
+- ✅→🔨 **RIVER GUIDES UI — JOHN'S 7/16 ~00:50 DIRECTIVE (page SHIPPED
+  overnight + Sidebar wired by PM; remaining sub-items fold into the
+  visibility/layout card above):**
   (a) **"River Guides" page under Proprietary Sourcing** (PM wires Sidebar
   on merge): shared list pattern — filters + counts header for priority band
   (CALL_NOW / ENRICH_THEN_ASSESS / NURTURE / RESOLVE_NAME_FIRST), industry,
@@ -506,7 +588,36 @@ set) into your new chips UI as a small follow-up.
 - ⬜ (B sweep 7/13, recovered) Enrichment/leads industry chips → click-to-filter
   (chips are display-only today; the dropdown does the work).
 
-## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+## Lane C — CRM & Data / Integrations
+- 📣 PM 7/16 ~14:10 — 🔥 **DISCOVER SWEEP: ACQUIRER-CORROBORATION GAP (PM
+  live-probed prod):** POST /discover with a FABRICATED consolidator name
+  still inserted a row — a REAL company (The Care of Trees, actually a
+  Davey deal) got attributed to the fake acquirer from generic industry
+  search results. The no-guess bar held for the seller name (named:0) but
+  NOT for acquirer attribution. FIX: only insert a candidate when the
+  queried consolidator name literally appears in the fetched source next
+  to the acquisition claim; unknown consolidators with zero corroborated
+  results return "no corroborated add-ons found" and insert NOTHING. Also
+  add {dryRun:true} support (PM probe created junk; PM deleted it, table
+  back to 433).  (`scraper/` scripts, `web/app/api/*`)
+- 🔥🔥🔥 **RUN-STATE FOR RIVER-GUIDE ENRICHMENT (John 7/16 ~12:50 — TOP OF
+  LANE with the price estimate; see the full spec at the top of Lane B):**
+  your parts = run record on enrich POST (enrichment_jobs pattern,
+  kind='river_guides') · enrich_t1.js updates processed/found counts per
+  lead + closes with receipt · GET /api/river-guides/runs (active + last 5)
+  · honest queued-state message. Pairs with the estimate-before-click
+  contract already queued. Lane B renders; ship your half first.
+- 📣 PM 7/16 ~12:00 — **RIVER GUIDES: PM SHIPPED THE CRITICAL PATH** (John's
+  #1 today; lanes were down): migration `0016_river_guides.sql` authored
+  (John runs it w/ 0015) · `scraper/ingest_river_guides.js` (parser verified
+  on all 433 rows) · GET `/api/river-guides` (deployed). **LANE C: do NOT
+  rebuild those three — your river-guides scope is now: (a) CRM linking unit
+  (RESOLVED rows → contacts tag river_guide + companies w/ pe_owned ground
+  truth, then backfill contact_id/company_id on river_guides); (b) POST
+  /api/river-guides/enrich (page already sends {dealIds}) → tier-1 waterfall
+  person-mode w/ website-status routing; (c) POST /api/river-guides/discover
+  (consolidator sweep, hallucination-guarded); (d) status-verification +
+  identity-resolution workers.** Original card follows:
 - 🔨 LANE C — 🔥🔥🔥 **RIVER GUIDES CHANNEL — BACKEND BUILT 7/16 overnight
   (John's direct directive ~00:45, "run with this, I'll look in the
   morning"). AWAITING: John runs migration 0016 (with 0015) → I ingest the

@@ -1076,3 +1076,295 @@ post-cooldown or via nightly session). NEXT: bbf office-broker capture
 (detail pages carry office+phone, verified 7/13); murphy/hedgestone/vr/
 businessesforsale broker probes; watch nightly for painting-heal + first
 nightly auto-promote receipt. Queue: TASK-QUEUE Lane A. Drift alerting live.
+
+## 2026-07-16 — CI FIXED: nightly-scrape 3-day failure root-caused (Node 20 vs supabase WebSocket)
+- (PM top item.) Pulled run 29508583886 logs via API: "Run pipeline" died with
+  **"Error: Node.js detected but native WebSocket not found"** — supabase-js
+  realtime now requires the native WebSocket that ships in Node 22+; workflows
+  pinned node-version "20" (local = Node 24, which is why only CI broke).
+- **Fix: node-version 20 → 22 in ALL 8 workflows** (.github/workflows is Lane
+  A-owned) — incl. the failing Enrichment Jobs (same root cause, no 📣 needed).
+- **Verified:** workflow_dispatched source-quality on lane/brokers (read-only,
+  same Node+supabase path) → run 29523089237 **completed SUCCESS**. Then
+  dispatched nightly-scrape on lane/brokers (long run — result checked next
+  iteration). PM: merge to main so the 06:00 cron picks up the fix.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~09:45: branch synced + pushed. SHIPPED: CI Node 22
+fix all 8 workflows (WebSocket root cause, verified green via dispatched
+source-quality run); earlier today: auto_promote LIVE (42 pursuits, nightly-
+wired), firm-level brokers + fcbb backfill (73 offices/829 linked),
+regionState→core. IN FLIGHT: nightly-scrape test dispatch on lane/brokers —
+CHECK ITS RESULT next iteration (api: workflows/nightly-scrape.yml/runs?branch=
+lane%2Fbrokers). BLOCKED: bizbuysell Listed-By (Akamai). NEXT: bbf office-broker
+detail enrichment (spec in 7/16 restart entry); murphy/hedgestone/vr/
+businessesforsale broker probes; TASK-QUEUE lane items (delisting/freshness
+already live via mark_delisted). gh CLI absent — use API w/ credential-manager
+token (works).
+
+## 2026-07-16 — bbf office-broker enrichment SHIPPED (113/150 enriched, 41 offices)
+- bbf.js detail-fetch enrichment live (rides the adapter's ASP session; gated
+  CF ≥ $300K, cap 150 bbf / 80 bizmls; config enrich_details on both entries).
+- First pass hit only 16/150 — diagnosed in-session: the contact table's
+  heading bold varies ("BROKER/ASSOC" OR "ASSOCIATE"); re-anchored on both +
+  label-aware phone preference (Agent Direct > Office > any). **Re-run:
+  113/150 enriched, 41 unique offices (30 new), 113 listings linked.** Sampled
+  rows are clean (TRANSWORLD CENTRAL FL (407) 226-6869, AMERIVEST (561)
+  302-7373, GREEN & COMPANY…). Remaining ~37 = pages w/o a contact block
+  (confidential templates) — expected.
+- Note: the block is SESSION-GATED (sessionless curl no longer renders it) —
+  enrichment must stay inside the adapter's browser session, as built.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~11:30: branch synced + pushed. SHIPPED today: CI
+Node-22 fix (8 workflows; source-quality dispatch VERIFIED green); bbf office
+enrichment (113 linked, 41 offices); auto_promote LIVE (42 pursuits, nightly-
+wired); firm-level brokers + fcbb backfill (73 offices/829 linked);
+regionState→core (5 adapters). IN FLIGHT: nightly-scrape CI test run
+29523150326 on lane/brokers — check via API (token: git credential fill); if
+SUCCESS tell PM to merge for 06:00 cron; if FAILURE pull logs. BLOCKED:
+bizbuysell Listed-By (Akamai hard-block). NEXT: murphy/hedgestone/vr/
+businessesforsale broker probes; painting-heal check; TASK-QUEUE lane items.
+
+## 2026-07-16 — painting-heal CONFIRMED: T1 113→124, T2 234→247
+- John's screen-profile keyword add is paying out: +11 Tier-1, +13 Tier-2
+  (~24 recovered thesis-fit targets). 21 painting listings tiered so far; 127
+  active painting rows still tier=null — draining via the nightly untieredIds
+  self-heal (re-screen backlog check in source_health.js watches it).
+
+## 2026-07-16 — CI VERIFIED END-TO-END; broker probes: VR has named agents + EMAIL
+- **nightly-scrape CI test run 29523150326: SUCCESS** (full ~55-min scrape on
+  the Node-22 branch). PM messaged to merge lane/brokers → main so the 06:00
+  cron self-drives. The 3-day CI outage is closed pending that merge.
+- Broker probes (detail pages): **vr (bizbizbiz.com) is the prize — embedded
+  JSON w/ BrokerFirstName/BrokerLastName/BrokerEmail + /advisor/<slug>/ profile
+  link (named agent WITH EMAIL — top outreach value).** Caveat: the block
+  appeared on first fetch but not on a re-fetch (bot-detection variance?) —
+  probe via the adapter's browser session, not curl. murphy: has a "Broker"
+  section on detail pages, needs closer look. hedgestone +
+  businessesforsale: contact form-gated, no public agent identity — skip.
+- painting-heal: +11 T1 (124), +13 T2 (247), 127 painting rows still draining.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~12:15: branch synced + pushed; PM told to merge (CI
+fix verified: source-quality green + nightly-scrape run 29523150326 SUCCESS).
+SHIPPED today: CI Node-22 fix (8 workflows); bbf office enrichment (113
+linked, 41 offices); fcbb backfill (73/829); auto_promote LIVE (42 pursuits,
+nightly-wired); regionState→core; painting-heal confirmed. NEXT UNIT: **vr
+broker enrichment** — detail pages embed BrokerFirstName/LastName/Email JSON
+(URL-encoded in a script/attr) + /advisor/<slug>/ links; FLAKY via curl, use
+the vr adapter's browser session (vr.js is browser-based? check) to fetch ~3
+detail pages, locate the JSON carrier element, then add gated enrichment
+(named agent + email → brokers table; pipeline takes named or firm rows).
+Then murphy "Broker" section second look. SKIP hedgestone/businessesforsale
+(form-gated). BLOCKED: bizbuysell Listed-By (Akamai). Queue: TASK-QUEUE Lane A
+(delisting/freshness already live; RIVER GUIDES item marked LATER by PM).
+
+## 2026-07-16 — vr NAMED-AGENT enrichment SHIPPED: 89/100 linked, 33 agents, 22 w/ EMAIL
+- vr.js detail enrichment live (gate: asking ≥ $500K — vr cards carry no cash
+  flow; cap 100; fetchRetry). Agent extracted from the office templates' NDA-
+  link JSON (BrokerFirstName/LastName/Email, URL-encoded) with /advisor/<slug>
+  humanization as fallback + tel: phone. **89/100 listings linked; 33 named
+  agents; 22 with DIRECT EMAIL** (llane@vrdallas.com, jluna@vrsanantonio.com,
+  raquel@vrmiamicenter.com…) — the first named-agent+email source in the
+  brokers table; top outreach value.
+- Hardened after first pass: name-sanity guard (malformed JSON fragments →
+  advisor-slug fallback), HTML-entity decode (Ed O&#039;Sullivan → Ed
+  O'Sullivan). Cleaned my 5 imperfect first-pass rows (3 junk, 2 partial);
+  their listings unlinked so the next vr run recreates them correctly.
+- Broker table now: named agents (vr, dealrelations, sunbeltmidwest,
+  linkbusiness, wpbdp, businessbroker) + firm offices (fcbb 73, bbf 41).
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~13:45: branch synced + pushed. CI Node-22 fix MERGED
+to main (4226508) — 06:00 cron self-drives. SHIPPED today: vr named-agent
+enrichment (89 linked/33 agents/22 emails); bbf office enrichment (113/41);
+fcbb backfill (73/829); auto_promote LIVE (42 pursuits, nightly-wired);
+regionState→core; painting-heal (+11 T1 → 124). NEXT: murphy "Broker" section
+second look (probe detail page in-session for name/phone); then TASK-QUEUE
+lane items (new-source hunting = opportunistic; SELF-ITERATE audit). SKIP
+hedgestone/businessesforsale (form-gated). BLOCKED: bizbuysell Listed-By
+(Akamai). Drift alerting + freshness live (source_health.js in CI).
+
+## 2026-07-16 — murphy named-agent enrichment + AUTONOMY EVIDENCE (backlog drained, nightly auto-promote fired)
+- **murphy: agent IS exposed** — the "Broker." heading I saw earlier was a false
+  positive (franchise promo banner). Real find: the detail page's "Get More
+  Information" block names the LISTING AGENT + their direct line (the
+  page-header tel: (727) 725-7090 is Murphy corporate — ignored). Verified on 2
+  pages: "William B. White / (330) 650-9000", "Steven Fylypchuk / (403)
+  605-1366". Enrichment built (CF ≥ $300K, cap 100, fetchRetry); run in flight.
+- **Autonomy is working unattended:**
+  - **re-screen backlog 127 → 37** — the nightly untieredIds self-heal drained
+    the painting rows (now under source_health's flag threshold of 40).
+  - **auto_promoted events 42 → 45** — the nightly-wired auto-promote opened 3
+    more pursuits on its own. First proof the John-approved job self-drives.
+  - T1 124 → 126, T2 247 → 248 (painting keeps paying out).
+  - listings with a broker link: **8,546**.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~14:45: branch synced + pushed. CI Node-22 fix merged
+to main (06:00 cron self-drives). SHIPPED today: murphy named-agent enrichment
+(built+committed; VERIFY run b209b1res result + commit any fix); vr named-agent
+enrichment (89/100, 33 agents, 22 emails); bbf office (113/41); fcbb (73/829);
+auto_promote LIVE + self-driving (45 events); regionState→core; painting-heal
+(T1 126/T2 248, backlog 127→37). BROKER SWEEP NOW COMPLETE for every source
+that exposes identity: named agents (vr, murphy, dealrelations, sunbeltmidwest,
+linkbusiness, wpbdp, businessbroker) + firm offices (fcbb, bbf). SKIP
+hedgestone/businessesforsale (form-gated); BLOCKED bizbuysell (Akamai).
+NEXT: TASK-QUEUE lane items — SELF-ITERATE audit / opportunistic new sources;
+consider extending office-phone capture to bizmls (config already enabled).
+
+## 2026-07-16 — murphy VERIFIED (96/100, 59 agents) + SELF-ITERATE audit: broker gaps 9 → 3
+- **murphy enrichment result: 96/100 enriched, 0 errors → 59 named agents, all
+  59 with a direct phone, 0 malformed** (David Schloss (724) 655-3419, Russell
+  Miller (908) 928-0088…). Get-More-Information parse is solid.
+- **SELF-ITERATE audit** (source_quality + source_health): all 30 sources green,
+  re-screen backlog 37 (under flag). Portfolio **21,965 listings, 126 T1, 248
+  T2, broker coverage 28% → 39%**.
+- **Broker-contact gap list: 9 sources → 3.** Closed by today's sweep: fcbb,
+  bbf, murphy, vr, businessesforsale, empire. Remaining: bizbuysell (Akamai —
+  blocked), hedgestone (form-gated — skip), tupelomarket (IN PROGRESS below).
+- **tupelomarket recon:** no structured broker anywhere (public API needs an
+  orgId and exposes only the firm; no __NEXT_DATA__). But ~1 in 6 detail pages
+  names the agent in prose w/ a Cloudflare-obfuscated email — decodable
+  (data-cfemail XOR). Each hit is a FULL contact: "Tom Freimuth, Business
+  Broker, Results Business Advisors, tom.freimuth@resultsba.com,
+  402-212-6979". Built precision-first enrichment (requires BOTH cfemail +
+  Contact-prose; phone read from that prose window — a page-wide phone regex
+  matches cuid digit-strings, verified). Prose parse unit-tested exact.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~15:30: branch synced + pushed. CI Node-22 merged to
+main (06:00 cron self-drives). SHIPPED today: murphy agents (96/100, 59); vr
+agents (89/100, 33 agents, 22 emails); bbf offices (113/41); fcbb offices
+(73/829); auto_promote LIVE + self-driving (45 events); regionState→core;
+painting-heal (T1 126, backlog 127→37). IN FLIGHT: tupelomarket enrichment run
+(task b6ekzh03g) — verify decode on real page + enrichment count, commit fix if
+hit-rate is 0. BROKER SWEEP: gap list 9→3 (bizbuysell=Akamai BLOCKED,
+hedgestone=form-gated SKIP, tupelomarket=in flight). NEXT after tupelo: bizmls
+office run (config already enrich-enabled, shares bbf.js code — just needs a
+run); then opportunistic new-source hunt (frontier mostly closed) / TASK-QUEUE.
+
+## 2026-07-16 — tupelomarket enrichment MEASURED → DISABLED (honest negative result)
+- Ran it: **0 enriched of 90 targets, 0 errors.** Diagnosed rather than shipped
+  a dud:
+  - The cfemail decoder is CORRECT (real-page check returned
+    tom.freimuth@resultsba.com exactly).
+  - The known-good page is a **$125K listing — below our $300K gate**, so it was
+    never a target. My earlier "1 in 6" sample was unfiltered and that hit WAS
+    the $125K one.
+  - **0 of 8 real high-cash-flow targets carry cfemail OR the Contact-prose.**
+    The pattern is absent from the segment we actually pursue.
+- **DISABLED enrich_details for tupelomarket** (config, with the measurement in
+  the comment). Leaving it on would cost ~90 wasted fetches every nightly for
+  provably zero value. Code + unit tests kept: flip to true only if Tupelo
+  starts publishing broker identity on thesis-scale listings.
+- Net: tupelomarket stays a broker-gap by NATURE (no structured field, prose
+  only on small listings) — same category as bizbuysell (Akamai) and hedgestone
+  (form-gated). All 3 remaining gaps are now explained, not open work.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~16:00: branch synced + pushed. CI Node-22 merged to
+main (06:00 cron self-drives). BROKER SWEEP COMPLETE + measured: gap list 9→3,
+and all 3 residual gaps are structural//documented (bizbuysell=Akamai,
+hedgestone=form-gated, tupelomarket=no structured field + prose only on
+sub-gate listings, enrichment measured 0/90 and disabled). Coverage 28%→39%,
+21,965 listings, T1 126/T2 248, backlog 37, all 30 green. SHIPPED today: murphy
+(96/100, 59 agents), vr (89/100, 33 agents, 22 emails), bbf (113/41), fcbb
+(73/829), auto_promote LIVE + self-driving (45 events), regionState→core, CI
+fix. IN FLIGHT: bizmls office run (task bwg177xl5 — config enrich-enabled,
+reuses bbf.js code; verify offices land). NEXT: opportunistic new-source hunt
+(frontier mostly closed: NV/GA/NM aggregator-dominated, TX-assoc + FL-green =
+mirrors — don't repeat) / TASK-QUEUE SELF-ITERATE.
+
+## 2026-07-16 — bizmls 0/39 diagnosed → enrich_folder fix (opposite outcome to tupelo)
+- bizmls office run returned **0 enriched / 0 errors** — fetches succeeded but
+  the block never matched. Diagnosed instead of assuming it was another
+  structural dead end (as tupelo turned out to be):
+  - The **national BIZMLS folder's detail template omits the contact block**
+    (no BROKER/ASSOC, no ASSOCIATE, no Agent Direct — though disp_color confirms
+    it IS the detail page).
+  - But the LIST_NUMBERs are BBF-prefixed, and **the same ids DO render the
+    block under folder=bbfnew** — verified on 2 (both → SUNBELT BUSINESS
+    BROKERS OF SOUTH FLORIDA). So bizmls listings ARE enrichable.
+- **Fix: `enrich_folder` config option** — the detail-fetch folder is now
+  independent of the searched folder; bizmls sets enrich_folder=bbfnew. Re-run
+  in flight.
+- Worth noting the contrast: identical symptom (0 enriched) as tupelomarket, but
+  opposite cause — tupelo = data genuinely absent (disabled), bizmls = we were
+  asking the wrong folder (fixed). Measuring each one is what separated them.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~16:15: branch synced + pushed. CI Node-22 merged to
+main (06:00 cron self-drives). IN FLIGHT: bizmls re-run w/ enrich_folder=bbfnew
+(task bd7i121m2) — verify offices land; if still 0, probe whether the bizmls
+targets' ids exist in bbfnew. BROKER SWEEP: gap list 9→3, all residuals
+structural + documented (bizbuysell=Akamai, hedgestone=form-gated,
+tupelomarket=measured 0/90, disabled). Coverage 39%, 21,965 listings, T1 126/T2
+248, backlog 37, all 30 green. SHIPPED today: murphy (96/100, 59 agents), vr
+(89/100, 33 agents, 22 emails), bbf (113/41), fcbb (73/829), auto_promote LIVE +
+self-driving (45 events), regionState→core, CI fix, tupelo measured+disabled.
+NEXT: TASK-QUEUE SELF-ITERATE / opportunistic new-source hunt (frontier mostly
+closed — don't re-probe NV/GA/NM/TX-assoc/FL-green).
+
+## 2026-07-16 — bizmls 4/8-errors ROOT-CAUSED (id-prefix routing, not sessions)
+- Two wrong guesses before measuring — worth recording so it isn't repeated:
+  1. enrich_folder=bbfnew (0→4 enriched, but 8 errors).
+  2. enrich_entry to "re-establish a folder-scoped session" → **identical 4/8.
+     Session is NOT folder-scoped. Hypothesis wrong; config REMOVED rather than
+     left in as cargo-cult.**
+- **Actual root cause (measured):** the national search mixes orgs. Of the 39
+  targets: **27 BBF-* (200 OK under bbfnew) + 12 BIZMLS-* (HTTP 500 under
+  bbfnew)** — a folder only answers its own org's ids. The 12 doomed fetches
+  tripped the error cap at 8, which ALSO aborted the remaining good BBF fetches
+  — so the cap turned a partial-coverage issue into a near-total one.
+- **Fixes:** (a) `enrich_id_prefix` limits fetches to ids the folder can answer
+  (skipping is correct, not an error); BIZMLS-* have no published contact in any
+  folder. (b) **enrichBrokers no longer swallows err.message** — the silent
+  catch is exactly why this took three passes; first 2 errors now log verbatim.
+- Lesson banked: 0-enriched + 0-errors vs 0-enriched + N-errors are different
+  diseases. Read the error before theorising.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~16:45: branch synced + pushed. CI Node-22 merged to
+main (06:00 cron self-drives). IN FLIGHT: bizmls re-run w/ enrich_id_prefix
+(task b659zfgju) — expect ~27 targets, 0 errors; verify + log. BROKER SWEEP:
+gap list 9→3, residuals structural+documented (bizbuysell=Akamai,
+hedgestone=form-gated, tupelomarket=measured 0/90 → disabled, code behind flag).
+Coverage 39%, 21,965 listings, T1 126/T2 248, backlog 37, all 30 green. SHIPPED
+today: murphy (96/100, 59 agents), vr (89/100, 33 agents, 22 emails), bbf
+(113/41), fcbb (73/829), auto_promote LIVE + self-driving (45 events),
+regionState→core, CI fix. NEXT: TASK-QUEUE SELF-ITERATE / opportunistic
+new-source hunt (frontier mostly closed — don't re-probe NV/GA/NM/TX-assoc/
+FL-green). RIVER GUIDES marked LATER by PM.
+
+## 2026-07-16 — bizmls FIXED: 9 enriched, 0 errors (was 4 + 8 errors)
+- enrich_id_prefix routing verified: **26 targets (13 BIZMLS-* correctly
+  skipped), 9 enriched, 0 errors** → 9 listings linked, 5 offices. The 17
+  non-hits are stub/confidential detail pages (same category as bbf's ~37
+  misses), NOT failures — error cap no longer trips, so good fetches complete.
+- Calling bizmls DONE: it's a 142-listing source w/ 1 thesis-fit, so 9 office
+  links is proportionate; further parse-tuning here is diminishing returns.
+- **BROKER SWEEP CLOSED.** Every source that publishes broker identity now
+  captures it at ingest: named agents (murphy 59, vr 33 w/ 22 emails,
+  dealrelations, sunbeltmidwest, linkbusiness, wpbdp, businessbroker) + firm
+  offices (fcbb 73, bbf 41, bizmls 5). Residual gaps are structural + measured,
+  not open work: bizbuysell (Akamai hard-block), hedgestone (form-gated),
+  tupelomarket (no structured field; prose only on sub-gate listings — 0/90).
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~17:00: branch synced + pushed, nothing uncommitted.
+CI Node-22 fix MERGED to main — 06:00 cron self-drives (nightly-scrape test run
+29523150326 SUCCESS after 3 days of failure).
+TODAY'S SHIPS: CI fix (8 workflows); auto_promote LIVE + self-driving (45
+pursuit events, nightly-wired via config.auto_promote); BROKER SWEEP CLOSED
+(murphy 96/100→59 agents; vr 89/100→33 agents/22 emails; bbf 113/41 offices;
+fcbb 73/829; bizmls 9/5; firm-level rows in db_output w/ FIRM_NOTE);
+regionState→core (5 adapters); tupelomarket measured 0/90 → disabled.
+METRICS: 21,965 listings, T1 126 / T2 248, broker coverage 28%→39%, re-screen
+backlog 127→37 (nightly self-heal), all 30 sources green.
+NEXT: TASK-QUEUE Lane A — SELF-ITERATE audit (source_quality + source_health,
+act only on flags) or opportunistic new-source hunt. Frontier mostly closed —
+do NOT re-probe NV/GA/NM (aggregator-dominated), TX-assoc (TABB=BizBuySell
+mirror), FL-green-specialists (=BBF members). RIVER GUIDES marked LATER by PM.
+BLOCKED/SKIP: bizbuysell (Akamai), hedgestone/businessesforsale (form-gated).

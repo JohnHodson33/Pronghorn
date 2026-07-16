@@ -34,6 +34,8 @@ export async function GET(req: Request) {
     ({ data, error } = await buildQuery("id, name, industry, city, state, website, origin, revenue, ebitda, contacts(role, name, email, phone, linkedin)"));
   }
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // dynamic select() string defeats supabase-js type inference — one honest cast
+  const rows = (data ?? []) as unknown as Record<string, unknown>[];
 
   // size signals live on the source LEAD's enrichment — one join by company_id
   const { data: leadRows } = await db
@@ -54,8 +56,8 @@ export async function GET(req: Request) {
   }
 
   const levelFilter = url.searchParams.get("level") as Completeness | null;
-  let companies = (data ?? []).map((c) => {
-    const { contacts, ...rest } = c as typeof c & { contacts: unknown };
+  let companies = rows.map((c) => {
+    const { contacts, ...rest } = c as Record<string, unknown> & { contacts: unknown };
     const lead = leadByCompany.get(c.id as string);
     const leadEnrich = (lead?.enrichment ?? null) as { size_signals?: Record<string, unknown>; too_big?: boolean; pe_owned?: boolean; pe_owner?: string } | null;
     const size = lead
@@ -72,7 +74,8 @@ export async function GET(req: Request) {
       pe_owned: cRow.pe_owned === true || leadEnrich?.pe_owned === true,
       pe_owner: cRow.pe_owner ?? leadEnrich?.pe_owner ?? null,
       ...rest,
-      ownerContactCount: (c.contacts ?? []).filter((x) => (x.role ?? "").toLowerCase() === "owner").length,
+      ownerContactCount: ((contacts as { role?: string | null }[] | null) ?? [])
+        .filter((x) => (x.role ?? "").toLowerCase() === "owner").length,
       completeness: companyCompleteness(c),
       size, size_tier: size?.tier ?? "unsized",
       // always-present columns (John amendment 3): actuals win over estimates
@@ -108,6 +111,6 @@ export async function GET(req: Request) {
     LEVELS.indexOf(a.completeness) - LEVELS.indexOf(b.completeness) ||
     tierRank(a.size_tier) - tierRank(b.size_tier));
 
-  const industries = [...new Set((data ?? []).map((c) => c.industry).filter(Boolean))].sort();
+  const industries = [...new Set(rows.map((c) => c.industry as string | null).filter(Boolean))].sort();
   return NextResponse.json({ companies, counts, tierCounts, industries, total: companies.length });
 }

@@ -3,16 +3,91 @@
 Per-lane log per PARALLEL-SESSIONS.md; the PM/integrator folds these into
 DECISION-LOG.md and wires routes into Sidebar.tsx.
 
-## 🔄 HANDOFF — successor #2 live 7/16 (loop running; 7/15 backlog)
+## 🔄 HANDOFF — ROLLED OVER 7/16 ~13:25 — successor resumes here
 
-- **7/15+7/16 directives**: (1) ✅ INLINE EDIT EVERYWHERE; (2) ✅ FILTER/
-  SORT PERSISTENCE; (3) ✅ COMPANIES TABLE OVERHAUL; (4) ✅ RIVER GUIDES
-  PAGE (John's 7/16 top-of-lane; degrade mode until Lane C's 0016+ingest+
-  API — lights up automatically). REMAINING: River Guides items (b)/(c)
-  (contacts chip + profile panels — need the contact_id/company_id FKs
-  live) · LeadsTable header-filter parity (item e) · Too-big/PE-owned/
-  ★Shortlist chips as Lane C ships flags + 0015. **PM: wire "River
-  Guides" into Sidebar under Proprietary Sourcing on merge.**
+- **State**: nothing in flight. Last commit `081ff20` (brokers → LIST-UX
+  STANDARD) — pushed to lane/frontend, typecheck green, browser-verified.
+  Session #2 shipped 15 units 7/16 (inline edit b04bbad · filter/sort
+  persistence 2a39bc7 · companies overhaul 4904c6f · river-guides page
+  c3b42d7 · leads parity d1e0aa5 · shortlist+too-big 9e2b021 · thread
+  polish 580d68c · PE-owned UI 1a4ca54 · river-guides→standard 28b468d ·
+  listings→standard d702e40 · contacts→standard+cap-fix 8bd3511 ·
+  brokers→standard 081ff20).
+- **NEXT (in order)**: (1) DEALS → LIST-UX STANDARD (DealsTable: stage
+  chips row → Stage header dropdown; SortHeaders on Company/EBITDA/
+  Asking/Our-val/Fit; Size header dropdown; csv-string state pattern —
+  copy the brokers commit as the template); (2) ENRICHMENT →
+  standard (LeadsTable: state/list selects → header dropdowns; keep the
+  counts chips + sessionStorage); (3) River Guides item (c): company
+  profile former-company line ("sold to <acquirer>, <year> — former
+  owner is a River Guide prospect" — river_guides has company_id FKs) +
+  contact-profile river-guide panel (band/exit/former co/verification);
+  (4) watch TASK-QUEUE for John's next directives.
+- **Environment**: worktree C:\Users\johnd\Pronghorn-frontend, branch
+  lane/frontend; dev server = launch config pronghorn-web-laneB port
+  3311; NEW ROUTE DIRS need `rm -rf .next/dev` + restart (bit twice).
+  Server components can't pass function props to client components
+  (InlineField uses format="money"). LIST-UX STANDARD pieces:
+  FilterDropdown + SortHeader + useUrlFilterSync + csv-string state
+  convention (back-compat singular URLs). Feedback poll: 0 submitted all
+  session; 0011-0017 applied. PM session = local_affe9dc4-… .
+
+## 🔄 Previous handoff (successor #2, 7/16 — retired)
+
+- **7/15+7/16 directives**: (1) ✅ INLINE EDIT; (2) ✅ FILTER/SORT
+  PERSISTENCE; (3) ✅ COMPANIES OVERHAUL; (4) ✅ RIVER GUIDES PAGE;
+  (5) ✅ LeadsTable header parity; (6) ✅ ★SHORTLIST + TOO-BIG UI;
+  (7) ✅ /improvements thread polish on real 0011; (8) ✅ RIVER GUIDES
+  LIVE — Lane C's backend landed, page lit up with ZERO code change (433
+  candidates: 106 Call now · 130 Enrich&assess · 14 Nurture · 183 Resolve
+  name; band filter + URL sync verified on real data); 0015 APPLIED —
+  stars verified persisting (star→read→unstar round-trip); (9) ✅
+  PE-OWNED UI (this unit): PE badge w/ pe_owner tooltip + "Hide PE-owned"
+  filter (?pe=hide) on Companies; hide-PE toggle + badge on Enrichment
+  (sessionStorage); PE-owned chip on the company profile header.
+  fetchCompanies reads the 0017 columns tolerantly AND backstops from
+  lead enrichment.pe_owned — 14 companies + 9 leads flag TODAY, before
+  Lane C's column backfill; (10) ✅ RIVER GUIDES migrated to John's 13:00
+  **LIST-UX STANDARD** (first page): full-width, every column sortable
+  via NEW shared `SortHeader` (numeric opens desc), categorical header
+  dropdowns (industry/exit/status/state + NEW reachability filter on
+  Contact — real counts 41 email · 24 LinkedIn · 388 none), toolbar
+  slimmed to search + band chips + actions, all URL-synced; verified on
+  the 433 live rows + mobile; (11) ✅ LISTINGS → the standard:
+  industry/state/source selects retired into header dropdowns (multi-
+  select, counts), NEW Status header filter, csv-string state keeps
+  saved views AND ?industry= deep links back-compatible (verified: 17
+  Tree Care of 847, same param shape); every column already sorted;
+  full-width already. Also (item j) verify-worker EVIDENCE now shows in
+  the exit-chip tooltip on river-guide rows; (12) ✅ CONTACTS → the
+  standard: role/industry chip rows retired into Role + Company-industry
+  header dropdowns (multi-select w/ counts), Name/Company SortHeaders,
+  old singular URLs hydrate. River Guides item (b) rode along free —
+  ?role=river_guide filters the 249 ingested guides via the Role
+  dropdown. ALSO fixed real truncation: the contacts fetch capped at 500
+  while the DB now has 654 (154 invisible) — raised to 2000. NEXT:
+  standard migration — brokers → deals → enrichment (each its own
+  commit); then River Guides item (c) (former-company line on company
+  profiles) + contact-profile river-guide panel. NOTE for PM: the >4.5MB
+  upload fix ALREADY SHIPPED 7/14 (363547f) — queue item stale.
+
+## 2026-07-16 — ★Shortlist + Too-big tier UI (0015 backend, John 7/15)
+
+- **StarButton** (compact = one-tap ★ on Companies rows, toggles John's
+  star; full = John+Tom buttons w/ who/when on the profile header),
+  optimistic w/ revert — verified the pre-0015 degrade: POST returns the
+  apply-note, the star un-lights. fetchCompanies/fetchCompanyDetail join
+  company_shortlist tolerantly (two-shape select / separate query).
+- **★ Shortlist filter** (by John / by Tom, counts) in the Companies
+  toolbar, `?star=` URL param; **shortlisted-first is the standing
+  tiebreak** when no column sort is active (stable sort keeps today's
+  order until stars exist).
+- **Too-big tier**: violet chip color in all three tier maps + LeadsTable
+  count init (was a NaN waiting for the first too_big lead); Size
+  Estimation tab gains the editable "Too big: min EBITDA" boundary (seed
+  $10M); size-model PATCH whitelist gains toobig_min_ebitda (Lane C's
+  route missed it — flagged here for their awareness).
+- Everything activates the moment John applies 0015; zero code change.
 - **State facts**: migrations 0011–0014 APPLIED (threads, list progress,
   outreach rules, size assumptions all serve real data now — degrade
   paths retired naturally). Dev server = pronghorn-web-laneB, port 3311;
