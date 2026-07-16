@@ -1,8 +1,9 @@
 "use client";
 
 // The CRM deals index — every deal ever, including Passed (deals fall out of
-// the pipeline and may fall back in; they stay findable here). Shared list
-// pattern: search + stage chips + CSV; rows open the deal working view.
+// the pipeline and may fall back in; they stay findable here). LIST-UX
+// STANDARD (John 7/16 ~13:00): top bar = search + count + CSV; the column
+// headers do the filtering (Stage/Size dropdowns) and the sorting.
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { money, STAGES } from "@/lib/mock";
@@ -10,6 +11,8 @@ import type { LiveDeal } from "@/lib/crm";
 import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 import { TIER_LABELS } from "@/lib/size";
 import { useUrlFilterSync } from "@/lib/use-url-filters";
+import FilterDropdown from "@/components/FilterDropdown";
+import SortHeader from "@/components/SortHeader";
 
 const tierChip: Record<string, string> = {
   platform: "bg-emerald-100 text-emerald-800",
@@ -35,23 +38,54 @@ const stageChip: Record<string, string> = {
 };
 
 const ALL_STAGES = [...STAGES, "Passed"];
+const TIERS = ["platform", "tuckin", "too_big", "toosmall", "unsized"];
+
+// The live pipeline carries stages the STAGES constant doesn't know about
+// (e.g. "CIM Received"). This index is "every deal ever, findable" — so the
+// Stage filter/sort is built from what's actually in the data, with the known
+// stages in pipeline order and any strangers appended rather than dropped.
+function stageOrder(deals: LiveDeal[]) {
+  const extra = [...new Set(deals.map((d) => d.stage))]
+    .filter((s) => s && !ALL_STAGES.includes(s))
+    .sort();
+  return [...ALL_STAGES, ...extra];
+}
+
+type SortKey = "company" | "stage" | "owner" | "broker" | "size" | "ebitda" | "asking" | "ourval" | "fit";
+
+// EBITDA sorts on the real number when we have one and the estimate midpoint
+// when we don't — the column already shows them interchangeably.
+const ebitdaSortVal = (d: LiveDeal) =>
+  d.ebitda ?? (d.size ? (d.size.ebitda[0] + d.size.ebitda[1]) / 2 : null);
 
 export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[]; initialStage?: string }) {
   const router = useRouter();
+
+  // csv-string convention (LIST-UX STANDARD): multi-select UI, and the old
+  // singular ?stage=Diligence deep links (pipeline board) still hydrate
+  const asSet = (v: string) => new Set(v ? v.split(",").filter(Boolean) : []);
+  const stages = useMemo(() => stageOrder(deals), [deals]);
   const [q, setQ] = useState("");
-  const [stage, setStage] = useState<string | null>(
-    initialStage && ALL_STAGES.includes(initialStage) ? initialStage : null
-  );
+  const [stage, setStage] = useState(initialStage ?? "");
+  const [tier, setTier] = useState("");
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   // filters survive back-nav via URL params (John 7/15); ?stage= stays the
   // deep-link param the pipeline board already uses
   useUrlFilterSync(
-    () => ({ q, stage }),
+    () => ({
+      q, stage: stage || null, size: tier || null,
+      sort: sortKey, dir: sortKey && sortDir === "asc" ? "asc" : null,
+    }),
     (p) => {
       if (p.get("q")) setQ(p.get("q")!);
-      if (p.get("stage") && ALL_STAGES.includes(p.get("stage")!)) setStage(p.get("stage"));
+      if (p.get("stage")) setStage(p.get("stage")!);
+      if (p.get("size")) setTier(p.get("size")!);
+      if (p.get("sort")) setSortKey(p.get("sort") as SortKey);
+      if (p.get("dir") === "asc") setSortDir("asc");
     },
-    [q, stage],
+    [q, stage, tier, sortKey, sortDir],
   );
 
   const counts = useMemo(() => {
@@ -60,21 +94,63 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
     return m;
   }, [deals]);
 
-  const rows = useMemo(
-    () =>
-      deals.filter((d) => {
-        if (stage && d.stage !== stage) return false;
-        if (
-          q &&
-          !`${d.company} ${d.owner ?? ""} ${d.broker ?? ""} ${d.industry ?? ""} ${d.city ?? ""} ${d.state ?? ""} ${d.passReason ?? ""}`
-            .toLowerCase()
-            .includes(q.toLowerCase())
-        )
-          return false;
-        return true;
-      }),
-    [deals, q, stage]
-  );
+  const tierCounts = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const d of deals) {
+      const t = d.size?.tier ?? "unsized";
+      m[t] = (m[t] ?? 0) + 1;
+    }
+    return m;
+  }, [deals]);
+
+  const rows = useMemo(() => {
+    const stageSel = asSet(stage);
+    const tierSel = asSet(tier);
+    const filtered = deals.filter((d) => {
+      if (stageSel.size && !stageSel.has(d.stage)) return false;
+      if (tierSel.size && !tierSel.has(d.size?.tier ?? "unsized")) return false;
+      if (
+        q &&
+        !`${d.company} ${d.owner ?? ""} ${d.broker ?? ""} ${d.industry ?? ""} ${d.city ?? ""} ${d.state ?? ""} ${d.passReason ?? ""}`
+          .toLowerCase()
+          .includes(q.toLowerCase())
+      )
+        return false;
+      return true;
+    });
+    if (!sortKey) return filtered; // server order
+    const text = (v: string | null | undefined) => String(v ?? "zzz").toLowerCase();
+    return [...filtered].sort((a, b) => {
+      let cmp: number;
+      switch (sortKey) {
+        case "company": cmp = text(a.company).localeCompare(text(b.company)); break;
+        case "owner": cmp = text(a.owner).localeCompare(text(b.owner)); break;
+        case "broker": cmp = text(a.broker).localeCompare(text(b.broker)); break;
+        // pipeline order, not alphabetical — Sourced→Passed is what the stage means
+        case "stage": cmp = stages.indexOf(a.stage) - stages.indexOf(b.stage); break;
+        case "size": cmp = TIERS.indexOf(a.size?.tier ?? "unsized") - TIERS.indexOf(b.size?.tier ?? "unsized"); break;
+        default: {
+          const pick = (d: LiveDeal) =>
+            sortKey === "ebitda" ? ebitdaSortVal(d)
+            : sortKey === "asking" ? d.asking
+            : sortKey === "ourval" ? d.ourValuation
+            : d.fitScore;
+          const av = pick(a), bv = pick(b);
+          // missing numbers sink to the bottom in BOTH directions
+          if (av === null && bv === null) return 0;
+          if (av === null) return 1;
+          if (bv === null) return -1;
+          return sortDir === "asc" ? av - bv : bv - av;
+        }
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }, [deals, q, stage, tier, sortKey, sortDir, stages]);
+
+  const sortSet = (key: SortKey) => (d: "asc" | "desc" | null) => {
+    if (!d) setSortKey(null);
+    else { setSortKey(key); setSortDir(d); }
+  };
 
   function exportCsv() {
     downloadCsv(
@@ -115,41 +191,57 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
         </span>
       </div>
 
-      <div className="flex flex-wrap gap-1.5">
-        <button
-          onClick={() => setStage(null)}
-          className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-            stage === null ? "bg-emerald-700 text-white" : "border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
-          }`}
-        >
-          All · {deals.length}
-        </button>
-        {ALL_STAGES.filter((s) => counts[s]).map((s) => (
-          <button
-            key={s}
-            onClick={() => setStage(stage === s ? null : s)}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-              stage === s ? "ring-2 ring-emerald-600 " : ""
-            }${stageChip[s] ?? "bg-zinc-100 text-zinc-600"}`}
-          >
-            {s} · {counts[s]}
-          </button>
-        ))}
-      </div>
-
+      {/* LIST-UX STANDARD: the stage chip row is retired — Stage filters from
+          its own column header (multi-select, counts in the panel). */}
       <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500">
-              <th className="px-4 py-3">Company</th>
-              <th className="px-4 py-3">Stage</th>
-              <th className="px-4 py-3">Owner</th>
-              <th className="px-4 py-3">Broker</th>
-              <th className="px-4 py-3">Size</th>
-              <th className="px-4 py-3 text-right">EBITDA</th>
-              <th className="px-4 py-3 text-right">Asking</th>
-              <th className="px-4 py-3 text-right">Our val</th>
-              <th className="px-4 py-3 text-right">Fit</th>
+              <th className="px-4 py-3">
+                <SortHeader label="Company" active={sortKey === "company"} dir={sortDir} onChange={sortSet("company")} />
+              </th>
+              <th className="px-4 py-3">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Stage" active={sortKey === "stage"} dir={sortDir} onChange={sortSet("stage")} />
+                  <FilterDropdown
+                    header
+                    label=""
+                    options={stages.filter((s) => counts[s]).map((s) => ({ value: s, label: s, count: counts[s] }))}
+                    selected={asSet(stage)}
+                    onChange={(s) => setStage([...s].join(","))}
+                  />
+                </span>
+              </th>
+              <th className="px-4 py-3">
+                <SortHeader label="Owner" active={sortKey === "owner"} dir={sortDir} onChange={sortSet("owner")} />
+              </th>
+              <th className="px-4 py-3">
+                <SortHeader label="Broker" active={sortKey === "broker"} dir={sortDir} onChange={sortSet("broker")} />
+              </th>
+              <th className="px-4 py-3">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Size" active={sortKey === "size"} dir={sortDir} onChange={sortSet("size")} />
+                  <FilterDropdown
+                    header
+                    label=""
+                    options={TIERS.filter((t) => tierCounts[t]).map((t) => ({ value: t, label: TIER_LABELS[t], count: tierCounts[t] }))}
+                    selected={asSet(tier)}
+                    onChange={(s) => setTier([...s].join(","))}
+                  />
+                </span>
+              </th>
+              <th className="px-4 py-3 text-right">
+                <SortHeader label="EBITDA" numeric active={sortKey === "ebitda"} dir={sortDir} onChange={sortSet("ebitda")} />
+              </th>
+              <th className="px-4 py-3 text-right">
+                <SortHeader label="Asking" numeric active={sortKey === "asking"} dir={sortDir} onChange={sortSet("asking")} />
+              </th>
+              <th className="px-4 py-3 text-right">
+                <SortHeader label="Our val" numeric active={sortKey === "ourval"} dir={sortDir} onChange={sortSet("ourval")} />
+              </th>
+              <th className="px-4 py-3 text-right">
+                <SortHeader label="Fit" numeric active={sortKey === "fit"} dir={sortDir} onChange={sortSet("fit")} />
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
