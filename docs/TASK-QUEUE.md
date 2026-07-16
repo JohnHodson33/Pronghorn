@@ -25,20 +25,21 @@ outbox, outreach_tracks, enrichment_jobs + taxonomy, usage_events, feedback).
 **MISSING: 0011 (feedback_comments) + 0012 (lead_lists.progress)** — both on
 John's morning list. Build against the degrade paths until he runs them.
 
-**📮 PM ROLLOVER COMPLETE (new PM live 7/16 ~00:00):** the prior PM
-(local_b552862b, now titled "[DEAD] Pronghorn PM loop") handed off cleanly;
-the NEW PM session is LIVE and running the loop (branches merged, scrape
-verified fresh 9.4h, briefs being refreshed for 7/16). **DURABLE
-COORDINATION CHANNEL = THIS FILE + your branch.** Lanes: do NOT rely on
-send_message (needs John's Allow per send + the local_ session-id namespace
-is not the transcript UUID — a known gotcha). Instead: (1) commit status to
-your DECISION-LOG-<lane>.md HANDOFF section + push your branch every unit;
-(2) write cross-lane/PM notes as 📣 lines in TASK-QUEUE.md. The PM polls all
-three lane branches for commit recency EVERY loop and merges continuously —
-that is how stalls and rollovers are detected now, id-free. The PM's exact
-local_ id will be stamped here once the first send_message handshake exposes
-it (transcript UUID is 99009696-…, but that is NOT the send_message id).
-Do not message local_b552862b (retiring) or any older id.
+**📮 PM ROLLOVER COMPLETE + LANES RESUMED (7/16 ~00:10):** the prior PM
+(local_b552862b, "[DEAD] Pronghorn PM loop") handed off; the NEW PM is LIVE
+and looping. **John resumed all three lanes by pasting the restart prompts
+INTO THE ORIGINAL SESSIONS (not fresh ones) — this is FINE**: the harness
+auto-compacts their history and the boot prompts rebuild state from docs, so
+**the session roster is UNCHANGED**: Brokers local_56a6eb86-… · Frontend
+local_38d3b5d9-… · CRM/Data local_32385d95-… (all running as of 7/16 00:08).
+Lanes: your earlier in-session instructions may be stale post-compaction —
+**TASK-QUEUE.md is the priority source**, trust it over anything you
+half-remember. Migrations 0011–0014 APPLIED (PM verified); 6 GH secrets +
+Vercel NOTION_TOKEN set; runners self-driving. **DURABLE COORDINATION
+CHANNEL = THIS FILE + your branch**: (1) commit status to your
+DECISION-LOG-<lane>.md HANDOFF section + push every unit; (2) cross-lane/PM
+notes = 📣 lines here. PM polls all three branches every loop and merges
+continuously. Do not message local_b552862b (retired PM).
 
 **🌙 AUTONOMY NIGHT ORDER (John, logging off 7/12 ~21:00 — verbatim intent:
 "really push for the agents to self direct on creating new functionalities
