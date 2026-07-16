@@ -150,6 +150,23 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
   RETIRED platform-wide. ACCEPTANCE (John's test): click Enrich → watch
   numbers move → told when done + what happened → see exactly which people
   gained which channels, all without asking an agent. Mobile parity.
+  **SAME UNIT — LAYOUT + REACHABILITY + SORT (John 7/16 ~13:00):**
+  (g) **FULL-WIDTH TABLE**: /river-guides drops the max-w-6xl cage — data
+  tables use the whole viewport to the right margin ("an extra forty
+  percent of the page we're just not using"); with Email/Phone/LinkedIn as
+  real columns this should kill horizontal scroll at laptop widths. Where
+  any table still overflows: the h-scrollbar must be USABLE —
+  sticky/always-visible, never only at the foot of a 200-row list ("having
+  to scroll all the way down just to see the right-hand columns is
+  terrible").
+  (h) **REACHABILITY FILTER**: channel-presence dropdown — Has phone / Has
+  email / Has LinkedIn / Any channel / No channel — combinable with band
+  ("101 Call-nows but only a fraction have phones I can call" → 'Call now
+  + Has phone' = the actual call list). Band chips show reachable counts
+  ("Call now · 16 · 9 reachable").
+  (i) **SORTABLE HEADERS**: click Name/Industry/Exit/Score/Year/State to
+  sort asc/desc (score + year = the quantitative stack-rank).
+- 🔥🔥 **RIVER-GUIDES ENRICH PRICE ESTIMATE (John 7/16 ~12:30 — "give me a
   price estimate before I click Enrich, same as companies; I want to be
   conscious of marginal cost"):** (Lane C) extend POST /api/river-guides/
   enrich to accept {estimate:true, dealIds} → returns WITHOUT queuing:
@@ -161,9 +178,27 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
   (est. $X · N Hunter)"** — fetch the estimate on selection change
   (debounced), split shown in a tooltip, post-click receipt stays honest
   vs the estimate. Mobile parity.
-- 🔥🔥🔥 **RIVER GUIDES UI — JOHN'S 7/16 ~00:50 DIRECTIVE (read
-  docs/RIVER-GUIDES-INTEGRATION.md first; builds on Lane C's
-  /api/river-guides — coordinate, degrade gracefully until it's up):**
+- 🔥🔥 **⚖️ LIST-UX STANDARD — ONE PATTERN EVERYWHERE (John 7/16 ~13:00,
+  STANDING RULE for every list page; his words: "sometimes there are
+  dropdown filters up top, sometimes clickable chip lists off to the side
+  — which I really don't like — sometimes column-header dropdowns… we
+  should just have these consistent across the whole site"):** THE
+  standard for every table (listings, companies, contacts, brokers,
+  deals, enrichment, river-guides, lead lists):
+  (1) top bar = free-text search + count chips for the page's key split
+  (band/level/tier) + CSV export; (2) **column headers do the work**:
+  click to sort asc/desc (every column, quantitative included), dropdown
+  filter on categorical columns (multi-select w/ counts); (3) NO side
+  chip-list filters — retire them wherever they exist; (4) filters+sort
+  serialize to URL params and survive back-nav (pattern exists); (5) data
+  tables are FULL-WIDTH (no reading-width cage) w/ usable overflow
+  scrolling; (6) card collapse under 640px. Extract ONE shared component
+  set (FilterDropdown/SortHeader/ListShell) and MIGRATE page by page —
+  each migrated page ships in its own commit. Where this contradicts
+  older cards below, THIS wins.
+- ✅→🔨 **RIVER GUIDES UI — JOHN'S 7/16 ~00:50 DIRECTIVE (page SHIPPED
+  overnight + Sidebar wired by PM; remaining sub-items fold into the
+  visibility/layout card above):**
   (a) **"River Guides" page under Proprietary Sourcing** (PM wires Sidebar
   on merge): shared list pattern — filters + counts header for priority band
   (CALL_NOW / ENRICH_THEN_ASSESS / NURTURE / RESOLVE_NAME_FIRST), industry,
