@@ -1368,3 +1368,36 @@ act only on flags) or opportunistic new-source hunt. Frontier mostly closed —
 do NOT re-probe NV/GA/NM (aggregator-dominated), TX-assoc (TABB=BizBuySell
 mirror), FL-green-specialists (=BBF members). RIVER GUIDES marked LATER by PM.
 BLOCKED/SKIP: bizbuysell (Akamai), hedgestone/businessesforsale (form-gated).
+
+## 2026-07-16 — SELF-ITERATE: gap report de-noised → empire closed (2 agents w/ emails)
+- Audit was clean but re-listed the 4 structurally-impossible broker gaps every
+  run — false signal that buries real ones. **source_quality.js now separates
+  ACTIONABLE gaps from structural ones** (each with its measured reason).
+- That immediately surfaced **empire** as a real gap hidden in the noise.
+  Probed: detail pages carry a structured "Contact Information" block
+  (Contact/Phone/Email). Added extraction to empire.js parseDetail — **free, the
+  page is already fetched for fields**. Result: **26/26 listings linked, and it's
+  TWO named agents, not one — Tim Martin + Mike Nolan, each w/ direct phone AND
+  email.** (My 2-page sample showed only Tim; per-listing extraction beat the
+  hardcode I was tempted by.) Broker coverage 39% → 40%.
+- Gap list now: 1 actionable (**viking**, 3 thesis-fit — next unit) + 4
+  structural. The de-noised report rotates the next real gap into view as each
+  is closed — working as designed.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~17:30: branch synced + pushed, tree clean.
+CI Node-22 fix MERGED to main — 06:00 cron self-drives (nightly-scrape run
+29523150326 SUCCESS after the 3-day outage).
+TODAY: CI fix (8 workflows); auto_promote LIVE + self-driving (45 events);
+BROKER SWEEP (murphy 96/100→59 agents; vr 89/100→33 agents/22 emails; bbf
+113/41; fcbb 73/829; bizmls 9/5 via enrich_id_prefix; empire 26/2 agents w/
+emails; firm-level rows in db_output w/ FIRM_NOTE); regionState→core;
+tupelomarket measured 0/90 → disabled; source_quality gap de-noising.
+METRICS: 21,967 listings, T1 126 / T2 248, broker coverage 28%→40%, backlog 37,
+all 30 green.
+NEXT UNIT: **viking** — last ACTIONABLE broker gap (3 thesis-fit, 0 brokers).
+Probe its detail pages for agent identity (viking.js is browser-based; 45
+listings). If unpublished, add to NO_BROKER_REASON in source_quality.js w/ the
+measured reason. Then: opportunistic new-source hunt only (frontier closed — do
+NOT re-probe NV/GA/NM, TX-assoc, FL-green; avoid BizBuySell/bbms.info iframe
+mirrors). RIVER GUIDES marked LATER by PM.

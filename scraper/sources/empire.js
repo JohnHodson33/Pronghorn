@@ -66,7 +66,31 @@ class EmpireScraper extends SourceScraper {
     const desc = $('.body-businesses-for-sale-detail p, #body p').first().text().replace(/\s+/g, ' ').trim() || null;
     const locRaw = fields['location'] || fields['area'] || fields['county'] || null;
 
+    // Listing broker (John 7/15 directive). Detail pages carry a structured
+    // "Contact Information" block — Contact / Phone / Email. Empire is a small
+    // shop, so the same agent serves every listing; that's still a real named
+    // contact WITH an email, so we capture it (one broker row, many listings).
+    // Free: this page is already fetched for the fields above.
+    const flat = html.replace(/[\r\n]+/g, ' ');
+    const cblock = (flat.match(/Contact Information[\s\S]{0,900}/i) || [])[0];
+    let broker = null;
+    if (cblock) {
+      const t = cblock.replace(/<[^>]*>/g, '|').replace(/&nbsp;/g, ' ').replace(/\|+/g, '|');
+      const bname = (t.match(/Contact:\s*\|?\s*([A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]+)+)\s*\|/) || [])[1];
+      const bphone = (t.match(/Phone:\s*\|?\s*([\d][\d\s().-]{8,18}\d)\s*\|/) || [])[1];
+      const bemail = (cblock.match(/mailto:([^"'&?<\s]{4,60})/) || [])[1];
+      if (bname) {
+        broker = {
+          name: bname.trim(),
+          company: 'Empire Business Brokers',
+          phone: bphone ? bphone.trim() : null,
+          email: bemail || null,
+        };
+      }
+    }
+
     return this.listing({
+      broker,
       source_listing_id: id,
       name,
       url,
