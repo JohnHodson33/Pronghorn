@@ -6,18 +6,33 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — successor #2 live 7/16 (loop running; 7/15 backlog)
 
 - **Working the 7/15 directives** (TASK-QUEUE Lane B is the priority
-  source): (1) ✅ INLINE EDIT EVERYWHERE shipped (see 7/16 entry below);
-  (2) NEXT: filter/sort persistence on back-nav for /listings /brokers
-  /deals /contacts incl. sort state; (3) then companies table filter/sort
-  overhaul (multi-select industry dropdown, header-dropdown filters,
-  sortable est columns); (4) Too-big/PE-owned/★Shortlist chips as Lane C
-  ships flags + 0015.
+  source): (1) ✅ INLINE EDIT EVERYWHERE shipped; (2) ✅ FILTER/SORT
+  PERSISTENCE shipped (see 7/16 entries below); (3) NEXT: companies table
+  filter/sort overhaul (multi-select industry dropdown, header-dropdown
+  filters, sortable est columns); (4) Too-big/PE-owned/★Shortlist chips as
+  Lane C ships flags + 0015.
 - **State facts**: migrations 0011–0014 APPLIED (threads, list progress,
   outreach rules, size assumptions all serve real data now — degrade
   paths retired naturally). Dev server = pronghorn-web-laneB, port 3311;
   new route dirs need `rm -rf .next/dev` + restart (bit again 7/16).
   Server components can't pass function props to client components —
   InlineField takes declarative `format="money"` instead.
+
+## 2026-07-16 — Filter/sort persistence on back-nav, all lists (John 7/15)
+
+- **NEW `lib/use-url-filters.ts`** — the shared hook the 7/13 pattern note
+  predicted: `useUrlFilterSync(serialize, hydrate, deps)` reads params once
+  on mount (SSR-safe) and replaceStates on change. Wired into
+  **ListingsTableV2 (incl. SORT: ?sort=cashFlow&dir=desc + full filter set
+  — q/industry/state/source/tiers/CF-range/multiple/priority/relevant)**,
+  **BrokersTable** (q/industry/state/min/contact), **DealsTable** (q/stage —
+  ?stage= stays the pipeline deep-link param). Companies/Contacts already
+  had inline param sync; Enrichment keeps its sessionStorage variant.
+- Defaults are omitted from the URL (tier=all-four, sort=tier/asc, etc.) so
+  clean pages keep clean URLs; every non-default view is pinnable.
+- Verified the acceptance flow live: /listings filtered to Tree Care +
+  tiers 1-2 + cashFlow desc → click into a listing → back → same 14-row
+  filtered/sorted list; brokers + deals param round-trips confirmed.
 
 ## 2026-07-16 — INLINE EDIT EVERYWHERE (John 7/15 top directive)
 
