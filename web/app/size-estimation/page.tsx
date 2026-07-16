@@ -96,6 +96,11 @@ export default function SizeEstimation() {
               <input type="number" step={25000} value={thresholds.toosmall_max_ebitda}
                 onChange={(e) => setThresholds({ ...thresholds, toosmall_max_ebitda: Number(e.target.value) })} className={inputCls} />
             </label>
+            <label className="space-y-1">
+              <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Too big: min EBITDA <span className="normal-case text-zinc-400">(conglomerate territory)</span></div>
+              <input type="number" step={500000} value={thresholds.toobig_min_ebitda ?? 10_000_000}
+                onChange={(e) => setThresholds({ ...thresholds, toobig_min_ebitda: Number(e.target.value) })} className={inputCls} />
+            </label>
             <button
               onClick={() => patch({ thresholds }, "thresholds")}
               disabled={saving === "thresholds"}

@@ -22,7 +22,9 @@ type Comment = {
   id?: string;
   author: string;
   body: string;
-  kind?: "comment" | "status_change" | "build_plan" | "summary";
+  // "completion_summary" is the API's canonical kind (0011); "summary" kept
+  // as a legacy alias from the interim build
+  kind?: "comment" | "status_change" | "build_plan" | "completion_summary" | "summary";
   created_at?: string;
 };
 
@@ -41,9 +43,11 @@ function pseudoThread(item: ThreadItem): Comment[] {
 const kindStyle: Record<string, string> = {
   status_change: "border-l-2 border-zinc-300 bg-zinc-50 text-zinc-500 italic",
   build_plan: "border-l-2 border-sky-400 bg-sky-50/60",
+  completion_summary: "border-l-2 border-emerald-500 bg-emerald-50/70",
   summary: "border-l-2 border-emerald-500 bg-emerald-50/70",
   comment: "",
 };
+const isSummary = (k: string) => k === "completion_summary" || k === "summary";
 
 export default function FeedbackThread({
   item,
@@ -140,7 +144,7 @@ export default function FeedbackThread({
                 {human ? c.author : `🤖 ${c.author}`}
               </span>
               {kind === "build_plan" && <span className="rounded bg-sky-100 px-1.5 py-0.5 font-semibold text-sky-700">build plan</span>}
-              {kind === "summary" && <span className="rounded bg-emerald-100 px-1.5 py-0.5 font-semibold text-emerald-700">what was actually done</span>}
+              {isSummary(kind) && <span className="rounded bg-emerald-100 px-1.5 py-0.5 font-semibold text-emerald-700">what was actually done</span>}
               {c.created_at && <span>{new Date(c.created_at).toLocaleString()}</span>}
             </div>
             <p className="whitespace-pre-wrap text-zinc-800">{c.body}</p>

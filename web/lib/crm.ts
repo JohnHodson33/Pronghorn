@@ -131,6 +131,8 @@ export type CompanyRow = {
   contacts: { role: string | null; name: string | null; email: string | null; phone: string | null; linkedin: string | null }[];
   // size-proxy estimate from the source lead's signals (null = unsized)
   size: SizeEstimate | null;
+  // ★ shortlist entries (0015; empty pre-migration)
+  shortlist: { person: string; note: string | null; created_at: string }[];
 };
 
 export type BrokerRow = {
@@ -210,13 +212,18 @@ export async function fetchBrokers(): Promise<BrokerRow[] | null> {
 
 export async function fetchCompanies(): Promise<CompanyRow[] | null> {
   if (!hasDb()) return null;
-  const { data, error } = await serverDb()
-    .from("companies")
-    .select(
-      "id, name, industry, city, state, revenue, ebitda, ebitda_type, origin, created_at, deals(stage), " +
-        "contacts(role, name, email, phone, linkedin)"
-    )
-    .order("created_at", { ascending: false });
+  // ★ shortlist join lands with 0015 — retry without it until applied
+  const select = (withStar: boolean) =>
+    serverDb()
+      .from("companies")
+      .select(
+        "id, name, industry, city, state, revenue, ebitda, ebitda_type, origin, created_at, deals(stage), " +
+          "contacts(role, name, email, phone, linkedin)" +
+          (withStar ? ", company_shortlist(person, note, created_at)" : "")
+      )
+      .order("created_at", { ascending: false });
+  let { data, error } = await select(true);
+  if (error) ({ data, error } = await select(false));
   if (error) {
     console.error("fetchCompanies failed:", error.message);
     return null;
@@ -234,10 +241,12 @@ export async function fetchCompanies(): Promise<CompanyRow[] | null> {
   ]);
   const leadByCompany = new Map((leadRows ?? []).map((l) => [l.company_id as string, l]));
 
-  return (data as unknown as Omit<CompanyRow, "size">[]).map((c) => {
+  return (data as unknown as (Omit<CompanyRow, "size" | "shortlist"> & { company_shortlist?: CompanyRow["shortlist"] })[]).map((c) => {
     const lead = leadByCompany.get(c.id);
+    const { company_shortlist, ...rest } = c;
     return {
-      ...c,
+      ...rest,
+      shortlist: company_shortlist ?? [],
       size: lead
         ? sizeEstimate(
             (lead.industry_verified as string | null) ?? c.industry,

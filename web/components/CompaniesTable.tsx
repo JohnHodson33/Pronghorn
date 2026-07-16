@@ -14,6 +14,7 @@ import { LEVELS, LEVEL_META, type Completeness } from "@/lib/completeness";
 import { PinButton } from "@/components/PinnedViews";
 import { TIERS, TIER_LABELS } from "@/lib/size";
 import FilterDropdown from "@/components/FilterDropdown";
+import StarButton from "@/components/StarButton";
 
 // ~$X.XM–$Y.YM display for estimate ranges (never fake precision)
 const estRange = (r: [number, number]) => {
@@ -24,6 +25,7 @@ const tierChip: Record<string, string> = {
   platform: "bg-emerald-100 text-emerald-800",
   tuckin: "bg-sky-100 text-sky-800",
   toosmall: "bg-zinc-100 text-zinc-500",
+  too_big: "bg-violet-100 text-violet-800",
   unsized: "bg-zinc-50 text-zinc-400 border border-zinc-200",
 };
 
@@ -49,6 +51,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
   const [tiersSel, setTiersSel] = useState<Set<string>>(new Set());
   const [stagesSel, setStagesSel] = useState<Set<string>>(new Set());
   const [withDealOnly, setWithDealOnly] = useState(false);
+  const [starSel, setStarSel] = useState<Set<string>>(new Set()); // ★ by John/Tom
   const [sortKey, setSortKey] = useState<SortKey>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
@@ -62,6 +65,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
     if (p.get("tier")) setTiersSel(fromCsv(p.get("tier")));
     if (p.get("stage")) setStagesSel(fromCsv(p.get("stage")));
     if (p.get("deal") === "1") setWithDealOnly(true);
+    if (p.get("star")) setStarSel(fromCsv(p.get("star")));
     if (p.get("sort") === "revenue" || p.get("sort") === "ebitda") setSortKey(p.get("sort") as SortKey);
     if (p.get("dir") === "asc") setSortDir("asc");
   }, []);
@@ -70,14 +74,14 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
     if (q) p.set("q", q);
     const pairs: [string, string | null][] = [
       ["industry", csv(industriesSel)], ["level", csv(levelsSel)],
-      ["tier", csv(tiersSel)], ["stage", csv(stagesSel)],
+      ["tier", csv(tiersSel)], ["stage", csv(stagesSel)], ["star", csv(starSel)],
     ];
     for (const [k, v] of pairs) if (v) p.set(k, v);
     if (withDealOnly) p.set("deal", "1");
     if (sortKey) { p.set("sort", sortKey); if (sortDir === "asc") p.set("dir", "asc"); }
     const qs = p.toString();
     window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
-  }, [q, industriesSel, levelsSel, tiersSel, stagesSel, withDealOnly, sortKey, sortDir]);
+  }, [q, industriesSel, levelsSel, tiersSel, stagesSel, withDealOnly, starSel, sortKey, sortDir]);
 
   const levels = useMemo(() => {
     const m = new Map<string, ReturnType<typeof companyLevel>>();
@@ -124,9 +128,12 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
       if (tiersSel.size && !tiersSel.has(c.size?.tier ?? "unsized")) return false;
       if (stagesSel.size && !stagesSel.has(c.deals?.[0]?.stage ?? "")) return false;
       if (withDealOnly && !c.deals?.[0]) return false;
+      if (starSel.size && !c.shortlist.some((s) => starSel.has(s.person))) return false;
       return true;
     });
-    if (!sortKey) return filtered;
+    // shortlisted-first is the standing tiebreak; explicit column sort wins
+    const starRank = (c: CompanyRow) => (c.shortlist.length ? 0 : 1);
+    if (!sortKey) return [...filtered].sort((a, b) => starRank(a) - starRank(b));
     return [...filtered].sort((a, b) => {
       const av = sortVal(a, sortKey), bv = sortVal(b, sortKey);
       if (av === null && bv === null) return 0;
@@ -134,7 +141,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
       if (bv === null) return -1;
       return sortDir === "asc" ? av - bv : bv - av;
     });
-  }, [companies, q, industriesSel, levelsSel, tiersSel, stagesSel, withDealOnly, levels, sortKey, sortDir]);
+  }, [companies, q, industriesSel, levelsSel, tiersSel, stagesSel, withDealOnly, starSel, levels, sortKey, sortDir]);
 
   function toggleSort(k: "revenue" | "ebitda") {
     if (sortKey !== k) { setSortKey(k); setSortDir("desc"); }
@@ -155,6 +162,16 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
           className={`w-56 ${inputCls}`}
         />
         <FilterDropdown label="Industry" options={industryOptions} selected={industriesSel} onChange={setIndustriesSel} />
+        <FilterDropdown
+          label="★ Shortlist"
+          options={(["John", "Tom"] as const).map((p) => ({
+            value: p,
+            label: `★ by ${p}`,
+            count: companies.filter((c) => c.shortlist.some((s) => s.person === p)).length,
+          }))}
+          selected={starSel}
+          onChange={setStarSel}
+        />
         <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
           <input
             type="checkbox"
@@ -202,6 +219,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500">
+              <th className="px-2 py-3" title="Shortlist">★</th>
               <th className="px-4 py-3">Company</th>
               {/* column-header dropdown filters (John 7/15) */}
               <th className="px-4 py-3">
@@ -237,6 +255,9 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
                 onClick={() => router.push(`/companies/${c.id}`)}
                 className="cursor-pointer hover:bg-zinc-50"
               >
+                <td className="px-2 py-3" onClick={(e) => e.stopPropagation()}>
+                  <StarButton companyId={c.id} shortlist={c.shortlist} compact />
+                </td>
                 <td className="px-4 py-3 font-medium">{c.name}</td>
                 <td className="whitespace-nowrap px-4 py-3">
                   {(() => {
@@ -311,7 +332,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={10} className="px-4 py-10 text-center text-sm text-zinc-400">
+                <td colSpan={11} className="px-4 py-10 text-center text-sm text-zinc-400">
                   No companies match the current filters.
                 </td>
               </tr>
