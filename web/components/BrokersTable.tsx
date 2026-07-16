@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { BrokerRow } from "@/lib/crm";
 import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
+import { useUrlFilterSync } from "@/lib/use-url-filters";
 
 const inputCls = "rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-600";
 
@@ -29,6 +30,22 @@ export default function BrokersTable({ brokers }: { brokers: BrokerRow[] }) {
   const [state, setState] = useState("all");
   const [minListings, setMinListings] = useState("");
   const [withContact, setWithContact] = useState(false);
+
+  // filters survive back-nav via URL params (John 7/15)
+  useUrlFilterSync(
+    () => ({
+      q, industry: industry !== "all" ? industry : null, state: state !== "all" ? state : null,
+      min: minListings, contact: withContact ? "1" : null,
+    }),
+    (p) => {
+      if (p.get("q")) setQ(p.get("q")!);
+      if (p.get("industry")) setIndustry(p.get("industry")!);
+      if (p.get("state")) setState(p.get("state")!);
+      if (p.get("min")) setMinListings(p.get("min")!);
+      if (p.get("contact") === "1") setWithContact(true);
+    },
+    [q, industry, state, minListings, withContact],
+  );
 
   const rows = useMemo(
     () =>

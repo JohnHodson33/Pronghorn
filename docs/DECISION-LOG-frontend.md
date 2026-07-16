@@ -3,7 +3,103 @@
 Per-lane log per PARALLEL-SESSIONS.md; the PM/integrator folds these into
 DECISION-LOG.md and wires routes into Sidebar.tsx.
 
-## 🔄 HANDOFF — successor session live 7/13 ~17:45 (loop running)
+## 🔄 HANDOFF — successor #2 live 7/16 (loop running; 7/15 backlog)
+
+- **7/15+7/16 directives**: (1) ✅ INLINE EDIT EVERYWHERE; (2) ✅ FILTER/
+  SORT PERSISTENCE; (3) ✅ COMPANIES TABLE OVERHAUL; (4) ✅ RIVER GUIDES
+  PAGE (John's 7/16 top-of-lane; degrade mode until Lane C's 0016+ingest+
+  API — lights up automatically). REMAINING: River Guides items (b)/(c)
+  (contacts chip + profile panels — need the contact_id/company_id FKs
+  live) · LeadsTable header-filter parity (item e) · Too-big/PE-owned/
+  ★Shortlist chips as Lane C ships flags + 0015. **PM: wire "River
+  Guides" into Sidebar under Proprietary Sourcing on merge.**
+- **State facts**: migrations 0011–0014 APPLIED (threads, list progress,
+  outreach rules, size assumptions all serve real data now — degrade
+  paths retired naturally). Dev server = pronghorn-web-laneB, port 3311;
+  new route dirs need `rm -rf .next/dev` + restart (bit again 7/16).
+  Server components can't pass function props to client components —
+  InlineField takes declarative `format="money"` instead.
+
+## 2026-07-16 — River Guides page (John 7/16 ~00:50 top-of-lane)
+
+- **New route `/river-guides`** (client page against Lane C's documented
+  contract — archetype spec §4 field names verbatim, read from the LOCAL
+  research folder per the privacy rule; nothing personal committed):
+  band counts header (Call now / Enrich & assess / Nurture / Resolve name,
+  spec ordering + screen_score desc default sort), search + Industry/
+  Status/Exit/State FilterDropdowns (URL-synced via the shared hook),
+  exit chips show ⚠ at-close vs ✓ verified w/ the no-outreach-until-✓
+  tooltip, TBD names amber-flagged, contact dots, checkbox select →
+  "Enrich selected" (fires POST /api/river-guides/enrich; honest note
+  until Lane C's waterfall), **"Find more" discovery bar** (industry +
+  consolidator → POST /api/river-guides/discover; honest note until the
+  sweep endpoint exists), CSV export = the VA paid-tier handoff.
+- **Degrade verified live**: API absent → amber banner ("lights up
+  automatically when 0016 + ingest land"), zero counts, sweep/enrich
+  return honest notes; mobile 375px clean. When Lane C ships GET
+  /api/river-guides {guides:[...]}, the page is done — no code change.
+- Items (b)/(c) — Contacts "River Guide" chip + profile panels — wait on
+  the contact_id/company_id FKs actually populating (ingest step 2).
+- **PM: wire "River Guides" into Sidebar** under Proprietary Sourcing.
+
+## 2026-07-16 — Companies table filter/sort overhaul (John 7/15)
+
+- **NEW `components/FilterDropdown.tsx`** — multi-select dropdown w/ counts,
+  Clear action, outside-click close; `header` variant renders compact inside
+  table `<th>`s (stopPropagation so header clicks don't collide).
+- **CompaniesTable rebuilt**: industry chips → toolbar multi-select dropdown
+  (options sorted by count: Tree Care 167 · HVAC 116…); Owner reach / Size /
+  Deal stage become **header dropdown filters** (chips rows removed — the
+  split lives in the dropdown counts now); **Revenue + EBITDA headers sort**
+  (click: desc → asc → off; sort value = actual figure, else estimate
+  midpoint, blanks always last). All state URL-synced; multi-values as csv
+  (?industry=Tree+Care,HVAC) and OLD singular pinned URLs still hydrate.
+- Verified live: 3-industry × 2-level filter = 87/557 w/ URL round-trip,
+  EBITDA desc ordering correct, dropdown toggle updates rows+URL, mobile
+  375px (no overflow, panel fits). Item (e) — same header pattern on
+  Enrichment — is the next unit.
+
+## 2026-07-16 — Filter/sort persistence on back-nav, all lists (John 7/15)
+
+- **NEW `lib/use-url-filters.ts`** — the shared hook the 7/13 pattern note
+  predicted: `useUrlFilterSync(serialize, hydrate, deps)` reads params once
+  on mount (SSR-safe) and replaceStates on change. Wired into
+  **ListingsTableV2 (incl. SORT: ?sort=cashFlow&dir=desc + full filter set
+  — q/industry/state/source/tiers/CF-range/multiple/priority/relevant)**,
+  **BrokersTable** (q/industry/state/min/contact), **DealsTable** (q/stage —
+  ?stage= stays the pipeline deep-link param). Companies/Contacts already
+  had inline param sync; Enrichment keeps its sessionStorage variant.
+- Defaults are omitted from the URL (tier=all-four, sort=tier/asc, etc.) so
+  clean pages keep clean URLs; every non-default view is pinnable.
+- Verified the acceptance flow live: /listings filtered to Tree Care +
+  tiers 1-2 + cashFlow desc → click into a listing → back → same 14-row
+  filtered/sorted list; brokers + deals param round-trips confirmed.
+
+## 2026-07-16 — INLINE EDIT EVERYWHERE (John 7/15 top directive)
+
+- **`components/InlineField.tsx`** — reusable click-to-edit: click a value
+  → input (16px font, no iOS zoom) → Enter/blur saves via PATCH
+  `{[field]: value}`, Escape cancels; optimistic w/ revert+error on fail;
+  empty renders as italic placeholder; ✎ affordance on hover.
+- **Mounted on**: company profile (industry/city/state/website in header,
+  revenue/EBITDA stat cards — click the ~estimate to type the real
+  figure); listing detail (city/state + asking/cash-flow/revenue cards);
+  deal detail (revenue/EBITDA → company PATCH, our-valuation → deal
+  PATCH); enrichment LeadsTable Owner cell (owner_name + phone + email
+  inline per row, ~145 rows).
+- **API**: NEW `PATCH /api/listings/[id]` (city/state/industry +
+  asking_price/cash_flow/gross_revenue, number validation); leads PATCH
+  extended w/ owner_*/website/phone/city/state + **human-wins provenance**:
+  each edit merges `{field: iso-ts}` into `enrichment.human_edited` so
+  fill-blanks enrichment can skip human-entered values (Lane C: honor
+  this key in the write paths). Companies/contacts/deals PATCHes already
+  covered the needed fields.
+- Verified end-to-end: API writes + provenance + validation (bad number
+  400s), full UI round-trip (click → type → blur → PATCH → DB, then
+  restored), mobile 375px clean (no overflow, fields tappable). Headless
+  test note: programmatic .blur() doesn't emit focusout — real browsers do.
+
+## 🔄 Previous handoff (7/13 ~17:45, retired)
 
 - **State**: nothing in flight. Latest: improvements ATTACHMENTS shipped
   (UI + API, see 7/13 entry below) — browser-verified end-to-end, test

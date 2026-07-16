@@ -10,6 +10,7 @@ import BackLink from "@/components/BackLink";
 import CompanyEditor from "@/components/CompanyEditor";
 import ContactsSection from "@/components/ContactsSection";
 import DealControls from "@/components/DealControls";
+import InlineField from "@/components/InlineField";
 import MarketCheckCard from "@/components/MarketCheckCard";
 import { fetchCompanyDetail } from "@/lib/company-detail";
 import { companyLevel } from "@/lib/company-level";
@@ -58,15 +59,18 @@ export default async function CompanyDetailV2({ id }: { id: string }) {
         <div className="mt-2 flex items-end justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">{c.name}</h1>
-            <p className="text-sm text-zinc-500">
-              {[c.industry, [c.city, c.state].filter(Boolean).join(", ")].filter(Boolean).join(" · ")}
+            {/* inline-editable facts (John 7/15): click a value to fix/add it */}
+            <p className="flex flex-wrap items-center gap-x-1 text-sm text-zinc-500">
+              <InlineField endpoint={`/api/companies/${c.id}`} field="industry" value={c.industry} placeholder="industry…" />
+              <span className="text-zinc-300">·</span>
+              <InlineField endpoint={`/api/companies/${c.id}`} field="city" value={c.city} placeholder="city…" />
+              <span className="text-zinc-300">,</span>
+              <InlineField endpoint={`/api/companies/${c.id}`} field="state" value={c.state} placeholder="ST" />
+              <span className="text-zinc-300">·</span>
+              <InlineField endpoint={`/api/companies/${c.id}`} field="website" value={c.website} type="url" placeholder="website…"
+                className="text-emerald-700" />
               {c.website && (
-                <>
-                  {" · "}
-                  <a href={c.website} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline">
-                    website ↗
-                  </a>
-                </>
+                <a href={c.website} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline">↗</a>
               )}
             </p>
           </div>
@@ -126,17 +130,27 @@ export default async function CompanyDetailV2({ id }: { id: string }) {
 
       <section className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {[
-          { label: "Revenue", value: money(c.revenue), est: c.revenue === null && size ? estRange(size.revenue) : null },
-          { label: c.ebitdaType, value: money(c.ebitda), est: c.ebitda === null && size ? estRange(size.ebitda) : null },
-          { label: "Asking", value: money(deal?.asking ?? null), est: null },
-          { label: "Origin", value: c.origin ?? "—", est: null },
+          { label: "Revenue", field: "revenue", raw: c.revenue, est: c.revenue === null && size ? estRange(size.revenue) : null },
+          { label: c.ebitdaType, field: "ebitda", raw: c.ebitda, est: c.ebitda === null && size ? estRange(size.ebitda) : null },
+          { label: "Asking", field: null, raw: deal?.asking ?? null, est: null },
+          { label: "Origin", field: null, raw: null, text: c.origin ?? "—", est: null },
         ].map((s) => (
           <div key={s.label} className="rounded-xl border border-zinc-200 bg-white p-4">
             <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">{s.label}</div>
-            {s.est ? (
-              <div className="mt-1 text-lg font-semibold tabular-nums text-zinc-500" title="PPP/signal-derived estimate — no reported figure yet">{s.est}</div>
+            {s.field ? (
+              // click the figure (or the ~estimate) to type the real number
+              <div className={`mt-1 tabular-nums ${s.est ? "text-lg font-semibold text-zinc-500" : "text-xl font-bold"}`}>
+                <InlineField
+                  endpoint={`/api/companies/${c.id}`}
+                  field={s.field}
+                  value={s.raw}
+                  type="number"
+                  placeholder={s.est ?? "add…"}
+                  format="money"
+                />
+              </div>
             ) : (
-              <div className="mt-1 text-xl font-bold tabular-nums">{s.value}</div>
+              <div className="mt-1 text-xl font-bold tabular-nums">{"text" in s ? s.text : money(s.raw)}</div>
             )}
           </div>
         ))}

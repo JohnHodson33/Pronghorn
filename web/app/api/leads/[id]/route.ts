@@ -1,9 +1,14 @@
-// Lead row actions from the Enrichment surfaces: discard (status → dead) or
-// clear/set the off-target flag. Whitelisted, no deletes — discarded leads
-// stay queryable.
+// Lead row actions from the Enrichment surfaces: discard (status → dead),
+// clear/set the off-target flag, or inline-edit data fields (John 7/15 —
+// human-entered values WIN over future enrichment). Whitelisted, no deletes —
+// discarded leads stay queryable.
 import { NextResponse } from "next/server";
 import { hasDb, serverDb } from "@/lib/db";
 import { LEAD_STATUSES } from "@/lib/enrichment";
+
+// inline-editable data fields; a human edit is recorded in
+// enrichment.human_edited so fill-blanks enrichment never overwrites it
+const DATA_FIELDS = ["owner_name", "owner_email", "owner_phone", "owner_linkedin", "website", "phone", "city", "state"] as const;
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
@@ -17,6 +22,23 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     update.status = b.status;
   }
   if (b.offTarget !== undefined) update.off_target = !!b.offTarget;
+
+  const editedFields: string[] = [];
+  for (const f of DATA_FIELDS) {
+    if (b[f] !== undefined) {
+      update[f] = String(b[f] ?? "").trim() || null;
+      editedFields.push(f);
+    }
+  }
+  if (editedFields.length) {
+    // human-wins provenance: merge {field: timestamp} into enrichment jsonb
+    const { data: row } = await serverDb().from("leads").select("enrichment").eq("id", id).maybeSingle();
+    const enrichment = (row?.enrichment as Record<string, unknown> | null) ?? {};
+    const humanEdited = (enrichment.human_edited as Record<string, string> | undefined) ?? {};
+    for (const f of editedFields) humanEdited[f] = new Date().toISOString();
+    update.enrichment = { ...enrichment, human_edited: humanEdited };
+  }
+
   if (Object.keys(update).length === 0)
     return NextResponse.json({ error: "no updatable fields in body" }, { status: 400 });
 
