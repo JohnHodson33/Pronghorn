@@ -99,7 +99,7 @@ export default async function CompanyDetailV2({ id }: { id: string }) {
             {size && (
               <span
                 className={`rounded-full px-2.5 py-1 text-xs font-semibold ${tierChipCls[size.tier]}`}
-                title={`~${size.employees[0]}–${size.employees[1]} employees (${size.basis}) → ${estRange(size.revenue)} rev → ${estRange(size.ebitda)} EBITDA · ${size.confidence} confidence`}
+                title={`${size.employees ? `~${size.employees[0]}–${size.employees[1]} employees` : "sized"} (${size.basis}) → ${estRange(size.revenue)} rev → ${estRange(size.ebitda)} EBITDA · ${size.confidence} confidence`}
               >
                 {TIER_LABELS[size.tier]}
               </span>

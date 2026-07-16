@@ -177,7 +177,7 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-semibold ${tierChip[d.size?.tier ?? "unsized"]}`}
                     title={d.size
-                      ? `~${d.size.employees[0]}–${d.size.employees[1]} employees (${d.size.basis}) → ${estShort(d.size.revenue)} rev → ${estShort(d.size.ebitda)} EBITDA · ${d.size.confidence} confidence`
+                      ? `${d.size.employees ? `~${d.size.employees[0]}–${d.size.employees[1]} employees` : "sized"} (${d.size.basis}) → ${estShort(d.size.revenue)} rev → ${estShort(d.size.ebitda)} EBITDA · ${d.size.confidence} confidence`
                       : "no usable size signal — estimate needs enrichment (or the deal has actual financials)"}
                   >
                     {TIER_LABELS[d.size?.tier ?? "unsized"]}

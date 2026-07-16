@@ -303,7 +303,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-semibold ${tierChip[c.size?.tier ?? "unsized"]}`}
                     title={c.size
-                      ? `~${c.size.employees[0]}–${c.size.employees[1]} employees (${c.size.basis}) → ${estRange(c.size.revenue)} revenue → ${estRange(c.size.ebitda)} EBITDA · ${c.size.confidence} confidence`
+                      ? `${c.size.employees ? `~${c.size.employees[0]}–${c.size.employees[1]} employees` : "sized"} (${c.size.basis}) → ${estRange(c.size.revenue)} revenue → ${estRange(c.size.ebitda)} EBITDA · ${c.size.confidence} confidence`
                       : "no usable size signal yet — enrichment adds them"}
                   >
                     {TIER_LABELS[c.size?.tier ?? "unsized"]}

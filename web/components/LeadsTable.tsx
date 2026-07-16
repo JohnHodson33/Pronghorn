@@ -543,7 +543,7 @@ export default function LeadsTable({
                       <span
                         className={`rounded-full px-2 py-0.5 text-xs font-semibold ${tierChip[l.size?.tier ?? "unsized"]}`}
                         title={l.size
-                          ? `~${l.size.employees[0]}–${l.size.employees[1]} employees (${l.size.basis}) → ${estShort(l.size.revenue)} rev → ${estShort(l.size.ebitda)} EBITDA · ${l.size.confidence} confidence`
+                          ? `${l.size.employees ? `~${l.size.employees[0]}–${l.size.employees[1]} employees` : "sized"} (${l.size.basis}) → ${estShort(l.size.revenue)} rev → ${estShort(l.size.ebitda)} EBITDA · ${l.size.confidence} confidence`
                           : "no usable size signal yet — enrichment adds them"}
                       >
                         {TIER_LABELS[l.size?.tier ?? "unsized"]}
