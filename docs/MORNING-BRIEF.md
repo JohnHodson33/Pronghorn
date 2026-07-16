@@ -21,16 +21,24 @@ All 3 lanes + PM restarted ~10:00–11:00; the ~9h of unmerged overnight work
 session once — it wakes the rest.**
 
 ## ✅ SHIPPED TODAY (overnight burst + today's catch-up)
-- **BROKER IDENTITY SWEEP CLOSED (Lane A, PM-verified live):** every source
-  that publishes broker identity now captures it at ingest → brokers table →
-  listing link. Named agents: murphy 59 (all w/ direct phone) · vr 33 (22 w/
-  DIRECT EMAIL — first named+email source). Firm offices: fcbb 73 (829
-  listings) · bbf 41 (113) · bizmls 5. **Broker coverage 28% → 39.4%**
-  (8,651 of 21,967 listings; 1,652 brokers — 828 w/ phone, 1,391 w/ email).
-  The 3 remaining gaps are STRUCTURAL + measured, not open work (bizbuysell
+- **BROKER IDENTITY SWEEP FULLY CLOSED (Lane A; PM-verified live 7/16 eve):**
+  every source that publishes broker identity captures it at ingest → brokers
+  table → listing link. **Coverage 28% → 39.6%** (8,709 of 21,967 listings;
+  1,675 brokers — 830 w/ phone, 1,393 w/ email). Named agents: murphy 59 (all
+  direct phone) · vr 33 (22 DIRECT EMAIL) · viking 21 · empire 2 (phone AND
+  email, 26/26 linked) · + dealrelations/sunbeltmidwest/linkbusiness/wpbdp/
+  businessbroker. Firm offices: fcbb 73 (829 listings) · bbf 41 · bizmls 5.
+  source_quality now prints "Broker-contact gaps: none actionable ✅".
+  The last two closures came from Lane A's own [self-iterate]: the gap report
+  kept re-listing 4 permanently-unfixable sources, burying the real ones —
+  splitting ACTIONABLE from STRUCTURAL surfaced empire + viking immediately.
+  The 4 residuals are structural + measured, NOT open work (bizbuysell
   Akamai-blocked · hedgestone/businessesforsale form-gated · tupelomarket
-  broker prose only on sub-$300K listings — measured 0/90, disabled rather
-  than burn 90 fetches/night). All 30 sources green.
+  broker prose only on sub-$300K listings — measured 0/90 → disabled behind a
+  flag rather than burn ~90 fetches/night for nothing). **Data-honesty call PM
+  endorses:** viking publishes only a corporate switchboard → name+firm stored,
+  phone left NULL (a shared line is not an advisor's direct line — the same
+  trap Lane C unwound on owner_phone). All 30 sources green; CI self-driving.
 - **Lane A:** auto-promote T1→pursuits LIVE (42 opened + receipts; +1 today:
   Raleigh Lawn Care NC) · firm-level brokers + FCBB backfill (73 offices,
   829 listings linked) · BBF listing-broker scrape · regionState graduated.
