@@ -1,9 +1,11 @@
-# Lane restart prompts — one paste each (PM-maintained; Lane B updated 7/16 ~13:35)
+# Lane restart prompts — one paste each (PM-maintained; updated 7/16 ~16:45)
 
 John: open a fresh session in the named worktree, paste the block, click Allow
-on the first tool call. Lanes A and C are RUNNING (resumed 7/16 ~10:30 in their
-original sessions) — their blocks below are kept for the next rollover, do not
-re-paste them while their sessions are alive.
+on the first tool call.
+
+**STATUS 7/16 16:45 — 🅲 LANE C NEEDS A PASTE** (stood down cleanly at its
+context limit). Lane A is RUNNING. Lane B successor #3 is RUNNING (started
+~15:15; its block below is kept for the next rollover — do not re-paste).
 
 ---
 
