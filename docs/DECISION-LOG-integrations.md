@@ -62,12 +62,20 @@ gate before ANY outreach), no-guess identity bar, waterfall by website
 status, NEEDS_PAID never auto-pays, flags backfill results: 14 PE-owned /
 21 non-US / 51 too-big of 400.
 
-**NEXT (in order):** river-guides ingest+first batches the moment 0016 lands
-· email pattern engine tier-2.5 (Hunter domain-search → construct+verify
-owner email, $0 marginal) · size model amendment 4 (payroll-% THE input,
-flat 20% margin, CPI factors, Fencing industry + ppp_payroll_pct seeds) ·
-broker inquiry template (John's verbatim copy, inquiry_profiles 774f21ce
-identity).
+**7/16 AFTERNOON (all shipped through 7b7a2a5):** RIVER GUIDES LIVE
+end-to-end (433 seeded, 236 contacts+companies, 13/30 CALL_NOW verified,
+14/25 names resolved w/ sources, tier-1 +6 emails / 13→NEEDS_PAID) ·
+EMAIL PATTERN ENGINE (+3 verified owner emails at 100) · SIZE AMENDMENT 4
+(payroll-% THE input; PPP ×4.8 ×CPI ÷ pct; flat 20% margin; Fencing
+first-class; live re-tier platform 12/tuckin 96/too_big 52) ·
+run_jobs hardening (poisoned jobs self-mark failed) · Lane B contract
+endpoints (/enrich {dealIds}, /discover sweep w/ hallucination guard).
+
+**NEXT:** broker inquiry template (John's verbatim copy, inquiry_profiles
+774f21ce identity, kill old "private investor" copy everywhere) · watch
+Enrichment Jobs CI (hardening on branch, needs PM merge) · JOHN'S ASKS
+outstanding: 0017 SQL (pe cols + amendment-4 columns), SERPER+ANTHROPIC in
+web env (discover bar), sample card 611290ff review (auto-draft unlock).
 
 --- prior session's handoff (7/13) below for history ---
 **State (2026-07-13 ~14:00):** Migrations

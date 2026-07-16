@@ -20,6 +20,8 @@ const CANON = {
   'Cleaning/Janitorial': ['janitorial', 'cleaning', 'maid'],
   'Restoration': ['restoration', 'water damage', 'fire damage', 'mold'],
   'Property Maintenance': ['handyman', 'facilities', 'property maintenance', 'building maintenance', 'property solutions'],
+  // first-class per size-rollout expansion (John 7/13; AAFE-class targets)
+  'Fencing': ['fence', 'fencing', 'gate install', 'perimeter'],
 };
 
 const LABELS = new Set(Object.keys(CANON));

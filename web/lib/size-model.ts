@@ -20,19 +20,33 @@ export async function loadSizeModel(): Promise<{
     const { _comment, ...seeds } = seedBenchmarks as Record<string, unknown>;
     return { benchmarks: seeds as unknown as Record<string, Bench>, thresholds: DEFAULT_THRESHOLDS, source: "seed" };
   }
+  const seeds = seedBenchmarks as unknown as Record<string, Bench>;
   const benchmarks: Record<string, Bench> = {};
   for (const r of benchRes.data ?? []) {
-    benchmarks[r.industry as string] = {
+    const name = r.industry as string;
+    benchmarks[name] = {
+      // amendment 4: payroll-% is THE input; DB value wins, seed backstops
+      payroll_pct: r.ppp_payroll_pct != null ? Number(r.ppp_payroll_pct) : seeds[name]?.payroll_pct,
+      burdened_wage: r.burdened_wage != null ? Number(r.burdened_wage) : seeds[name]?.burdened_wage,
       revenue_per_employee: Number(r.revenue_per_employee),
       ebitda_margin: [Number(r.ebitda_margin_low), Number(r.ebitda_margin_high)],
     };
   }
-  const t = thrRes.data;
+  // seed-only industries (e.g. Fencing pre-0017) must not vanish when the DB
+  // is the source — backstop any missing key from the seed table
+  for (const [name, seed] of Object.entries(seeds)) {
+    if (name !== "_comment" && !benchmarks[name]) benchmarks[name] = seed;
+  }
+  const t = thrRes.data as Record<string, unknown> | null;
   const thresholds: Thresholds = t ? {
     platform_min_ebitda: Number(t.platform_min_ebitda),
     platform_min_revenue: t.platform_min_revenue == null ? null : Number(t.platform_min_revenue),
     toosmall_max_ebitda: Number(t.toosmall_max_ebitda),
     toosmall_max_revenue: t.toosmall_max_revenue == null ? null : Number(t.toosmall_max_revenue),
+    toobig_min_ebitda: t.toobig_min_ebitda != null ? Number(t.toobig_min_ebitda) : DEFAULT_THRESHOLDS.toobig_min_ebitda,
+    ebitda_margin_flat: t.ebitda_margin_flat != null ? Number(t.ebitda_margin_flat) : DEFAULT_THRESHOLDS.ebitda_margin_flat,
+    cpi_2020: t.cpi_2020 != null ? Number(t.cpi_2020) : DEFAULT_THRESHOLDS.cpi_2020,
+    cpi_2021: t.cpi_2021 != null ? Number(t.cpi_2021) : DEFAULT_THRESHOLDS.cpi_2021,
   } : DEFAULT_THRESHOLDS;
   return { benchmarks, thresholds, source: "db" };
 }
