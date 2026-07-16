@@ -1337,3 +1337,34 @@ today: murphy (96/100, 59 agents), vr (89/100, 33 agents, 22 emails), bbf
 regionState→core, CI fix. NEXT: TASK-QUEUE SELF-ITERATE / opportunistic
 new-source hunt (frontier mostly closed — don't re-probe NV/GA/NM/TX-assoc/
 FL-green). RIVER GUIDES marked LATER by PM.
+
+## 2026-07-16 — bizmls FIXED: 9 enriched, 0 errors (was 4 + 8 errors)
+- enrich_id_prefix routing verified: **26 targets (13 BIZMLS-* correctly
+  skipped), 9 enriched, 0 errors** → 9 listings linked, 5 offices. The 17
+  non-hits are stub/confidential detail pages (same category as bbf's ~37
+  misses), NOT failures — error cap no longer trips, so good fetches complete.
+- Calling bizmls DONE: it's a 142-listing source w/ 1 thesis-fit, so 9 office
+  links is proportionate; further parse-tuning here is diminishing returns.
+- **BROKER SWEEP CLOSED.** Every source that publishes broker identity now
+  captures it at ingest: named agents (murphy 59, vr 33 w/ 22 emails,
+  dealrelations, sunbeltmidwest, linkbusiness, wpbdp, businessbroker) + firm
+  offices (fcbb 73, bbf 41, bizmls 5). Residual gaps are structural + measured,
+  not open work: bizbuysell (Akamai hard-block), hedgestone (form-gated),
+  tupelomarket (no structured field; prose only on sub-gate listings — 0/90).
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~17:00: branch synced + pushed, nothing uncommitted.
+CI Node-22 fix MERGED to main — 06:00 cron self-drives (nightly-scrape test run
+29523150326 SUCCESS after 3 days of failure).
+TODAY'S SHIPS: CI fix (8 workflows); auto_promote LIVE + self-driving (45
+pursuit events, nightly-wired via config.auto_promote); BROKER SWEEP CLOSED
+(murphy 96/100→59 agents; vr 89/100→33 agents/22 emails; bbf 113/41 offices;
+fcbb 73/829; bizmls 9/5; firm-level rows in db_output w/ FIRM_NOTE);
+regionState→core (5 adapters); tupelomarket measured 0/90 → disabled.
+METRICS: 21,965 listings, T1 126 / T2 248, broker coverage 28%→39%, re-screen
+backlog 127→37 (nightly self-heal), all 30 sources green.
+NEXT: TASK-QUEUE Lane A — SELF-ITERATE audit (source_quality + source_health,
+act only on flags) or opportunistic new-source hunt. Frontier mostly closed —
+do NOT re-probe NV/GA/NM (aggregator-dominated), TX-assoc (TABB=BizBuySell
+mirror), FL-green-specialists (=BBF members). RIVER GUIDES marked LATER by PM.
+BLOCKED/SKIP: bizbuysell (Akamai), hedgestone/businessesforsale (form-gated).
