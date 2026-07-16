@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import { margin, money, multiple } from "@/lib/mock";
 import type { UiListing } from "@/lib/types";
 import { useUrlFilterSync } from "@/lib/use-url-filters";
+import FilterDropdown from "@/components/FilterDropdown";
 
 const tierBadge: Record<number, string> = {
   1: "bg-emerald-100 text-emerald-800",
@@ -111,10 +112,14 @@ export default function ListingsTableV2({
   const states = [...new Set(allRows.map((l) => l.state).filter(Boolean))].sort() as string[];
   const sources = [...new Set(allRows.map((l) => l.source))].sort();
 
+  // categorical filters hold csv strings ("" = all) so saved views and URL
+  // params stay back-compatible while the UI is multi-select (LIST-UX STANDARD)
+  const asSet = (v: string) => new Set(v && v !== "all" ? v.split(",").filter(Boolean) : []);
   const [q, setQ] = useState("");
-  const [industry, setIndustry] = useState(initialIndustry ?? "all");
-  const [state, setState] = useState("all");
-  const [source, setSource] = useState("all");
+  const [industry, setIndustry] = useState(initialIndustry ?? "");
+  const [state, setState] = useState("");
+  const [source, setSource] = useState("");
+  const [status, setStatus] = useState("");
   const [tiers, setTiers] = useState<number[]>([1, 2, 3, 4]);
   const [minCF, setMinCF] = useState("");
   const [maxCF, setMaxCF] = useState("");
@@ -130,8 +135,8 @@ export default function ListingsTableV2({
   // through matching listings one by one; e.g. ?sort=cashFlow&dir=desc).
   useUrlFilterSync(
     () => ({
-      q, industry: industry !== "all" ? industry : null, state: state !== "all" ? state : null,
-      source: source !== "all" ? source : null,
+      q, industry: industry || null, state: state || null,
+      source: source || null, status: status || null,
       tiers: tiers.length === 4 ? null : tiers.join(","),
       minCF, maxCF, maxMult,
       priority: priorityOnly ? "1" : null,
@@ -144,6 +149,7 @@ export default function ListingsTableV2({
       if (p.get("industry")) setIndustry(p.get("industry")!);
       if (p.get("state")) setState(p.get("state")!);
       if (p.get("source")) setSource(p.get("source")!);
+      if (p.get("status")) setStatus(p.get("status")!);
       if (p.get("tiers")) setTiers(p.get("tiers")!.split(",").map(Number).filter((n) => [1, 2, 3, 4].includes(n)));
       if (p.get("minCF")) setMinCF(p.get("minCF")!);
       if (p.get("maxCF")) setMaxCF(p.get("maxCF")!);
@@ -153,7 +159,7 @@ export default function ListingsTableV2({
       if (p.get("sort")) setSortKey(p.get("sort") as SortKey);
       if (p.get("dir") === "desc") setSortDir("desc");
     },
-    [q, industry, state, source, tiers, minCF, maxCF, maxMult, priorityOnly, relevantOnly, sortKey, sortDir],
+    [q, industry, state, source, status, tiers, minCF, maxCF, maxMult, priorityOnly, relevantOnly, sortKey, sortDir],
   );
 
   const [views, setViews] = useState<SavedView[]>([]);
@@ -178,7 +184,9 @@ export default function ListingsTableV2({
 
   function applyView(v: SavedView) {
     const f = v.filters;
-    setQ(f.q); setIndustry(f.industry); setState(f.state); setSource(f.source);
+    // old saved views stored "all" for no-filter — normalize to ""
+    const norm = (s: string) => (s === "all" ? "" : s);
+    setQ(f.q); setIndustry(norm(f.industry)); setState(norm(f.state)); setSource(norm(f.source));
     setTiers(f.tiers); setMinCF(f.minCF); setMaxCF(f.maxCF); setMaxMult(f.maxMult);
     setPriorityOnly(f.priorityOnly); setRelevantOnly(f.relevantOnly);
     setSortKey(f.sortKey); setSortDir(f.sortDir);
@@ -205,9 +213,11 @@ export default function ListingsTableV2({
     const filtered = allRows.filter((l) => {
       if (relevantOnly && !l.relevant) return false;
       if (q && !`${l.name} ${l.industry} ${l.city} ${l.state}`.toLowerCase().includes(q.toLowerCase())) return false;
-      if (industry !== "all" && l.industry !== industry) return false;
-      if (state !== "all" && l.state !== state) return false;
-      if (source !== "all" && l.source !== source) return false;
+      const [iSet, sSet, srcSet, stSet] = [asSet(industry), asSet(state), asSet(source), asSet(status)];
+      if (iSet.size && !iSet.has(l.industry)) return false;
+      if (sSet.size && !sSet.has(l.state ?? "")) return false;
+      if (srcSet.size && !srcSet.has(l.source)) return false;
+      if (stSet.size && !stSet.has(l.status)) return false;
       if (l.tier !== null && !tiers.includes(l.tier)) return false;
       if (minCF && (l.cashFlow === null || l.cashFlow < Number(minCF))) return false;
       if (maxCF && (l.cashFlow === null || l.cashFlow > Number(maxCF))) return false;
@@ -233,7 +243,7 @@ export default function ListingsTableV2({
       }
       return (va - vb) * dir;
     });
-  }, [allRows, q, industry, state, source, tiers, minCF, maxCF, maxMult, priorityOnly, relevantOnly, sortKey, sortDir]);
+  }, [allRows, q, industry, state, source, status, tiers, minCF, maxCF, maxMult, priorityOnly, relevantOnly, sortKey, sortDir]);
 
   function exportCsv() {
     const blob = new Blob([toCsv(rows)], { type: "text/csv;charset=utf-8" });
@@ -319,19 +329,9 @@ export default function ListingsTableV2({
       </div>
 
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4">
+        {/* LIST-UX STANDARD: categorical filters live in the column headers;
+            the toolbar keeps search, ranges, tier chips (the key split) */}
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search…" className={`w-48 ${inputCls}`} />
-        <select value={industry} onChange={(e) => setIndustry(e.target.value)} className={inputCls}>
-          <option value="all">All industries</option>
-          {industries.map((i) => <option key={i}>{i}</option>)}
-        </select>
-        <select value={state} onChange={(e) => setState(e.target.value)} className={inputCls}>
-          <option value="all">All states</option>
-          {states.map((s) => <option key={s}>{s}</option>)}
-        </select>
-        <select value={source} onChange={(e) => setSource(e.target.value)} className={inputCls}>
-          <option value="all">All sources</option>
-          {sources.map((s) => <option key={s}>{s}</option>)}
-        </select>
         <input value={minCF} onChange={(e) => setMinCF(e.target.value.replace(/\D/g, ""))} placeholder="Min cash flow $" className={`w-32 ${inputCls}`} />
         <input value={maxCF} onChange={(e) => setMaxCF(e.target.value.replace(/\D/g, ""))} placeholder="Max cash flow $" className={`w-32 ${inputCls}`} />
         <input value={maxMult} onChange={(e) => setMaxMult(e.target.value.replace(/[^0-9.]/g, ""))} placeholder="Max multiple ×" className={`w-28 ${inputCls}`} />
@@ -358,10 +358,31 @@ export default function ListingsTableV2({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-xs uppercase tracking-wide text-zinc-500">
-              <th className="px-4 py-3 text-left">Status</th>
+              <th className="px-4 py-3 text-left">
+                <FilterDropdown header label="Status"
+                  options={[...new Set(allRows.map((l) => l.status))].sort().map((s) => ({
+                    value: s, label: s.replace(/_/g, " "), count: allRows.filter((l) => l.status === s).length,
+                  }))}
+                  selected={asSet(status)} onChange={(s) => setStatus([...s].join(","))} />
+              </th>
               <SortTh k="tier">Tier</SortTh>
-              <th className="px-4 py-3 text-left">Listing</th>
-              <SortTh k="state">Location</SortTh>
+              <th className="px-4 py-3 text-left">
+                <span className="inline-flex items-center gap-1">
+                  Listing
+                  <FilterDropdown header label="industry"
+                    options={industries.map((i) => ({ value: i, label: i, count: allRows.filter((l) => l.industry === i).length }))}
+                    selected={asSet(industry)} onChange={(s) => setIndustry([...s].join(","))} />
+                  <FilterDropdown header label="source"
+                    options={sources.map((s) => ({ value: s, label: s, count: allRows.filter((l) => l.source === s).length }))}
+                    selected={asSet(source)} onChange={(s) => setSource([...s].join(","))} />
+                </span>
+              </th>
+              <SortTh k="state">
+                Location
+                <FilterDropdown header label=""
+                  options={states.map((s) => ({ value: s, label: s, count: allRows.filter((l) => l.state === s).length }))}
+                  selected={asSet(state)} onChange={(s) => setState([...s].join(","))} />
+              </SortTh>
               <SortTh k="revenue" align="right">Revenue</SortTh>
               <SortTh k="cashFlow" align="right">EBITDA / SDE</SortTh>
               <SortTh k="margin" align="right">Margin</SortTh>

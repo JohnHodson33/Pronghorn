@@ -36,6 +36,7 @@ type Guide = {
   contact: { email?: string | null; phone?: string | null; linkedin_url?: string | null } | null;
   contact_id: string | null;
   company_id: string | null;
+  notes: string | null; // verify-worker evidence lives here (PM 7/16 item j)
 };
 
 const BANDS = ["CALL_NOW", "ENRICH_THEN_ASSESS", "NURTURE", "RESOLVE_NAME_FIRST"] as const;
@@ -407,7 +408,11 @@ export default function RiverGuides() {
                     <td className="whitespace-nowrap px-3 py-2.5">
                       <span
                         className={`rounded px-1.5 py-0.5 text-xs font-medium ${g.current_status_verified ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-700"}`}
-                        title={g.current_status_verified ? "current status verified" : "status at deal close — not yet re-verified; no outreach until ✓"}
+                        title={[
+                          g.current_status_verified ? "current status verified" : "status at deal close — not yet re-verified; no outreach until ✓",
+                          // verify-worker evidence (item j): the adjudication gold for inconclusives
+                          g.notes ? `Evidence: ${g.notes}` : null,
+                        ].filter(Boolean).join("\n")}
                       >
                         {g.exit_status} {g.current_status_verified ? "✓" : "⚠"}
                       </span>

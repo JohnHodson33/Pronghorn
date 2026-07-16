@@ -24,12 +24,17 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   dropdowns (industry/exit/status/state + NEW reachability filter on
   Contact — real counts 41 email · 24 LinkedIn · 388 none), toolbar
   slimmed to search + band chips + actions, all URL-synced; verified on
-  the 433 live rows + mobile. NEXT: migrate remaining lists to the
-  standard page-by-page, each its own commit (listings → companies →
-  contacts → brokers → deals → enrichment); then River Guides items
-  (b)/(c) — contacts chip + profile panels (236 contacts are in the CRM
-  now). NOTE for PM: the >4.5MB upload fix ALREADY SHIPPED 7/14
-  (363547f) — queue item stale.
+  the 433 live rows + mobile; (11) ✅ LISTINGS → the standard:
+  industry/state/source selects retired into header dropdowns (multi-
+  select, counts), NEW Status header filter, csv-string state keeps
+  saved views AND ?industry= deep links back-compatible (verified: 17
+  Tree Care of 847, same param shape); every column already sorted;
+  full-width already. Also (item j) verify-worker EVIDENCE now shows in
+  the exit-chip tooltip on river-guide rows. NEXT: standard migration
+  continues — contacts → brokers → deals → enrichment (each its own
+  commit); then River Guides items (b)/(c) (236 contacts in CRM now).
+  NOTE for PM: the >4.5MB upload fix ALREADY SHIPPED 7/14 (363547f) —
+  queue item stale.
 
 ## 2026-07-16 — ★Shortlist + Too-big tier UI (0015 backend, John 7/15)
 
