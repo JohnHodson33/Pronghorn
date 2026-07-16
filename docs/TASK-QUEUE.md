@@ -92,7 +92,7 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
   the local path noted there) → new add-ons enter the river_guides lifecycle
   as NEEDS_NAME/RESOLVED rows. Hallucination guard is a hard rule: no
   invented names/domains, unverified = TBD.
-- 🔥🔥🔥 **JOHN APPROVED 7/13 (~01:45, explicit in PM chat) — your two AUTONOMY
+- ✅ **[SHIPPED + PM-VERIFIED 7/16] JOHN APPROVED 7/13 — your two AUTONOMY
   suggestions are GO, build both:** (1) **AUTO-PROMOTE T1 → PURSUITS:** nightly
   job opens a pursuit (stage 'new') for any Tier-1 listing clearing HARD
   criteria — priority state + CF $300K–$10M + thesis keyword + not delisted +
@@ -101,7 +101,7 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
   **SOURCE-HEALTH DRIFT ALERTING:** trailing-7-run baseline per source; flag
   >25% count drop or null-financial-rate spike → compact digest to dashboard
   Key Actions (+ brain). Post-build: PM lists both in MORNING-BRIEF receipts.
-- 🔥 **OPS AUTOMATION (PM refill 7/11 — Lane A's own recon says free-source
+- ✅ **[SHIPPED 7/16 — CI self-driving on Node 22] OPS AUTOMATION (PM refill 7/11 — Lane A's own recon says free-source
   discovery is saturated; shift to keeping the machine running itself):**
   GitHub Actions workflows (`.github/workflows/`, Lane A owns) for (a) nightly
   scrape-all + mirror dedup, (b) delisting/freshness pass, (c) source_quality
@@ -112,11 +112,11 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ Keep hunting + building NEW broker sources (regional, niche green-industry
   intermediaries, more bizmls org codes for state associations) — per 7/11 recon
   this is now opportunistic, not primary.
-- ⬜ Broker-contact enrichment: scrape broker phone/email/office from source
+- ✅ **BROKER SWEEP CLOSED 7/16 (PM-verified live: 39.6% coverage — 8,709/21,967 listings linked; 1,675 brokers, 830 w/ phone, 1,393 w/ email).** Named agents: murphy 59 · vr 33 (22 direct email) · viking 21 · empire 2 · dealrelations/sunbeltmidwest/linkbusiness/wpbdp/businessbroker. Firm offices: fcbb 73 (829 listings) · bbf 41 · bizmls 5. Residual 4 sources are STRUCTURAL + measured, not open work (bizbuysell Akamai-blocked · hedgestone/businessesforsale form-gated · tupelomarket 0/90 measured, disabled behind a flag). Judgment call PM endorses: viking publishes only a corporate switchboard → name+firm stored, phone left NULL (a shared line is not an advisor's direct line — same trap as owner_phone main-line inflation). Original card: scrape broker phone/email/office from source
   broker pages → brokers table (brokers are outreach targets too).
-- ⬜ Delisting/freshness: mark listings delisted after 2 missed full scrapes;
+- ✅ [SHIPPED] Delisting/freshness: mark listings delisted after 2 missed full scrapes;
   emit price-change events (feeds Market Multiples time-series).
-- ⬜ Source-quality analytics: track thesis-fit yield per source; drop low-value.
+- ✅ [SHIPPED — gap report now splits ACTIONABLE vs STRUCTURAL, which surfaced empire+viking] Source-quality analytics: track thesis-fit yield per source; drop low-value.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
