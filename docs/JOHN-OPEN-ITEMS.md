@@ -3,10 +3,12 @@ _Rewritten 7/16 ~13:45 · Single source of truth for everything awaiting you.
 Ask "what's open?" anytime._
 
 ## ⏳ ON YOU (priority order)
-1. **Migration 0018 (~30 sec):** SQL editor → `0018_size_amendment4.sql` —
-   the payroll-%-of-revenue + burdened-wage columns and per-industry seeds
-   for YOUR size-model restructure (Tree Care 40%/$65K, Lawn 35%/$55K…).
-   Last SQL ask outstanding; 0004–0017 all applied.
+1. **Migration 0018 (~30 sec) — NOW GATES YOUR PROGRESS BANNER:** SQL editor
+   → `0018_size_amendment4.sql`. Carries THREE things: (a) `river_guide_runs`
+   — the run-tracking table behind your "I want to see it working live"
+   directive; the runs API returns "apply 0018" until you do; (b) size
+   amendment-4 columns + per-industry payroll-% seeds (Tree Care 40%/$65K,
+   Lawn 35%/$55K…); (c) app_config. Last SQL ask; 0004–0017 applied.
 2. **AAFE IOI — DUE TOMORROW 7/17.** Say "draft it" and the PM produces the
    IOI draft from the CIM + your Landmark template for your review.
 3. **Odulaire**: Outlook → Junk → search "OneHub" → data-room invite; IOI

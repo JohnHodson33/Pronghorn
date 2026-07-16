@@ -30,7 +30,7 @@ John's morning list. Build against the degrade paths until he runs them.
 and looping. **John resumed all three lanes by pasting the restart prompts
 INTO THE ORIGINAL SESSIONS (not fresh ones) — this is FINE**: the harness
 auto-compacts their history and the boot prompts rebuild state from docs, so
-**the session roster is UNCHANGED**: Brokers local_56a6eb86-… · Frontend
+**the session roster: Brokers local_56a6eb86-… · **Frontend successor #3 = local_429a0be5-… (started 7/16 ~15:15; the old local_38d3b5d9 is DEAD/retired)** · Frontend-OLD
 local_38d3b5d9-… · CRM/Data local_32385d95-… (all running as of 7/16 00:08).
 Lanes: your earlier in-session instructions may be stale post-compaction —
 **TASK-QUEUE.md is the priority source**, trust it over anything you
