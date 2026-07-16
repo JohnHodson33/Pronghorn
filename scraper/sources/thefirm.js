@@ -8,7 +8,7 @@
 
 const cheerio = require('cheerio');
 const SourceScraper = require('../core/source_base');
-const { stateFromText } = require('../core/states');
+const { stateFromText, regionState } = require('../core/states');
 
 const INDEX_URL = 'https://www.thefirmadv.com/opportunities/';
 const ORIGIN = 'https://www.thefirmadv.com';
@@ -51,7 +51,7 @@ class TheFirmScraper extends SourceScraper {
         name,
         url: href.startsWith('http') ? href : ORIGIN + href,
         description: desc ? desc.slice(0, 500) : null,
-        location: { city: null, state: stateFromText(desc), raw: null },
+        location: { city: null, state: stateFromText(desc) || regionState(desc), raw: null },
         industry: null, // no explicit category; title/description name the trade
         asking_price: asking,
         gross_revenue: null,

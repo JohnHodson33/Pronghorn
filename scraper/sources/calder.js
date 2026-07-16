@@ -9,7 +9,7 @@
 
 const cheerio = require('cheerio');
 const SourceScraper = require('../core/source_base');
-const { stateFromText } = require('../core/states');
+const { stateFromText, regionState } = require('../core/states');
 
 const INDEX_URL = 'https://www.caldergr.com/businesses-for-sale/';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
@@ -54,7 +54,7 @@ class CalderScraper extends SourceScraper {
         name,
         url: href,
         description: null,
-        location: { city: null, state: stateFromText(locRaw), raw: locRaw },
+        location: { city: null, state: stateFromText(locRaw) || regionState(locRaw), raw: locRaw },
         industry: null, // title names the trade; no explicit category field
         asking_price: null, // Calder lists revenue/cash flow, not an asking price
         gross_revenue: revenue,

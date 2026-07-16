@@ -7,7 +7,7 @@
 
 const cheerio = require('cheerio');
 const SourceScraper = require('../core/source_base');
-const { stateFromText } = require('../core/states');
+const { stateFromText, regionState } = require('../core/states');
 
 const BASE = 'https://www.hedgestone.com/businesses-for-sale/';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
@@ -68,7 +68,7 @@ class HedgestoneScraper extends SourceScraper {
         description: excerpt ? excerpt.slice(0, 500) : null,
         location: {
           city: locRaw ? locRaw.split(',')[0].trim() : null,
-          state: stateFromText(locRaw),
+          state: stateFromText(locRaw) || regionState(locRaw),
           raw: locRaw,
         },
         industry: null, // cards carry no explicit category; title/excerpt name the trade
