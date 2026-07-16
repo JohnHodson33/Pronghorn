@@ -10,7 +10,7 @@ import type { CallLead } from "@/lib/call-list";
 
 const DEFAULT_SCRIPT = `Hi, is this {{first_name}}? — This is {{sender_name}}.
 
-I know I'm calling out of the blue. I'm not a broker and I'm not selling anything — I'm a private investor, and {{company}} kept coming up when I looked at the best {{industry}} operators around {{city}}.
+I know I'm calling out of the blue. I'm not a broker and I'm not selling anything — I'm a Managing Director at Pronghorn Equity Partners, and {{company}} kept coming up when I looked at the best {{industry}} operators around {{city}}.
 
 {{personalized_line}}
 

@@ -71,11 +71,19 @@ first-class; live re-tier platform 12/tuckin 96/too_big 52) ·
 run_jobs hardening (poisoned jobs self-mark failed) · Lane B contract
 endpoints (/enrich {dealIds}, /discover sweep w/ hallucination guard).
 
-**NEXT:** broker inquiry template (John's verbatim copy, inquiry_profiles
-774f21ce identity, kill old "private investor" copy everywhere) · watch
-Enrichment Jobs CI (hardening on branch, needs PM merge) · JOHN'S ASKS
-outstanding: 0017 SQL (pe cols + amendment-4 columns), SERPER+ANTHROPIC in
-web env (discover bar), sample card 611290ff review (auto-draft unlock).
+**BROKER INQUIRY TEMPLATE SHIPPED (d86e358):** John's verbatim message is
+the contract — deterministic (no LLM), only broker first name + industry
+phrase vary; wired into outbox drafts + co-pilot form note; "private
+investor" copy killed everywhere incl. the FORBIDDEN gmail fallback in
+PursuitPanel (now jhodson@pronghornequity.com). Verified live dry-run.
+ALSO: Graph token store (app_config, 0018) root-causes Outlook Sync CI;
+0017-as-applied honored, 0018 = the one SQL ask; pe backfill: 250
+river-guide companies flagged. Enrichment Jobs CI GREEN.
+
+**NEXT:** watch 0018 + first river-guides.yml nightly run · JOHN'S ASKS:
+0018 SQL · SERPER+ANTHROPIC in web env (discover bar) · sample card
+611290ff review (auto-draft unlock). Queue is otherwise CLEAR — self-
+iterate + river-guide worker batches within caps.
 
 --- prior session's handoff (7/13) below for history ---
 **State (2026-07-13 ~14:00):** Migrations

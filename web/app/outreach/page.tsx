@@ -40,7 +40,7 @@ const STARTER: Sequence[] = [
       {
         delayDays: 0,
         subject: "Question about {{company}}",
-        body: "Hi {{first_name}},\n\n{{personalized_line}}\n\nI'm a private investor focused on {{industry}} businesses in the {{city}} area — not a broker, and this isn't a mass email. If you've ever thought about what a transition could look like (now or a few years out), I'd welcome 15 minutes to introduce myself.\n\nEither way — impressive business.\n\n{{sender_name}}",
+        body: "Hi {{first_name}},\n\n{{personalized_line}}\n\nI'm a Managing Director at Pronghorn Equity Partners, and we spend a lot of time with {{industry}} businesses in the {{city}} area — I'm not a broker, and this isn't a mass email. If you've ever thought about what a transition could look like (now or a few years out), I'd welcome 15 minutes to introduce myself.\n\nEither way — impressive business.\n\n{{sender_name}}",
       },
       {
         delayDays: 4,

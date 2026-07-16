@@ -12,12 +12,14 @@ type Profile = { name: string; phone: string; email: string; note: string };
 
 const DEFAULT_PROFILE: Profile = {
   name: "John Hodson",
-  phone: "",
-  email: "johndouglashodson@gmail.com",
+  phone: "(503) 899-0058",
+  email: "jhodson@pronghornequity.com", // NEVER the gmail (John 7/13)
+  // John's verbatim inquiry copy (broker-listing outreach overhaul, 7/13)
   note:
-    "I'm a private investor (Pronghorn Equity Partners) focused on home-services businesses. " +
-    "We're two operators acquiring one great company to own for the long term. " +
-    "Could you send the listing details / NDA for this business?",
+    "My name is John Hodson, and I am a Managing Director at Pronghorn Equity Partners. " +
+    "We are a lower middle market private equity fund that focuses on business services assets across the US. " +
+    "We would love to get some additional information on the below listing. " +
+    "Are you able to share the NDA and any initial materials? It would also be helpful to hop on an introductory call to learn more and introduce myself.",
 };
 
 const LS_KEY = "pronghorn-inquiry-profile-v1";
