@@ -1,0 +1,61 @@
+# River Guides — UI-queued run claimer (PM 7/16).
+#
+# WHY: the nightly workflow runs at 02:30, but the page tells John "the worker
+# starts within ~15 minutes" the moment he clicks Enrich. That promise has to
+# be true — otherwise the click feels dead, which is exactly the complaint this
+# whole visibility package exists to fix. This job claims UI-queued runs
+# (river_guide_runs.state='queued') every 15 minutes.
+#
+# Cheap by construction: a guard step asks Supabase whether any run is queued
+# and skips the install + worker entirely when there is nothing to do (same
+# pattern as leadgen.yml). Repo is public → Actions minutes are free.
+# Tier-1 is $0-marginal (Hunter quota + pennies of LinkedIn verification);
+# NEEDS_PAID never auto-pays.
+
+name: River Guides — claim queued runs
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+
+concurrency:
+  group: river-guides # shares the nightly's group — never both at once
+  cancel-in-progress: false
+
+jobs:
+  claim:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: scraper
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      HUNTER_API_KEY: ${{ secrets.HUNTER_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Any queued runs?
+        id: guard
+        run: |
+          code=$(curl -s -o /tmp/q.json -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/river_guide_runs?state=eq.queued&select=id&limit=1" \
+            -H "apikey: $SUPABASE_SERVICE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_KEY")
+          # fail-safe: on any API trouble, run the worker rather than silently skip
+          if [ "$code" != "200" ]; then echo "pending=true" >> $GITHUB_OUTPUT; exit 0; fi
+          if grep -q '"id"' /tmp/q.json; then echo "pending=true" >> $GITHUB_OUTPUT;
+          else echo "pending=false" >> $GITHUB_OUTPUT; echo "No queued runs — skipping."; fi
+      - uses: actions/setup-node@v4
+        if: steps.guard.outputs.pending == 'true'
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: scraper/package-lock.json
+      - run: npm ci
+        if: steps.guard.outputs.pending == 'true'
+      - name: Tier-1 enrichment for the queued run
+        if: steps.guard.outputs.pending == 'true'
+        run: node riverguides/enrich_t1.js
