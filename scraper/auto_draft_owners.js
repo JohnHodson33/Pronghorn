@@ -75,7 +75,10 @@ function extractFacts(lead) {
 }
 
 function completeness(owner, lead) {
-  const channels = [owner?.email, lead?.owner_phone, lead?.owner_linkedin].filter(Boolean).length;
+  // verified-only LinkedIn counting (John 7/15) — outreach eligibility must
+  // never rest on an unverified link
+  const li = lead?.owner_linkedin && lead?.enrichment?.linkedin_verified === true ? lead.owner_linkedin : null;
+  const channels = [owner?.email, lead?.owner_phone, li].filter(Boolean).length;
   if (owner?.email && channels >= 2) return 'full';
   if (owner?.email) return 'contactable';
   return 'identified';

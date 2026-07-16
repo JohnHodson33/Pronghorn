@@ -21,6 +21,8 @@ const TIER2_BUDGET = {
   hunter: Number(process.env.HUNTER_RUN_BUDGET) || 60,
   exa: Number(process.env.EXA_RUN_BUDGET) || 60,
 };
+// Skip-trace tier (Tracerfy, $0.02/hit): max leads submitted per runner pass.
+const SKIPTRACE_BUDGET = Number(process.env.TRACERFY_RUN_BUDGET) || 25;
 
 async function jobLeads(job, statusFilter) {
   let q = supabase.from('leads')
@@ -83,15 +85,28 @@ async function main() {
         processed += t2.processed;
       }
 
+      // PHONE TIER (after free sources + Hunter): Tracerfy person-mode batch
+      // for leads STILL missing owner_phone that have owner name + address.
+      // Per-hit billing ($0.02); job caps override the env budget like tier-2.
+      let st = { submitted: 0, hits: 0, phones: 0, emails: 0, costUsd: 0 };
+      try {
+        const { runSkiptrace } = require('./skiptrace');
+        const stBudget = job.counts?.tracerfy_budget ?? SKIPTRACE_BUDGET;
+        if (stBudget > 0) {
+          const candidates = await jobLeads(job, 'enriched');
+          st = await runSkiptrace(candidates, stBudget, log);
+        }
+      } catch (e) { log.warn(`  skiptrace tier: ${e.message}`); }
+
       // final counts from DB truth
       const after = await jobLeads(job);
       const owners = after.filter((l) => l.owner_name).length;
       const emailsNow = after.filter((l) => l.owner_email).length;
       await setProgress(job.id, {
         status: 'complete', finished_at: new Date().toISOString(),
-        counts: { total, processed, found_owner: owners, found_email: emailsNow, tier1: fresh.length, tier2: t2.processed, tier2_emails: t2.emails, tier2_linkedins: t2.linkedins },
-        // Hunter is a flat sub ($0 marginal); tier-2 marginal = Exa LinkedIn only
-        cost_actual: Number((fresh.length * 0.01 + t2.processed * 0.006).toFixed(2)),
+        counts: { total, processed, found_owner: owners, found_email: emailsNow, tier1: fresh.length, tier2: t2.processed, tier2_emails: t2.emails, tier2_linkedins: t2.linkedins, skiptrace_hits: st.hits, skiptrace_phones: st.phones },
+        // Hunter is a flat sub ($0 marginal); tier-2 marginal = Exa; skiptrace per-hit
+        cost_actual: Number((fresh.length * 0.01 + t2.processed * 0.006 + st.costUsd).toFixed(2)),
       });
       log.info(`  job done: ${processed} processed (${fresh.length} tier1, ${t2.processed} tier2 → +${t2.emails} emails, +${t2.linkedins} linkedins)`);
     } catch (e) {

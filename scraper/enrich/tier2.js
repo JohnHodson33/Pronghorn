@@ -26,7 +26,10 @@ function normalizeName(name) {
 }
 
 function isComplete(l) {
-  return !!(l.owner_name && l.owner_email && (l.owner_phone || l.owner_linkedin));
+  // LinkedIn counts as a channel ONLY when verified (John 7/15: wrong > none;
+  // unverified links neither complete a lead nor qualify it for outreach)
+  const li = l.owner_linkedin && l.enrichment?.linkedin_verified === true;
+  return !!(l.owner_name && l.owner_email && (l.owner_phone || li));
 }
 
 async function hunterEmail(lead, budget, log) {
@@ -51,31 +54,16 @@ async function hunterEmail(lead, budget, log) {
   }
 }
 
-async function exaLinkedin(lead, budget, log) {
-  if (budget.exa <= 0 || !process.env.EXA_API_KEY) return null;
+// v3 matcher (John 7/15): Serper site:linkedin.com/in + Claude 2-corroboration
+// verify — replaces the Exa token matchers that produced wrong-person links.
+let _anthropic = null;
+async function verifiedLinkedin(lead, budget, log) {
+  if (budget.exa <= 0) return null; // reuse the exa budget slot as the search budget
+  if (!process.env.SERPER_API_KEY || !process.env.ANTHROPIC_API_KEY) return null;
   budget.exa--;
-  try {
-    const { data } = await axios.post('https://api.exa.ai/search', {
-      query: `${normalizeName(lead.owner_name)} ${lead.name}`,
-      numResults: 3,
-      includeDomains: ['linkedin.com'],
-    }, { headers: { 'x-api-key': process.env.EXA_API_KEY, 'content-type': 'application/json' }, timeout: 30000 });
-    await recordUsage('exa', 'enrichment', 1, 0.006, { tier: 2, lead: lead.id, kind: 'linkedin' });
-    const tokens = normalizeName(lead.owner_name).toLowerCase().split(/\s+/).filter((t) => t.length > 2);
-    for (const r of data.results || []) {
-      if (!/linkedin\.com\/in\//.test(r.url || '')) continue;
-      // eponymous-business guard: the company name often CONTAINS the owner
-      // surname ("McCallum's Pool Service"), so a title token match can hit a
-      // different person entirely. Trust the profile SLUG first (it carries
-      // the person's own name); fall back to ≥2 distinct tokens in the title.
-      const slug = (r.url.split('/in/')[1] || '').toLowerCase();
-      const title = String(r.title || '').toLowerCase();
-      const slugHit = tokens.some((t) => slug.includes(t));
-      const titleHits = new Set(tokens.filter((t) => title.includes(t))).size;
-      if (slugHit || titleHits >= 2) return r.url.split('?')[0];
-    }
-  } catch (e) { log?.warn(`    exa/linkedin: ${e.response?.status || e.message}`); }
-  return null;
+  const { findVerifiedLinkedin } = require('./linkedin_match');
+  if (!_anthropic) { const Anthropic = require('@anthropic-ai/sdk'); _anthropic = new Anthropic(); }
+  return findVerifiedLinkedin(_anthropic, lead, { industry: lead.industry_verified }, log);
 }
 
 // Size-proxy SIGNAL capture (card 37450f11 — signals only; the tier math waits
@@ -156,8 +144,13 @@ async function runTier2(leads, budget, log, onProgress) {
       if (r) { enrich.hunter = r.hunter; if (r.email) { patch.owner_email = r.email; emails++; } }
     }
     if (!l.owner_linkedin) {
-      const url = await exaLinkedin(l, budget, log);
-      if (url) { patch.owner_linkedin = url; linkedins++; }
+      const v = await verifiedLinkedin(l, budget, log);
+      if (v) {
+        patch.owner_linkedin = v.url;
+        enrich.linkedin_verified = true;
+        enrich.linkedin_verify = { at: new Date().toISOString(), method: 'serper+claude-2corr', person: v.person, corroborations: v.corroborations, confidence: v.confidence };
+        linkedins++;
+      }
     }
     enrich.tier2 = { at: new Date().toISOString(), got: Object.keys(patch) };
     patch.enrichment = enrich;
