@@ -76,6 +76,14 @@ export default async function CompanyDetailV2({ id }: { id: string }) {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {c.peOwned && (
+              <span
+                className="rounded-full bg-rose-100 px-2.5 py-1 text-xs font-bold text-rose-700"
+                title="PE-backed companies aren't acquisition targets"
+              >
+                PE-owned{c.peOwner ? `: ${c.peOwner}` : ""}
+              </span>
+            )}
             <StarButton companyId={c.id} shortlist={shortlist} />
             {(() => {
               const lv = companyLevel(contacts, c.website);

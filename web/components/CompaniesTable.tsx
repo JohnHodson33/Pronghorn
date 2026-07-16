@@ -51,6 +51,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
   const [tiersSel, setTiersSel] = useState<Set<string>>(new Set());
   const [stagesSel, setStagesSel] = useState<Set<string>>(new Set());
   const [withDealOnly, setWithDealOnly] = useState(false);
+  const [hidePe, setHidePe] = useState(false); // PE-owned are not targets (John 7/15)
   const [starSel, setStarSel] = useState<Set<string>>(new Set()); // ★ by John/Tom
   const [sortKey, setSortKey] = useState<SortKey>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
@@ -65,6 +66,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
     if (p.get("tier")) setTiersSel(fromCsv(p.get("tier")));
     if (p.get("stage")) setStagesSel(fromCsv(p.get("stage")));
     if (p.get("deal") === "1") setWithDealOnly(true);
+    if (p.get("pe") === "hide") setHidePe(true);
     if (p.get("star")) setStarSel(fromCsv(p.get("star")));
     if (p.get("sort") === "revenue" || p.get("sort") === "ebitda") setSortKey(p.get("sort") as SortKey);
     if (p.get("dir") === "asc") setSortDir("asc");
@@ -78,10 +80,11 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
     ];
     for (const [k, v] of pairs) if (v) p.set(k, v);
     if (withDealOnly) p.set("deal", "1");
+    if (hidePe) p.set("pe", "hide");
     if (sortKey) { p.set("sort", sortKey); if (sortDir === "asc") p.set("dir", "asc"); }
     const qs = p.toString();
     window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
-  }, [q, industriesSel, levelsSel, tiersSel, stagesSel, withDealOnly, starSel, sortKey, sortDir]);
+  }, [q, industriesSel, levelsSel, tiersSel, stagesSel, withDealOnly, hidePe, starSel, sortKey, sortDir]);
 
   const levels = useMemo(() => {
     const m = new Map<string, ReturnType<typeof companyLevel>>();
@@ -128,6 +131,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
       if (tiersSel.size && !tiersSel.has(c.size?.tier ?? "unsized")) return false;
       if (stagesSel.size && !stagesSel.has(c.deals?.[0]?.stage ?? "")) return false;
       if (withDealOnly && !c.deals?.[0]) return false;
+      if (hidePe && c.pe_owned) return false;
       if (starSel.size && !c.shortlist.some((s) => starSel.has(s.person))) return false;
       return true;
     });
@@ -141,7 +145,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
       if (bv === null) return -1;
       return sortDir === "asc" ? av - bv : bv - av;
     });
-  }, [companies, q, industriesSel, levelsSel, tiersSel, stagesSel, withDealOnly, starSel, levels, sortKey, sortDir]);
+  }, [companies, q, industriesSel, levelsSel, tiersSel, stagesSel, withDealOnly, hidePe, starSel, levels, sortKey, sortDir]);
 
   function toggleSort(k: "revenue" | "ebitda") {
     if (sortKey !== k) { setSortKey(k); setSortDir("desc"); }
@@ -180,6 +184,15 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
             className="accent-emerald-700"
           />
           Has deal
+        </label>
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700" title="PE-backed companies aren't acquisition targets — filter them out of working views">
+          <input
+            type="checkbox"
+            checked={hidePe}
+            onChange={(e) => setHidePe(e.target.checked)}
+            className="accent-emerald-700"
+          />
+          Hide PE-owned ({companies.filter((c) => c.pe_owned).length})
         </label>
         <span className="ml-auto flex items-center gap-3">
           <span className="text-sm text-zinc-500 tabular-nums">
@@ -258,7 +271,17 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
                 <td className="px-2 py-3" onClick={(e) => e.stopPropagation()}>
                   <StarButton companyId={c.id} shortlist={c.shortlist} compact />
                 </td>
-                <td className="px-4 py-3 font-medium">{c.name}</td>
+                <td className="px-4 py-3 font-medium">
+                  {c.name}
+                  {c.pe_owned && (
+                    <span
+                      className="ml-1.5 rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-700"
+                      title={c.pe_owner ? `PE-owned: ${c.pe_owner} — not a target` : "PE-owned — not a target"}
+                    >
+                      PE
+                    </span>
+                  )}
+                </td>
                 <td className="whitespace-nowrap px-4 py-3">
                   {(() => {
                     const lv = levels.get(c.id)!;

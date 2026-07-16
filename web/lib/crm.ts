@@ -133,6 +133,9 @@ export type CompanyRow = {
   size: SizeEstimate | null;
   // ★ shortlist entries (0015; empty pre-migration)
   shortlist: { person: string; note: string | null; created_at: string }[];
+  // PE ownership (0017 columns; John 7/15 — "PE-owned targets are not good targets")
+  pe_owned: boolean;
+  pe_owner: string | null;
 };
 
 export type BrokerRow = {
@@ -212,18 +215,20 @@ export async function fetchBrokers(): Promise<BrokerRow[] | null> {
 
 export async function fetchCompanies(): Promise<CompanyRow[] | null> {
   if (!hasDb()) return null;
-  // ★ shortlist join lands with 0015 — retry without it until applied
-  const select = (withStar: boolean) =>
+  // ★ shortlist join (0015) + pe columns (0017) — retry without until applied
+  const select = (withStar: boolean, withPe: boolean) =>
     serverDb()
       .from("companies")
       .select(
         "id, name, industry, city, state, revenue, ebitda, ebitda_type, origin, created_at, deals(stage), " +
           "contacts(role, name, email, phone, linkedin)" +
+          (withPe ? ", pe_owned, pe_owner" : "") +
           (withStar ? ", company_shortlist(person, note, created_at)" : "")
       )
       .order("created_at", { ascending: false });
-  let { data, error } = await select(true);
-  if (error) ({ data, error } = await select(false));
+  let { data, error } = await select(true, true);
+  if (error && /pe_owned|pe_owner/.test(error.message)) ({ data, error } = await select(true, false));
+  if (error) ({ data, error } = await select(false, false));
   if (error) {
     console.error("fetchCompanies failed:", error.message);
     return null;
@@ -241,12 +246,18 @@ export async function fetchCompanies(): Promise<CompanyRow[] | null> {
   ]);
   const leadByCompany = new Map((leadRows ?? []).map((l) => [l.company_id as string, l]));
 
-  return (data as unknown as (Omit<CompanyRow, "size" | "shortlist"> & { company_shortlist?: CompanyRow["shortlist"] })[]).map((c) => {
+  return (data as unknown as (Omit<CompanyRow, "size" | "shortlist" | "pe_owned" | "pe_owner"> & {
+    company_shortlist?: CompanyRow["shortlist"]; pe_owned?: boolean | null; pe_owner?: string | null;
+  })[]).map((c) => {
     const lead = leadByCompany.get(c.id);
     const { company_shortlist, ...rest } = c;
+    // lead-enrichment PE detection backstops the company column pre-backfill
+    const leadPe = (leadByCompany.get(c.id)?.enrichment ?? null) as { pe_owned?: boolean; pe_owner?: string } | null;
     return {
       ...rest,
       shortlist: company_shortlist ?? [],
+      pe_owned: !!(c.pe_owned ?? leadPe?.pe_owned),
+      pe_owner: c.pe_owner ?? leadPe?.pe_owner ?? null,
       size: lead
         ? sizeEstimate(
             (lead.industry_verified as string | null) ?? c.industry,
