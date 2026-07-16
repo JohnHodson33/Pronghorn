@@ -117,6 +117,9 @@ async function loadTargets({ includeDrafted = false } = {}) {
     const owner = (c.contacts || []).find((ct) => ct.role === 'owner' && ct.email && !GENERIC.test(ct.email) && !ROLE_MBOX(ct.email));
     if (!owner) continue;
     const lead = leadByCompany.get(c.id) || null;
+    // hard exclusions (John 7/15): PE-owned / too-big / non-US never drafted
+    const le = lead?.enrichment || {};
+    if (le.pe_owned === true || le.too_big === true || le.hq_us === false) continue;
     targets.push({
       company: c, owner, lead,
       industry: lead?.industry_verified || c.industry,

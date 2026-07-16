@@ -4,7 +4,7 @@
 import { NextResponse } from "next/server";
 import { hasDb, serverDb } from "@/lib/db";
 import { completeness, LEVELS, type Completeness } from "@/lib/completeness";
-import { sizeEstimate, TIERS } from "@/lib/size";
+import { sizeEstimate, applyQualitativeFlags, TIERS } from "@/lib/size";
 import { loadSizeModel } from "@/lib/size-model";
 
 export async function GET(req: Request) {
@@ -26,18 +26,23 @@ export async function GET(req: Request) {
   // default order = most complete first (results float to the top post-run)
   const model = await loadSizeModel();
   const rows = (data ?? []).map((l) => {
-    const size = sizeEstimate(
+    const enrich = l.enrichment as { size_signals?: Record<string, unknown>; too_big?: boolean; pe_owned?: boolean; pe_owner?: string; hq_us?: boolean | string } | null;
+    const size = applyQualitativeFlags(sizeEstimate(
       (l as { industry_verified?: string }).industry_verified,
-      (l.enrichment as { size_signals?: Record<string, unknown> } | null)?.size_signals,
+      enrich?.size_signals,
       (l as { review_count?: number }).review_count,
       model,
-    );
+    ), enrich);
     return {
       ...l, completeness: completeness(l), size,
       size_tier: size?.tier ?? "unsized",
       // always-present columns (John amendment 3): ranges or null, UI renders blank
       est_revenue: size?.revenue ?? null,
       est_ebitda: size?.ebitda ?? null,
+      pe_owned: enrich?.pe_owned === true,
+      pe_owner: enrich?.pe_owner ?? null,
+      hq_us: enrich?.hq_us ?? null,
+      linkedin_verified: (l.enrichment as { linkedin_verified?: boolean } | null)?.linkedin_verified === true,
     };
   });
   rows.sort((a, b) => LEVELS.indexOf(a.completeness as Completeness) - LEVELS.indexOf(b.completeness as Completeness));

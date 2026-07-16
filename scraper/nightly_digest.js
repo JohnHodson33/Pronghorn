@@ -54,8 +54,12 @@ function sizeTier(lead) {
   return ebitdaHi >= 1_000_000 ? 'platform' : ebitdaHi < 200_000 ? 'toosmall' : 'tuckin';
 }
 
-const TIER_ORDER = { platform: 0, tuckin: 1, unsized: 2, toosmall: 3 };
+const TIER_ORDER = { platform: 0, tuckin: 1, unsized: 2, toosmall: 3, too_big: 4 };
 function ruleMatches(rule, lead) {
+  // hard exclusions (John 7/15): PE-owned, conglomerate/too-big, non-US —
+  // never auto-enriched regardless of what a rule says
+  const e = lead.enrichment || {};
+  if (e.pe_owned === true || e.too_big === true || e.hq_us === false) return false;
   const inds = (rule.industries || []).map((i) => i.toLowerCase());
   if (!inds.length || !inds.includes(String(lead.industry_verified || '').toLowerCase())) return false;
   if (rule.min_size_tier) {
