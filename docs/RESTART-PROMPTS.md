@@ -76,9 +76,13 @@ FIRST: `git fetch origin && git merge origin/main` so you're current. Read
 docs/PM-HANDOFF.md, CLAUDE.md, then your lane section in docs/TASK-QUEUE.md
 (Lane C — current through John's 7/15 directives; your live backlog).
 docs/DECISION-LOG-integrations.md is historical context (7/13). You context-died
-7/15 ~2pm — trust TASK-QUEUE for priorities. NOTE: migrations 0011–0014 are
-still pending John (apply-in-order); 0015 (shortlist) you author. Build against
-the degrade paths until they land — do NOT block. Run /loop, follow the STANDING
+7/15 ~2pm — trust TASK-QUEUE for priorities. NOTE: **migrations 0011–0014 are
+APPLIED (John ran them 7/16 am; PM verified all four live)** — threads, list
+progress, draft rules, size assumptions + digest tables are real now: seed the
+size assumptions + first digest receipt, and the degrade paths can come out
+where cheap. 0015 (shortlist) you author. The 6 GitHub secrets (incl.
+TRACERFY_API_KEY, NOTION_TOKEN) are also set — runners are self-driving. Run
+/loop, follow the STANDING
 DIRECTIVE + CONTEXT ROLLOVER PROTOCOL + the reply-before-build rule (poll
 /api/feedback every loop; reply to any unanswered John/Tom comment with a
 refined spec before building; last agent reply = the build contract Approve

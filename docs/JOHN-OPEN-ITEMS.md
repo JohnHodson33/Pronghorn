@@ -8,11 +8,9 @@ _(Wed 7/16 short list lives in MORNING-BRIEF.md; this is the fuller ledger.)_
    unblock.** All three context-died Tue ~2pm; every queued 🔥 build is stalled.
    Copy the ready prompts from **docs/RESTART-PROMPTS.md** into a fresh session
    in each named worktree, click Allow. Lane C unblocks the most.
-1. **Migrations 0011→0014 (~4 min, in order):** SQL editor →
-   `0011_feedback_comments.sql` (threaded /improvements) · `0012_lead_list_progress.sql`
-   (live list-build progress) · `0013_outreach_rules.sql` (draft-rules engine) ·
-   `0014` (size assumptions + digest tables). Files in
-   `C:\Users\johnd\Pronghorn-pm\supabase\migrations\`.
+1. ✅ **DONE 7/16 am — Migrations 0011→0014 applied** (PM verified all four
+   live: feedback_comments, lead_lists progress columns, outreach_rules +
+   draft_meta, size_assumptions + digests + auto_enrich_rules).
 1b. **Lane A unblock (30 sec):** paste one direct approval line into the
    "Pronghorn - Brokers" session chat for the auto-promote-T1 build
    (exact wording in MORNING-BRIEF item 0b) — its permission layer rightly
