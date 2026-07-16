@@ -474,8 +474,16 @@ set) into your new chips UI as a small follow-up.
   flagged. PM imported fill-blanks w/ provenance: +11 owner phones
   (7 clean, 4 flagged), +2 emails; enrichment.skiptrace jsonb carries
   per-phone dnc/litigator flags + queue_id. Total test cost $1.38.
-  BUILD THE CASCADE TIER NOW.** Lane B addition: cold-calling queue reads
-  enrichment.skiptrace phone flags → 🚫 non-clean numbers.):** (Lane C) (a) `enrich/skiptrace.js` — Tracerfy /trace API
+  BUILD THE CASCADE TIER NOW.**
+  **COMPLIANCE POSTURE (John 7/15 late — supersedes the earlier 🚫 spec):**
+  no automated calling exists or will; humans hand-pick who to call. So:
+  (1) pull + store ALL traced contact info, flagged or not; owner_phone
+  fills regardless of flag; (2) DNC flags = INFORMATIONAL badge only on
+  the cold-calling queue/profiles (small marker, never a block, never an
+  eligibility filter); (3) **DNC scrub drops out of the standard cascade**
+  (saves 5× the trace cost; per-contact cost = $0.02) — keep
+  scrub-from-queue available as an on-demand tool if John ever wants a
+  batch checked.):** (Lane C) (a) `enrich/skiptrace.js` — Tracerfy /trace API
   (name + address → owner cell/landlines/emails), wired as a tier in the
   cascade AFTER free sources + Hunter, only for leads still missing
   owner_phone that have owner_name + address. (b) **Rules-gated**: eligible
