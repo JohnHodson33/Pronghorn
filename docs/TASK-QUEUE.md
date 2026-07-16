@@ -120,6 +120,18 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 🔥🔥 **RIVER-GUIDES ENRICH PRICE ESTIMATE (John 7/16 ~12:30 — "give me a
+  price estimate before I click Enrich, same as companies; I want to be
+  conscious of marginal cost"):** (Lane C) extend POST /api/river-guides/
+  enrich to accept {estimate:true, dealIds} → returns WITHOUT queuing:
+  {count, eligible, breakdown: {hunter: {calls, marginalUsd: 0, quotaUnits},
+  linkedin_verify: {searches, estUsd}}, totalEstUsd} — mirror the
+  /api/enrich estimate math (Hunter = quota units not dollars; Serper/
+  Claude verify = the real pennies; add a skiptrace line only if/when that
+  tier wires in for guides). (Lane B) the button becomes **"Enrich selected
+  (est. $X · N Hunter)"** — fetch the estimate on selection change
+  (debounced), split shown in a tooltip, post-click receipt stays honest
+  vs the estimate. Mobile parity.
 - 🔥🔥🔥 **RIVER GUIDES UI — JOHN'S 7/16 ~00:50 DIRECTIVE (read
   docs/RIVER-GUIDES-INTEGRATION.md first; builds on Lane C's
   /api/river-guides — coordinate, degrade gracefully until it's up):**
