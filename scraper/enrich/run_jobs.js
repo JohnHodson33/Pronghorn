@@ -50,8 +50,18 @@ async function main() {
 
   for (const job of jobs) {
     log.info(`Job ${job.id}: ${job.lead_ids?.length || 'whole-list'} selection${job.lead_list_id ? ` (list ${job.lead_list_id})` : ''}`);
-    const fresh = await jobLeads(job, 'new');
-    const enrichedSet = (await jobLeads(job, 'enriched')).filter((l) => !(l.owner_name && l.owner_email && (l.owner_phone || l.owner_linkedin)));
+    // lead selection INSIDE the failure boundary: a poisoned job (e.g. an
+    // oversized lead_ids .in() URL) must mark itself failed, not crash the
+    // runner unmarked and re-crash every 15-minute pass forever
+    let fresh, enrichedSet;
+    try {
+      fresh = await jobLeads(job, 'new');
+      enrichedSet = (await jobLeads(job, 'enriched')).filter((l) => !(l.owner_name && l.owner_email && (l.owner_phone || l.owner_linkedin)));
+    } catch (e) {
+      log.error(`  job ${job.id} lead selection failed: ${e.message}`);
+      await setProgress(job.id, { status: 'failed', finished_at: new Date().toISOString(), counts: { error: String(e.message).slice(0, 200) } });
+      continue;
+    }
     const total = fresh.length + enrichedSet.length;
     await setProgress(job.id, { status: 'running', started_at: new Date().toISOString(), counts: { total, processed: 0, found_owner: 0, found_email: 0, tier1: fresh.length, tier2: enrichedSet.length } });
 
@@ -116,4 +126,4 @@ async function main() {
   }
 }
 
-main().catch((e) => { console.error(e.message); process.exit(1); });
+main().catch((e) => { console.error(`run_jobs fatal: ${e.stack || e.message}`); process.exit(1); });

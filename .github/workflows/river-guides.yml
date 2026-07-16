@@ -1,0 +1,54 @@
+# River Guides workers (Lane C; John 7/16 — third sourcing channel).
+# Nightly, budget-capped passes in lifecycle order:
+#   1. status verification (the highest-leverage job: point-in-time exit_status
+#      → verified current status; EMPLOYED→EXITED unlocks pipeline)
+#   2. identity resolution for NEEDS_NAME rows (strict no-guess bar)
+#   3. tier-1 enrichment waterfall (Hunter domain-first / acquirer-domain /
+#      verified-LinkedIn-first; failures escalate to NEEDS_PAID for John's
+#      review — nothing auto-pays)
+# All steps no-op cleanly until migration 0016 is applied.
+#
+# REQUIRED REPO SECRETS: SUPABASE_URL, SUPABASE_SERVICE_KEY, SERPER_API_KEY,
+#   ANTHROPIC_API_KEY, HUNTER_API_KEY
+
+name: River Guides
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 9 * * *" # 02:30 Phoenix nightly
+
+concurrency:
+  group: river-guides
+  cancel-in-progress: false
+
+jobs:
+  workers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: scraper
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      HUNTER_API_KEY: ${{ secrets.HUNTER_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: scraper/package-lock.json
+      - run: npm ci
+      - name: Status verification (highest leverage — 30/night)
+        run: node riverguides/verify_status.js --limit 30
+        continue-on-error: true
+      - name: Identity resolution (25/night, never guesses)
+        run: node riverguides/resolve_names.js --limit 25
+        continue-on-error: true
+      - name: Tier-1 enrichment waterfall (20/night)
+        run: node riverguides/enrich_t1.js --limit 20
+        continue-on-error: true
