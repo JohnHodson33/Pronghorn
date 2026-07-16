@@ -304,18 +304,37 @@ async function loadSourceToggles() {
  * link each listing to its broker (listings.broker_id). Dedupes on normalized
  * name + brokerage. Broker deal/industry coverage is derived at read time from
  * the listings relationship, so we only store identity here.
+ *
+ * Firm-level contacts (John 7/15 — "scrape the listing broker on every source
+ * that exposes it"): sources like FCBB/BBF publish only an OFFICE identity
+ * (display name + phone, no individual agent). Those now become broker rows
+ * too — name = office display, marked via relationship_notes so the UI and
+ * outreach flows can tell an office line from a person. Cold-calling is the
+ * primary channel, so office phones are actionable.
  */
+const FIRM_NOTE = 'Office/firm contact — source publishes no individual agent';
+
 async function syncBrokers(listings, idMap) {
   const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-  const withBroker = listings.filter((l) => l.broker && l.broker.name && idMap.has(l.id));
+  const withBroker = listings.filter((l) => l.broker && (l.broker.name || l.broker.company) && idMap.has(l.id));
   if (withBroker.length === 0) return 0;
 
-  // Unique brokers this run
-  const uniq = new Map(); // key -> {name, brokerage, phone, email}
+  // Unique brokers this run. Firm-only contacts key on company|company so the
+  // same office dedupes across its listings.
+  const uniq = new Map(); // key -> {name, brokerage, phone, email, firm}
   for (const l of withBroker) {
     const b = l.broker;
-    const key = `${norm(b.name)}|${norm(b.company)}`;
-    if (!uniq.has(key)) uniq.set(key, { name: b.name.trim(), brokerage: (b.company || '').trim() || null, phone: b.phone || null, email: b.email || null });
+    const displayName = (b.name || b.company).trim();
+    const key = `${norm(b.name || b.company)}|${norm(b.company)}`;
+    if (!uniq.has(key)) {
+      uniq.set(key, {
+        name: displayName,
+        brokerage: (b.company || '').trim() || null,
+        phone: b.phone || null,
+        email: b.email || null,
+        firm: !b.name,
+      });
+    }
   }
 
   // Existing brokers (table is small relative to listings)
@@ -332,7 +351,7 @@ async function syncBrokers(listings, idMap) {
   for (const c of chunks(toInsert, CHUNK)) {
     const { data, error } = await supabase
       .from('brokers')
-      .insert(c.map(([, b]) => ({ name: b.name, brokerage: b.brokerage, phone: b.phone, email: b.email })))
+      .insert(c.map(([, b]) => ({ name: b.name, brokerage: b.brokerage, phone: b.phone, email: b.email, relationship_notes: b.firm ? FIRM_NOTE : null })))
       .select('id, name, brokerage');
     if (error) { log.error(`Broker insert failed: ${error.message}`); continue; }
     for (const r of data) existing.set(`${norm(r.name)}|${norm(r.brokerage)}`, r.id);
@@ -342,7 +361,7 @@ async function syncBrokers(listings, idMap) {
   let linked = 0;
   for (const c of chunks(withBroker, 20)) {
     await Promise.all(c.map(async (l) => {
-      const key = `${norm(l.broker.name)}|${norm(l.broker.company)}`;
+      const key = `${norm(l.broker.name || l.broker.company)}|${norm(l.broker.company)}`;
       const bid = existing.get(key);
       if (!bid) return;
       const { error } = await supabase.from('listings').update({ broker_id: bid }).eq('id', idMap.get(l.id));

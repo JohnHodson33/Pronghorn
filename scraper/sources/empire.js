@@ -7,7 +7,7 @@
 
 const cheerio = require('cheerio');
 const SourceScraper = require('../core/source_base');
-const { stateFromText } = require('../core/states');
+const { stateFromText, regionState } = require('../core/states');
 
 const BASE = 'https://www.empirebizbroker.com';
 const INDEX = `${BASE}/businesses-for-sale.php`;
@@ -71,7 +71,7 @@ class EmpireScraper extends SourceScraper {
       name,
       url,
       description: desc ? desc.slice(0, 500) : null,
-      location: { city: null, state: stateFromText(locRaw) || stateFromText(desc), raw: locRaw },
+      location: { city: null, state: stateFromText(locRaw) || stateFromText(desc) || regionState(locRaw) || regionState(desc), raw: locRaw },
       industry: fields['category'] || fields['industry'] || null,
       asking_price: this.parseMoney(fields['asking price']),
       gross_revenue: this.parseMoney(fields['gross income'] || fields['gross revenue'] || fields['gross sales']),

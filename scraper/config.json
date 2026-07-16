@@ -231,6 +231,11 @@
   "filters": {
     "max_multiple_flag": 5.0
   },
+  "auto_promote": {
+    "enabled": true,
+    "limit": 25,
+    "_comment": "Nightly T1→pursuit auto-open (John approved 7/13, nightly per 7/15). Hard criteria live in auto_promote.js; limit bounds one run. Disable here to pause."
+  },
   "screener": {
     "model": "claude-haiku-4-5-20251001",
     "batch_size": 10,
