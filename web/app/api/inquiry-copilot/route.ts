@@ -10,7 +10,7 @@
 // POST { listingId, confirm: true } → John submitted: status flip + audit log
 import { NextResponse } from "next/server";
 import { hasDb, serverDb } from "@/lib/db";
-import { DRAFT_SYSTEM, draftUserMessage, type InquiryProfile, type ListingForDraft } from "@/lib/inquiry";
+import { buildBrokerInquiryFormNote, type InquiryProfile, type ListingForDraft } from "@/lib/inquiry";
 
 export const dynamic = "force-dynamic";
 
@@ -20,13 +20,6 @@ const FALLBACK_PROFILE: InquiryProfile = {
   phone: "(503) 899-0058",
   default_note: null,
 };
-
-const FORM_NOTE_SYSTEM = `${DRAFT_SYSTEM}
-
-OVERRIDE for this task: this is a short INQUIRY-FORM message, not an email.
-60-100 words, no subject, no signature block (the form has separate contact
-fields). Same voice and 1-2 specific diligence questions. Output JSON:
-{"message": "..."}`;
 
 export async function POST(req: Request) {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
@@ -62,25 +55,9 @@ export async function POST(req: Request) {
   const { data: profileRow } = await db.from("inquiry_profiles").select("name, email, phone, default_note").limit(1).maybeSingle();
   const profile = (profileRow as InquiryProfile) ?? FALLBACK_PROFILE;
 
-  let message = profile.default_note ?? "";
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (key) {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001", max_tokens: 300,
-        system: FORM_NOTE_SYSTEM,
-        messages: [{ role: "user", content: draftUserMessage(l as unknown as ListingForDraft, profile) }],
-      }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      try { message = JSON.parse((data.content?.[0]?.text ?? "").trim().replace(/^```json?\s*|\s*```$/g, "")).message; } catch { /* keep default */ }
-    }
-  } else if (!message) {
-    message = `Interested in this ${l.industry ?? ""} listing. We're a committed-capital buyer active in essential services — please share the NDA and further details. (Set ANTHROPIC_API_KEY in web/.env.local for tailored drafts.)`;
-  }
+  // John's verbatim template (form variant: no greeting/signature — the form
+  // carries separate contact fields). Only the {industry} phrase varies.
+  const message = buildBrokerInquiryFormNote(l as unknown as ListingForDraft);
 
   return NextResponse.json({
     inquiryUrl: l.url,
