@@ -18,9 +18,18 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   (sessionStorage); PE-owned chip on the company profile header.
   fetchCompanies reads the 0017 columns tolerantly AND backstops from
   lead enrichment.pe_owned — 14 companies + 9 leads flag TODAY, before
-  Lane C's column backfill. ALL 7/15+7/16 Lane B directives are now
-  shipped. NEXT: dead-end sweep / new TASK-QUEUE items. NOTE for PM: the
-  >4.5MB upload fix ALREADY SHIPPED 7/14 (363547f) — queue item stale.
+  Lane C's column backfill; (10) ✅ RIVER GUIDES migrated to John's 13:00
+  **LIST-UX STANDARD** (first page): full-width, every column sortable
+  via NEW shared `SortHeader` (numeric opens desc), categorical header
+  dropdowns (industry/exit/status/state + NEW reachability filter on
+  Contact — real counts 41 email · 24 LinkedIn · 388 none), toolbar
+  slimmed to search + band chips + actions, all URL-synced; verified on
+  the 433 live rows + mobile. NEXT: migrate remaining lists to the
+  standard page-by-page, each its own commit (listings → companies →
+  contacts → brokers → deals → enrichment); then River Guides items
+  (b)/(c) — contacts chip + profile panels (236 contacts are in the CRM
+  now). NOTE for PM: the >4.5MB upload fix ALREADY SHIPPED 7/14
+  (363547f) — queue item stale.
 
 ## 2026-07-16 — ★Shortlist + Too-big tier UI (0015 backend, John 7/15)
 

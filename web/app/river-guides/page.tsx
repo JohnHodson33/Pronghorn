@@ -9,6 +9,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import FilterDropdown from "@/components/FilterDropdown";
+import SortHeader from "@/components/SortHeader";
 import { useUrlFilterSync } from "@/lib/use-url-filters";
 import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 
@@ -66,6 +67,9 @@ export default function RiverGuides() {
   const [statusSel, setStatusSel] = useState<Set<string>>(new Set());
   const [exitSel, setExitSel] = useState<Set<string>>(new Set());
   const [statesSel, setStatesSel] = useState<Set<string>>(new Set());
+  const [reachSel, setReachSel] = useState<Set<string>>(new Set()); // reachability (John 7/16 13:00)
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -93,6 +97,7 @@ export default function RiverGuides() {
     () => ({
       q, band: csvSet(bandsSel), industry: csvSet(industriesSel),
       status: csvSet(statusSel), exit: csvSet(exitSel), state: csvSet(statesSel),
+      reach: csvSet(reachSel), sort: sortKey, dir: sortKey && sortDir === "asc" ? "asc" : null,
     }),
     (p) => {
       if (p.get("q")) setQ(p.get("q")!);
@@ -101,8 +106,11 @@ export default function RiverGuides() {
       if (p.get("status")) setStatusSel(fromCsv(p.get("status")));
       if (p.get("exit")) setExitSel(fromCsv(p.get("exit")));
       if (p.get("state")) setStatesSel(fromCsv(p.get("state")));
+      if (p.get("reach")) setReachSel(fromCsv(p.get("reach")));
+      if (p.get("sort")) setSortKey(p.get("sort"));
+      if (p.get("dir") === "asc") setSortDir("asc");
     },
-    [q, bandsSel, industriesSel, statusSel, exitSel, statesSel],
+    [q, bandsSel, industriesSel, statusSel, exitSel, statesSel, reachSel, sortKey, sortDir],
   );
 
   const all = guides ?? [];
@@ -123,6 +131,24 @@ export default function RiverGuides() {
     [all],
   );
   const stateOptions = useMemo(() => opt(all.map((g) => g.location_state)), [all]);
+  // reachability: which usable channels exist (John 7/16 13:00 — filter by it)
+  const reachOf = (g: Guide): string[] => {
+    const r: string[] = [];
+    if (g.contact?.email) r.push("email");
+    if (g.contact?.phone) r.push("phone");
+    if (g.contact?.linkedin_url) r.push("linkedin");
+    return r.length ? r : ["none"];
+  };
+  const reachOptions = useMemo(() => {
+    const m: Record<string, number> = { email: 0, phone: 0, linkedin: 0, none: 0 };
+    for (const g of all) for (const r of reachOf(g)) m[r]++;
+    return [
+      { value: "email", label: "has email", count: m.email },
+      { value: "phone", label: "has phone", count: m.phone },
+      { value: "linkedin", label: "has LinkedIn", count: m.linkedin },
+      { value: "none", label: "no channels yet", count: m.none },
+    ];
+  }, [all]);
 
   const rows = useMemo(() => {
     const filtered = all.filter((g) => {
@@ -131,16 +157,36 @@ export default function RiverGuides() {
       if (statusSel.size && !statusSel.has(g.enrichment_status)) return false;
       if (exitSel.size && !exitSel.has(`${g.exit_status}${g.current_status_verified ? " ✓" : " ⚠"}`)) return false;
       if (statesSel.size && !statesSel.has(g.location_state ?? "")) return false;
+      if (reachSel.size && !reachOf(g).some((r) => reachSel.has(r))) return false;
       if (q && !`${g.full_name ?? ""} ${g.their_company} ${g.acquirer} ${g.acquirer_pe_sponsor ?? ""} ${g.industry}`.toLowerCase().includes(q.toLowerCase()))
         return false;
       return true;
     });
-    // default sort: band order, then screen_score desc (spec)
+    // explicit column sort wins; default = band order then screen_score desc (spec)
+    if (sortKey) {
+      const val = (g: Guide): string | number => {
+        switch (sortKey) {
+          case "name": return (g.full_name ?? "zzz").toLowerCase();
+          case "company": return g.their_company.toLowerCase();
+          case "industry": return g.industry;
+          case "exit": return `${g.exit_status}${g.current_status_verified ? "1" : "0"}`;
+          case "score": return g.fit_score ?? g.screen_score ?? -1;
+          case "state": return g.location_state ?? "zz";
+          case "band": return BANDS.indexOf(g.priority_band);
+          default: return 0;
+        }
+      };
+      return [...filtered].sort((a, b) => {
+        const av = val(a), bv = val(b);
+        const cmp = typeof av === "number" && typeof bv === "number" ? av - bv : String(av).localeCompare(String(bv));
+        return sortDir === "asc" ? cmp : -cmp;
+      });
+    }
     return filtered.sort((a, b) => {
       const d = BANDS.indexOf(a.priority_band) - BANDS.indexOf(b.priority_band);
       return d !== 0 ? d : (b.screen_score ?? 0) - (a.screen_score ?? 0);
     });
-  }, [all, q, bandsSel, industriesSel, statusSel, exitSel, statesSel]);
+  }, [all, q, bandsSel, industriesSel, statusSel, exitSel, statesSel, reachSel, sortKey, sortDir]);
 
   async function enrichSelected() {
     setBusy(true);
@@ -197,9 +243,13 @@ export default function RiverGuides() {
   }
 
   const inputCls = "rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-600";
+  const sortSet = (k: string) => (dir: "asc" | "desc" | null) => {
+    if (!dir) setSortKey(null);
+    else { setSortKey(k); setSortDir(dir); }
+  };
 
   return (
-    <div className="max-w-6xl p-4 md:p-8 space-y-5">
+    <div className="w-full p-4 md:p-8 space-y-5">
       <header>
         <h1 className="text-2xl font-bold tracking-tight">River Guides</h1>
         <p className="text-sm text-zinc-500">
@@ -247,11 +297,9 @@ export default function RiverGuides() {
       </div>
 
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-zinc-200 bg-white p-4">
+        {/* LIST-UX STANDARD (John 7/16 13:00): top bar = search + key-split
+            chips + actions; the column headers do the filtering/sorting */}
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name / company / acquirer…" className={`w-56 ${inputCls}`} />
-        <FilterDropdown label="Industry" options={industryOptions} selected={industriesSel} onChange={setIndustriesSel} />
-        <FilterDropdown label="Status" options={statusOptions} selected={statusSel} onChange={setStatusSel} />
-        <FilterDropdown label="Exit" options={exitOptions} selected={exitSel} onChange={setExitSel} />
-        <FilterDropdown label="State" options={stateOptions} selected={statesSel} onChange={setStatesSel} />
         <span className="ml-auto flex items-center gap-2">
           <span className="text-sm text-zinc-500 tabular-nums">{rows.length} of {all.length}</span>
           <button
@@ -280,14 +328,42 @@ export default function RiverGuides() {
                   className="accent-emerald-700"
                 />
               </th>
-              <th className="px-3 py-2">Band</th>
-              <th className="px-3 py-2">Name</th>
-              <th className="px-3 py-2">Former company → acquirer</th>
-              <th className="px-3 py-2">Industry</th>
-              <th className="px-3 py-2">Exit</th>
-              <th className="px-3 py-2 text-right">Score</th>
-              <th className="px-3 py-2">Contact</th>
-              <th className="px-3 py-2">Loc</th>
+              <th className="px-3 py-2">
+                <SortHeader label="Band" active={sortKey === "band"} dir={sortDir} onChange={sortSet("band")} />
+              </th>
+              <th className="px-3 py-2">
+                <SortHeader label="Name" active={sortKey === "name"} dir={sortDir} onChange={sortSet("name")} />
+              </th>
+              <th className="px-3 py-2">
+                <SortHeader label="Former company → acquirer" active={sortKey === "company"} dir={sortDir} onChange={sortSet("company")} />
+              </th>
+              <th className="px-3 py-2">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Industry" active={sortKey === "industry"} dir={sortDir} onChange={sortSet("industry")} />
+                  <FilterDropdown header label="" options={industryOptions} selected={industriesSel} onChange={setIndustriesSel} />
+                </span>
+              </th>
+              <th className="px-3 py-2">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Exit" active={sortKey === "exit"} dir={sortDir} onChange={sortSet("exit")} />
+                  <FilterDropdown header label="" options={exitOptions} selected={exitSel} onChange={setExitSel} />
+                </span>
+              </th>
+              <th className="px-3 py-2 text-right">
+                <SortHeader label="Score" numeric active={sortKey === "score"} dir={sortDir} onChange={sortSet("score")} />
+              </th>
+              <th className="px-3 py-2">
+                <FilterDropdown header label="Contact" options={reachOptions} selected={reachSel} onChange={setReachSel} />
+              </th>
+              <th className="px-3 py-2">
+                <FilterDropdown header label="Status" options={statusOptions} selected={statusSel} onChange={setStatusSel} />
+              </th>
+              <th className="px-3 py-2">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Loc" active={sortKey === "state"} dir={sortDir} onChange={sortSet("state")} />
+                  <FilterDropdown header label="" options={stateOptions} selected={statesSel} onChange={setStatesSel} />
+                </span>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
@@ -344,6 +420,7 @@ export default function RiverGuides() {
                         ))}
                       </span>
                     </td>
+                    <td className="whitespace-nowrap px-3 py-2.5 text-[11px] text-zinc-500">{g.enrichment_status}</td>
                     <td className="whitespace-nowrap px-3 py-2.5 text-xs text-zinc-500">
                       {[g.location_city, g.location_state].filter(Boolean).join(", ") || "—"}
                     </td>
