@@ -3,7 +3,47 @@
 Per-lane log per PARALLEL-SESSIONS.md; the PM/integrator folds these into
 DECISION-LOG.md and wires routes into Sidebar.tsx.
 
-## 🔄 HANDOFF — successor session live 7/13 ~17:45 (loop running)
+## 🔄 HANDOFF — successor #2 live 7/16 (loop running; 7/15 backlog)
+
+- **Working the 7/15 directives** (TASK-QUEUE Lane B is the priority
+  source): (1) ✅ INLINE EDIT EVERYWHERE shipped (see 7/16 entry below);
+  (2) NEXT: filter/sort persistence on back-nav for /listings /brokers
+  /deals /contacts incl. sort state; (3) then companies table filter/sort
+  overhaul (multi-select industry dropdown, header-dropdown filters,
+  sortable est columns); (4) Too-big/PE-owned/★Shortlist chips as Lane C
+  ships flags + 0015.
+- **State facts**: migrations 0011–0014 APPLIED (threads, list progress,
+  outreach rules, size assumptions all serve real data now — degrade
+  paths retired naturally). Dev server = pronghorn-web-laneB, port 3311;
+  new route dirs need `rm -rf .next/dev` + restart (bit again 7/16).
+  Server components can't pass function props to client components —
+  InlineField takes declarative `format="money"` instead.
+
+## 2026-07-16 — INLINE EDIT EVERYWHERE (John 7/15 top directive)
+
+- **`components/InlineField.tsx`** — reusable click-to-edit: click a value
+  → input (16px font, no iOS zoom) → Enter/blur saves via PATCH
+  `{[field]: value}`, Escape cancels; optimistic w/ revert+error on fail;
+  empty renders as italic placeholder; ✎ affordance on hover.
+- **Mounted on**: company profile (industry/city/state/website in header,
+  revenue/EBITDA stat cards — click the ~estimate to type the real
+  figure); listing detail (city/state + asking/cash-flow/revenue cards);
+  deal detail (revenue/EBITDA → company PATCH, our-valuation → deal
+  PATCH); enrichment LeadsTable Owner cell (owner_name + phone + email
+  inline per row, ~145 rows).
+- **API**: NEW `PATCH /api/listings/[id]` (city/state/industry +
+  asking_price/cash_flow/gross_revenue, number validation); leads PATCH
+  extended w/ owner_*/website/phone/city/state + **human-wins provenance**:
+  each edit merges `{field: iso-ts}` into `enrichment.human_edited` so
+  fill-blanks enrichment can skip human-entered values (Lane C: honor
+  this key in the write paths). Companies/contacts/deals PATCHes already
+  covered the needed fields.
+- Verified end-to-end: API writes + provenance + validation (bad number
+  400s), full UI round-trip (click → type → blur → PATCH → DB, then
+  restored), mobile 375px clean (no overflow, fields tappable). Headless
+  test note: programmatic .blur() doesn't emit focusout — real browsers do.
+
+## 🔄 Previous handoff (7/13 ~17:45, retired)
 
 - **State**: nothing in flight. Latest: improvements ATTACHMENTS shipped
   (UI + API, see 7/13 entry below) — browser-verified end-to-end, test
