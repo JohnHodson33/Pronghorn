@@ -90,10 +90,28 @@ async function main() {
     for (const s of lowValue) console.log(`   ${s.source} (${s.active} active, ${pct(s.cf, s.total)} CF coverage)`);
   }
   // Flag broker-contact gaps: high thesis fit but no broker contacts captured.
-  const brokerGap = ranked.filter((s) => s.t1 + s.t2 >= 3 && s.broker === 0);
+  // Sources where broker identity is structurally unavailable are separated out
+  // — each was measured 7/16 during the listing-broker sweep and CANNOT be
+  // fixed by us, so surfacing them as open gaps every run is false signal.
+  // Remove an entry here only if the site starts publishing broker identity.
+  const NO_BROKER_REASON = {
+    bizbuysell: 'Akamai hard-block on detail pages; index carries no broker fields',
+    hedgestone: 'contact-form gated — no public agent identity',
+    businessesforsale: 'contact-form gated — no public agent identity',
+    tupelomarket: 'no structured broker field; prose only on sub-gate listings (measured 0/90)',
+  };
+  const allGaps = ranked.filter((s) => s.t1 + s.t2 >= 3 && s.broker === 0);
+  const brokerGap = allGaps.filter((s) => !NO_BROKER_REASON[s.source]);
+  const knownGap = allGaps.filter((s) => NO_BROKER_REASON[s.source]);
   if (brokerGap.length) {
-    console.log('\n📇 Broker-contact gaps (≥3 Tier1/2 but 0 broker contacts — enrich these for outreach):');
+    console.log('\n📇 Broker-contact gaps (≥3 Tier1/2 but 0 broker contacts — ACTIONABLE, enrich these for outreach):');
     for (const s of brokerGap) console.log(`   ${s.source} (${s.t1 + s.t2} thesis-fit, 0 brokers)`);
+  } else if (knownGap.length) {
+    console.log('\n📇 Broker-contact gaps: none actionable ✅');
+  }
+  if (knownGap.length) {
+    console.log('   (structural — broker identity not published, verified; not open work:)');
+    for (const s of knownGap) console.log(`     · ${s.source} (${s.t1 + s.t2} thesis-fit) — ${NO_BROKER_REASON[s.source]}`);
   }
   // Flag stale/broken ENABLED sources: if a source that's turned on in config
   // has no row seen in >STALE_HOURS, its nightly scrape silently stopped
