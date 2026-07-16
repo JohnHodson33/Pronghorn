@@ -1440,3 +1440,57 @@ mark them ✅). Do SELF-ITERATE audits (act only on flags) + opportunistic
 new-source hunt ONLY. Frontier closed: do NOT re-probe NV/GA/NM
 (aggregator-dominated), TX-assoc (TABB=BizBuySell mirror), FL-green (=BBF
 members); avoid BizBuySell + bbms.info iframe mirrors. RIVER GUIDES = LATER (PM).
+
+## 2026-07-16 — river-guides consolidator sweep: BUILT + MEASURED, deliberately REPORT-ONLY
+- PM handed me the ⬜ river-guides sweep (integration doc step 9). Built
+  `scraper/river_guides_sweep.js`: pulls the consolidator list + known deals
+  from the DB itself (never invented), Serper-queries each for new add-ons,
+  dedupes, and would file them as Archetype-A / name_status TBD w/ provenance.
+  Cost-metered via recordUsage (serper, ~$0.05/full sweep). Privacy respected:
+  Supabase only, nothing about real people in this repo.
+- **Hallucination guard works — and caught a live mis-attribution.** The dry run
+  matched Constellation Software's "Juniper Group" against the seed's Juniper
+  LANDSCAPING — exactly the failure PM warned about. Added a guard: short
+  single-word consolidators must have industry context in the same text.
+  Verified: that candidate is now rejected. Guard suite 9/9 incl. fabricated
+  consolidator + wrong-acquirer cases.
+- **FINDING deals works well.** Live 50-consolidator sweep surfaced real,
+  on-thesis, correctly-attributed add-ons w/ real trade-press URLs (Bartlett →
+  Olympia Tree Care + Forest City Tree Protection; ExperiGreen → Turf Masters;
+  Arbor Alliance → Thornton's Tree Service; LawnPro → Sea of Green / Total Lawn
+  Care / Concord Custom; Mariani → Roots Landscape; Poolwerx → JC Pool Services).
+  Dedupe confirmed against the 434 seeded pairs.
+- **NAMING them from snippets does NOT work — so it does not write.** Four
+  rounds of regex tightening kept trading one defect for another: person names
+  as company ("Mike Bartlett and Scott Thompson"), fragments ("Florida to the
+  family"), near-dupes ("JC Pool Services"/"JC Pools Services"), off-thesis
+  subsidiaries (Davey RESOURCE GROUP utility deals, excluded by spec §7), and my
+  own possessive-strip REGRESSED a real name ("Thornton's Tree Service" → "Tree
+  Service") — because "Fairport's Precision Pool" (geo) and "Thornton's Tree
+  Service" (the name) are indistinguishable by pattern. Reverted it: mangling a
+  real name is worse than a duplicate.
+- **DECISION: default is now report-only (`--confirm` required to write).** A
+  scheduled/accidental run cannot put half-parsed names into a table John reads.
+  Filing junk into a shared table is worse than filing nothing — "wrong > none".
+- **NEXT STEP (clear + scoped):** keep the Serper discovery layer (it's good),
+  swap regex name-extraction for Claude (ANTHROPIC_API_KEY already wired for the
+  screener) and KEEP the verbatim guard — require the model's answer to appear
+  literally in the fetched text or drop it. LLM gives the linguistic judgement;
+  the guard keeps fabrication structurally impossible. Then flip to --confirm.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~18:40: branch synced + pushed, tree clean.
+**John's listing-broker directive = DONE + PM-VERIFIED** (PM independently
+confirmed 8,709/21,967 = 39.6%, 1,675 brokers / 830 phone / 1,393 email). All 5
+standing TASK-QUEUE items marked ✅ by PM.
+TODAY: CI Node-22 fix (merged; 06:00 cron self-drives; ended a 3-day outage);
+auto_promote LIVE + self-driving (45 events); broker sweep closed (murphy 59,
+vr 33/22 emails, viking 21, empire 2, fcbb 73, bbf 41, bizmls 5; actionable gaps
+= ZERO); regionState→core; source_quality gap de-noising; tupelomarket measured
+0/90 → disabled.
+IN PROGRESS: river_guides_sweep.js — built, guard-tested (9/9), live-measured,
+**report-only by design** pending the Claude-extraction upgrade described above.
+Run `node river_guides_sweep.js` (safe) to see candidates.
+NEXT: (1) the Claude-extraction upgrade for the sweep, then --confirm; (2)
+opportunistic new-source hunt (frontier closed — don't re-probe NV/GA/NM,
+TX-assoc, FL-green; avoid BizBuySell/bbms.info iframe mirrors).
