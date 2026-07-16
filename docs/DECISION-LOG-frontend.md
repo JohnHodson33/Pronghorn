@@ -5,18 +5,20 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 
 ## 🔄 HANDOFF — session #3 (7/16 ~13:40) — successor resumes here
 
-- **State**: nothing in flight. Last commit `8e0e25b` (enrichment dots →
+- **State**: nothing in flight. Last commit `090de21` (companies dots →
   real channel columns) — pushed to lane/frontend, typecheck green,
-  browser-verified on 200 live leads + mobile 375. Session #3 units:
+  browser-verified on 809 live companies + mobile 375. Session #3 units:
   deals→standard 6dbfd35 (+ FilterDropdown edge-flip fix, platform-wide)
   · enrichment→standard bbc54f1 · enrichment dots→columns 8e0e25b
-  (+ InlineField `emptyLabel`).
-  **LIST-UX STANDARD is now applied to all 7 list pages** (listings,
+  (+ InlineField `emptyLabel`) · companies dots→columns 090de21
+  (+ companyLevel now returns values, aggregated across owners).
+  **LIST-UX STANDARD is applied to all 7 list pages** (listings,
   companies, contacts, brokers, river-guides, deals, enrichment).
-  **The contact-dots pattern is now dead platform-wide** — PM did
-  /river-guides (34186b1), this session did LeadsTable (the last
-  holdout). Directive item (f) is DONE; grep for `h-2 w-2 rounded-full`
-  before claiming any new dots UI.
+  **Contact dots are DEAD platform-wide** — `grep -rn "h-2 w-2
+  rounded-full" web/ --include=*.tsx` returns nothing. PM did
+  /river-guides (34186b1); this session did LeadsTable + CompaniesTable
+  (that second holdout was only found BY running the grep — run it
+  before believing any "done" claim). Directive item (f) is DONE.
 - **NEXT (in order)**: (1) River Guides item (c) — the last piece of the
   original 7/16 list still mine: company profile former-company line
   ("sold to <acquirer>, <year> — former owner is a River Guide prospect"
