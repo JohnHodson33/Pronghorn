@@ -5,27 +5,34 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 
 ## 🔄 HANDOFF — session #3 (7/16 ~13:40) — successor resumes here
 
-- **State**: nothing in flight. Last commit `bbc54f1` (enrichment →
-  LIST-UX STANDARD) — pushed to lane/frontend, typecheck green,
+- **State**: nothing in flight. Last commit `8e0e25b` (enrichment dots →
+  real channel columns) — pushed to lane/frontend, typecheck green,
   browser-verified on 200 live leads + mobile 375. Session #3 units:
   deals→standard 6dbfd35 (+ FilterDropdown edge-flip fix, platform-wide)
-  · enrichment→standard bbc54f1.
+  · enrichment→standard bbc54f1 · enrichment dots→columns 8e0e25b
+  (+ InlineField `emptyLabel`).
   **LIST-UX STANDARD is now applied to all 7 list pages** (listings,
   companies, contacts, brokers, river-guides, deals, enrichment).
-- **NEXT (in order)**: (1) River Guides item (c): company profile
-  former-company line ("sold to <acquirer>, <year> — former owner is a
-  River Guide prospect" — river_guides has company_id FKs) +
-  contact-profile river-guide panel (band/exit/former co/verification);
-  (2) the run-state progress banner on /river-guides the MOMENT Lane C's
-  GET /api/river-guides/runs lands (full spec at top of the Lane B
-  TASK-QUEUE section; John's 12:50 visibility directive is the
-  acceptance bar) — not landed as of 14:05;
-  (3) **dots → Email/Phone/LinkedIn value columns** (directive item d/f).
-  NOTE: this is NOT blocked on Lane C — the columns render values already
-  in the row (owner_email/phone/linkedin). `ContactDots` in LeadsTable.tsx
-  is the last dots holdout + the /river-guides contact cell. Only the LIVE
-  repaint during a run needs the runs API. Can ship ahead of Lane C;
-  (4) TASK-QUEUE top-down.
+  **The contact-dots pattern is now dead platform-wide** — PM did
+  /river-guides (34186b1), this session did LeadsTable (the last
+  holdout). Directive item (f) is DONE; grep for `h-2 w-2 rounded-full`
+  before claiming any new dots UI.
+- **NEXT (in order)**: (1) River Guides item (c) — the last piece of the
+  original 7/16 list still mine: company profile former-company line
+  ("sold to <acquirer>, <year> — former owner is a River Guide prospect"
+  — river_guides has company_id FKs) + contact-profile river-guide panel
+  (band/exit/former co/verification);
+  (2) directive item (j): surface the status-verify worker's evidence
+  (stored in river_guides notes) on the row — expand/hover on the exit
+  chip — so John/VA can adjudicate the 27 inconclusives fast;
+  (3) TASK-QUEUE top-down. The run-visibility banner (items b/c) and the
+  river-guides columns are DONE — PM took them in 34186b1; don't redo.
+- **⚠️ Pre-existing bug someone should own**: React logs "Can't perform a
+  state update on a component that hasn't mounted yet… side-effect in
+  your render function" on EVERY route including `/` — so it's a layout
+  component (Sidebar/MobileNav/GlobalSearch), not the tables. Predates
+  this session; verified it fires on pages this lane never touched.
+  Sidebar is PM's, so it wasn't chased here.
 - **Deviation flagged for John/PM**: on Enrichment the *source list*
   filter stayed in the toolbar — it's row provenance with no column to
   hang a header on. Everything else on the page is header-driven.
