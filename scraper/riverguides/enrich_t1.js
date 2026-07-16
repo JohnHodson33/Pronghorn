@@ -38,6 +38,25 @@ async function hunterFind(domain, nm) {
   return { email: r.email && (r.score ?? 0) >= HUNTER_MIN_SCORE ? r.email : null, score: r.score ?? null };
 }
 
+// --- run state (John 7/16: the page must answer "is it working / when is it
+// done / what did I get"). A run created by POST /api/river-guides/enrich is
+// CLAIMED here; ad-hoc CLI passes just skip this (no run to update).
+async function claimRun() {
+  const { data, error } = await supabase.from('river_guide_runs')
+    .select('*').eq('state', 'queued').order('created_at', { ascending: true }).limit(1);
+  if (error || !data?.length) return null; // pre-0018 or nothing queued
+  const run = data[0];
+  await supabase.from('river_guide_runs').update({
+    state: 'running', started_at: new Date().toISOString(),
+    note: `Enriching 0/${run.deal_ids?.length ?? 0}…`,
+  }).eq('id', run.id);
+  return run;
+}
+async function updateRun(runId, counts, note) {
+  if (!runId) return;
+  await supabase.from('river_guide_runs').update({ counts, ...(note ? { note } : {}) }).eq('id', runId);
+}
+
 async function main() {
   const arg = (f, d) => { const i = process.argv.indexOf(f); return i > -1 ? process.argv[i + 1] : d; };
   const limit = Number(arg('--limit', 20));
@@ -45,17 +64,31 @@ async function main() {
   const industry = arg('--industry', null); // e.g. TREE_CARE — John works one vertical at a time
   const dryRun = process.argv.includes('--dry-run');
 
+  // a UI-queued run takes priority and defines the selection
+  const run = dryRun ? null : await claimRun();
   let q = supabase.from('river_guides').select('*')
     .eq('enrichment_status', 'PENDING_T1').eq('name_status', 'RESOLVED')
-    .order('screen_score', { ascending: false }).limit(limit);
-  if (band) q = q.eq('priority_band', band);
-  if (industry) q = q.eq('industry', industry);
+    .order('screen_score', { ascending: false }).limit(run ? 500 : limit);
+  if (run?.deal_ids?.length) q = q.in('deal_id', run.deal_ids);
+  else {
+    if (band) q = q.eq('priority_band', band);
+    if (industry) q = q.eq('industry', industry);
+  }
   const { data: guides, error } = await q;
   if (error) { console.error(`${error.message} — apply migration 0016 first`); process.exit(1); }
-  if (!guides?.length) { log.info('No PENDING_T1 river guides.'); return; }
-  log.info(`tier-1 enrichment: ${guides.length} guides${dryRun ? ' [dry]' : ''}`);
+  if (!guides?.length) {
+    if (run) await supabase.from('river_guide_runs').update({
+      state: 'done', finished_at: new Date().toISOString(),
+      note: 'Nothing to do — those rows were already enriched.',
+    }).eq('id', run.id);
+    log.info('No PENDING_T1 river guides.');
+    return;
+  }
+  log.info(`tier-1 enrichment: ${guides.length} guides${run ? ` (run ${run.id.slice(0, 8)})` : ''}${dryRun ? ' [dry]' : ''}`);
 
-  let hunterUsed = 0, emails = 0, linkedins = 0, toPaid = 0, done = 0;
+  // phones only arrive via the Tracerfy tier (person-mode) — counted here so
+  // the run receipt stays honest when that tier is wired to river guides
+  let hunterUsed = 0, emails = 0, linkedins = 0, phones = 0, toPaid = 0, done = 0;
   const Anthropic = require('@anthropic-ai/sdk');
   const anthropic = new Anthropic();
   const { findVerifiedLinkedin } = require('../enrich/linkedin_match');
@@ -111,10 +144,24 @@ async function main() {
         if (Object.keys(cPatch).length) await supabase.from('contacts').update(cPatch).eq('id', g.contact_id);
       }
       log.info(`  ${gotAnything ? '✓' : '→paid'} ${g.full_name} (${status})${contact.email ? ' email ' + contact.email : ''}${contact.linkedin_url ? ' li' : ''}`);
+      // live progress for the page (John: watching numbers move is the point)
+      await updateRun(run?.id, {
+        total: guides.length, processed: done, found_email: emails,
+        found_linkedin: linkedins, found_phone: phones, escalated_paid: toPaid,
+      }, `Enriching ${done}/${guides.length} — ${emails} emails, ${linkedins} LinkedIn found so far…`);
     } catch (e) { log.error(`  ${g.full_name}: ${e.message}`); }
   }
 
-  log.info(`tier-1 done: ${done} processed → +${emails} emails, +${linkedins} verified LinkedIn, ${toPaid} escalated to NEEDS_PAID (John's paid-tier review queue). Hunter searches: ${hunterUsed} ($0 marginal).`);
+  const receipt = `Done: ${done} processed — ${emails} emails, ${linkedins} verified LinkedIn${phones ? `, ${phones} phones` : ''}${toPaid ? `, ${toPaid} need the paid tier` : ''}${emails + linkedins + phones === 0 ? ' — nothing new found on the free tier' : ''}. Hunter ${hunterUsed} lookups ($0 marginal).`;
+  if (run) {
+    await supabase.from('river_guide_runs').update({
+      state: 'done', finished_at: new Date().toISOString(),
+      counts: { total: guides.length, processed: done, found_email: emails, found_linkedin: linkedins, found_phone: phones, escalated_paid: toPaid },
+      cost_actual: Number((linkedins * 0.0021).toFixed(3)), // serper+haiku per verified match
+      note: receipt,
+    }).eq('id', run.id);
+  }
+  log.info(`tier-1 ${receipt}`);
 }
 
 main().catch((e) => { console.error(e.message); process.exit(1); });

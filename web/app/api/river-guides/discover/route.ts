@@ -41,14 +41,17 @@ async function serper(q: string) {
     ({ url: r.link, title: r.title ?? "", snippet: r.snippet ?? "" }));
 }
 
-const EXTRACT_SYSTEM = `You extract ADD-ON ACQUISITIONS by a specific consolidator from web search results, to find business owners who sold. This feeds an outreach list — a fabricated company or seller is worse than none.
+const EXTRACT_SYSTEM = `You extract ADD-ON ACQUISITIONS **by one specific named consolidator** from web search results. This feeds an outreach list — a fabricated deal, acquirer, or seller is worse than none.
 
-For each acquisition EXPLICITLY described in the results, output: the acquired company name, the year if stated, the seller/owner name ONLY IF a result literally names them as the owner/founder who sold, and the index of the result that says so.
+THE ACQUIRER TEST (most important): include an acquisition ONLY if the cited result literally shows THAT consolidator (the exact company we asked about) acquiring that business. Search engines return generic industry results for unknown names — if the results are simply about the industry, or about a DIFFERENT acquirer, return an empty list. Do not attribute a real deal to the queried consolidator because it appeared in the same search.
 
-NEVER include: deals merely implied; sellers inferred from company names; people mentioned in other roles (acquirer execs, brokers); anything you know from memory but the results don't show.
+Then per acquisition: the acquired company name, the year if stated, and the seller/owner name ONLY IF a result literally names them as the owner/founder who sold.
+
+NEVER include: deals merely implied; a deal whose actual acquirer is someone else; sellers inferred from company names; people in other roles (acquirer execs, brokers); anything you know from memory but the results don't show.
 
 Output JSON only:
 {"acquisitions": [{"company": "...", "year": 2023 or null,
+  "acquirer_quote": "the sentence/snippet fragment from the cited result that shows THIS consolidator acquiring it",
   "seller_name": "First Last or null", "seller_result_index": 0 or null,
   "city": "or null", "state": "2-letter or null", "result_index": 0}]}`;
 
@@ -60,6 +63,7 @@ export async function POST(req: Request) {
   const b = await req.json().catch(() => ({}));
   const consolidator = String(b.consolidator ?? "").trim();
   const industryRaw = String(b.industry ?? "").trim();
+  const dryRun = b.dryRun === true; // probe the sweep without writing rows
   if (!consolidator) return NextResponse.json({ error: "consolidator required (the acquirer to sweep, e.g. 'Senske')" }, { status: 400 });
   const industry = INDUSTRY_ENUM[industryRaw.toLowerCase()] ?? "OTHER";
 
@@ -89,7 +93,21 @@ export async function POST(req: Request) {
   if (exErr) return NextResponse.json({ error: `${exErr.message} — apply migration 0016` }, { status: 500 });
   const seen = new Set((existing ?? []).map((r) => `${norm(r.their_company)}|${norm(r.acquirer ?? "")}`));
 
-  let inserted = 0, named = 0;
+  // ACQUIRER CORROBORATION (code-enforced; the model's word is not enough).
+  // PM live-probe caught this: a fabricated consolidator ("Test Sweep Probe")
+  // still produced a row because a REAL deal (The Care of Trees, actually
+  // Davey's) surfaced in generic industry results and got attributed to the
+  // fake acquirer. Rule: the queried consolidator must literally appear in the
+  // cited source's own text next to the acquisition claim.
+  const consolidatorTokens = norm(consolidator).split(" ").filter((t) => t.length > 2);
+  const mentionsConsolidator = (text: string) => {
+    const hay = norm(text);
+    if (!consolidatorTokens.length) return false;
+    // every distinctive token must appear (guards "Perimeter Solutions" vs "Perimeter")
+    return consolidatorTokens.every((t) => hay.includes(t));
+  };
+
+  let inserted = 0, named = 0, rejected = 0;
   for (const a of acquisitions) {
     if (!a.company || seen.has(`${norm(a.company)}|${norm(consolidator)}`)) continue;
     // hallucination guard, code-enforced: seller kept only with a cited source result
@@ -97,7 +115,14 @@ export async function POST(req: Request) {
     const srcIdx = sellerOk ? a.seller_result_index! : a.result_index;
     const source = results[srcIdx]?.url ?? null;
     if (!source) continue; // no provenance, no row
+    // the cited result must actually name this consolidator, and the model's
+    // quote must be real text from it — not a summary it composed
+    const cited = results[srcIdx];
+    const citedText = `${cited?.title ?? ""} ${cited?.snippet ?? ""}`;
+    const quoteIsReal = a.acquirer_quote ? norm(citedText).includes(norm(a.acquirer_quote).slice(0, 40)) : false;
+    if (!mentionsConsolidator(citedText) || !quoteIsReal) { rejected++; continue; }
     const resolved = Boolean(sellerOk);
+    if (dryRun) { inserted++; if (resolved) named++; seen.add(`${norm(a.company)}|${norm(consolidator)}`); continue; }
     const row = {
       deal_id: `RG-DISC-${Date.now().toString(36)}-${inserted}`,
       full_name: resolved ? a.seller_name : null,
@@ -117,9 +142,11 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json({
-    ok: true, inserted, named,
+    ok: true, inserted, named, rejected, dryRun,
     note: inserted
-      ? `Found ${inserted} new ${consolidator} add-on${inserted > 1 ? "s" : ""} (${named} with the seller named in the source; the rest queue for identity resolution). Status verification runs before anyone is contacted.`
-      : `Sweep ran (${acquisitions.length} acquisitions seen) — all already tracked or unsourced.`,
+      ? `${dryRun ? "Would add" : "Found"} ${inserted} new ${consolidator} add-on${inserted > 1 ? "s" : ""} (${named} with the seller named in the source; the rest queue for identity resolution)${rejected ? `; ${rejected} rejected — the source didn't actually show ${consolidator} as the acquirer` : ""}. Status verification runs before anyone is contacted.`
+      : rejected
+        ? `No corroborated add-ons found for "${consolidator}" — ${rejected} result${rejected > 1 ? "s" : ""} mentioned deals but none showed ${consolidator} as the acquirer. Nothing was added. (Check the spelling/legal name, or it may not be a consolidator we can see deals for.)`
+        : `No corroborated add-ons found for "${consolidator}" — nothing was added.`,
   });
 }
