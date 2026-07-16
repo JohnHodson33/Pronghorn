@@ -29,7 +29,7 @@ session once — it wakes the rest.**
   (8,651 of 21,967 listings; 1,652 brokers — 828 w/ phone, 1,391 w/ email).
   The 3 remaining gaps are STRUCTURAL + measured, not open work (bizbuysell
   Akamai-blocked · hedgestone/businessesforsale form-gated · tupelomarket
-  broker prose only on sub-00K listings — measured 0/90, disabled rather
+  broker prose only on sub-$300K listings — measured 0/90, disabled rather
   than burn 90 fetches/night). All 30 sources green.
 - **Lane A:** auto-promote T1→pursuits LIVE (42 opened + receipts; +1 today:
   Raleigh Lawn Care NC) · firm-level brokers + FCBB backfill (73 offices,
