@@ -3,26 +3,35 @@
 Per-lane log per PARALLEL-SESSIONS.md; the PM/integrator folds these into
 DECISION-LOG.md and wires routes into Sidebar.tsx.
 
-## 🔄 HANDOFF — ROLLED OVER 7/16 ~13:25 — successor resumes here
+## 🔄 HANDOFF — session #3 (7/16 ~13:40) — successor resumes here
 
-- **State**: nothing in flight. Last commit `081ff20` (brokers → LIST-UX
-  STANDARD) — pushed to lane/frontend, typecheck green, browser-verified.
-  Session #2 shipped 15 units 7/16 (inline edit b04bbad · filter/sort
-  persistence 2a39bc7 · companies overhaul 4904c6f · river-guides page
-  c3b42d7 · leads parity d1e0aa5 · shortlist+too-big 9e2b021 · thread
-  polish 580d68c · PE-owned UI 1a4ca54 · river-guides→standard 28b468d ·
-  listings→standard d702e40 · contacts→standard+cap-fix 8bd3511 ·
-  brokers→standard 081ff20).
-- **NEXT (in order)**: (1) DEALS → LIST-UX STANDARD (DealsTable: stage
-  chips row → Stage header dropdown; SortHeaders on Company/EBITDA/
-  Asking/Our-val/Fit; Size header dropdown; csv-string state pattern —
-  copy the brokers commit as the template); (2) ENRICHMENT →
-  standard (LeadsTable: state/list selects → header dropdowns; keep the
-  counts chips + sessionStorage); (3) River Guides item (c): company
-  profile former-company line ("sold to <acquirer>, <year> — former
-  owner is a River Guide prospect" — river_guides has company_id FKs) +
+- **State**: nothing in flight. Last commit `6dbfd35` (deals → LIST-UX
+  STANDARD) — pushed to lane/frontend, typecheck green, browser-verified
+  on the 20 live deals + mobile 375. Session #3 units: deals→standard
+  6dbfd35 (+ FilterDropdown edge-flip fix, platform-wide).
+- **NEXT (in order)**: (1) ENRICHMENT → standard (LeadsTable:
+  state/list selects → header dropdowns; keep the counts chips +
+  sessionStorage); (2) River Guides item (c): company profile
+  former-company line ("sold to <acquirer>, <year> — former owner is a
+  River Guide prospect" — river_guides has company_id FKs) +
   contact-profile river-guide panel (band/exit/former co/verification);
-  (4) watch TASK-QUEUE for John's next directives.
+  (3) the run-state progress banner + Email/Phone/LinkedIn value columns
+  on /river-guides the MOMENT Lane C's GET /api/river-guides/runs lands
+  (full spec at top of the Lane B TASK-QUEUE section; John's 12:50
+  visibility directive is the acceptance bar) — not landed as of 13:40;
+  (4) TASK-QUEUE top-down.
+- **Learned this session (worth keeping)**:
+  - **The live DB carries stages the `STAGES` constant doesn't know**
+    (e.g. "CIM Received"). Any UI that builds stage filters from the
+    constant silently drops those deals. Derive from the data; the same
+    trap likely exists for other enum-ish columns mirrored in mock.ts.
+  - **FilterDropdown header panels live inside the table's
+    `overflow-x-auto`**, so left-aligned panels on right-hand columns run
+    off-screen (mobile). Fixed once in the shared component (edge-aware
+    right-align) — don't re-patch per page.
+  - Browser pane: `resize_window preset:"desktop"` put the pane in a
+    `innerWidth === 0` state (screenshots timed out). Recover with an
+    explicit `width/height` (1280x800), not the preset.
 - **Environment**: worktree C:\Users\johnd\Pronghorn-frontend, branch
   lane/frontend; dev server = launch config pronghorn-web-laneB port
   3311; NEW ROUTE DIRS need `rm -rf .next/dev` + restart (bit twice).
