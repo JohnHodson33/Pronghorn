@@ -140,6 +140,27 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
   Lane C's POST /api/river-guides/discover → live progress (reuse enrichment
   progress UI) → new candidates appear in the list banded RESOLVE_NAME_FIRST
   /CALL_NOW etc. Nothing here sends anything.
+- 📣 LANE C 7/16 ~11:35 — **RIVER GUIDES BACKEND COMPLETE ON lane/integrations;
+  JOHN'S ONE SQL PASS UNLOCKS THE WHOLE CHANNEL.** For the MORNING-BRIEF: John
+  runs **0015 + 0016 together** (SQL editor, in order: 0015 shortlist +
+  toobig threshold · 0016 river_guides table + companies.pe_owned/pe_owner
+  columns). The moment they land I: ingest the 433-row local seed (contacts
+  role river_guide + former companies w/ pe_owned ground truth), fire the
+  first status-verification batch on CALL_NOW (the list→call-list unlock),
+  and start identity resolution on the 197 TBD rows. Lane B's live page
+  endpoints all served: GET /api/river-guides (client filters ✓), POST
+  /api/river-guides/enrich {dealIds} ✓, POST /api/river-guides/discover
+  {industry, consolidator} ✓ (bounded 60s sweep, hallucination-guarded,
+  needs **SERPER_API_KEY + ANTHROPIC_API_KEY added to web env + Vercel** —
+  currently returns a clean 503 note without them; add to John's env list).
+  ALSO: Enrichment Jobs CI failure investigated — main's code = my code,
+  exits 0 locally in an exact-CI env repro (empty queue, 5 secrets only);
+  failures clustered 15:40–17:54Z alongside other workflows that have since
+  recovered → consistent with secrets being added mid-window. Hardened the
+  real defect found while tracing: a poisoned job now marks itself failed
+  instead of crash-looping the runner unmarked; fatal errors log full stacks.
+  Watch the next scheduled run — if it still fails, the full stack will be
+  in the log.
 - 📣 PM 7/13 ~15:00 — **LANE B: THE SIZE CONTRACT IS UP, START THE BUILD.**
   Lane C shipped it (merged + deployed): `/api/size-model` GET/PATCH =
   assumptions + Platform/Too-small thresholds (all editable, cascade on
@@ -447,6 +468,40 @@ set) into your new chips UI as a small follow-up.
   person-mode w/ website-status routing; (c) POST /api/river-guides/discover
   (consolidator sweep, hallucination-guarded); (d) status-verification +
   identity-resolution workers.** Original card follows:
+- 🔨 LANE C — 🔥🔥🔥 **RIVER GUIDES CHANNEL — BACKEND BUILT 7/16 overnight
+  (John's direct directive ~00:45, "run with this, I'll look in the
+  morning"). AWAITING: John runs migration 0016 (with 0015) → I ingest the
+  433-row seed + fire the first worker batches immediately.** Architecture
+  per John's instinct: NO separate scraping section — `river_guides` table =
+  the channel's workstream state (lifecycle NEEDS_NAME→PENDING_T1→T1_DONE|
+  NEEDS_PAID→ENRICHED→VERIFIED, spec §4 schema, scoring §3, provenance);
+  RESOLVED people also become CRM CONTACTS (role 'river_guide') tagged to a
+  COMPANY record for the business they sold (origin 'river_guide', website
+  anchored; notes carry "acquired by <consolidator> (<sponsor>)" — direct
+  PE-ownership input as John noted). Workers (scraper/riverguides/):
+  `ingest_river_guides.js` (idempotent on deal_id; dry-run validated: 433
+  rows = 236 resolved/197 TBD, bands CALL_NOW 95 · ENRICH 127 · NURTURE 14 ·
+  RESOLVE_NAME_FIRST 197; top states FL 72, TX 31, CO 25, GA 25) ·
+  `verify_status.js` (THE high-leverage job: exit_status is point-in-time at
+  close → fresh LinkedIn/web re-check sets current_status_verified, flips
+  EMPLOYED→EXITED, rescores; NOBODY contacted unverified) ·
+  `resolve_names.js` (identity resolution w/ code-enforced no-guess bar:
+  name + source URL + non-low confidence or stays TBD — the hallucination
+  guard from the research) · `enrich_t1.js` (waterfall routed by website
+  status: LIVE→Hunter domain-first, REDIRECTS→acquirer domain,
+  DEFUNCT/NOT_FOUND→verified-LinkedIn-first; failures → NEEDS_PAID review
+  queue, nothing auto-pays). API: GET/PATCH/POST /api/river-guides (filters
+  band/status/industry/state/name_status/q + counts incl. state M&A density;
+  POST queue_enrichment/queue_verification = John's "select for enrichment").
+  river-guides.yml nightly 02:30 Phoenix (verify 30 → resolve 25 → t1 20).
+  LANE B: "River Guides" page under Proprietary Sourcing off /api/river-guides
+  (band chips, lifecycle columns, select→queue actions, state density view);
+  contacts page: role filter now includes river_guide.
+  OPEN FOR JOHN (morning): (a) run 0015+0016; (b) existing 'advisor' contacts
+  (e.g. Dan Mello) — flip to river_guide or keep advisor as the broader tag?
+  (c) Archetype B (ex-corp-dev) intake is deliberately NOT built yet —
+  separate LinkedIn-recipe path per spec §5, say go when wanted.
+  --- PM original card (discover endpoint spec still owed by Lane C) ---
 - 🔥🔥🔥 **RIVER GUIDES CHANNEL — JOHN'S 7/16 ~00:50 DIRECTIVE, slots ABOVE the
   Tracerfy tier (they share plumbing — build together where natural). READ
   docs/RIVER-GUIDES-INTEGRATION.md FIRST (PM architecture decision), then the
