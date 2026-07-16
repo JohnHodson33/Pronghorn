@@ -10,16 +10,33 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import FilterDropdown from "@/components/FilterDropdown";
 import SortHeader from "@/components/SortHeader";
+import ScrollShell from "@/components/ScrollShell";
 import { useUrlFilterSync } from "@/lib/use-url-filters";
 import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 
 type Run = {
   id: string;
+  deal_ids: string[] | null;
   state: "queued" | "running" | "done" | "failed";
   counts: { total?: number; processed?: number; found_email?: number; found_linkedin?: number; found_phone?: number; escalated_paid?: number } | null;
   note: string | null;
   stale?: boolean;
+  created_at?: string;
   finished_at: string | null;
+  cost_actual?: number | null;
+  cost_estimate?: number | null;
+};
+
+type Estimate = {
+  count: number;
+  eligible: number;
+  skipped_tbd?: number;
+  totalEstUsd: number;
+  breakdown?: {
+    hunter?: { calls: number; quotaUnits: number; marginalUsd: number };
+    linkedin_verify?: { searches: number; estUsd: number };
+  };
+  note?: string;
 };
 
 type Guide = {
@@ -100,6 +117,9 @@ export default function RiverGuides() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [notice, setNotice] = useState<string | null>(null);
   const [runs, setRuns] = useState<{ active: Run[]; recent: Run[]; note: string | null }>({ active: [], recent: [], note: null });
+  const [est, setEst] = useState<Estimate | null>(null);
+  const [estBusy, setEstBusy] = useState(false);
+  const [openRun, setOpenRun] = useState<Run | null>(null); // "show me that run's list"
   const [busy, setBusy] = useState(false);
   // Find-more discovery bar
   const [discIndustry, setDiscIndustry] = useState("");
@@ -192,6 +212,8 @@ export default function RiverGuides() {
 
   const rows = useMemo(() => {
     const filtered = all.filter((g) => {
+      // run filter: "show me exactly who was in that enrichment run"
+      if (openRun?.deal_ids?.length && !openRun.deal_ids.includes(g.deal_id)) return false;
       if (bandsSel.size && !bandsSel.has(g.priority_band)) return false;
       if (industriesSel.size && !industriesSel.has(g.industry)) return false;
       if (statusSel.size && !statusSel.has(g.enrichment_status)) return false;
@@ -226,7 +248,30 @@ export default function RiverGuides() {
       const d = BANDS.indexOf(a.priority_band) - BANDS.indexOf(b.priority_band);
       return d !== 0 ? d : (b.screen_score ?? 0) - (a.screen_score ?? 0);
     });
-  }, [all, q, bandsSel, industriesSel, statusSel, exitSel, statesSel, reachSel, sortKey, sortDir]);
+  }, [all, q, bandsSel, industriesSel, statusSel, exitSel, statesSel, reachSel, sortKey, sortDir, openRun]);
+
+  // COST BEFORE THE CLICK (John 7/16: "the cost should show up beforehand… to
+  // the extent anything shows up more expensive, I want us to be thoughtful").
+  // Debounced estimate on every selection change; the button carries the number.
+  useEffect(() => {
+    if (!selected.size) { setEst(null); return; }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      setEstBusy(true);
+      try {
+        const res = await fetch("/api/river-guides/enrich", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ estimate: true, dealIds: [...selected] }),
+        });
+        if (!res.ok) return;
+        const j = await res.json();
+        if (!cancelled) setEst(j);
+      } catch { /* estimate is advisory — never blocks the click */ }
+      finally { if (!cancelled) setEstBusy(false); }
+    }, 350);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [selected]);
 
   async function enrichSelected() {
     setBusy(true);
@@ -344,16 +389,45 @@ export default function RiverGuides() {
           </div>
         );
       })}
-      {!runs.active.length && runs.recent[0] && (
-        <div className="flex flex-wrap items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
-          <span className="font-semibold">Last run:</span>
-          <span>{runs.recent[0].note}</span>
-          {(runs.recent[0].counts?.escalated_paid ?? 0) > 0 && (
-            <button
-              onClick={() => setStatusSel(new Set(["NEEDS_PAID"]))}
-              className="rounded border border-emerald-300 px-2 py-0.5 text-xs font-semibold hover:bg-emerald-100"
-            >
-              view the {runs.recent[0].counts?.escalated_paid} needing paid lookup →
+      {/* RUN HISTORY (John 7/16: "I want to click on the previously run session
+          of enrichment and have it pull up that whole list"). Each past run is
+          clickable → the table filters to exactly the people in that run. */}
+      {!runs.active.length && runs.recent.length > 0 && (
+        <div className="rounded-xl border border-zinc-200 bg-white p-3">
+          <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            Enrichment runs — click one to see exactly who was in it
+          </div>
+          <div className="space-y-1">
+            {runs.recent.slice(0, 5).map((r) => {
+              const isOpen = openRun?.id === r.id;
+              const c = r.counts ?? {};
+              return (
+                <div key={r.id} className="flex flex-wrap items-center gap-2 text-sm">
+                  <button
+                    onClick={() => setOpenRun(isOpen ? null : r)}
+                    className={`rounded border px-2 py-0.5 text-xs font-semibold ${isOpen ? "border-emerald-700 bg-emerald-700 text-white" : "border-zinc-300 text-zinc-600 hover:border-emerald-600 hover:text-emerald-700"}`}
+                  >
+                    {isOpen ? "showing this run ✓" : `show these ${c.total ?? r.deal_ids?.length ?? 0}`}
+                  </button>
+                  <span className="text-zinc-400">
+                    {r.finished_at ? new Date(r.finished_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}
+                  </span>
+                  <span className={r.state === "failed" ? "text-red-700" : "text-zinc-700"}>{r.note}</span>
+                  {(c.escalated_paid ?? 0) > 0 && (
+                    <button
+                      onClick={() => { setOpenRun(r); setStatusSel(new Set(["NEEDS_PAID"])); }}
+                      className="rounded border border-violet-300 px-2 py-0.5 text-xs font-semibold text-violet-800 hover:bg-violet-50"
+                    >
+                      {c.escalated_paid} → paid queue
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          {openRun && (
+            <button onClick={() => setOpenRun(null)} className="mt-2 text-xs font-semibold text-emerald-800 hover:underline">
+              ← clear run filter (showing all {all.length})
             </button>
           )}
         </div>
@@ -387,9 +461,24 @@ export default function RiverGuides() {
             onClick={enrichSelected}
             disabled={selected.size === 0 || busy}
             className="rounded-lg bg-emerald-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-40"
-            title="Tier-1 (free/owned) enrichment only; paid tier stays a manual VA export"
+            title={
+              est
+                ? [
+                    `${est.eligible} eligible${est.skipped_tbd ? ` · ${est.skipped_tbd} skipped (name TBD)` : ""}`,
+                    est.breakdown?.hunter ? `Hunter: ${est.breakdown.hunter.calls} lookups — $0 marginal (flat sub, ${est.breakdown.hunter.quotaUnits} quota units)` : null,
+                    est.breakdown?.linkedin_verify ? `LinkedIn verify: ${est.breakdown.linkedin_verify.searches} searches — $${est.breakdown.linkedin_verify.estUsd.toFixed(3)}` : null,
+                    "Tier-1 only; the paid tier never fires automatically.",
+                  ].filter(Boolean).join("\n")
+                : "Tier-1 (free/owned) enrichment only; paid tier stays a manual VA export"
+            }
           >
-            Enrich selected{selected.size > 0 ? ` (${selected.size})` : ""}
+            {selected.size === 0
+              ? "Enrich selected"
+              : estBusy && !est
+                ? `Enrich selected (${selected.size} · pricing…)`
+                : est
+                  ? `Enrich selected (${selected.size} · est. ${est.totalEstUsd < 0.01 ? "$0.00" : `$${est.totalEstUsd.toFixed(2)}`})`
+                  : `Enrich selected (${selected.size})`}
           </button>
           <button onClick={exportCsv} disabled={rows.length === 0} className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-50">
             CSV ({rows.length})
@@ -397,7 +486,7 @@ export default function RiverGuides() {
         </span>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
+      <ScrollShell className="rounded-xl border border-zinc-200 bg-white">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500">
@@ -541,7 +630,7 @@ export default function RiverGuides() {
             )}
           </tbody>
         </table>
-      </div>
+      </ScrollShell>
 
       <p className="text-[11px] text-zinc-400">
         Bands: Call now (screen ≥70) · Enrich &amp; assess (58–69) · Nurture (&lt;58) · Resolve name (identity TBD, overrides score).

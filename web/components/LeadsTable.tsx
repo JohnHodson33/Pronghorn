@@ -5,6 +5,7 @@
 // is), not the lifecycle status. Enrich is tier-aware with an honest max-cost
 // preview; a queued job shows live progress and a completion summary.
 import { useEffect, useMemo, useRef, useState } from "react";
+import ScrollShell from "@/components/ScrollShell";
 import { useRouter } from "next/navigation";
 import type { EnrichmentLead } from "@/lib/enrichment";
 import { completeness, LEVELS, LEVEL_META, type Completeness } from "@/lib/completeness";
@@ -52,15 +53,6 @@ type Job = {
   finished_at: string | null;
 };
 
-function ContactDots({ filled }: { filled: boolean[] }) {
-  return (
-    <span className="inline-flex gap-1" title="owner phone · email · LinkedIn (usable channels only)">
-      {filled.map((f, i) => (
-        <span key={i} className={`h-2 w-2 rounded-full ${f ? "bg-emerald-600" : "bg-zinc-200"}`} />
-      ))}
-    </span>
-  );
-}
 
 const inputCls = "rounded-md border border-zinc-300 px-2.5 py-1.5 text-sm outline-none focus:border-emerald-600";
 
@@ -443,7 +435,7 @@ export default function LeadsTable({
           {leads.length === 0 ? "No leads here yet." : "No leads match the filters."}
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <ScrollShell>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500">
@@ -477,7 +469,9 @@ export default function LeadsTable({
                 </th>
                 <th className="px-3 py-2 font-medium">Location</th>
                 <th className="px-3 py-2 font-medium">Owner</th>
-                <th className="px-3 py-2 font-medium">Channels</th>
+                <th className="px-3 py-2 font-medium">Phone</th>
+                <th className="px-3 py-2 font-medium">Email</th>
+                <th className="px-3 py-2 font-medium">LinkedIn</th>
                 <th className="px-3 py-2 font-medium">Status</th>
                 <th className="px-4 py-2 text-right font-medium">Actions</th>
               </tr>
@@ -573,13 +567,21 @@ export default function LeadsTable({
                     {/* inline-editable owner fields (John 7/15 — type the datum you found) */}
                     <td className="max-w-44 px-3 py-2.5 text-zinc-700" onClick={(e) => e.stopPropagation()}>
                       <InlineField endpoint={`/api/leads/${l.id}`} field="owner_name" value={l.owner_name} placeholder="owner…" className="font-medium" />
-                      <div className="mt-0.5 flex flex-wrap gap-x-2 text-xs text-zinc-500">
-                        <InlineField endpoint={`/api/leads/${l.id}`} field="owner_phone" value={l.owner_phone} type="tel" placeholder="phone…" />
-                        <InlineField endpoint={`/api/leads/${l.id}`} field="owner_email" value={l.owner_email} type="email" placeholder="email…" />
-                      </div>
+                    </td>
+                    {/* dots RETIRED (John 7/16): show the actual contact, spelled out */}
+                    <td className="whitespace-nowrap px-3 py-2.5 text-zinc-700" onClick={(e) => e.stopPropagation()}>
+                      <InlineField endpoint={`/api/leads/${l.id}`} field="owner_phone" value={l.owner_phone} type="tel" placeholder="—" />
+                    </td>
+                    <td className="max-w-52 px-3 py-2.5 text-zinc-700" onClick={(e) => e.stopPropagation()}>
+                      <InlineField endpoint={`/api/leads/${l.id}`} field="owner_email" value={l.owner_email} type="email" placeholder="—" />
                     </td>
                     <td className="px-3 py-2.5">
-                      <ContactDots filled={[!!l.owner_phone, !!l.owner_email, !!l.owner_linkedin]} />
+                      {l.owner_linkedin ? (
+                        <a href={l.owner_linkedin} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
+                           className="text-emerald-800 hover:underline" title={l.owner_linkedin}>profile ↗</a>
+                      ) : (
+                        <span className="text-zinc-300">—</span>
+                      )}
                     </td>
                     <td className="whitespace-nowrap px-3 py-2.5 text-xs text-zinc-500">
                       {statusLabel[l.status] ?? l.status}
@@ -616,7 +618,7 @@ export default function LeadsTable({
               })}
             </tbody>
           </table>
-        </div>
+        </ScrollShell>
       )}
       <div className="border-t border-zinc-100 px-5 py-2 text-[11px] text-zinc-400">
         Levels: ● full · ◕ contactable · ◑ identified · ◔ basic · ○ raw — most complete sorts first.

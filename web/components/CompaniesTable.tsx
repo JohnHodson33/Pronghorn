@@ -15,6 +15,7 @@ import { PinButton } from "@/components/PinnedViews";
 import { TIERS, TIER_LABELS } from "@/lib/size";
 import FilterDropdown from "@/components/FilterDropdown";
 import StarButton from "@/components/StarButton";
+import ScrollShell from "@/components/ScrollShell";
 
 // ~$X.XM–$Y.YM display for estimate ranges (never fake precision)
 const estRange = (r: [number, number]) => {
@@ -228,7 +229,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
         </span>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
+      <ScrollShell className="rounded-xl border border-zinc-200 bg-white">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500">
@@ -290,9 +291,19 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
                         <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${levelChip[lv.level]}`} title={LEVEL_META[lv.level].label}>
                           {LEVEL_META[lv.level].dot} {lv.level}
                         </span>
-                        <span className="inline-flex gap-1" title="owner phone · email · LinkedIn">
-                          {lv.channels.map((f, i) => (
-                            <span key={i} className={`h-2 w-2 rounded-full ${f ? "bg-emerald-600" : "bg-zinc-200"}`} />
+                        {/* dots RETIRED (John 7/16: "I don't even know what all three of
+                            the dots are"). A company row aggregates its contacts — the
+                            actual values live on the profile — so at least NAME the
+                            channels here instead of showing anonymous dots. */}
+                        <span className="inline-flex gap-1 text-[10px] font-semibold">
+                          {(["phone", "email", "in"] as const).map((label, i) => (
+                            <span
+                              key={label}
+                              className={`rounded px-1 py-px ${lv.channels[i] ? "bg-emerald-100 text-emerald-800" : "bg-zinc-100 text-zinc-300 line-through"}`}
+                              title={`owner ${label === "in" ? "LinkedIn" : label}: ${lv.channels[i] ? "on file" : "missing"}`}
+                            >
+                              {label}
+                            </span>
                           ))}
                         </span>
                       </span>
@@ -362,7 +373,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
             )}
           </tbody>
         </table>
-      </div>
+      </ScrollShell>
     </div>
   );
 }
