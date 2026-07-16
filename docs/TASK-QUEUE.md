@@ -25,12 +25,20 @@ outbox, outreach_tracks, enrichment_jobs + taxonomy, usage_events, feedback).
 **MISSING: 0011 (feedback_comments) + 0012 (lead_lists.progress)** — both on
 John's morning list. Build against the degrade paths until he runs them.
 
-**📮 PM ROLLOVER IN PROGRESS (7/15 ~23:20):** the PM session
-local_b552862b-… hit its context limit and handed off (docs/PM-HANDOFF.md
-is current through 7/15 23:20). **Until the NEW PM session posts its id
-here, use TASK-QUEUE.md as the ONLY status channel** — do not send
-cross-session messages to local_b552862b (retiring) or any older id.
-The new PM's first action is updating this block.
+**📮 PM ROLLOVER COMPLETE (new PM live 7/16 ~00:00):** the prior PM
+(local_b552862b, now titled "[DEAD] Pronghorn PM loop") handed off cleanly;
+the NEW PM session is LIVE and running the loop (branches merged, scrape
+verified fresh 9.4h, briefs being refreshed for 7/16). **DURABLE
+COORDINATION CHANNEL = THIS FILE + your branch.** Lanes: do NOT rely on
+send_message (needs John's Allow per send + the local_ session-id namespace
+is not the transcript UUID — a known gotcha). Instead: (1) commit status to
+your DECISION-LOG-<lane>.md HANDOFF section + push your branch every unit;
+(2) write cross-lane/PM notes as 📣 lines in TASK-QUEUE.md. The PM polls all
+three lane branches for commit recency EVERY loop and merges continuously —
+that is how stalls and rollovers are detected now, id-free. The PM's exact
+local_ id will be stamped here once the first send_message handshake exposes
+it (transcript UUID is 99009696-…, but that is NOT the send_message id).
+Do not message local_b552862b (retiring) or any older id.
 
 **🌙 AUTONOMY NIGHT ORDER (John, logging off 7/12 ~21:00 — verbatim intent:
 "really push for the agents to self direct on creating new functionalities
