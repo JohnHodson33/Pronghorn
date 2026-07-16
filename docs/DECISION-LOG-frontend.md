@@ -5,21 +5,30 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 
 ## 🔄 HANDOFF — session #3 (7/16 ~13:40) — successor resumes here
 
-- **State**: nothing in flight. Last commit `6dbfd35` (deals → LIST-UX
-  STANDARD) — pushed to lane/frontend, typecheck green, browser-verified
-  on the 20 live deals + mobile 375. Session #3 units: deals→standard
-  6dbfd35 (+ FilterDropdown edge-flip fix, platform-wide).
-- **NEXT (in order)**: (1) ENRICHMENT → standard (LeadsTable:
-  state/list selects → header dropdowns; keep the counts chips +
-  sessionStorage); (2) River Guides item (c): company profile
+- **State**: nothing in flight. Last commit `bbc54f1` (enrichment →
+  LIST-UX STANDARD) — pushed to lane/frontend, typecheck green,
+  browser-verified on 200 live leads + mobile 375. Session #3 units:
+  deals→standard 6dbfd35 (+ FilterDropdown edge-flip fix, platform-wide)
+  · enrichment→standard bbc54f1.
+  **LIST-UX STANDARD is now applied to all 7 list pages** (listings,
+  companies, contacts, brokers, river-guides, deals, enrichment).
+- **NEXT (in order)**: (1) River Guides item (c): company profile
   former-company line ("sold to <acquirer>, <year> — former owner is a
   River Guide prospect" — river_guides has company_id FKs) +
   contact-profile river-guide panel (band/exit/former co/verification);
-  (3) the run-state progress banner + Email/Phone/LinkedIn value columns
-  on /river-guides the MOMENT Lane C's GET /api/river-guides/runs lands
-  (full spec at top of the Lane B TASK-QUEUE section; John's 12:50
-  visibility directive is the acceptance bar) — not landed as of 13:40;
+  (2) the run-state progress banner on /river-guides the MOMENT Lane C's
+  GET /api/river-guides/runs lands (full spec at top of the Lane B
+  TASK-QUEUE section; John's 12:50 visibility directive is the
+  acceptance bar) — not landed as of 14:05;
+  (3) **dots → Email/Phone/LinkedIn value columns** (directive item d/f).
+  NOTE: this is NOT blocked on Lane C — the columns render values already
+  in the row (owner_email/phone/linkedin). `ContactDots` in LeadsTable.tsx
+  is the last dots holdout + the /river-guides contact cell. Only the LIVE
+  repaint during a run needs the runs API. Can ship ahead of Lane C;
   (4) TASK-QUEUE top-down.
+- **Deviation flagged for John/PM**: on Enrichment the *source list*
+  filter stayed in the toolbar — it's row provenance with no column to
+  hang a header on. Everything else on the page is header-driven.
 - **Learned this session (worth keeping)**:
   - **The live DB carries stages the `STAGES` constant doesn't know**
     (e.g. "CIM Received"). Any UI that builds stage filters from the
