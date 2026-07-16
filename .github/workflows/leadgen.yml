@@ -43,7 +43,7 @@ jobs:
       - uses: actions/setup-node@v4
         if: steps.check.outputs.pending != '0' || github.event_name == 'workflow_dispatch'
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
           cache-dependency-path: scraper/package-lock.json
       - run: npm ci
