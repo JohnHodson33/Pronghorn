@@ -38,6 +38,7 @@ jobs:
           cache-dependency-path: scraper/package-lock.json
       - run: npm ci
       - name: Live pursuit detection (read-only)
+        continue-on-error: true
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
@@ -46,6 +47,7 @@ jobs:
           GRAPH_REFRESH_TOKEN: ${{ secrets.GRAPH_REFRESH_TOKEN }}
         run: node ingest_pursuit.js --live --hours 4
       - name: Live deal-mail → activities (read-only; flags, never moves stages)
+        continue-on-error: true
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
@@ -54,6 +56,7 @@ jobs:
           GRAPH_REFRESH_TOKEN: ${{ secrets.GRAPH_REFRESH_TOKEN }}
         run: node ingest_deal_mail.js --hours 4
       - name: Push queued drafts to Outlook Drafts (never sends)
+        continue-on-error: true
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
@@ -62,6 +65,7 @@ jobs:
           GRAPH_REFRESH_TOKEN: ${{ secrets.GRAPH_REFRESH_TOKEN }}
         run: node push_drafts_to_outlook.js --limit 50
       - name: Notion meeting-notes live sweep (read-only on Notion)
+        continue-on-error: true
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
