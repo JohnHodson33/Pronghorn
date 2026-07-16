@@ -137,7 +137,10 @@
     "tupelomarket": {
       "enabled": true,
       "module": "./sources/tupelomarket",
-      "_comment": "Platform-wide Tupelo SMB marketplace — all brokers, 50 state SSR pages."
+      "enrich_details": true,
+      "enrich_min_cash_flow": 300000,
+      "max_detail_enrich": 100,
+      "_comment": "Platform-wide Tupelo SMB marketplace — all brokers, 50 state SSR pages. Broker only appears in sparse detail-page prose (~1 in 6) w/ a Cloudflare-obfuscated email; enrichment is precision-first (requires cfemail + Contact-prose) — each hit is a full name+firm+email+phone."
     },
     "sunbeltmidwest": {
       "enabled": true,

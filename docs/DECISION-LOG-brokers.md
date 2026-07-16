@@ -1213,3 +1213,34 @@ linkbusiness, wpbdp, businessbroker) + firm offices (fcbb, bbf). SKIP
 hedgestone/businessesforsale (form-gated); BLOCKED bizbuysell (Akamai).
 NEXT: TASK-QUEUE lane items — SELF-ITERATE audit / opportunistic new sources;
 consider extending office-phone capture to bizmls (config already enabled).
+
+## 2026-07-16 — murphy VERIFIED (96/100, 59 agents) + SELF-ITERATE audit: broker gaps 9 → 3
+- **murphy enrichment result: 96/100 enriched, 0 errors → 59 named agents, all
+  59 with a direct phone, 0 malformed** (David Schloss (724) 655-3419, Russell
+  Miller (908) 928-0088…). Get-More-Information parse is solid.
+- **SELF-ITERATE audit** (source_quality + source_health): all 30 sources green,
+  re-screen backlog 37 (under flag). Portfolio **21,965 listings, 126 T1, 248
+  T2, broker coverage 28% → 39%**.
+- **Broker-contact gap list: 9 sources → 3.** Closed by today's sweep: fcbb,
+  bbf, murphy, vr, businessesforsale, empire. Remaining: bizbuysell (Akamai —
+  blocked), hedgestone (form-gated — skip), tupelomarket (IN PROGRESS below).
+- **tupelomarket recon:** no structured broker anywhere (public API needs an
+  orgId and exposes only the firm; no __NEXT_DATA__). But ~1 in 6 detail pages
+  names the agent in prose w/ a Cloudflare-obfuscated email — decodable
+  (data-cfemail XOR). Each hit is a FULL contact: "Tom Freimuth, Business
+  Broker, Results Business Advisors, tom.freimuth@resultsba.com,
+  402-212-6979". Built precision-first enrichment (requires BOTH cfemail +
+  Contact-prose; phone read from that prose window — a page-wide phone regex
+  matches cuid digit-strings, verified). Prose parse unit-tested exact.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~15:30: branch synced + pushed. CI Node-22 merged to
+main (06:00 cron self-drives). SHIPPED today: murphy agents (96/100, 59); vr
+agents (89/100, 33 agents, 22 emails); bbf offices (113/41); fcbb offices
+(73/829); auto_promote LIVE + self-driving (45 events); regionState→core;
+painting-heal (T1 126, backlog 127→37). IN FLIGHT: tupelomarket enrichment run
+(task b6ekzh03g) — verify decode on real page + enrichment count, commit fix if
+hit-rate is 0. BROKER SWEEP: gap list 9→3 (bizbuysell=Akamai BLOCKED,
+hedgestone=form-gated SKIP, tupelomarket=in flight). NEXT after tupelo: bizmls
+office run (config already enrich-enabled, shares bbf.js code — just needs a
+run); then opportunistic new-source hunt (frontier mostly closed) / TASK-QUEUE.
