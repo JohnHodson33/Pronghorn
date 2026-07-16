@@ -5,14 +5,17 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 
 ## 🔄 HANDOFF — successor #2 live 7/16 (loop running; 7/15 backlog)
 
-- **7/15+7/16 directives**: (1) ✅ INLINE EDIT EVERYWHERE; (2) ✅ FILTER/
-  SORT PERSISTENCE; (3) ✅ COMPANIES TABLE OVERHAUL; (4) ✅ RIVER GUIDES
-  PAGE (John's 7/16 top-of-lane; degrade mode until Lane C's 0016+ingest+
-  API — lights up automatically). REMAINING: River Guides items (b)/(c)
-  (contacts chip + profile panels — need the contact_id/company_id FKs
-  live) · LeadsTable header-filter parity (item e) · Too-big/PE-owned/
-  ★Shortlist chips as Lane C ships flags + 0015. **PM: wire "River
-  Guides" into Sidebar under Proprietary Sourcing on merge.**
+- **7/15+7/16 directives**: (1) ✅ INLINE EDIT; (2) ✅ FILTER/SORT
+  PERSISTENCE; (3) ✅ COMPANIES OVERHAUL; (4) ✅ RIVER GUIDES PAGE (merged
+  + deployed, Sidebar wired by PM); (5) ✅ LeadsTable header-filter parity
+  (this unit). NEXT per PM 7/16: (a) /improvements thread polish — 0011
+  comments are REAL now, retire pseudo-thread quirks; (b) ★Shortlist chips
+  — Lane C's /api/companies/[id]/shortlist route is merged, 0015 migration
+  awaits John (degrade gracefully); Too-big tier chip rides 0015 too;
+  (c) PE-owned chips when Lane C's detection ships; (d) River Guides
+  lights up when /api/river-guides lands. NOTE for PM: the >4.5MB
+  direct-to-storage upload fix ALREADY SHIPPED 7/14 (363547f, verified
+  8MB/6MB) — queue item is stale.
 - **State facts**: migrations 0011–0014 APPLIED (threads, list progress,
   outreach rules, size assumptions all serve real data now — degrade
   paths retired naturally). Dev server = pronghorn-web-laneB, port 3311;

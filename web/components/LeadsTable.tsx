@@ -11,6 +11,7 @@ import { completeness, LEVELS, LEVEL_META, type Completeness } from "@/lib/compl
 import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 import { TIERS, TIER_LABELS } from "@/lib/size";
 import InlineField from "@/components/InlineField";
+import FilterDropdown from "@/components/FilterDropdown";
 
 const tierChip: Record<string, string> = {
   platform: "bg-emerald-100 text-emerald-800",
@@ -83,21 +84,28 @@ export default function LeadsTable({
       return {};
     }
   })();
+  // multi-select filters (7/15 overhaul parity, item e) — tolerate the old
+  // single-string saved shape ("all" ⇒ empty set)
+  const toSet = (v: string | undefined) => new Set((v && v !== "all" ? v : "").split(",").filter(Boolean));
   const [q, setQ] = useState(saved.q ?? "");
-  const [industry, setIndustry] = useState(saved.industry ?? "all");
+  const [industriesSel, setIndustriesSel] = useState<Set<string>>(toSet(saved.industry));
   const [state, setState] = useState(saved.state ?? "all");
   const [list, setList] = useState(saved.list ?? "all");
-  const [level, setLevel] = useState<Completeness | "all">((saved.level as Completeness) ?? "all");
-  const [tier, setTier] = useState<string>(saved.tier ?? "all");
+  const [levelsSel, setLevelsSel] = useState<Set<string>>(toSet(saved.level));
+  const [tiersSel, setTiersSel] = useState<Set<string>>(toSet(saved.tier));
   const [showOffTarget, setShowOffTarget] = useState(saved.offTarget === "1");
   useEffect(() => {
     try {
       sessionStorage.setItem(
         FILTER_KEY,
-        JSON.stringify({ q, industry, state, list, level, tier, offTarget: showOffTarget ? "1" : "0" })
+        JSON.stringify({
+          q, industry: [...industriesSel].join(","), state, list,
+          level: [...levelsSel].join(","), tier: [...tiersSel].join(","),
+          offTarget: showOffTarget ? "1" : "0",
+        })
       );
     } catch {}
-  }, [q, industry, state, list, level, tier, showOffTarget]);
+  }, [q, industriesSel, state, list, levelsSel, tiersSel, showOffTarget]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -108,10 +116,11 @@ export default function LeadsTable({
   const effIndustry = (l: EnrichmentLead) => l.industry_verified ?? l.list?.industry ?? null;
   const levelOf = (l: EnrichmentLead) => completeness(l);
 
-  const industries = useMemo(
-    () => [...new Set(leads.map(effIndustry).filter(Boolean))].sort() as string[],
-    [leads]
-  );
+  const industryOptions = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const l of leads) { const i = effIndustry(l); if (i) m[i] = (m[i] ?? 0) + 1; }
+    return Object.entries(m).sort((a, b) => b[1] - a[1]).map(([value, count]) => ({ value, label: value, count }));
+  }, [leads]);
   const states = useMemo(() => [...new Set(leads.map((l) => l.state).filter(Boolean))].sort() as string[], [leads]);
   const lists = useMemo(
     () => [...new Set(leads.map((l) => (l.list ? `${l.list.industry}${l.list.geography ? ` — ${l.list.geography}` : ""}` : null)).filter(Boolean))].sort() as string[],
@@ -133,9 +142,9 @@ export default function LeadsTable({
   const rows = useMemo(() => {
     const filtered = leads.filter((l) => {
       if (!showOffTarget && l.off_target) return false;
-      if (level !== "all" && levelOf(l) !== level) return false;
-      if (tier !== "all" && (l.size?.tier ?? "unsized") !== tier) return false;
-      if (industry !== "all" && effIndustry(l) !== industry) return false;
+      if (levelsSel.size && !levelsSel.has(levelOf(l))) return false;
+      if (tiersSel.size && !tiersSel.has(l.size?.tier ?? "unsized")) return false;
+      if (industriesSel.size && !industriesSel.has(effIndustry(l) ?? "")) return false;
       if (state !== "all" && l.state !== state) return false;
       if (list !== "all" && `${l.list?.industry}${l.list?.geography ? ` — ${l.list.geography}` : ""}` !== list) return false;
       if (
@@ -152,7 +161,7 @@ export default function LeadsTable({
       const d = LEVELS.indexOf(levelOf(a)) - LEVELS.indexOf(levelOf(b));
       return d !== 0 ? d : b.created_at.localeCompare(a.created_at);
     });
-  }, [leads, q, industry, state, list, level, tier, showOffTarget]);
+  }, [leads, q, industriesSel, state, list, levelsSel, tiersSel, showOffTarget]);
 
   const enrichingCount = useMemo(() => leads.filter((l) => l.status === "enriching").length, [leads]);
 
@@ -295,8 +304,8 @@ export default function LeadsTable({
         {LEVELS.map((lv) => (
           <button
             key={lv}
-            onClick={() => setLevel(level === lv ? "all" : lv)}
-            className={`rounded-full px-2.5 py-0.5 font-semibold transition ${level === lv ? "ring-2 ring-emerald-600 " : ""}${levelChip[lv]}`}
+            onClick={() => setLevelsSel((prev) => { const n = new Set(prev); n.has(lv) ? n.delete(lv) : n.add(lv); return n; })}
+            className={`rounded-full px-2.5 py-0.5 font-semibold transition ${levelsSel.has(lv) ? "ring-2 ring-emerald-600 " : ""}${levelChip[lv]}`}
             title={LEVEL_META[lv].label}
           >
             {LEVEL_META[lv].dot} {levelCounts[lv]} {lv}
@@ -317,8 +326,8 @@ export default function LeadsTable({
         {TIERS.map((t) => (
           <button
             key={t}
-            onClick={() => setTier(tier === t ? "all" : t)}
-            className={`rounded-full px-2.5 py-0.5 font-semibold transition ${tier === t ? "ring-2 ring-emerald-600 " : ""}${tierChip[t]}`}
+            onClick={() => setTiersSel((prev) => { const n = new Set(prev); n.has(t) ? n.delete(t) : n.add(t); return n; })}
+            className={`rounded-full px-2.5 py-0.5 font-semibold transition ${tiersSel.has(t) ? "ring-2 ring-emerald-600 " : ""}${tierChip[t]}`}
             title={t === "unsized" ? "no usable size signal yet — enrichment adds them" : `estimated ${TIER_LABELS[t]}`}
           >
             {TIER_LABELS[t]} · {tierCounts[t]}
@@ -357,7 +366,7 @@ export default function LeadsTable({
           </span>
           <button
             onClick={() => {
-              setLevel("all");
+              setLevelsSel(new Set());
               setJobDone(null);
               router.refresh();
             }}
@@ -376,10 +385,12 @@ export default function LeadsTable({
           {heading} <span className="font-normal text-zinc-400">({rows.length})</span>
         </span>
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search…" className={`w-40 ${inputCls}`} />
-        <select value={industry} onChange={(e) => setIndustry(e.target.value)} className={inputCls}>
-          <option value="all">All industries</option>
-          {industries.map((i) => <option key={i}>{i}</option>)}
-        </select>
+        <FilterDropdown
+          label="Industry"
+          options={industryOptions}
+          selected={industriesSel}
+          onChange={setIndustriesSel}
+        />
         <select value={state} onChange={(e) => setState(e.target.value)} className={inputCls}>
           <option value="all">All states</option>
           {states.map((s) => <option key={s}>{s}</option>)}
@@ -433,10 +444,21 @@ export default function LeadsTable({
                     title="Select all visible"
                   />
                 </th>
-                <th className="px-2 py-2 font-medium">Level</th>
+                <th className="px-2 py-2 font-medium">
+                  <FilterDropdown header label="Level"
+                    options={LEVELS.map((lv) => ({ value: lv, label: `${LEVEL_META[lv].dot} ${lv}`, count: levelCounts[lv] }))}
+                    selected={levelsSel} onChange={setLevelsSel} />
+                </th>
                 <th className="px-2 py-2 font-medium">Company</th>
-                <th className="px-2 py-2 font-medium">Size</th>
-                <th className="px-3 py-2 font-medium">Industry</th>
+                <th className="px-2 py-2 font-medium">
+                  <FilterDropdown header label="Size"
+                    options={TIERS.map((t) => ({ value: t, label: TIER_LABELS[t], count: tierCounts[t] }))}
+                    selected={tiersSel} onChange={setTiersSel} />
+                </th>
+                <th className="px-3 py-2 font-medium">
+                  <FilterDropdown header label="Industry" options={industryOptions}
+                    selected={industriesSel} onChange={setIndustriesSel} />
+                </th>
                 <th className="px-3 py-2 font-medium">Location</th>
                 <th className="px-3 py-2 font-medium">Owner</th>
                 <th className="px-3 py-2 font-medium">Channels</th>
