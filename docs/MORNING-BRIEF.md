@@ -1,5 +1,16 @@
 # Brief — Wed 7/16 morning (PM session, rewritten each cycle)
 
+## 🚣 NEW OVERNIGHT: RIVER GUIDES CHANNEL (your ~00:50 directive — integrated)
+Architecture decided (docs/RIVER-GUIDES-INTEGRATION.md), queued top-of-lane:
+dedicated `river_guides` table (channel lifecycle/scoring) + auto-linked
+Contacts (tag **river_guide**) + Companies (former company, pe_owned ground
+truth) — no redundant scraping section; enrichment reuses the existing cascade
+person-mode. **Your morning step: run migration `0016_river_guides.sql`**
+(Lane C authors it overnight) in the same SQL-editor pass, then the 433-row
+seed ingests and the River Guides page lights up. 🔒 The seed data (232 named
+people, scored) stays OUT of the public repo — Supabase only; this also
+strengthens the go-private recommendation below.
+
 ## ☀️ YOUR SHORT LIST (priority order — ~12 min total)
 0. **🔴 THE BIG ONE — restart the three lane sessions (one paste each, ~2 min).**
    All three context-died Tue ~2pm; every queued 🔥 build (Tracerfy cascade,

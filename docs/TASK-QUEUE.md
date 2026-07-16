@@ -86,6 +86,12 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 ---
 
 ## Lane A — Brokers  (`scraper/sources/*`, `scraper/config.json`)
+- ⬜ **RIVER GUIDES: consolidator-sweep refresh (LATER — not tonight; after
+  your current queue):** periodic re-run of the acquisition-log queries per
+  consolidator (docs/RIVER-GUIDES-INTEGRATION.md step 9 + spec §7 maps at
+  the local path noted there) → new add-ons enter the river_guides lifecycle
+  as NEEDS_NAME/RESOLVED rows. Hallucination guard is a hard rule: no
+  invented names/domains, unverified = TBD.
 - 🔥🔥🔥 **JOHN APPROVED 7/13 (~01:45, explicit in PM chat) — your two AUTONOMY
   suggestions are GO, build both:** (1) **AUTO-PROMOTE T1 → PURSUITS:** nightly
   job opens a pursuit (stage 'new') for any Tier-1 listing clearing HARD
@@ -114,6 +120,26 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 🔥🔥🔥 **RIVER GUIDES UI — JOHN'S 7/16 ~00:50 DIRECTIVE (read
+  docs/RIVER-GUIDES-INTEGRATION.md first; builds on Lane C's
+  /api/river-guides — coordinate, degrade gracefully until it's up):**
+  (a) **"River Guides" page under Proprietary Sourcing** (PM wires Sidebar
+  on merge): shared list pattern — filters + counts header for priority band
+  (CALL_NOW / ENRICH_THEN_ASSESS / NURTURE / RESOLVE_NAME_FIRST), industry,
+  enrichment status, exit status (chip shows ⚠ unverified vs ✓ verified),
+  state; default sort = band then screen_score desc; checkbox select →
+  **"Enrich selected (est. $X)"** (reuse the enrichment progress UI); row →
+  linked contact/company profile; CSV export = the VA handoff for the paid
+  tier; search; mobile parity per standing rule. (b) **Contacts page: "River
+  Guide" filter chip** + river-guide panel on contact profiles (band, exit
+  status, former company + acquirer/sponsor, verification state). (c) Show
+  the former-company link on company profiles ("sold to <acquirer>, <year> —
+  former owner is a River Guide prospect"). (d) **"Find more" discovery bar**
+  on the River Guides page (John 7/16 ~01:15 — the page is a sourcing tool,
+  not a repository): pick industry / consolidator (or type a new one) → runs
+  Lane C's POST /api/river-guides/discover → live progress (reuse enrichment
+  progress UI) → new candidates appear in the list banded RESOLVE_NAME_FIRST
+  /CALL_NOW etc. Nothing here sends anything.
 - 📣 PM 7/13 ~15:00 — **LANE B: THE SIZE CONTRACT IS UP, START THE BUILD.**
   Lane C shipped it (merged + deployed): `/api/size-model` GET/PATCH =
   assumptions + Platform/Too-small thresholds (all editable, cascade on
@@ -410,6 +436,47 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations  (`scraper/` scripts, `web/app/api/*`)
+- 🔥🔥🔥 **RIVER GUIDES CHANNEL — JOHN'S 7/16 ~00:50 DIRECTIVE, slots ABOVE the
+  Tracerfy tier (they share plumbing — build together where natural). READ
+  docs/RIVER-GUIDES-INTEGRATION.md FIRST (PM architecture decision), then the
+  spec + handoff at `C:\Users\johnd\CRM Set up\river-guides\` (LOCAL PATH —
+  🔒 NEVER commit the CSV/docs or any named-person extract to this PUBLIC
+  repo; personal data goes ONLY into Supabase).** Build order: (1) migration
+  `0016_river_guides.sql` per spec §4 + contact_id/company_id FKs (John runs
+  it in his morning SQL pass); (2) `ingest_river_guides.js` — the 433-row
+  seed CSV → table, idempotent on deal_id; RESOLVED rows create/link a
+  contacts row (tag/role **river_guide**) + companies row for their former
+  company (dedupe by domain/name) with **pe_owned=true, pe_owner=
+  "<acquirer> (<sponsor>)"** — ground truth for your PE backfill; (3)
+  GET/PATCH `/api/river-guides` (filters: industry, priority_band,
+  enrichment_status, exit_status, state; PATCH = inline edit, human wins);
+  (4) **LinkedIn status-verification worker** — reuse your new verified
+  matcher; sets current_status_verified, can flip EMPLOYED→EXITED (earnout
+  expiry = where the value unlocks; HIGHEST-LEVERAGE step); (5) identity
+  resolution for ~197 NEEDS_NAME rows (LinkedIn + SoS resolvers + acquirer
+  press) — NEVER guess names/domains, unresolved stays TBD; (6) enrichment
+  waterfall person-mode routed by company_website_status (LIVE→domain-first
+  Hunter, REDIRECTS→acquirer domain, DEFUNCT/NOT_FOUND→LinkedIn-first),
+  Tier-1 free only, failures → NEEDS_PAID for the VA-export CSV (NO
+  automated paid tier); screen_score recompute per spec §3. Outreach
+  eligibility = CALL_NOW + VERIFIED only; nothing sends; river-guide draft
+  template (equity-not-fees positioning, spec §8) is a SEPARATE template
+  awaiting John's approval — do not wire drafts yet.
+  **(7) DISCOVERY — John's clarification 7/16 ~01:15: "not just a repository
+  to house these people — I want the functionality to find additional river
+  guides."** Build an on-demand **consolidator-sweep worker** (this is the
+  channel's list-builder, much lighter than company scraping): input =
+  industry or consolidator name (spec §7 maps seed the dropdown; free-text
+  for new ones) → Serper/Exa queries ("<X> acquires", "<X> acquired",
+  acquirer press/portfolio pages) → Claude extracts candidate add-on deals
+  (company, year, seller if NAMED IN THE SOURCE) → dedupe vs existing
+  (person, company) → new rows enter the SAME lifecycle (NEEDS_NAME or
+  RESOLVED w/ provenance). HALLUCINATION GUARD is hard law: a name/domain
+  not literally present in a fetched source = TBD, never a guess. Also
+  support the spec §5 "quiet Archetype A" + Archetype B LinkedIn recipe
+  searches as a second query mode (results land as candidates w/ source
+  links, same guard). POST /api/river-guides/discover queues it; reuse the
+  enrichment-jobs progress pattern so John watches it run.
 - 🔨 LANE C — **BROKER_ID BACKFILL — RAN 7/13 (~12:45); honest result: 2/18
   linked** (James Feng, Phil Handke — both by email). The other 16 broker
   contacts are CURATED RELATIONSHIP people (Notion/HubSpot/deal imports:
