@@ -1185,3 +1185,31 @@ second look (probe detail page in-session for name/phone); then TASK-QUEUE
 lane items (new-source hunting = opportunistic; SELF-ITERATE audit). SKIP
 hedgestone/businessesforsale (form-gated). BLOCKED: bizbuysell Listed-By
 (Akamai). Drift alerting + freshness live (source_health.js in CI).
+
+## 2026-07-16 — murphy named-agent enrichment + AUTONOMY EVIDENCE (backlog drained, nightly auto-promote fired)
+- **murphy: agent IS exposed** — the "Broker." heading I saw earlier was a false
+  positive (franchise promo banner). Real find: the detail page's "Get More
+  Information" block names the LISTING AGENT + their direct line (the
+  page-header tel: (727) 725-7090 is Murphy corporate — ignored). Verified on 2
+  pages: "William B. White / (330) 650-9000", "Steven Fylypchuk / (403)
+  605-1366". Enrichment built (CF ≥ $300K, cap 100, fetchRetry); run in flight.
+- **Autonomy is working unattended:**
+  - **re-screen backlog 127 → 37** — the nightly untieredIds self-heal drained
+    the painting rows (now under source_health's flag threshold of 40).
+  - **auto_promoted events 42 → 45** — the nightly-wired auto-promote opened 3
+    more pursuits on its own. First proof the John-approved job self-drives.
+  - T1 124 → 126, T2 247 → 248 (painting keeps paying out).
+  - listings with a broker link: **8,546**.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-16 ~14:45: branch synced + pushed. CI Node-22 fix merged
+to main (06:00 cron self-drives). SHIPPED today: murphy named-agent enrichment
+(built+committed; VERIFY run b209b1res result + commit any fix); vr named-agent
+enrichment (89/100, 33 agents, 22 emails); bbf office (113/41); fcbb (73/829);
+auto_promote LIVE + self-driving (45 events); regionState→core; painting-heal
+(T1 126/T2 248, backlog 127→37). BROKER SWEEP NOW COMPLETE for every source
+that exposes identity: named agents (vr, murphy, dealrelations, sunbeltmidwest,
+linkbusiness, wpbdp, businessbroker) + firm offices (fcbb, bbf). SKIP
+hedgestone/businessesforsale (form-gated); BLOCKED bizbuysell (Akamai).
+NEXT: TASK-QUEUE lane items — SELF-ITERATE audit / opportunistic new sources;
+consider extending office-phone capture to bizmls (config already enabled).

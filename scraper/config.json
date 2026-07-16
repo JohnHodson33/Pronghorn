@@ -84,7 +84,11 @@
       "enabled": true,
       "module": "./sources/murphy",
       "per_page": 200,
-      "max_pages": 10
+      "max_pages": 10,
+      "enrich_details": true,
+      "enrich_min_cash_flow": 300000,
+      "max_detail_enrich": 100,
+      "_comment": "Detail pages name the listing agent + direct line in the 'Get More Information' block (page-header tel: is corporate — ignored)."
     },
     "sunacquisitions": {
       "enabled": true,
