@@ -33,6 +33,18 @@ Ask "what's open?" anytime._
   moved off the pipeline board; findable on /deals forever.
 - **Tree Service (FCBB)**: CIM received, ready-to-promote in Key Actions.
 
+## 💡 TIMELY INTEL (PM surfaced 7/16 eve — your call whether to act)
+- **Pool Troopers sellers = a second-liquidity-event cluster, right now.**
+  Lane A's consolidator sweep independently caught that **SPS PoolCare
+  acquired Pool Troopers in Jan 2026**. We already have **24 Pool Troopers
+  sellers seeded as river guides** — and their 2021 sellers (e.g. Jake & Lee
+  Su, Rolan Richard, both already EXITED + CALL_NOW) likely just had a SECOND
+  exit when their acquirer sold. The river-guides research spec flagged this
+  exact scenario as prime timing: a founder who sold, rolled equity, and just
+  got a second bite is liquid, proven, and thinking about what's next. If you
+  want, PM can prioritize the Pool Troopers cluster for status-verification +
+  enrichment ahead of the rest. Filter: /river-guides → search "Pool Troopers".
+
 ## 🔎 RUNNING FOR YOU (no action needed)
 - **River guides**: 434 seeded · tree-care tier-1 done (37 emails, 21
   verified LinkedIns, 71% hit) · 40+ escalated to NEEDS_PAID (the VA queue) ·
