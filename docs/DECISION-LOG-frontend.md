@@ -3,32 +3,41 @@
 Per-lane log per PARALLEL-SESSIONS.md; the PM/integrator folds these into
 DECISION-LOG.md and wires routes into Sidebar.tsx.
 
-## 🔄 HANDOFF — session #3 (7/16 ~13:40) — successor resumes here
+## 🔄 HANDOFF — session #3/#4 (7/17 ~morning) — successor resumes here
 
-- **State**: nothing in flight. Last commit `090de21` (companies dots →
-  real channel columns) — pushed to lane/frontend, typecheck green,
-  browser-verified on 809 live companies + mobile 375. Session #3 units:
-  deals→standard 6dbfd35 (+ FilterDropdown edge-flip fix, platform-wide)
-  · enrichment→standard bbc54f1 · enrichment dots→columns 8e0e25b
-  (+ InlineField `emptyLabel`) · companies dots→columns 090de21
-  (+ companyLevel now returns values, aggregated across owners).
-  **LIST-UX STANDARD is applied to all 7 list pages** (listings,
-  companies, contacts, brokers, river-guides, deals, enrichment).
-  **Contact dots are DEAD platform-wide** — `grep -rn "h-2 w-2
-  rounded-full" web/ --include=*.tsx` returns nothing. PM did
-  /river-guides (34186b1); this session did LeadsTable + CompaniesTable
-  (that second holdout was only found BY running the grep — run it
-  before believing any "done" claim). Directive item (f) is DONE.
-- **NEXT (in order)**: (1) River Guides item (c) — the last piece of the
-  original 7/16 list still mine: company profile former-company line
-  ("sold to <acquirer>, <year> — former owner is a River Guide prospect"
-  — river_guides has company_id FKs) + contact-profile river-guide panel
-  (band/exit/former co/verification);
-  (2) directive item (j): surface the status-verify worker's evidence
-  (stored in river_guides notes) on the row — expand/hover on the exit
-  chip — so John/VA can adjudicate the 27 inconclusives fast;
-  (3) TASK-QUEUE top-down. The run-visibility banner (items b/c) and the
-  river-guides columns are DONE — PM took them in 34186b1; don't redo.
+- **State**: nothing in flight. Last commit `e9a0092` (River Guides item
+  (j) — expandable verify evidence on the exit chip) — pushed to
+  lane/frontend, typecheck green, browser-verified on a CLEAN rebuild
+  (69/467 evidence rows, click expands 467→468) + mobile 375. Session #3
+  units: deals→standard 6dbfd35 (+ FilterDropdown edge-flip) ·
+  enrichment→standard bbc54f1 · enrichment dots→columns 8e0e25b
+  (+ InlineField `emptyLabel`) · companies dots→columns 090de21. Session
+  #4 (resumed after overnight idle): river-guides item (c) fb481d7
+  (+ new lib/river-guide-display) · river-guides item (j) e9a0092.
+  **LIST-UX STANDARD is applied to all 7 list pages.** **Contact dots are
+  DEAD platform-wide.** **John's entire 7/16 river-guides directive
+  (b–j) is now shipped** (PM did b/d run-visibility+columns 34186b1;
+  Lane B did c + j this session).
+- **NEXT**: TASK-QUEUE top-down — the 7/16 river-guides list is fully
+  cleared. Re-read docs/TASK-QUEUE.md Lane B section from the top for
+  John's newest directives before picking; merge origin/main first (main
+  moves fast). Nothing river-guides-specific is left in Lane B.
+- **⚠️ Browser-pane gotcha (cost me ~15 min this session)**: the in-app
+  Browser's `read_console_messages` returns a STALE buffer — it kept
+  replaying Turbopack parse errors from a transient mid-edit save (file
+  was briefly unbalanced between the two Fragment edits) even after
+  `rm -rf .next/dev` + server restart. Tells that it's stale, not real:
+  (a) the error quotes line numbers that no longer match the file;
+  (b) `tsc --noEmit` exits 0; (c) `preview_logs level:error` = "No server
+  errors"; (d) client interactivity WORKS (a real parse error kills
+  onClick). Trust tsc + preview_logs + an interaction test over the
+  console buffer.
+- **Reusable from item (c)**: `web/lib/river-guide-display.ts` exports
+  `BAND_LABEL`, `BAND_CHIP`, `exitDisplay(status, verified)`. Use it for
+  item (j) instead of re-declaring — the /river-guides page still has its
+  OWN inline copies (BAND_LABEL/bandChip at page.tsx ~L69); I left those
+  untouched to avoid a merge conflict with PM's active edits, but a
+  future consolidation could point the page at the shared module.
 - **⚠️ Pre-existing bug someone should own**: React logs "Can't perform a
   state update on a component that hasn't mounted yet… side-effect in
   your render function" on EVERY route including `/` — so it's a layout

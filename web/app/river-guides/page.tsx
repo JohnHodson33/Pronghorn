@@ -6,7 +6,7 @@
 // archetype spec §4); degrades honestly until migration 0016 + ingest land.
 // "Find more" discovery bar (John 7/16 ~01:15 — a sourcing tool, not a
 // repository) fires Lane C's on-demand consolidator sweep. Nothing sends.
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import FilterDropdown from "@/components/FilterDropdown";
 import SortHeader from "@/components/SortHeader";
@@ -115,6 +115,9 @@ export default function RiverGuides() {
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  // rows whose verify-evidence panel is expanded (item j — the inconclusives
+  // are the human-review gold; a native tooltip can't be read or selected)
+  const [evidenceOpen, setEvidenceOpen] = useState<Set<string>>(new Set());
   const [notice, setNotice] = useState<string | null>(null);
   const [runs, setRuns] = useState<{ active: Run[]; recent: Run[]; note: string | null }>({ active: [], recent: [], note: null });
   const [est, setEst] = useState<Estimate | null>(null);
@@ -549,7 +552,8 @@ export default function RiverGuides() {
               rows.map((g) => {
                 const href = g.contact_id ? `/companies/${g.company_id ?? ""}` : g.company_id ? `/companies/${g.company_id}` : null;
                 return (
-                  <tr key={g.deal_id} className="hover:bg-zinc-50">
+                  <Fragment key={g.deal_id}>
+                  <tr className="hover:bg-zinc-50">
                     <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
@@ -577,16 +581,29 @@ export default function RiverGuides() {
                     </td>
                     <td className="whitespace-nowrap px-3 py-2.5 text-xs text-zinc-600">{g.industry}</td>
                     <td className="whitespace-nowrap px-3 py-2.5">
-                      <span
-                        className={`rounded px-1.5 py-0.5 text-xs font-medium ${g.current_status_verified ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-700"}`}
-                        title={[
-                          g.current_status_verified ? "current status verified" : "status at deal close — not yet re-verified; no outreach until ✓",
-                          // verify-worker evidence (item j): the adjudication gold for inconclusives
-                          g.notes ? `Evidence: ${g.notes}` : null,
-                        ].filter(Boolean).join("\n")}
-                      >
-                        {g.exit_status} {g.current_status_verified ? "✓" : "⚠"}
-                      </span>
+                      {/* item j: the verify-worker's evidence lives in notes.
+                          When present, the chip becomes a click-to-expand so
+                          the VA can READ (and text-select) it, not squint at a
+                          truncated tooltip. Hover still previews via title. */}
+                      {g.notes ? (
+                        <button
+                          type="button"
+                          onClick={() => setEvidenceOpen((prev) => { const n = new Set(prev); n.has(g.deal_id) ? n.delete(g.deal_id) : n.add(g.deal_id); return n; })}
+                          className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset ${g.current_status_verified ? "bg-emerald-50 text-emerald-800 ring-emerald-200" : "bg-amber-50 text-amber-700 ring-amber-300"} hover:brightness-95`}
+                          title={`${g.current_status_verified ? "current status verified" : "status at deal close — not yet re-verified; no outreach until ✓"}\nEvidence: ${g.notes}\n(click to expand)`}
+                          aria-expanded={evidenceOpen.has(g.deal_id)}
+                        >
+                          {g.exit_status} {g.current_status_verified ? "✓" : "⚠"}
+                          <span aria-hidden className="opacity-60">{evidenceOpen.has(g.deal_id) ? "▲" : "🔍"}</span>
+                        </button>
+                      ) : (
+                        <span
+                          className={`rounded px-1.5 py-0.5 text-xs font-medium ${g.current_status_verified ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-700"}`}
+                          title={g.current_status_verified ? "current status verified" : "status at deal close — not yet re-verified; no outreach until ✓"}
+                        >
+                          {g.exit_status} {g.current_status_verified ? "✓" : "⚠"}
+                        </span>
+                      )}
                     </td>
                     <td className="px-3 py-2.5 text-right tabular-nums">{g.fit_score ?? g.screen_score ?? "—"}</td>
                     {/* real values, not dots (John 7/16: "I'd rather just have the actual
@@ -625,6 +642,20 @@ export default function RiverGuides() {
                       {[g.location_city, g.location_state].filter(Boolean).join(", ") || "—"}
                     </td>
                   </tr>
+                  {evidenceOpen.has(g.deal_id) && g.notes && (
+                    <tr className="bg-amber-50/50">
+                      <td colSpan={12} className="px-6 py-3">
+                        <div className="max-w-4xl text-xs">
+                          <span className="font-semibold text-amber-800">Verification evidence</span>
+                          <span className="ml-2 text-zinc-500">
+                            {g.current_status_verified ? "current status verified ✓" : "as-of-close — UNVERIFIED ⚠ · confirm before outreach"}
+                          </span>
+                          <p className="mt-1 whitespace-pre-wrap text-zinc-700">{g.notes}</p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  </Fragment>
                 );
               })
             )}

@@ -5,7 +5,10 @@
 // to the company (deals reach contacts through their company).
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { CONTACT_ROLES, type ContactRole } from "@/lib/contact-roles";
+import type { RiverGuideLink } from "@/lib/company-detail";
+import { BAND_LABEL, BAND_CHIP, exitDisplay } from "@/lib/river-guide-display";
 
 export type ContactItem = {
   id: string;
@@ -15,6 +18,7 @@ export type ContactItem = {
   phone: string | null;
   linkedin: string | null;
   notes: string | null;
+  riverGuide?: RiverGuideLink | null;
 };
 
 const roleBadge: Record<string, string> = {
@@ -22,7 +26,46 @@ const roleBadge: Record<string, string> = {
   seller: "bg-emerald-100 text-emerald-800",
   broker: "bg-sky-100 text-sky-800",
   advisor: "bg-violet-100 text-violet-800",
+  river_guide: "bg-amber-100 text-amber-800",
 };
+
+// Human-readable role — the ingest tags river guides role='river_guide'
+// (outside CONTACT_ROLES), so spell it out rather than show the raw enum.
+const roleLabel = (role: string) => (role === "river_guide" ? "river guide" : role);
+
+// Compact river-guide panel on a contact card (item c): band, exit status
+// ⚠/✓, former company + acquirer/sponsor, verification state — everything a
+// caller needs before dialing an exited operator.
+function RiverGuidePanel({ rg }: { rg: RiverGuideLink }) {
+  const ex = exitDisplay(rg.exitStatus, rg.verified);
+  return (
+    <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-xs text-amber-900">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="font-semibold">River Guide</span>
+        {rg.band && (
+          <span className={`rounded-full px-1.5 py-0.5 font-semibold ${BAND_CHIP[rg.band] ?? "bg-zinc-100 text-zinc-600"}`}>
+            {BAND_LABEL[rg.band] ?? rg.band}
+          </span>
+        )}
+        <span title={ex.title} className={rg.verified ? "text-amber-700" : "font-semibold text-amber-800"}>
+          {ex.label} {ex.glyph}
+        </span>
+      </div>
+      <p className="mt-1">
+        Sold {rg.theirCompany}
+        {rg.acquirer ? <> to <span className="font-medium">{rg.acquirer}</span></> : " (acquirer unknown)"}
+        {rg.sponsor && <span className="text-amber-700"> · sponsor {rg.sponsor}</span>}
+        {rg.dealYear ? `, ${rg.dealYear}` : ""}
+      </p>
+      {!rg.verified && (
+        <p className="mt-0.5 text-amber-700">⚠ status is as-of-close — verify current role before outreach</p>
+      )}
+      <Link href={`/river-guides?q=${encodeURIComponent(rg.fullName || rg.theirCompany)}`} className="mt-1 inline-block font-semibold text-amber-800 hover:underline">
+        Open in River Guides →
+      </Link>
+    </div>
+  );
+}
 
 const inputCls =
   "w-full rounded-md border border-zinc-300 px-2.5 py-1.5 text-sm outline-none focus:border-emerald-600";
@@ -160,7 +203,7 @@ export default function ContactsSection({
                 <span className="flex items-center gap-2">
                   {p.role && (
                     <span className={`rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${roleBadge[p.role] ?? "bg-zinc-100 text-zinc-600"}`}>
-                      {p.role}
+                      {roleLabel(p.role)}
                     </span>
                   )}
                   <button
@@ -186,6 +229,7 @@ export default function ContactsSection({
                 )}
                 {p.notes && <p className="pt-1 text-xs text-zinc-500">{p.notes}</p>}
               </div>
+              {p.riverGuide && <RiverGuidePanel rg={p.riverGuide} />}
             </div>
           )
         )}

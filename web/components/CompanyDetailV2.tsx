@@ -18,6 +18,7 @@ import { companyLevel } from "@/lib/company-level";
 import { TIER_LABELS } from "@/lib/size";
 import { LEVEL_META } from "@/lib/completeness";
 import { money } from "@/lib/mock";
+import { BAND_LABEL, BAND_CHIP, exitDisplay } from "@/lib/river-guide-display";
 
 const levelChipCls: Record<string, string> = {
   full: "bg-emerald-700 text-white",
@@ -41,7 +42,7 @@ const eventLabel: Record<string, string> = {
 export default async function CompanyDetailV2({ id }: { id: string }) {
   const data = await fetchCompanyDetail(id);
   if (!data) notFound();
-  const { company: c, deal, contacts, activities, listings, comparison, leadChannels, size, shortlist } = data;
+  const { company: c, deal, contacts, activities, listings, comparison, leadChannels, size, shortlist, riverGuides } = data;
   const estRange = (r: [number, number]) => {
     const f = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : `$${Math.round(n / 1000)}K`);
     return `~${f(r[0])}–${f(r[1])}`;
@@ -127,6 +128,39 @@ export default async function CompanyDetailV2({ id }: { id: string }) {
           </div>
         </div>
       </header>
+
+      {/* Former-owner / River Guide context (item c): this company was sold to
+          a consolidator and its former owner is a recruiting target. */}
+      {riverGuides.map((rg) => {
+        const ex = exitDisplay(rg.exitStatus, rg.verified);
+        return (
+          <div key={rg.dealId} className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="font-semibold">River Guide prospect</span>
+              {rg.band && (
+                <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${BAND_CHIP[rg.band] ?? "bg-zinc-100 text-zinc-600"}`}>
+                  {BAND_LABEL[rg.band] ?? rg.band}
+                </span>
+              )}
+              <span className="text-xs text-amber-700" title={ex.title}>{ex.label} {ex.glyph}</span>
+            </div>
+            <p className="mt-1">
+              {rg.fullName ? <span className="font-medium">{rg.fullName}</span> : <span className="italic text-amber-700">Owner name TBD</span>}
+              {" — "}
+              sold {rg.theirCompany}
+              {rg.acquirer ? <> to <span className="font-medium">{rg.acquirer}</span></> : " (acquirer unknown)"}
+              {rg.sponsor && <span className="text-amber-700"> (backed by {rg.sponsor})</span>}
+              {rg.dealYear ? `, ${rg.dealYear}` : ""}. Former owner is a River Guide prospect.
+            </p>
+            <Link
+              href={`/river-guides?q=${encodeURIComponent(rg.fullName || rg.theirCompany)}`}
+              className="mt-1 inline-block text-xs font-semibold text-amber-800 hover:underline"
+            >
+              Open in River Guides →
+            </Link>
+          </div>
+        );
+      })}
 
       {deal && (
         <DealControls
