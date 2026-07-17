@@ -5,28 +5,33 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 
 ## 🔄 HANDOFF — session #3/#4 (7/17 ~morning) — successor resumes here
 
-- **State**: nothing in flight. Last commit `fb481d7` (River Guides item
-  (c) — former-owner banner on company profile + panel on contact card)
-  — pushed to lane/frontend, typecheck green, browser-verified on live
-  data (Huerter ✓, A Plus Tree ⚠, Fuzhou negative) + mobile 375.
-  Session #3 units: deals→standard 6dbfd35 (+ FilterDropdown edge-flip)
-  · enrichment→standard bbc54f1 · enrichment dots→columns 8e0e25b
+- **State**: nothing in flight. Last commit `e9a0092` (River Guides item
+  (j) — expandable verify evidence on the exit chip) — pushed to
+  lane/frontend, typecheck green, browser-verified on a CLEAN rebuild
+  (69/467 evidence rows, click expands 467→468) + mobile 375. Session #3
+  units: deals→standard 6dbfd35 (+ FilterDropdown edge-flip) ·
+  enrichment→standard bbc54f1 · enrichment dots→columns 8e0e25b
   (+ InlineField `emptyLabel`) · companies dots→columns 090de21. Session
   #4 (resumed after overnight idle): river-guides item (c) fb481d7
-  (+ new lib/river-guide-display shared band/exit maps).
+  (+ new lib/river-guide-display) · river-guides item (j) e9a0092.
   **LIST-UX STANDARD is applied to all 7 list pages.** **Contact dots are
-  DEAD platform-wide** — `grep -rn "h-2 w-2 rounded-full" web/
-  --include=*.tsx` returns nothing.
-- **NEXT (in order)**: (1) directive item (j): surface the status-verify
-  worker's evidence (stored in river_guides.notes, e.g. "LinkedIn shows
-  Principal at Apex Land Group") on the /river-guides row — expand/hover
-  on the exit chip — so John/VA adjudicate the inconclusives fast. NOTE:
-  the CRM contact panel from (c) already renders `notes`-adjacent fields;
-  item (j) is specifically the /river-guides TABLE row. The exit chip is
-  at river-guides/page.tsx ~L588 (`{g.exit_status} {verified?✓:⚠}`);
-  river_guides.notes is already selected by the GET route (select *).
-  (2) TASK-QUEUE top-down. Run-visibility banner + river-guides columns
-  are DONE (PM 34186b1); item (c) done this session — don't redo either.
+  DEAD platform-wide.** **John's entire 7/16 river-guides directive
+  (b–j) is now shipped** (PM did b/d run-visibility+columns 34186b1;
+  Lane B did c + j this session).
+- **NEXT**: TASK-QUEUE top-down — the 7/16 river-guides list is fully
+  cleared. Re-read docs/TASK-QUEUE.md Lane B section from the top for
+  John's newest directives before picking; merge origin/main first (main
+  moves fast). Nothing river-guides-specific is left in Lane B.
+- **⚠️ Browser-pane gotcha (cost me ~15 min this session)**: the in-app
+  Browser's `read_console_messages` returns a STALE buffer — it kept
+  replaying Turbopack parse errors from a transient mid-edit save (file
+  was briefly unbalanced between the two Fragment edits) even after
+  `rm -rf .next/dev` + server restart. Tells that it's stale, not real:
+  (a) the error quotes line numbers that no longer match the file;
+  (b) `tsc --noEmit` exits 0; (c) `preview_logs level:error` = "No server
+  errors"; (d) client interactivity WORKS (a real parse error kills
+  onClick). Trust tsc + preview_logs + an interaction test over the
+  console buffer.
 - **Reusable from item (c)**: `web/lib/river-guide-display.ts` exports
   `BAND_LABEL`, `BAND_CHIP`, `exitDisplay(status, verified)`. Use it for
   item (j) instead of re-declaring — the /river-guides page still has its
