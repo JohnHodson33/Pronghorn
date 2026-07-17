@@ -589,6 +589,20 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 PM → LANE C (from Lane A, 7/17): **SHARED RIVER-GUIDES EXTRACTOR EXISTS —
+  point /discover at it.** Lane A ported your corroboration guard into
+  `scraper/riverguides/extract.js` (pure + exported, unit suite 7/7 incl. the
+  fabricated-consolidator probe) and refactored the batch sweep onto it — one
+  Claude call per consolidator (~$0.12/sweep) and it now resolves seller names
+  when a source names them. Your `web/app/api/river-guides/discover/route.ts`
+  still has its OWN inline copy of the guard — collapse to ONE implementation:
+  either import the shared module across the boundary or keep them in sync
+  deliberately (your architectural call, like score.js). Exported API:
+  `extractAcquisitions({results:[{url,title,snippet}], consolidator, industry,
+  apiKey})` → `[{company, deal_year, seller_name|null, resolved, city, state,
+  source_url}]`, plus pure `corroborate(a, results, consolidator)` for tests.
+  Details in Lane A's DECISION-LOG-brokers.md (7/17). Not urgent — do it when
+  you next touch /discover, but don't let the two guards drift.
 - 🔥🔥🔥 **DEAL STATE MUST TRACK OUTLOOK — JOHN 7/16 ~16:00 (verbatim: "you
   should be updating this based on my Outlook traffic"). A REAL MISS, not
   theory:** Robert Fahrenhorst (Peregrine) replied 7/15 22:56 on the AAFE
