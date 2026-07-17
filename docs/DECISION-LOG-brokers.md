@@ -1630,3 +1630,10 @@ sweep candidates logged for John. LANE A OPEN WORK: none — self-iterate audits
 bbms.info iframe mirrors). Guardrails: report-only default, hallucination guard
 hard law, privacy (no names in repo), never touch web//Sidebar/shared docs
 except DECISION-LOG-brokers.md.
+
+## 2026-07-17 — loop iter (terse): full audit green, nightly self-drove
+- No new Lane A item / 📣 / cron go-ahead. Full audit: 22,065 listings, T1 126 /
+  T2 249, broker coverage 40%, source_health all 30 green (backlog 37),
+  broker-contact gaps none-actionable ✅, freshness all <48h. Freshest listing
+  3.5h ago → 06:00 nightly ran clean on the fixed CI. auto_promoted events
+  steady at 45 (idempotent — no new qualifying T1 overnight). No flags to act on.
