@@ -1551,3 +1551,46 @@ LANE A OPEN WORK: none. Remaining TASK-QUEUE items are opportunistic
 (new-source hunt — frontier closed: don't re-probe NV/GA/NM, TX-assoc,
 FL-green; avoid BizBuySell/bbms.info iframe mirrors) + SELF-ITERATE audits
 (source_quality + source_health; act only on flags).
+
+## 2026-07-17 — river-guides extractor UNIFIED on Lane C's guard (shared module)
+- PM 7/17: don't rebuild the extractor — Lane C's /discover route already has a
+  battle-tested one (verbatim corroboration guard, PM-probed with a fake
+  consolidator). Extract it to a shared module both callers use.
+- **Built scraper/riverguides/extract.js** — canonical extractor + corroboration
+  guard, ported faithfully from web/app/api/river-guides/discover/route.ts:
+  the queried consolidator must literally appear (ALL distinctive tokens) in the
+  cited result, the model's acquirer_quote must be real text from it, and a
+  seller name is stored ONLY when a cited source names them (else TBD). Guard is
+  pure + exported; unit suite 7/7 incl. the PM's fabricated-consolidator probe
+  ("Test Sweep Probe" → files nothing), fake-quote, partial-token
+  (Perimeter Solutions ≠ "Perimeter"), and self-reference.
+- **Refactored river_guides_sweep.js onto it.** Wins from adopting Lane C's
+  shape: (a) ONE Claude call per consolidator (was ~291 per-result) → 49
+  extractions, ~$0.12/sweep; (b) it now RESOLVES seller names when a source
+  names them (RESOLVED rows w/ full_name, not just TBD) — a capability the
+  regex version never had. Sweep keeps its batch-only concerns: DB consolidator
+  list, dedupe, spec-§7 off-thesis filter, consolidator-is-not-an-add-on guard,
+  HIGH/MEDIUM tiering, idempotent upsert. Removed the dead regex extractor.
+- **Ran supervised --confirm: +7 new HIGH deals** (river_guides 460 → 467; 33
+  sweep rows total, 0 violating guarantees). Idempotent (re-run files 0).
+- **⬜ LANE C COORDINATION (can't do myself — web/ is not my lane):** /discover
+  should use scraper/riverguides/extract.js too (it mirrors score.js today, so
+  either import or mirror — Lane C's architectural call). Exported API:
+  `extractAcquisitions({results:[{url,title,snippet}], consolidator, industry,
+  apiKey}) → [{company, deal_year, seller_name|null, resolved, city, state,
+  source_url}]` and the pure `corroborate(a, results, consolidator)`. Asked PM
+  to place a 📣 in TASK-QUEUE for Lane C's booting successor.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-17 ~10:35: branch synced + pushed, tree clean.
+Both PM items DONE: listing-broker sweep (39.6% coverage, gaps ZERO, PM-verified)
++ river-guides consolidator sweep (LIVE, now on the SHARED extractor scraper/
+riverguides/extract.js; 33 filed, idempotent, ~$0.12/run, --confirm-gated).
+Earlier 7/16: CI Node-22 fix (06:00 cron self-drives); auto_promote LIVE +
+self-driving; regionState→core; source_quality gap de-noising.
+OPEN: (1) Lane C to adopt scraper/riverguides/extract.js in /discover (📣
+requested via PM; my side is done); (2) sweep is a weekly-cron candidate once
+PM OKs unattended --confirm; (3) opportunistic new-source hunt (frontier closed)
++ SELF-ITERATE audits. Guardrails unchanged: report-only default, hallucination
+guard is hard law, privacy (no names in repo), never touch web//Sidebar/shared
+docs except DECISION-LOG-brokers.md.
