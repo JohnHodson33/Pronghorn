@@ -1594,3 +1594,39 @@ PM OKs unattended --confirm; (3) opportunistic new-source hunt (frontier closed)
 + SELF-ITERATE audits. Guardrails unchanged: report-only default, hallucination
 guard is hard law, privacy (no names in repo), never touch web//Sidebar/shared
 docs except DECISION-LOG-brokers.md.
+
+## 2026-07-17 — NOTE: swept rows advance downstream (not a broken guarantee)
+- PM independently re-verified the sweep against live DB and flagged (correctly)
+  that swept rows do NOT stay TBD: as of ~10:40, of 33 RG-SWEEP-* rows, **17 are
+  now RESOLVED and 16 TBD** — the identity-resolution + Tier-1 workers picked up
+  our NEEDS_NAME deals and advanced them (some to CALL_NOW / T1_DONE). This is
+  the lifecycle working as designed, the handoff the spec intends.
+- **The sweep's guarantee ("we file blank: TBD/NEEDS_NAME, never a guessed
+  name") is about WRITE TIME and still holds** — verified in the payload: the
+  sweep only ever writes full_name=null / name_status=TBD (or RESOLVED only when
+  a source literally named the seller). Any RESOLVED RG-SWEEP-* row you see later
+  was named by a DOWNSTREAM worker from its own source, not guessed by the sweep.
+  current_status_verified is false on all 33 → correctly gated out of outreach
+  until the status-verify pass runs.
+- **For a successor:** do NOT read RESOLVED RG-SWEEP-* rows and conclude the
+  sweep guessed a name — that's the pipeline, not us. The sweep's contract is
+  the insert payload, not the row's later state.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-17 ~10:45: branch synced + pushed, tree clean.
+Both PM items DONE + PM-verified: listing-broker sweep (39.6% coverage, gaps
+ZERO) + river-guides consolidator sweep (LIVE on SHARED extractor scraper/
+riverguides/extract.js; Lane C's corroboration guard, 7/7 incl. fake-consolidator
+probe; ~$0.12/run, --confirm-gated; 33 filed, 17 since RESOLVED downstream —
+see note above). CI Node-22 fix (06:00 cron self-drives); auto_promote LIVE +
+self-driving; regionState→core; source_quality gap de-noising.
+OPEN (all external/waiting, none blocking): (1) Lane C to adopt scraper/
+riverguides/extract.js in /discover — 📣 requested via PM, lands when Lane C's
+successor boots; (2) sweep weekly-cron — PM recommends yes, HOLDING for John's
+word on unattended writes (do NOT cron it yourself); (3) 16 withheld MEDIUM
+sweep candidates logged for John. LANE A OPEN WORK: none — self-iterate audits
+(source_quality + source_health, act only on flags) + opportunistic source hunt
+(frontier closed: don't re-probe NV/GA/NM, TX-assoc, FL-green; avoid BizBuySell/
+bbms.info iframe mirrors). Guardrails: report-only default, hallucination guard
+hard law, privacy (no names in repo), never touch web//Sidebar/shared docs
+except DECISION-LOG-brokers.md.
