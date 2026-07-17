@@ -33,6 +33,18 @@ Ask "what's open?" anytime._
   moved off the pipeline board; findable on /deals forever.
 - **Tree Service (FCBB)**: CIM received, ready-to-promote in Key Actions.
 
+## 🟡 TWO SMALL DECISIONS (Lane A raised; no rush)
+1. **Weekly cron the river-guides consolidator sweep (~$0.17/run)?** It's live
+   and PM-verified (26 new deals filed 7/16, river_guides 434→460; 0 integrity
+   violations — files DEAL only, identity worker names the human, verbatim
+   guard makes fabrication structurally impossible, unit-tested 11/11). Today
+   it needs a manual --confirm. Cron-ing it means unattended writes — safe
+   given the guard, but your call. PM recommends yes (weekly).
+2. **16 MEDIUM-confidence candidates were found but deliberately NOT written**
+   (every past defect came from a MEDIUM source — aggregator profiles, an FB
+   post, an irrigation-board PDF). They're confirmable by a human from their
+   source_urls. Want them surfaced somewhere reviewable, or leave them out?
+
 ## 💡 TIMELY INTEL (PM surfaced 7/16 eve — your call whether to act)
 - **Pool Troopers sellers = a second-liquidity-event cluster, right now.**
   Lane A's consolidator sweep independently caught that **SPS PoolCare
