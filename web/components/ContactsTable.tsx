@@ -34,7 +34,12 @@ const roleStyle: Record<string, string> = {
   investor: "bg-purple-100 text-purple-800",
   recruiter: "bg-pink-100 text-pink-700",
   network: "bg-cyan-100 text-cyan-800",
+  river_guide: "bg-orange-100 text-orange-800",
 };
+
+// John's terms, not the raw enum — river_guide (the ingest tag, outside
+// CONTACT_ROLES) reads "river guide" in the filter and the badge.
+const roleLabel = (role: string) => (role === "river_guide" ? "river guide" : role);
 
 const inputCls = "rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-600";
 
@@ -162,7 +167,7 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
               </th>
               <th className="px-4 py-3">
                 <FilterDropdown header label="Role"
-                  options={Object.entries(roles).sort((a, b) => b[1] - a[1]).map(([r, n]) => ({ value: r, label: r, count: n }))}
+                  options={Object.entries(roles).sort((a, b) => b[1] - a[1]).map(([r, n]) => ({ value: r, label: roleLabel(r), count: n }))}
                   selected={asSet(role)} onChange={(s) => setRole([...s].join(","))} />
               </th>
               <th className="px-4 py-3">
@@ -191,7 +196,7 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
                 <td className="whitespace-nowrap px-4 py-3">
                   {c.role ? (
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${roleStyle[c.role] ?? "bg-zinc-100 text-zinc-600"}`}>
-                      {c.role}
+                      {roleLabel(c.role)}
                     </span>
                   ) : (
                     "—"

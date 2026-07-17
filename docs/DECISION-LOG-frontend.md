@@ -5,23 +5,35 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 
 ## 🔄 HANDOFF — session #3/#4 (7/17 ~morning) — successor resumes here
 
-- **State**: nothing in flight. Last commit `e9a0092` (River Guides item
-  (j) — expandable verify evidence on the exit chip) — pushed to
-  lane/frontend, typecheck green, browser-verified on a CLEAN rebuild
-  (69/467 evidence rows, click expands 467→468) + mobile 375. Session #3
-  units: deals→standard 6dbfd35 (+ FilterDropdown edge-flip) ·
-  enrichment→standard bbc54f1 · enrichment dots→columns 8e0e25b
-  (+ InlineField `emptyLabel`) · companies dots→columns 090de21. Session
-  #4 (resumed after overnight idle): river-guides item (c) fb481d7
-  (+ new lib/river-guide-display) · river-guides item (j) e9a0092.
-  **LIST-UX STANDARD is applied to all 7 list pages.** **Contact dots are
-  DEAD platform-wide.** **John's entire 7/16 river-guides directive
-  (b–j) is now shipped** (PM did b/d run-visibility+columns 34186b1;
-  Lane B did c + j this session).
-- **NEXT**: TASK-QUEUE top-down — the 7/16 river-guides list is fully
-  cleared. Re-read docs/TASK-QUEUE.md Lane B section from the top for
-  John's newest directives before picking; merge origin/main first (main
-  moves fast). Nothing river-guides-specific is left in Lane B.
+- **State**: nothing in flight. Last commit `6b85caf` (Contacts: humanize
+  the river_guide role) — pushed to lane/frontend, typecheck green,
+  browser-verified (?role=river_guide → 269 rows). Session #4 (resumed
+  after overnight idle) units: river-guides item (c) fb481d7 (+ new
+  lib/river-guide-display) · river-guides item (j) e9a0092 · contacts
+  river_guide humanize 6b85caf. Session #3 units: deals→standard 6dbfd35
+  (+ FilterDropdown edge-flip) · enrichment→standard bbc54f1 · enrichment
+  dots→columns 8e0e25b (+ InlineField `emptyLabel`) · companies
+  dots→columns 090de21.
+  **LIST-UX STANDARD applied to all 7 list pages. Contact dots DEAD
+  platform-wide. John's ENTIRE 7/16 river-guides directive (a–j) is
+  shipped** — verified done, don't redo: b/d run-visibility+columns (PM
+  34186b1), c + j (this session), price estimate (page.tsx ~L463-485,
+  "Enrich selected … est. $X"), discovery bar, reachability (h), sortable
+  headers (i), full-width (g). The Contacts "River Guide filter chip"
+  (b) = the Role header dropdown (269), now humanized.
+- **NEXT — the big remaining Lane B item is the MOBILE CARD-COLLAPSE
+  SWEEP** (John 7/12 STANDING RULE + LIST-UX item 6: "tables collapse to
+  card layouts under ~640px instead of tiny columns"). Today every table
+  is mobile-*usable* via ScrollShell horizontal scroll (no body overflow)
+  but does NOT collapse to cards under 640px — that's the gap. This is
+  cross-cutting (all 7 tables); scope it as its own multi-commit unit,
+  probably a shared `<CardList>`/responsive-row helper so it's one pattern
+  not seven. Merge origin/main first. Smaller recovered ⬜ items to CHECK
+  (LIST-UX may already have resolved them): Broker Directory "in Contacts
+  ✓" deep-link (ContactsTable already has `?broker=` + brokerId state —
+  likely just needs the Broker page to link it); "industry chips
+  click-to-filter" (chips are GONE — replaced by header dropdowns, so
+  likely moot); /sources v2 health table (loaders in lib/dashboard.ts).
 - **⚠️ Browser-pane gotcha (cost me ~15 min this session)**: the in-app
   Browser's `read_console_messages` returns a STALE buffer — it kept
   replaying Turbopack parse errors from a transient mid-edit save (file
