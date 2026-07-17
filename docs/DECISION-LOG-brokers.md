@@ -1494,3 +1494,60 @@ Run `node river_guides_sweep.js` (safe) to see candidates.
 NEXT: (1) the Claude-extraction upgrade for the sweep, then --confirm; (2)
 opportunistic new-source hunt (frontier closed — don't re-probe NV/GA/NM,
 TX-assoc, FL-green; avoid BizBuySell/bbms.info iframe mirrors).
+
+## 2026-07-17 — river-guides sweep SHIPPED LIVE: 26 new add-on deals filed (Claude extraction + verbatim guard)
+- Completed the upgrade the last entry handed off. **Regex → Claude (Haiku)
+  extraction, guard kept.** The model reads only the fetched text and is told
+  never to use outside knowledge; every answer then passes verifyExtraction,
+  which requires the name to appear VERBATIM in that text. The model supplies
+  the linguistic judgement regex could not ("Thornton's Tree Service" = real
+  name vs "Fairport's Precision Pool" = geo possessive); the guard supplies the
+  integrity. Fabrication is structurally impossible: unit-tested — an invented
+  "Evergreen Lawn Care LLC" is rejected because it isn't in the source.
+- **Guard suite 11/11**, incl. every defect the regex version produced: person
+  names ("Mike Bartlett and Scott Thompson"), descriptors ("Houston-based"),
+  mis-attribution (Constellation's "Juniper Group" vs Juniper Landscaping),
+  acquirer-restated, and hallucination. Guard is exported + tested independently
+  of any model call, so it can't silently rot.
+- **New guards found by live measurement:** (a) a CONSOLIDATOR is never an
+  add-on — a run proposed "Yummy Pools → Pool Troopers", both platforms we
+  track, off a broker's list page; (b) confidence tiering — every HIGH row came
+  from a real announcement (prnewswire / the acquirer's own site / trade press)
+  and was correct, while every observed defect came from a MEDIUM source
+  (aggregator profile, Facebook post, an irrigation-district board PDF that
+  wasn't an acquisition). So **HIGH auto-files; MEDIUM is reported for a human,
+  never written**.
+- **RESULT: 26 new deals filed** (Tree 12, Lawn 6, Pool 6, Landscape 1, Fencing
+  1) — river_guides 434 → 460. Verified: **0 rows violate the guarantees** (all
+  TBD / UNKNOWN / HIGH, all with a real source_url). Every row is
+  name_status=TBD + enrichment_status=NEEDS_NAME + priority_band=
+  RESOLVE_NAME_FIRST → the identity worker names the humans; we never guessed
+  one. exit_status=UNKNOWN (spec §6.2 point-in-time; the seed's own value for
+  unverified) — never inferred from an announcement.
+- Fixed en route: deal_id truncation collided distinct deals ("Seacoast Tree
+  Care and Turf" vs "…and Seacoast Turf Care") and one collision aborted all 22
+  rows → now a hash-suffixed deterministic id + upsert(ignoreDuplicates), so a
+  re-run is a harmless no-op. **Idempotency verified: re-run files 0.**
+- Cost-metered (recordUsage): full sweep = 50 Serper queries + ~291 Haiku
+  extractions ≈ **$0.17**. Within existing keys/plans.
+- Writes still require --confirm (report-only default) — a scheduled or
+  accidental run can never file unattended.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-07-17 ~01:20: branch synced + pushed, tree clean.
+**Both PM-assigned items are DONE:** (1) listing-broker sweep — CLOSED +
+PM-verified (39.6% coverage, actionable gaps ZERO); (2) river-guides
+consolidator sweep — LIVE, 26 deals filed, idempotent, guard-tested.
+TODAY ALSO: CI Node-22 fix (ended 3-day outage, merged, 06:00 cron self-drives);
+auto_promote LIVE + self-driving (45 events); regionState→core; source_quality
+gap de-noising; tupelomarket measured 0/90 → disabled.
+RIVER-GUIDES NEXT (optional, for whoever picks it up): (a) 16 MEDIUM candidates
+are reported but unfiled by design — a human could confirm them from their
+source_urls; (b) the sweep is a good nightly/weekly cron candidate (~$0.17/run)
+once someone is comfortable with --confirm running unattended — I left it manual
+deliberately; (c) Archetype B (LinkedIn recipes, spec §5) is a separate intake
+path, NOT this pipeline.
+LANE A OPEN WORK: none. Remaining TASK-QUEUE items are opportunistic
+(new-source hunt — frontier closed: don't re-probe NV/GA/NM, TX-assoc,
+FL-green; avoid BizBuySell/bbms.info iframe mirrors) + SELF-ITERATE audits
+(source_quality + source_health; act only on flags).
