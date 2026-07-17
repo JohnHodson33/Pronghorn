@@ -26,6 +26,26 @@ export type CompanyListing = {
 
 export type MultipleComparison = MarketCheck;
 
+// A river-guide link (0016): this company was sold to a consolidator and its
+// former owner is a River Guide prospect. company_id points here; contact_id
+// points at the promoted contact once one exists.
+export type RiverGuideLink = {
+  dealId: string;
+  fullName: string | null;
+  theirCompany: string;
+  acquirer: string | null;
+  sponsor: string | null;          // acquirer_pe_sponsor
+  acquirerWebsite: string | null;
+  dealYear: number | null;
+  exitStatus: string;              // EXITED | EMPLOYED | UNKNOWN (at close)
+  verified: boolean;               // current_status_verified
+  band: string | null;             // priority_band
+  enrichmentStatus: string;
+  notes: string | null;            // verify-worker evidence lives here
+  contactId: string | null;
+  companyId: string | null;
+};
+
 export type CompanyDetail = {
   company: {
     id: string;
@@ -61,7 +81,11 @@ export type CompanyDetail = {
     phone: string | null;
     linkedin: string | null;
     notes: string | null;
+    riverGuide: RiverGuideLink | null; // set when this contact was a river guide
   }[];
+  // river guides whose FORMER company is this one (company_id FK) — drives the
+  // header banner. Usually one; a list keeps multi-owner exits honest.
+  riverGuides: RiverGuideLink[];
   activities: { id: number; kind: string; body: string | null; doc_url: string | null; created_at: string }[];
   listings: CompanyListing[];
   comparison: MultipleComparison | null;
@@ -131,6 +155,33 @@ export async function fetchCompanyDetail(id: string): Promise<CompanyDetail | nu
     .from("company_shortlist")
     .select("person, note, created_at")
     .eq("company_id", id);
+
+  // River-guide links (0016): rows whose former company is this one, OR whose
+  // promoted contact is on this company. Tolerant — a missing table costs
+  // nothing, so pre-migration CRMs are unaffected.
+  const contactIds = (contacts ?? []).map((p) => p.id);
+  const rgOr = [`company_id.eq.${id}`];
+  if (contactIds.length) rgOr.push(`contact_id.in.(${contactIds.join(",")})`);
+  const { data: rgRows } = await db
+    .from("river_guides")
+    .select("deal_id, full_name, their_company, acquirer, acquirer_pe_sponsor, acquirer_website, deal_year, exit_status, current_status_verified, priority_band, enrichment_status, notes, contact_id, company_id")
+    .or(rgOr.join(","));
+  const riverGuides: RiverGuideLink[] = ((rgRows ?? []) as Record<string, unknown>[]).map((r) => ({
+    dealId: String(r.deal_id),
+    fullName: (r.full_name as string | null) ?? null,
+    theirCompany: String(r.their_company ?? ""),
+    acquirer: (r.acquirer as string | null) ?? null,
+    sponsor: (r.acquirer_pe_sponsor as string | null) ?? null,
+    acquirerWebsite: (r.acquirer_website as string | null) ?? null,
+    dealYear: r.deal_year != null ? Number(r.deal_year) : null,
+    exitStatus: String(r.exit_status ?? "UNKNOWN"),
+    verified: !!r.current_status_verified,
+    band: (r.priority_band as string | null) ?? null,
+    enrichmentStatus: String(r.enrichment_status ?? ""),
+    notes: (r.notes as string | null) ?? null,
+    contactId: (r.contact_id as string | null) ?? null,
+    companyId: (r.company_id as string | null) ?? null,
+  }));
 
   type LRow = {
     id: string; name: string | null; url: string | null; source_id: string | null;
@@ -234,7 +285,12 @@ export async function fetchCompanyDetail(id: string): Promise<CompanyDetail | nu
       peOwner: ((c as Record<string, unknown>).pe_owner as string | null) ?? null,
     },
     deal,
-    contacts: contacts ?? [],
+    contacts: (contacts ?? []).map((p) => ({
+      ...p,
+      riverGuide: riverGuides.find((rg) => rg.contactId === p.id) ?? null,
+    })),
+    // header banner = river guides whose FORMER company is this one
+    riverGuides: riverGuides.filter((rg) => rg.companyId === id),
     activities: activities ?? [],
     listings,
     comparison,
