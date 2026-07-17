@@ -15,41 +15,58 @@
 //      contains BOTH the consolidator name AND the target name in an
 //      acquisition phrase. The target is a verbatim slice of that text — we
 //      never generate a name.
-//   3. No model is used for extraction. Deterministic regex over fetched text
-//      only, so nothing can be imagined.
+//   3. Claude (Haiku) READS the fetched text and reports the target; it is told
+//      never to use outside knowledge. It supplies only the linguistic
+//      judgement regex could not: "Thornton's Tree Service" is a real name
+//      while "Fairport's Precision Pool" is a geo possessive — indistinguishable
+//      by pattern. Everything it returns then goes through verifyExtraction.
 //   4. Every row carries provenance (source_url + source_confidence). No
 //      sourceless rows (spec §6.3).
 //   5. Owner names are NEVER guessed: every new row is TBD / NEEDS_NAME
 //      (spec §6.1). We file the DEAL; resolving the human is a separate job.
+//   6. Only HIGH-confidence rows auto-file (see the tiering note in main()).
 // PRIVACY: writes to Supabase only. Nothing about real people is ever written
 // to this repo (the repo is public; see the privacy rule in the integration doc).
 //
-// ⚠️ STATUS 7/16 — REPORT-ONLY BY DEFAULT (--confirm to write). Measured on a
-// live 50-consolidator sweep: FINDING deals works well (every source_url came
-// back real + on-thesis: Bartlett→Olympia Tree Care, ExperiGreen→Turf Masters,
-// Arbor Alliance→Thornton's Tree Service, LawnPro→Sea of Green…). NAMING them
-// from snippets does not, and four rounds of regex tightening kept trading one
-// defect for another:
-//   · person names captured as the company ("Mike Bartlett and Scott Thompson")
-//   · sentence fragments ("Florida to the family")
-//   · near-dupes of one deal ("JC Pool Services" / "JC Pools Services")
-//   · possessives are ambiguous — "Fairport's Precision Pool" (geo, strip) vs
-//     "Thornton's Tree Service" (the actual name, keep). Regex cannot tell.
-//   · off-thesis subsidiaries (Davey RESOURCE GROUP utility/engineering deals,
-//     which spec §7 excludes).
-// NEXT STEP (handoff): keep this Serper discovery layer, but extract the target
-// name with Claude (ANTHROPIC_API_KEY is already wired for the screener) and
-// keep guard #2 — require the model's answer to appear VERBATIM in the fetched
-// text, else drop. That gives the linguistic judgement regex lacks while making
-// fabrication structurally impossible. Until then this stays report-only:
-// filing half-parsed names into a shared table is worse than filing nothing.
+// ⚠️ WRITES REQUIRE --confirm (report-only default), so a scheduled or
+// accidental run can never file rows unattended into a table John reads.
+//
+// WHY CLAUDE, NOT REGEX (measured 7/16): four rounds of regex tightening kept
+// trading one defect for another — person names as the company ("Mike Bartlett
+// and Scott Thompson"), fragments ("Florida to the family"), near-dupes, and a
+// possessive-strip that mangled the real "Thornton's Tree Service" into "Tree
+// Service". Claude + the verbatim guard fixed all of them on the same inputs.
+// The guard is what keeps this honest: the model can say anything, but a name
+// that is not literally in the fetched text cannot be filed.
 //
 // Usage: node river_guides_sweep.js [--confirm] [--limit N] [--acquirer "Name"]
 
 require('dotenv').config();
+const crypto = require('crypto');
+const Anthropic = require('@anthropic-ai/sdk');
 const { supabase } = require('./core/db');
 const { recordUsage } = require('./core/usage');
 const log = require('./utils/logger');
+
+const MODEL = 'claude-haiku-4-5-20251001';
+const HAIKU_COST = 0.0004; // ≈ per extraction call, same order as classify_industries
+
+// The model reads the fetched text and reports what it says — it never supplies
+// knowledge. Everything it returns is re-checked verbatim against the source
+// (verifyExtraction), so a fabricated name cannot survive.
+const EXTRACT_SYSTEM = `You extract acquisition facts from a search result about a business consolidator.
+
+Given the consolidator name and the result text, identify the company the consolidator ACQUIRED (the "add-on"/target).
+
+STRICT RULES:
+- Report ONLY what the text literally states. Never use outside knowledge.
+- The target must be a COMPANY name, never a person's name, never a place, never a descriptor ("Houston-based"), never a sentence fragment.
+- Return the company's full name EXACTLY as written in the text (character-for-character, including any possessive like "Thornton's Tree Service").
+- If the text is about the consolidator being acquired/owned, a different company's deal, a non-acquisition, or you are unsure → target must be null.
+- If the acquirer in the text is a DIFFERENT company that merely shares a word with the consolidator (e.g. a software "Juniper Group" vs a landscaping "Juniper"), target must be null.
+- deal_year: 4-digit year ONLY if the text states it, else null.
+
+Respond ONLY with JSON: {"target": "<exact company name>" | null, "deal_year": <year> | null}`;
 
 const SERPER_COST = 0.001;
 // SAFETY DEFAULT: report-only unless --confirm is passed explicitly. Regex
@@ -69,6 +86,10 @@ const BAD_TARGET = /\b(acquisition|acquisitions|company|companies|business|busin
 // the verb, so they can swallow dates/pronouns/sentence lead-ins that the
 // forward pattern never sees. These reject that noise.
 const NOISE_TARGET = /\b(19|20)\d{2}\b|\b(we|our|us|they|it|he|she|who|today|inc|transaction)\b|^(january|february|march|april|may|june|july|august|september|october|november|december)\b/i;
+// Spec §7 excludes these arms — not owner-operator sellers, so not river guides:
+// utility line-clearance, distribution/supply, and engineering/consulting units
+// (Davey RESOURCE GROUP's power-transmission deals surfaced in the live sweep).
+const OFF_THESIS = /\b(line[- ]clearance|utility vegetation|resource group|distribution|distributor|supply group|wholesale|manufactur\w+|engineering solutions|power transmission)\b/i;
 
 function norm(s) {
   return String(s || '').toLowerCase().replace(/\b(inc|llc|ltd|co|corp|company|group|holdings|the)\b/g, '').replace(/[^a-z0-9]/g, '');
@@ -85,8 +106,72 @@ async function serper(q) {
 }
 
 /**
- * Extract (acquirer, target) pairs that literally appear in `text`.
- * Returns [] unless the acquisition phrase is present verbatim — the guard.
+ * THE GUARD. Accept a model-proposed target only if the source text supports it.
+ * Pure + synchronous so it is unit-testable against the known-bad cases, and so
+ * every write path is forced through the same check.
+ */
+function verifyExtraction(target, text, acquirer, industry, consolidators) {
+  if (!target || typeof target !== 'string') return null;
+  const full = text.replace(/\s+/g, ' ');
+  const t = target.trim().replace(/[.,;\s]+$/, '');
+
+  // 1. VERBATIM: the name must appear literally in the fetched text. This is
+  //    what makes fabrication impossible regardless of what the model says.
+  if (!full.toLowerCase().includes(t.toLowerCase())) return null;
+  // 2. The acquirer must literally appear too (word-bounded) — else it's someone
+  //    else's deal being restated.
+  const acqEsc = acquirer.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (!new RegExp(`\\b${acqEsc}\\b`, 'i').test(full)) return null;
+  // 3. Mis-attribution guard: a short single-word consolidator ("Juniper")
+  //    collides with unrelated firms — demand industry context in the text.
+  const generic = !/\s/.test(acquirer) && acquirer.length <= 10;
+  if (generic) {
+    const VERT = /\b(landscap\w*|lawn|turf|tree|arbor\w*|pool|spa|fence|fencing|irrigation|kitchen|foodservice|grounds|pest)\b/i;
+    if (!VERT.test(full) && !(industry && new RegExp(`\\b${industry.split(/[^a-z]/i)[0]}`, 'i').test(full))) return null;
+  }
+  // 4. Shape: not the acquirer restated, not a descriptor, not junk.
+  if (t.length < 3 || t.length > 70) return null;
+  if (STOP_TARGET.test(t) || BAD_TARGET.test(t)) return null;
+  if (/^[A-Za-z]+[- ]based$/i.test(t)) return null;
+  if (norm(t) === norm(acquirer) || norm(t).includes(norm(acquirer))) return null;
+  if (!norm(t)) return null;
+  // 5. People are not companies. The prompt forbids it, but the guard must not
+  //    depend on the model obeying — a verbatim check alone can't catch this,
+  //    since "Mike Bartlett and Scott Thompson" really is in the source text.
+  if (/^[A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+and\s+[A-Z][a-z]+\s+[A-Z][a-z]+)+$/.test(t)) return null;
+  // 6. A CONSOLIDATOR is not an add-on. Pages that list many firms (broker
+  //    "sell your business" pages, aggregator profiles) invite pairing two
+  //    platforms together — a live run proposed "Yummy Pools → Pool Troopers",
+  //    both of which are consolidators we already track.
+  if (consolidators && consolidators.some((c) => norm(c) === norm(t))) return null;
+  return t;
+}
+
+/**
+ * Ask Claude what the text says was acquired, then verify it verbatim.
+ * The model supplies linguistic judgement (regex could not tell "Thornton's
+ * Tree Service" — a real name — from "Fairport's Precision Pool" — a geo
+ * possessive); the guard supplies the integrity.
+ */
+async function extractWithClaude(client, text, acquirer, industry, consolidators) {
+  const res = await client.messages.create({
+    model: MODEL,
+    max_tokens: 80,
+    system: EXTRACT_SYSTEM,
+    messages: [{ role: 'user', content: JSON.stringify({ consolidator: acquirer, industry: industry || null, text: text.slice(0, 900) }) }],
+  });
+  const raw = (res.content[0]?.text ?? '').replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
+  let parsed;
+  try { parsed = JSON.parse(raw); } catch { return null; }
+  const target = verifyExtraction(parsed.target, text, acquirer, industry, consolidators);
+  if (!target) return null;
+  const year = Number.isInteger(parsed.deal_year) && parsed.deal_year >= 2000 && parsed.deal_year <= 2030 ? parsed.deal_year : null;
+  return { target, deal_year: year };
+}
+
+/**
+ * LEGACY regex extractor — retained only for the unit suite / comparison.
+ * Superseded by extractWithClaude: it could not name reliably (see header).
  */
 function extractTargets(text, acquirer, industry) {
   if (!text) return [];
@@ -168,36 +253,53 @@ async function main() {
   const known = new Set(rows.map((r) => `${norm(r.acquirer)}|${norm(r.their_company)}`));
   const meta = new Map(); // acquirer -> {industry, sponsor}
   for (const r of rows) if (r.acquirer && !meta.has(r.acquirer)) meta.set(r.acquirer, { industry: r.industry, sponsor: r.acquirer_pe_sponsor });
-  let acquirers = [...meta.keys()].filter(Boolean);
+  const acquirersAll = [...meta.keys()].filter(Boolean); // full list = the "is a consolidator" check
+  let acquirers = acquirersAll;
   if (ONLY_ACQ) acquirers = acquirers.filter((a) => a.toLowerCase() === ONLY_ACQ.toLowerCase());
   log.info(`Sweep: ${acquirers.length} consolidator(s) from DB, ${known.size} known (acquirer,company) pairs`);
 
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const found = [];
   let queries = 0;
+  let extractions = 0;
   for (const acq of acquirers) {
     try {
       const j = await serper(`"${acq}" acquires OR acquired`);
       queries++;
       for (const r of (j.organic || [])) {
         const text = [r.title, r.snippet].filter(Boolean).join('. ');
-        for (const target of extractTargets(text, acq, (meta.get(acq) || {}).industry)) {
-          const key = `${norm(acq)}|${norm(target)}`;
-          if (known.has(key)) continue;          // already have this deal
-          if (found.some((f) => f.key === key)) continue;
-          known.add(key);
-          const m = meta.get(acq) || {};
-          found.push({
-            key,
-            acquirer: acq,
-            their_company: target,
-            industry: m.industry || null,
-            acquirer_pe_sponsor: m.sponsor || null,
-            source_url: r.link || null,
-            // Snippet-sourced → MEDIUM at best; the acquirer's own domain → HIGH.
-            source_confidence: r.link && new RegExp(norm(acq).slice(0, 8), 'i').test(norm(r.link)) ? 'HIGH' : 'MEDIUM',
-            evidence: text.slice(0, 240),
-          });
-        }
+        // Spec §7 excludes utility line-clearance / distribution / engineering
+        // arms — they aren't owner-operator sellers (e.g. Davey RESOURCE GROUP).
+        if (OFF_THESIS.test(text)) continue;
+        // Cheap prefilter: only spend a model call when the text plausibly
+        // describes an acquisition involving this consolidator.
+        if (!new RegExp(`\\b${acq.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(text)) continue;
+        if (!/\b(acquir\w+|acquisition|merge[sd]?|joins|joined|now part of)\b/i.test(text)) continue;
+
+        let hit;
+        try {
+          hit = await extractWithClaude(client, text, acq, (meta.get(acq) || {}).industry, acquirersAll);
+          extractions++;
+        } catch (e) { continue; }
+        if (!hit) continue;                       // model unsure, or guard rejected
+
+        const key = `${norm(acq)}|${norm(hit.target)}`;
+        if (known.has(key)) continue;             // already have this deal
+        if (found.some((f) => f.key === key)) continue;
+        known.add(key);
+        const m = meta.get(acq) || {};
+        found.push({
+          key,
+          acquirer: acq,
+          their_company: hit.target,
+          deal_year: hit.deal_year,
+          industry: m.industry || null,
+          acquirer_pe_sponsor: m.sponsor || null,
+          source_url: r.link || null,
+          // Snippet-sourced → MEDIUM at best; the acquirer's own domain → HIGH.
+          source_confidence: r.link && new RegExp(norm(acq).slice(0, 8), 'i').test(norm(r.link)) ? 'HIGH' : 'MEDIUM',
+          evidence: text.slice(0, 240),
+        });
       }
       await new Promise((r) => setTimeout(r, 400));
     } catch (err) {
@@ -205,16 +307,40 @@ async function main() {
     }
   }
   if (queries) await recordUsage('serper', 'river_guides_sweep', queries, queries * SERPER_COST, { kind: 'consolidator_sweep' });
+  if (extractions) await recordUsage('anthropic', 'river_guides_sweep', extractions, extractions * HAIKU_COST, { kind: 'target_extraction', model: MODEL });
 
-  const batch = found.slice(0, LIMIT);
-  log.info(`Sweep found ${found.length} candidate add-on(s) not already in river_guides (filing ${batch.length}, ${queries} queries ≈ $${(queries * SERPER_COST).toFixed(3)})`);
-  for (const f of batch) log.info(`  ${DRY ? '[dry-run] ' : ''}${f.acquirer} → ${f.their_company} [${f.source_confidence}] ${f.source_url || ''}`);
-  if (DRY || batch.length === 0) { log.info(`Sweep complete — ${DRY ? 'dry run, nothing written' : 'nothing new'}`); return; }
+  // CONFIDENCE TIERING (measured 7/16): every HIGH row came from a real
+  // announcement (prnewswire, the acquirer's own site, trade press) and was
+  // correct; every observed defect came from a MEDIUM source (aggregator
+  // profiles, a Facebook post, an irrigation-district board PDF that isn't an
+  // acquisition at all). So HIGH auto-files; MEDIUM is reported for a human,
+  // never written. Cheap rule, and it maps exactly onto the observed split.
+  // Two sources phrase one deal differently ("Precision Pool & Spa" vs
+  // "…of Fairport"). Collapse same-acquirer names where one contains the other,
+  // keeping the shorter — Claude returns full names, so the longer variant is a
+  // geo/qualifier suffix rather than a truncation.
+  const collapsed = found.filter((f) => !found.some((g) => g !== f
+    && norm(g.acquirer) === norm(f.acquirer)
+    && norm(f.their_company).includes(norm(g.their_company))
+    && norm(g.their_company).length < norm(f.their_company).length));
+
+  const high = collapsed.filter((f) => f.source_confidence === 'HIGH');
+  const medium = collapsed.filter((f) => f.source_confidence !== 'HIGH');
+  const batch = high.slice(0, LIMIT);
+  const cost = queries * SERPER_COST + extractions * HAIKU_COST;
+  log.info(`Sweep: ${collapsed.length} candidate(s) not already in river_guides — ${high.length} HIGH (auto-file), ${medium.length} MEDIUM (review only). ${queries} queries + ${extractions} extractions ≈ $${cost.toFixed(3)}`);
+  for (const f of batch) log.info(`  ${DRY ? '[dry-run] ' : ''}FILE  ${f.acquirer} → ${f.their_company} [HIGH] ${f.source_url || ''}`);
+  for (const f of medium) log.info(`        review ${f.acquirer} → ${f.their_company} [MEDIUM] ${f.source_url || ''}`);
+  if (DRY || batch.length === 0) { log.info(`Sweep complete — ${DRY ? 'REPORT-ONLY (pass --confirm to file the HIGH rows)' : 'nothing new to file'}`); return; }
 
   // 2. File as Archetype A, name TBD. We file the DEAL; naming the human who
   //    sold is the identity-resolution worker's job (never guessed here).
   const payload = batch.map((f) => ({
-    deal_id: `sweep-${norm(f.acquirer).slice(0, 12)}-${norm(f.their_company).slice(0, 14)}`,
+    // Deterministic id → a re-run proposes the same key, so an accidental
+    // double-run can't fan out duplicates (and it marks sweep provenance).
+    // Hash suffix because truncating the name collided distinct deals
+    // ("Seacoast Tree Care and Turf" vs "…and Seacoast Turf Care").
+    deal_id: `RG-SWEEP-${norm(f.their_company).slice(0, 18)}-${crypto.createHash('md5').update(f.key).digest('hex').slice(0, 6)}`,
     full_name: null,
     name_status: 'TBD',
     archetype: 'A_EXITED_OPERATOR',
@@ -225,19 +351,29 @@ async function main() {
     source: 'consolidator-sweep',
     source_url: f.source_url,
     source_confidence: f.source_confidence,
-    exit_status: null,             // point-in-time; unknown until verified (spec §6.2)
+    // exit_status is point-in-time and we have NOT verified it (spec §6.2), so
+    // it is UNKNOWN — the value the seed already uses for exactly this case.
+    // Never inferred from the announcement.
+    exit_status: 'UNKNOWN',
     current_status_verified: false,
     enrichment_status: 'NEEDS_NAME',
+    priority_band: 'RESOLVE_NAME_FIRST',  // matches how the seed bands NEEDS_NAME rows
+    deal_year: f.deal_year,               // only when the source stated it
     notes: `Auto-swept ${new Date().toISOString().slice(0, 10)}. Evidence: "${f.evidence}"`,
   }));
-  const { data: ins, error: insErr } = await supabase.from('river_guides').insert(payload).select('id');
+  // Upsert w/ ignoreDuplicates: deterministic ids make a re-run a harmless no-op
+  // instead of a fatal batch abort (one collision previously killed all 22 rows).
+  const { data: ins, error: insErr } = await supabase.from('river_guides')
+    .upsert(payload, { onConflict: 'deal_id', ignoreDuplicates: true }).select('deal_id');
   if (insErr) { log.error(`insert failed: ${insErr.message}`); process.exit(1); }
   log.info(`Sweep complete — ${ins.length} new add-on(s) filed as TBD/NEEDS_NAME`);
 }
 
 // Exported for tests: extractTargets is the hallucination guard, so it should
 // be exercisable in isolation (incl. the mis-attribution cases).
-module.exports = { extractTargets, norm };
+// verifyExtraction is THE guard — exported so it can be unit-tested against
+// hallucinated/known-bad model answers independently of any live model call.
+module.exports = { verifyExtraction, extractTargets, norm };
 
 if (require.main === module) {
   main().catch((err) => { log.error(err.message); process.exit(1); });
