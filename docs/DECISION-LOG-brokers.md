@@ -1637,3 +1637,21 @@ except DECISION-LOG-brokers.md.
   broker-contact gaps none-actionable ✅, freshness all <48h. Freshest listing
   3.5h ago → 06:00 nightly ran clean on the fixed CI. auto_promoted events
   steady at 45 (idempotent — no new qualifying T1 overnight). No flags to act on.
+
+## 2026-07-18 — loop iter (terse): 7/18 nightly self-drove, full audit GREEN
+- Nightly-scrape cron `0 13 * * *` UTC confirmed on **main** (default branch —
+  required for schedules to fire); GitHub delivers it ~85min late (7/17 fired
+  14:25, 7/18 started 14:16 UTC, conclusion=success). Schedule healthy, no fix
+  needed — the lateness is GitHub scheduler congestion at the :00 slot, not ours.
+- POST-NIGHTLY audit (run once, on completion): 22,460 active listings, T1 126 /
+  T2 253, broker coverage 40%; source_health all 30 green (backlog 37);
+  broker-contact gaps none-actionable ✅; freshness all <48h. No flags to act on.
+- auto_promote verified caught-up via `--dry-run`: 45 T1 candidates clear DB
+  criteria, all 45 already reviewed → 0 opened. 0 events is CORRECT steady state
+  (idempotent; nightly brought in no new qualifying T1), not a failure.
+- Rotating parse spot-check: **gabb** clean (valid GA cities/states, sane
+  financials; low yield is genuine — it's a restaurants/bars marketplace).
+  **linkbusiness** location-sparse (city null on newest rows) BUT 0 thesis-fit
+  (0 T1/T2, already flagged low-value) → not actionable; fixing its geo parse
+  surfaces zero deals. Deprioritized-source status unchanged.
+- NIGHTLY-WATCH pointer → next nightly ~13:00 UTC 7/19 (expect ~14:20 landing).
