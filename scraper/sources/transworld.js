@@ -17,10 +17,26 @@
 // capped at max_detail_enrich. Toggle with config.enrich_details.
 
 const SourceScraper = require('../core/source_base');
-const { stateFromText } = require('../core/states');
+const { stateFromText, regionState, STATE_CODES } = require('../core/states');
 
 const DELAY_MS = 1500;
 const DETAIL_DELAY_MS = 900;
+const STATE_ABBRS = new Set(Object.values(STATE_CODES));
+
+// The DETAIL API's `location` is richer than the search feed (which leaves some
+// listings state-less) but arrives in mixed shapes: a bare code ("OH"), a region
+// + code (" Eastern NC"), or "County, State" ("Maricopa County, Arizona").
+// stateFromText handles the last; regionState handles metro shorthands; add a
+// bare/embedded 2-letter-code fallback — safe HERE because this is a structured
+// geography field, not free title text (where a stray "IN"/"OR" would misfire).
+function stateFromDetailLoc(loc) {
+  if (!loc) return null;
+  const viaText = stateFromText(loc) || regionState(loc);
+  if (viaText) return viaText;
+  const codes = String(loc).toUpperCase().match(/\b[A-Z]{2}\b/g) || [];
+  for (const code of codes) if (STATE_ABBRS.has(code)) return code;
+  return null;
+}
 
 class TransworldScraper extends SourceScraper {
   async scrape() {
@@ -126,10 +142,21 @@ class TransworldScraper extends SourceScraper {
           const ebitda = this.parseMoney(det.ebitda_price);
           if (ebitda) { l.cash_flow = ebitda; l.cash_flow_type = 'EBITDA'; }
         }
+        // Backfill STATE from the richer detail location when the search feed
+        // left it blank (John 7/15: thesis-fit deals must not show empty
+        // location). Costs nothing — this detail page is already fetched. City
+        // stays null: Transworld only ever publishes state/region/county.
+        // NOTE: the canonical field is l.location.state — filters.js derives
+        // priority_state and db_output persists state from THERE, not l.state.
+        if (l.location && !l.location.state) {
+          const st = stateFromDetailLoc(det.location);
+          if (st) l.location.state = st;
+        }
         l.raw = {
           ...l.raw,
           year_established: det.year_established || null,
           reason_for_sale: det.reason_for_sale || null,
+          detail_location: det.location || null, // county/region text (no city published)
           broker_license: emp && emp.license ? emp.license : null,
           office: emp && emp.office ? emp.office.name : null,
         };

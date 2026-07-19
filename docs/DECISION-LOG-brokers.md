@@ -1655,3 +1655,13 @@ except DECISION-LOG-brokers.md.
   (0 T1/T2, already flagged low-value) → not actionable; fixing its geo parse
   surfaces zero deals. Deprioritized-source status unchanged.
 - NIGHTLY-WATCH pointer → next nightly ~13:00 UTC 7/19 (expect ~14:20 landing).
+
+## 2026-07-19 — 7/19 nightly audit GREEN + transworld STATE-backfill fix (John's empty-location class)
+- 7/19 nightly ran clean (started 14:20 UTC, conclusion=success; ~85min-late as usual). POST-NIGHTLY audit: freshest 0.4h; source_health 30/30 green (backlog 36, −1); source_quality broker-gaps none-actionable ✅, freshness all <48h; auto_promote caught-up via --dry-run (45/45 reviewed, 0 new = correct steady state).
+- Rotating parse spot-check surfaced a REAL, actionable gap (not gabb/linkbusiness this round): **transworld** — 58 thesis-fit (T1/T2) rows, 0 had a city and 2 had NO STATE at all ("Niche…Water Management" T2, "Strong ROI HVAC" T2). Empty-location on green-thesis deals = exactly John's 7/15 SOCAL-class complaint.
+- ROOT CAUSE: transworld's SEARCH API `location` is state-name-only (city null is documented + genuinely unpublished — like linkbusiness, NOT a bug). But the DETAIL API (already fetched for the cash_flow ≥ $300K subset = every thesis-fit row) carries a RICHER `listing.location`: sometimes a bare code ("OH"), region+code (" Eastern NC"), or "County, State" ("Maricopa County, Arizona"). The search pass left 2 rows state-less because stateFromText can't read a bare/region-prefixed code.
+- FIX (scraper/sources/transworld.js): added `stateFromDetailLoc()` (stateFromText → regionState → validated bare/embedded 2-letter-code fallback; safe because this is a STRUCTURED geo field, not free title text) and backfill `l.location.state` in enrichDetails when the search feed left it blank. ZERO extra requests (detail page already fetched). City stays null (honest — transworld never publishes it); richer text saved to raw.detail_location.
+- Caught my own bug pre-commit: first wrote `l.state` (top-level) — but filters.js:56 derives priority_state and db_output persists from `l.location.state`. Corrected to `l.location.state`.
+- VERIFIED END-TO-END against the live detail API via the real enrichDetails path: Water→state=OH, HVAC→state=NC (0 errors, brokers also captured); then applyRelevanceFilters flags the NC row priority_state=TRUE (NC is a priority state — a previously-invisible T2 HVAC deal now surfaces starred). Self-heals on the 7/20 nightly (both rows are enrich-eligible; db_output update path re-writes state + priority_state on re-upsert).
+- dealrelations spot-check: 3 thesis-fit, 0 null-state (regionState fallback holding), 2 null-city — minor, aggregator, not actionable.
+- NIGHTLY-WATCH pointer → next nightly ~13:00 UTC 7/20 (expect ~14:20 landing).
