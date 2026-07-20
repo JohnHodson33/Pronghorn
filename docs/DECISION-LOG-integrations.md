@@ -2,19 +2,50 @@
 
 ## 🤝 HANDOFF (keep current — replacement session resumes from this)
 
-🛑 **SESSION STOOD DOWN 7/20 (context limit) — successor #2 handing off. READ
-THIS BLOCK FIRST; everything below is older.** Branch `lane/integrations`
-clean + fully pushed, **HEAD 300fb8f**. Worktree
-`C:\Users\johnd\Pronghorn-integrations`. This session shipped SIZE-FOR-EVERYONE
-(100% of on-target base) + BROKER INQUIRY TEMPLATE — see the "7/20 SESSION #2"
-block just below. Gates at stand-down: no feedback, migration 0019 still
-pending John, no queued river-guide runs. **NEXT for the successor** (detail in
-the "NEXT" block below): (1) Tracerfy person-mode for river-guide phones —
-DESIGN QUESTION first: guides have name + city/state but NO street address;
-decide (a) trace on the former-company address, (b) Tracerfy name+city+state
-lookup if the API supports it, or (c) only trace guides that have a street
-address; (2) once John runs 0019 → `node ingest_deal_mail.js --hours 168`
-seeds real deal proposals.
+🟢 **SESSION #3 ACTIVE (started 7/20 ~12:00) — READ THIS BLOCK FIRST; everything
+below is older.** Worktree `C:\Users\johnd\Pronghorn-integrations`, branch
+`lane/integrations`, merged with origin/main. Working the two top-of-queue John
+7/20 units: (1) COSTS ✅ SHIPPED this session; (2) SELF-SERVE DATA INTAKE — in
+progress.
+
+**7/20 SESSION #3 — SHIPPED:**
+- **COSTS: UPWORK VA + MONTH vs YTD** (John 7/20 🔥🔥🔥). (a) Manual cost-entry
+  path: `POST /api/costs/manual` {cost_usd, units?, service?, activity?, note?,
+  entered_by:John|Tom, dated?} → `usage_events` (default service `upwork`,
+  activity `va_enrichment`, meta.source='manual'; `dated` places it in the right
+  window). `GET /api/costs/manual` lists recent manual entries (verify what was
+  logged). Flows through variable spend like any service. (b) `/api/costs` now
+  returns TWO windows — `month` and `ytd` — each `{label, subscriptions,
+  variable, byService[], byActivity[], total}`, plus shared `quotas`,
+  `costPerContact`, `ownerContactsAcquired`, `subscriptions[]`. **Legacy
+  top-level fields (`monthTotal`/`subsMonthly`/`variableTotal`/`byService`/
+  `byActivity`) still mirror `month.*` so the current Sidebar badge does NOT
+  break** — Lane B migrates to `month`/`ytd` on its own timeline. YTD variable =
+  usage_events since Jan 1 (PAGINATED — no silent 1000-row cap). YTD subs =
+  active subs × months active this year (fractional accrual from `start_date`,
+  else assumed active since Jan 1 — DISCLOSED in `ytd.note`, never a silent
+  fabrication). Migration **0020** adds `subscriptions.start_date` (nullable) to
+  make YTD subs exact for mid-year subs — degrades clean if unapplied (falls
+  back to Jan-1). Verified live math: subsMonthly $54, month var $12.06 →
+  monthTotal $66.06; subsYtd ~$356 (Jan-1 assumption), ytdTotal ~$368.
+  **LANE B: render both columns + the log-a-cost form** (POST /api/costs/manual).
+  **JOHN: apply migration 0020** (optional — only makes mid-year sub YTD exact;
+  set start_date on Vercel Pro once it actually starts billing).
+
+**PRIOR SESSION (#2) — SHIPPED (still true):** SIZE-FOR-EVERYONE (100% of
+on-target base, 375/375) + BROKER INQUIRY TEMPLATE. Detail in the "7/20 SESSION
+#2" block below.
+
+**STILL PENDING JOHN (unchanged):** migration 0019 (deal_proposals) → then
+`node ingest_deal_mail.js --hours 168` seeds real deal proposals. Sample card
+611290ff + repo-visibility PARKED (don't chase).
+
+**NEXT for this session / a successor:** (2) SELF-SERVE DATA INTAKE (in
+progress — POST /api/intake ingest engine); then TASK-QUEUE top-down —
+(3) Tracerfy person-mode for river-guide phones (DESIGN QUESTION first: guides
+have name + city/state but NO street address; decide (a) trace former-company
+address, (b) Tracerfy name+city+state if the API supports it, or (c) only trace
+guides with a street address).
 
 **7/20 SESSION #2 (active) — SHIPPED:**
 - **BROKER INQUIRY TEMPLATE** (72294ee): scraper/draft_inquiry.js was the last
