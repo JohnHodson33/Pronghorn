@@ -121,6 +121,12 @@ export async function POST(req: Request) {
     const citedText = `${cited?.title ?? ""} ${cited?.snippet ?? ""}`;
     const quoteIsReal = a.acquirer_quote ? norm(citedText).includes(norm(a.acquirer_quote).slice(0, 40)) : false;
     if (!mentionsConsolidator(citedText) || !quoteIsReal) { rejected++; continue; }
+    // the add-on must not BE the consolidator restated (model sometimes echoes
+    // the acquirer back as its own acquisition). Kept in sync with the shared
+    // corroborate() in scraper/riverguides/extract.js — DELIBERATE duplicate
+    // (Vercel can't bundle the scraper CommonJS module); if you change one
+    // guard here, change the other. Lane A owns extract.js.
+    if (norm(a.company) === norm(consolidator)) { rejected++; continue; }
     const resolved = Boolean(sellerOk);
     if (dryRun) { inserted++; if (resolved) named++; seen.add(`${norm(a.company)}|${norm(consolidator)}`); continue; }
     const row = {
