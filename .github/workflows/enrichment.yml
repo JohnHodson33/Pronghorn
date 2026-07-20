@@ -50,3 +50,11 @@ jobs:
           EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
           HUNTER_API_KEY: ${{ secrets.HUNTER_API_KEY }}
         run: node enrich/run_enrichment.js --limit ${{ github.event.inputs.limit || '25' }}
+      # size EVERY newly-enriched lead PPP can't cover (John 7/20 — "size for as
+      # many companies as possible"). One Claude estimate/lead, ~$0.001, idempotent.
+      - name: Non-PPP size estimates for the tail
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node enrich/size_estimate.js --limit 60
