@@ -5,6 +5,7 @@
 import Link from "next/link";
 import PinnedViews from "@/components/PinnedViews";
 import TagNoteCard from "@/components/TagNoteCard";
+import DealProposalCard from "@/components/DealProposalCard";
 import { fetchDashboardV3 } from "@/lib/dashboard-v3";
 
 export const dynamic = "force-dynamic";
@@ -68,6 +69,8 @@ export default async function Dashboard() {
               <li key={i}>
                 {a.kind === "note_tag" ? (
                   <TagNoteCard action={a} />
+                ) : a.kind === "deal_proposal" ? (
+                  <DealProposalCard action={a} />
                 ) : (
                 <Link href={a.href} className="flex items-center gap-3 px-5 py-3 hover:bg-emerald-50/50">
                   <span className="text-lg">{actionIcon[a.kind]}</span>
