@@ -39,7 +39,8 @@
       "max_pages": 80,
       "enrich_details": true,
       "enrich_min_cash_flow": 300000,
-      "max_detail_enrich": 150
+      "max_detail_enrich": 300,
+      "_comment": "~642 listings clear the $300K enrich floor; cap raised 150→300 (7/20) after finding only 14/56 thesis-fit rows had a broker linked — the old cap + scrape-order slicing dropped high-value deals. enrichDetails now sorts by cash flow DESC so the cap protects the top deals. ~300 detail fetches ≈ 5-6 min added to the nightly."
     },
     "sunbelt": {
       "enabled": true,

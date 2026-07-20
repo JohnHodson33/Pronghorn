@@ -102,8 +102,14 @@ class TransworldScraper extends SourceScraper {
   async enrichDetails(page, listings) {
     const minCash = this.config.enrich_min_cash_flow ?? 300000;
     const cap = this.config.max_detail_enrich ?? 150;
+    // Sort by cash flow DESC before the cap: ~642 listings clear the $300K floor
+    // but only `cap` get enriched, so slicing in scrape order was silently
+    // dropping high-value thesis-fit deals (7/20: a $1.8M HVAC T2 listing never
+    // got its broker OR state backfill). Highest-value first makes the cap
+    // protect the deals that matter most.
     const targets = listings
       .filter((l) => l.cash_flow != null && l.cash_flow >= minCash)
+      .sort((a, b) => b.cash_flow - a.cash_flow)
       .slice(0, cap);
     if (targets.length === 0) { this.info('Detail enrichment: no listings meet threshold'); return; }
     this.info(`Detail enrichment: ${targets.length} listing(s) (cash flow ≥ ${minCash}, cap ${cap})`);
