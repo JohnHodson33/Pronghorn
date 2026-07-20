@@ -16,9 +16,10 @@ pushed, **HEAD fad9aa2**. Worktree `C:\Users\johnd\Pronghorn-integrations`.
   reads every signal (reviews, years, service area, overview) → revenue range +
   confidence (capped 'medium') + basis, stored size_signals.ai_estimate;
   web/lib/size.ts falls through to it so **no company is blank**. **COVERAGE:
-  51 → 223 of 457 enriched leads sized (49%), climbing as the batch finishes
-  the ~152-lead tail.** Wired into enrichment.yml (2x-daily, 60/run). Lane B:
-  surface size.confidence on the chip + basis on hover.
+  51 → 375/375 on-target enriched leads sized (100%) — 335 AI estimates +
+  PPP/structured, 0 unsized tail.** Wired into enrichment.yml (2x-daily,
+  60/run) so new leads stay covered. Lane B: surface size.confidence on the
+  chip + basis on hover.
   ⚠️ Future lever for John (don't build yet): sub-$150k PPP files (11M rows)
   or a firmographic API for the residual — sample cost/accuracy first.
 

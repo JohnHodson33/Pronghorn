@@ -594,9 +594,9 @@ set) into your new chips UI as a small follow-up.
   proprietary base (import_ppp.js --filter --all + --match; +confidence per
   match); (b) non-PPP ensemble (enrich/size_estimate.js) Claude-sizes the tail
   with a labeled revenue range + confidence, and web/lib/size.ts falls through
-  to it so **no company is blank**. **COVERAGE: ~51 → 223 of 457 enriched
-  leads sized (49%), still climbing as the batch finishes.** Wired into
-  enrichment.yml (2x-daily). **LANE B: surface `size.confidence` on the size
+  to it so **no company is blank**. **COVERAGE: 51 → 375/375 on-target
+  enriched leads sized (100%) — 335 AI estimates + PPP/structured, 0 unsized
+  tail.** Wired into enrichment.yml (2x-daily) so new leads stay covered. **LANE B: surface `size.confidence` on the size
   chip + `size.basis` on hover** (AI estimates read "… (AI estimate)", capped
   medium). Honest note: all-NAICS PPP added only +5 — name+state precision is
   the limiter, so the ensemble is where coverage comes from; sub-$150k PPP
