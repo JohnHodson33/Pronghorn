@@ -120,6 +120,27 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 🔥🔥🔥 **COSTS PAGE: MONTH + YTD COLUMNS + LOG-A-COST (John 7/20; pairs w/
+  Lane C's /api/costs two-window rewrite):** show spend as **two columns —
+  This Month | Year-to-Date** — each with the SAME breakdown: Subscriptions
+  (Hunter quota-only $0, Vercel Pro $20) + Variable by service (serper, exa,
+  claude, hunter, tracerfy, **upwork**), then total + cost-per-contact. Add a
+  small **"Log a cost"** form (John/Tom) → POST /api/costs/manual for the
+  Upwork VA (amount, hours-or-contacts, date, note) so invoiced spend lands in
+  variable. Mobile parity. (Cost badge in the sidebar can stay month-only; the
+  full month+YTD view lives on the costs page.)
+- 🔥🔥🔥 **DATA INTAKE UPLOAD PORTAL — FOR TOM (John 7/20; self-serve file
+  upload, its own page like/near Improvements):** a page (PM wires Sidebar)
+  where John/Tom **drag-drop a CSV/xlsx** of contacts / companies / river
+  guides / VA-enriched data → it uploads (signed-URL direct to Supabase
+  Storage) → Lane C's /api/intake parses + Claude-column-maps + shows a
+  **PREVIEW** ("we read 240 rows → 210 contacts, 25 companies, 5 river guides;
+  8 skipped — here's why; N look like dupes") → John/Tom **Confirm import** →
+  receipt of what landed + links to spot-check. Type auto-detected from
+  columns w/ a manual override dropdown. This is the self-serve version of the
+  by-hand PM ingest; Tom must be able to run it with zero agent involvement.
+  Reuse the enrichment run-visibility banner pattern for progress. Mobile
+  parity. Coordinate the contract with Lane C's intake card.
 - 🔥🔥🔥 **ENRICHMENT RUN VISIBILITY ON RIVER GUIDES + KILL THE DOTS (John
   7/16 ~12:50 — TOP OF LANE, supersedes ordering below; his words: "I click
   the button, I have no idea if it's actually working, no idea when it's
@@ -589,6 +610,34 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 🔥🔥🔥 **COSTS: UPWORK VA + MONTHLY vs YTD (John 7/20):** (a) **Upwork VA
+  enters variable spend.** The VA (Upwork, ~$6/hr, enriching existing
+  contacts) is invoiced not API-metered → add a MANUAL cost-entry path: POST
+  /api/costs/manual → usage_events {service:'upwork', activity:'va_enrichment',
+  cost_usd, units (hours or contacts), meta:{note, entered_by John|Tom,
+  dated}}. It then flows through variableTotal like any service. (b)
+  **/api/costs returns TWO windows, same breakdown each:** `month` (current
+  calendar month) AND `ytd` (Jan 1 → now) — each {subscriptions, variable,
+  byService[], total}. Subs YTD = active subs × months elapsed this year (add
+  subscriptions.start_date via migration if you want it exact); variable YTD =
+  usage_events since Jan 1. Keep costPerContact + quotas. (Lane B renders both
+  columns + the log-a-cost form.) Hunter stays flat-sub $0-marginal.
+- 🔥🔥🔥 **SELF-SERVE DATA INTAKE — TOM CAN UPLOAD FILES (John 7/20; the
+  self-serve version of what John does via the PM channel):** John/Tom upload
+  a file (CSV/xlsx of contacts, companies, river guides, or VA-enriched data)
+  → parsed → categorized → slotted into the right tables automatically.
+  (Lane C = ingest engine) POST /api/intake/upload (signed-URL direct to
+  Supabase Storage, per the >4.5MB pattern) → ingest worker: Claude-assisted
+  COLUMN MAPPING (like ingest_river_guides.js — arbitrary headers → our
+  fields), detect RECORD TYPE (contact / company / river_guide /
+  enrichment-fill) from columns or a user hint, dedupe (person+company /
+  domain / deal_id), route to the right table, RETURN A RECEIPT (X contacts,
+  Y companies, Z river guides created/updated; N skipped + why). HARD RULES:
+  uploaded values WIN over enrichment (fill-blanks, don't overwrite); never
+  invent a field not in the file; provenance = uploaded_by + filename + date;
+  PREVIEW/CONFIRM before the write (no silent bulk import). Reuse the
+  river-guides ingest + PM's by-hand contact/company creation patterns.
+  (Lane B builds the upload UI — see Lane B card.)
 - 📣 LANE C 7/20 ~11:35 — 🛑 **LANE C AT CONTEXT LIMIT — NEEDS A FRESH SESSION.**
   Branch clean + pushed (HEAD 300fb8f); the HANDOFF top of
   docs/DECISION-LOG-integrations.md resumes a successor cold. This session
