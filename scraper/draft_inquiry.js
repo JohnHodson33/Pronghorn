@@ -1,31 +1,53 @@
-// Inquiry draft CLI — same prompt as /api/outbox, runnable with the scraper's
-// existing ANTHROPIC_API_KEY so draft QUALITY is verifiable before John arms
-// the web route. Drafts only; queues only with --queue (never sends anything).
+// Inquiry draft CLI — JOHN'S VERBATIM MESSAGE IS THE CONTRACT (7/13 eve;
+// customize ONLY {broker first name} + {industry}). Deterministic, $0, no LLM:
+// John gave an exact message and does not want the model improvising it.
+// This is a CommonJS MIRROR of web/lib/inquiry.ts buildBrokerInquiry() — kept
+// deliberately in sync (Vercel/scraper can't share a module across the
+// boundary); if you change the copy in one, change the other.
+// Identity: inquiry_profiles 774f21ce — John Hodson · jhodson@pronghornequity.com
+// · (503) 899-0058 — NEVER the gmail.
 //
 // Usage:
 //   node draft_inquiry.js --listing <uuid> [--queue]
 //   node draft_inquiry.js --demo            # draft against a live Tier-1 listing, print only
 
 require('dotenv').config({ path: require('path').resolve(__dirname, './.env') });
-const Anthropic = require('@anthropic-ai/sdk');
 const { supabase } = require('./core/db');
 const log = require('./utils/logger');
 
-const SYSTEM = `You draft short broker-inquiry emails for Pronghorn Equity Partners, a committed-capital firm doing roll-ups in essential home/property services. Voice: direct, credible, warm-professional — a real buyer writing quickly, not a template blast.
-
-Rules:
-- 120-180 words. No fluff, no "I hope this finds you well".
-- Reference 2-3 SPECIFICS from the listing (industry, geography, size, revenue mix) so the broker knows it was read.
-- Ask 2-3 smart diligence questions appropriate for a FIRST inquiry (revenue recurrence/mix, owner involvement, reason for sale, customer concentration — pick what the listing leaves open).
-- State that Pronghorn is a committed-capital buyer active in this exact vertical; NDA-ready.
-- Sign with the sender block provided.
-- Output valid JSON only: {"subject": "...", "body": "..."} (body uses \\n for line breaks).`;
-
-const PROFILE = {
-  name: 'John D. Hodson — Managing Director, Pronghorn Equity Partners',
-  email: 'jhodson@pronghornequity.com',
-  phone: '(503) 899-0058',
+// natural phrasing for the {industry} slot (John's example: "landscaping /
+// lawn care") — mirror of web/lib/inquiry.ts INDUSTRY_PHRASE.
+const INDUSTRY_PHRASE = {
+  'Lawn Care': 'landscaping / lawn care', 'Landscaping': 'landscaping / lawn care',
+  'Tree Care': 'tree care', 'Pest Control': 'pest control', 'Pool Services': 'pool services',
+  'Lake/Pond Management': 'lake and pond management', 'HVAC': 'HVAC services',
+  'Plumbing': 'plumbing services', 'Electrical': 'electrical services', 'Roofing': 'roofing',
+  'Fencing': 'fencing', 'Irrigation': 'irrigation services', 'Cleaning/Janitorial': 'commercial cleaning',
+  'Restoration': 'restoration services', 'Property Maintenance': 'property maintenance',
 };
+const industryPhrase = (i) => (!i ? 'business services' : (INDUSTRY_PHRASE[i] ?? String(i).toLowerCase()));
+
+/** First name from a broker's full name — no guessing beyond the first token. */
+function brokerFirstName(fullName) {
+  const first = String(fullName ?? '').trim().split(/\s+/)[0] ?? '';
+  return /^[A-Za-z][A-Za-z'.-]*$/.test(first) ? first : null;
+}
+
+/** John's verbatim broker-inquiry message. */
+function buildBrokerInquiry(listing, brokerName) {
+  const first = brokerFirstName(brokerName);
+  const greeting = first ? `Hi ${first},` : 'Hello,';
+  const industry = industryPhrase(listing.industry);
+  const body = [
+    greeting, '',
+    `My name is John Hodson, and I am a Managing Director at Pronghorn Equity Partners. We are a lower middle market private equity fund that focuses on business services assets across the US. We are spending a lot of time in the ${industry} space and would love to get some additional information on the below listing.`,
+    '',
+    'Are you able to share the NDA and any initial materials? It would also be helpful to hop on an introductory call to learn more and introduce myself.',
+    '', 'Looking forward to it.', '', 'Best,', 'John Hodson',
+  ].join('\n');
+  const ref = listing.name ?? listing.source_id ?? 'your listing';
+  return { subject: `Inquiry: ${ref}`, body };
+}
 
 async function main() {
   const arg = (f) => { const i = process.argv.indexOf(f); return i > -1 ? process.argv[i + 1] : null; };
@@ -40,31 +62,12 @@ async function main() {
   if (!listingId) { console.error('Usage: node draft_inquiry.js --listing <uuid> [--queue] | --demo'); process.exit(1); }
 
   const { data: l, error } = await supabase.from('listings')
-    .select('id, name, industry, city, state, asking_price, cash_flow, cash_flow_type, gross_revenue, description, source_id, brokers(name, email, brokerage)')
+    .select('id, name, industry, city, state, source_id, brokers(name, email, brokerage)')
     .eq('id', listingId).single();
   if (error) throw new Error(error.message);
   const broker = Array.isArray(l.brokers) ? l.brokers[0] : l.brokers;
 
-  const anthropic = new Anthropic();
-  const msg = await anthropic.messages.create({
-    model: 'claude-haiku-4-5-20251001', max_tokens: 600, system: SYSTEM,
-    messages: [{
-      role: 'user',
-      content: JSON.stringify({
-        listing: {
-          title: l.name, industry: l.industry, location: [l.city, l.state].filter(Boolean).join(', '),
-          asking_price: l.asking_price, cash_flow: l.cash_flow ? `${l.cash_flow} (${l.cash_flow_type ?? 'SDE'})` : null,
-          revenue: l.gross_revenue ?? null, description: (l.description || '').slice(0, 1500), source: l.source_id,
-        },
-        sender: PROFILE,
-      }),
-    }],
-  });
-  const raw = msg.content[0].text.trim().replace(/^```json?\s*|\s*```$/g, '');
-  const draft = JSON.parse(raw);
-  const { recordUsage } = require('./core/usage');
-  await recordUsage('claude', 'drafting', msg.usage.input_tokens + msg.usage.output_tokens,
-    msg.usage.input_tokens * 0.8e-6 + msg.usage.output_tokens * 4e-6, { listing: l.id });
+  const draft = buildBrokerInquiry(l, broker?.name);
 
   console.log(`\nTO: ${broker?.email || '(no broker email — co-pilot path)'}  (${broker?.name || ''} ${broker?.brokerage ? '· ' + broker.brokerage : ''})`);
   console.log(`SUBJECT: ${draft.subject}\n`);
