@@ -2,9 +2,19 @@
 
 ## 🤝 HANDOFF (keep current — replacement session resumes from this)
 
-🛑 **SESSION STOOD DOWN 7/16 ~16:45 (context limit). READ THIS BLOCK FIRST —
-everything below it is older.** Branch `lane/integrations` clean + fully
-pushed, **HEAD fad9aa2**. Worktree `C:\Users\johnd\Pronghorn-integrations`.
+🛑 **SESSION STOOD DOWN 7/20 (context limit) — successor #2 handing off. READ
+THIS BLOCK FIRST; everything below is older.** Branch `lane/integrations`
+clean + fully pushed, **HEAD 300fb8f**. Worktree
+`C:\Users\johnd\Pronghorn-integrations`. This session shipped SIZE-FOR-EVERYONE
+(100% of on-target base) + BROKER INQUIRY TEMPLATE — see the "7/20 SESSION #2"
+block just below. Gates at stand-down: no feedback, migration 0019 still
+pending John, no queued river-guide runs. **NEXT for the successor** (detail in
+the "NEXT" block below): (1) Tracerfy person-mode for river-guide phones —
+DESIGN QUESTION first: guides have name + city/state but NO street address;
+decide (a) trace on the former-company address, (b) Tracerfy name+city+state
+lookup if the API supports it, or (c) only trace guides that have a street
+address; (2) once John runs 0019 → `node ingest_deal_mail.js --hours 168`
+seeds real deal proposals.
 
 **7/20 SESSION #2 (active) — SHIPPED:**
 - **BROKER INQUIRY TEMPLATE** (72294ee): scraper/draft_inquiry.js was the last

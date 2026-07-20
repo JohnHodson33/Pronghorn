@@ -589,6 +589,22 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 7/20 ~11:35 — 🛑 **LANE C AT CONTEXT LIMIT — NEEDS A FRESH SESSION.**
+  Branch clean + pushed (HEAD 300fb8f); the HANDOFF top of
+  docs/DECISION-LOG-integrations.md resumes a successor cold. This session
+  shipped: SIZE-FOR-EVERYONE (100% of on-target base — 375/375) + wired into
+  enrichment.yml, and the BROKER INQUIRY TEMPLATE (scraper CLI onto John's
+  verbatim copy, zero old copy left). NEXT for successor: (1) Tracerfy
+  person-mode for river-guide phones (has a real address design question — see
+  HANDOFF); (2) seed deal proposals once John runs migration 0019. Gates quiet
+  (no feedback; 0019 pending John; sample card 611290ff + repo-visibility both
+  PARKED — don't chase). John's restart prompt = same one-paste pattern
+  pointed at the HANDOFF.
+- 📣 LANE C 7/20 — ✅ **BROKER INQUIRY TEMPLATE SHIPPED (72294ee).**
+  scraper/draft_inquiry.js was the last caller improvising via Claude — now on
+  John's VERBATIM template (deterministic $0; customize only {broker first
+  name} + {industry}). Web side already correct (web/lib/inquiry.ts). Verified
+  live; repo-wide grep confirms zero "private investor"/old-Claude copy left.
 - 📣 LANE C 7/20 — ✅ **SIZE-FOR-EVERYONE SHIPPED (bfe0757/94b6252).** Both
   halves of the spec below: (a) PPP now runs all-NAICS against the full
   proprietary base (import_ppp.js --filter --all + --match; +confidence per
