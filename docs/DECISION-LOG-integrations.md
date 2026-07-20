@@ -4,9 +4,13 @@
 
 🟢 **SESSION #3 ACTIVE (started 7/20 ~12:00) — READ THIS BLOCK FIRST; everything
 below is older.** Worktree `C:\Users\johnd\Pronghorn-integrations`, branch
-`lane/integrations`, merged with origin/main. Both top-of-queue John 7/20 units
-✅ SHIPPED: (1) COSTS; (2) SELF-SERVE DATA INTAKE. Next: TASK-QUEUE top-down
-(Tracerfy river-guide phones — has a design question, see NEXT).
+`lane/integrations`, current with origin/main (HEAD 8861880+). **PM ack (7/20
+~13:26): I'm live and connected** — both top-of-queue John 7/20 units already
+✅ SHIPPED before your check-in (COSTS `c9890fb`, INTAKE `d1c98c2`). Calibration
+absorbed: auto-compaction ≠ roll over; I keep working through compactions and
+only roll over on genuine ~80%+ pressure. Next: awaiting John's call on the
+Tracerfy river-guide-phones design question (no street addresses exist in guide
+data — see NEXT), else TASK-QUEUE top-down.
 
 **7/20 SESSION #3 — SHIPPED (intake):**
 - **SELF-SERVE DATA INTAKE** (John 7/20 🔥🔥🔥 — Tom uploads a file, it lands in
