@@ -22,7 +22,7 @@ function subsectorOf(industry: string | null): string | null {
 }
 
 export type KeyAction = {
-  kind: "promote" | "send_inquiry" | "nda" | "stale" | "deadline" | "queued_email" | "note_tag";
+  kind: "promote" | "send_inquiry" | "nda" | "stale" | "deadline" | "queued_email" | "note_tag" | "deal_proposal";
   label: string;
   detail: string;
   href: string;
@@ -31,6 +31,19 @@ export type KeyAction = {
   // can tag in place instead of navigating
   refId?: string;
   docUrl?: string | null;
+  // deal_proposal only (0019): an Outlook-classified next_step change awaiting
+  // John's approval — the card approves/dismisses in place, never auto-applies.
+  proposal?: {
+    id: string;
+    dealId: string;
+    nextStep: string | null;
+    nextStepDue: string | null;
+    evidence: string | null;
+    meetingWhen: string | null;
+    confidence: string | null;
+    sourceFrom: string | null;
+    sourceUrl: string | null;
+  };
 };
 
 export type FunnelStep = { label: string; count: number; kind: "prospecting" | "deal" };
@@ -144,6 +157,16 @@ export async function fetchDashboardV3(): Promise<DashboardV3 | null> {
     .order("created_at", { ascending: false })
     .limit(10);
 
+  // Deal next-step changes proposed from Outlook replies (0019) — John
+  // approves/dismisses each. A human decision, so it joins the queue like the
+  // untagged notes; tolerant of the pre-0019 world (error → no proposals).
+  const proposalsRes = await db
+    .from("deal_proposals")
+    .select("id, deal_id, proposed_next_step, proposed_next_step_due, evidence, meeting_when, confidence, source_from, source_url, created_at, deals(name)")
+    .eq("status", "pending")
+    .order("created_at", { ascending: false })
+    .limit(20);
+
   type Review = {
     status: string;
     notes: string | null;
@@ -199,6 +222,35 @@ export async function fetchDashboardV3(): Promise<DashboardV3 | null> {
       urgent: true,
       refId: String(n.id),
       docUrl: n.doc_url,
+    });
+  }
+  type ProposalRow = {
+    id: string; deal_id: string; proposed_next_step: string | null;
+    proposed_next_step_due: string | null; evidence: string | null;
+    meeting_when: string | null; confidence: string | null;
+    source_from: string | null; source_url: string | null; created_at: string;
+    deals: { name: string } | { name: string }[] | null;
+  };
+  for (const p of (proposalsRes.data ?? []) as ProposalRow[]) {
+    const deal = Array.isArray(p.deals) ? p.deals[0] : p.deals;
+    const due = p.proposed_next_step_due ? ` (due ${p.proposed_next_step_due})` : "";
+    actions.push({
+      kind: "deal_proposal",
+      label: `Deal update from Outlook: ${deal?.name ?? "a deal"}`,
+      detail: `${p.proposed_next_step ?? "next step"}${due} — from ${p.source_from ?? "a reply"}`,
+      href: `/deals/${p.deal_id}`,
+      urgent: true,
+      proposal: {
+        id: String(p.id),
+        dealId: String(p.deal_id),
+        nextStep: p.proposed_next_step,
+        nextStepDue: p.proposed_next_step_due,
+        evidence: p.evidence,
+        meetingWhen: p.meeting_when,
+        confidence: p.confidence,
+        sourceFrom: p.source_from,
+        sourceUrl: p.source_url,
+      },
     });
   }
   if (viewsLive) {
