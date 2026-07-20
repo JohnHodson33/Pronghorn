@@ -66,6 +66,11 @@ interface SizeSignals {
   locations?: number | null;
   linkedin_employee_band?: string | null;
   ppp?: { jobs?: number | null; loan?: number | null; date?: string | null } | null;
+  // non-PPP ensemble fallback (John 7/20): a worker (enrich/size_estimate.js)
+  // has Claude read every captured signal and returns a revenue range +
+  // confidence + basis for the tail structured signals can't size. Used ONLY
+  // when no structured signal path fires — always lower-confidence than PPP.
+  ai_estimate?: { revenue?: [number, number] | null; confidence?: SizeConfidence | null; basis?: string | null } | null;
 }
 
 const seedBench = benchmarks as unknown as Record<string, Bench>;
@@ -134,15 +139,27 @@ export function sizeEstimate(
   } else {
     // Employee path: same payroll math via the internal burdened wage
     const emp = employeeEstimate(s, reviewCount);
-    if (!emp) return null;
-    const wage = b.burdened_wage ?? seedBench.default.burdened_wage ?? 58000;
-    revenue = [
-      Math.round((emp.range[0] * wage) / pct),
-      Math.round((emp.range[1] * wage) / pct),
-    ];
-    employees = [Math.round(emp.range[0]), Math.round(emp.range[1])];
-    confidence = emp.confidence;
-    basis = `${emp.basis} × $${Math.round(wage / 1000)}k wage ÷ ${Math.round(pct * 100)}% payroll`;
+    if (emp) {
+      const wage = b.burdened_wage ?? seedBench.default.burdened_wage ?? 58000;
+      revenue = [
+        Math.round((emp.range[0] * wage) / pct),
+        Math.round((emp.range[1] * wage) / pct),
+      ];
+      employees = [Math.round(emp.range[0]), Math.round(emp.range[1])];
+      confidence = emp.confidence;
+      basis = `${emp.basis} × $${Math.round(wage / 1000)}k wage ÷ ${Math.round(pct * 100)}% payroll`;
+    } else if (Array.isArray(s.ai_estimate?.revenue) && s.ai_estimate!.revenue!.length === 2) {
+      // NON-PPP ENSEMBLE FALLBACK (John 7/20: "a size estimation for as many
+      // companies as possible"). A pre-computed Claude-over-all-signals
+      // estimate — revenue directly, no employee bridge. Always lower
+      // confidence than a structured path; the basis says so.
+      const [lo, hi] = s.ai_estimate!.revenue as [number, number];
+      revenue = [Math.round(lo), Math.round(hi)];
+      confidence = (s.ai_estimate!.confidence as SizeConfidence) ?? "low";
+      basis = `${s.ai_estimate!.basis ?? "AI estimate over available signals"} (AI estimate)`;
+    } else {
+      return null; // truly nothing to size on
+    }
   }
 
   const ebitda: [number, number] = [Math.round(revenue[0] * margin), Math.round(revenue[1] * margin)];
