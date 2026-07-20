@@ -1665,3 +1665,19 @@ except DECISION-LOG-brokers.md.
 - VERIFIED END-TO-END against the live detail API via the real enrichDetails path: Water→state=OH, HVAC→state=NC (0 errors, brokers also captured); then applyRelevanceFilters flags the NC row priority_state=TRUE (NC is a priority state — a previously-invisible T2 HVAC deal now surfaces starred). Self-heals on the 7/20 nightly (both rows are enrich-eligible; db_output update path re-writes state + priority_state on re-upsert).
 - dealrelations spot-check: 3 thesis-fit, 0 null-state (regionState fallback holding), 2 null-city — minor, aggregator, not actionable.
 - NIGHTLY-WATCH pointer → next nightly ~13:00 UTC 7/20 (expect ~14:20 landing).
+
+## 2026-07-20 — PM self-iterate: river-guides sweep refresh (report-only) + proprietary-company broker-enrichment check (clean negative)
+PM (local_affe9dc4) pinged Lane A to resume + self-iterate. Merged origin/main clean (Lane C: size-for-everyone, Outlook deal-tracking, migration 0019, sync_health.js, size_estimate.js). Shared scraper/riverguides/extract.js confirmed IN SYNC with Lane C (zero diff) — no re-unify needed.
+
+**River-guides consolidator-sweep refresh (report-only DRY, ~$0.119, 50 consolidators / 467 known pairs):** 19 new candidates — 7 HIGH (auto-file-eligible), 12 MEDIUM (review-only). Scrutinized the HIGH tier vs thesis before any write:
+- 3 clean HIGH — on-thesis lawn/tree/turf tuck-ins from acquirer-owned sites / a newswire. Legit.
+- 2 HIGH mis-attributed — both cite the SAME PRNewswire release about an UNRELATED company (neither the queried consolidator's real deal); targets are 2–6-char fragments. The corroboration guard passed (consolidator token present in the cited text) but the DEAL attribution is wrong — a guard limitation, not fabrication.
+- 1 HIGH off-thesis — target is a landscape-industry SaaS platform, not an owner-operator service business. OFF_THESIS regex doesn't screen software/SaaS.
+- 1 HIGH borderline — commercial-kitchen/foodservice equipment service.
+- 12 MEDIUM — aggregator/social/PDF sources; several on-thesis but unverified tier (correctly withheld by design).
+
+**DECISION: filed NOTHING (report-only default held).** Blanket `--confirm` would inject ~4 junk rows into a table John reads. This run re-validates the report-only-default guardrail: the HIGH tier is NOT safe for unattended `--confirm`. Names are NOT committed (public repo) — they live in the local sweep log; a greenlit `--confirm` writes directly to Supabase where deal/PII data belongs. For John/PM: on the word, I can either (a) `--confirm` (files all 7 HIGH incl. the 4 suspect), or preferably (b) I first harden OFF_THESIS (+software/SaaS) and add a company-name min-length/real-word guard to drop the fragment/mis-attributed rows, THEN file. Holding for that word (not changing filters on one run's signal — avoid over-fitting).
+
+**Proprietary-company broker-listing enrichment check (PM ask #4): CLEAN NEGATIVE.** companies table = 838 rows (510 created in last 7d), 0 have listing_id, and 0 match any active (non-delisted) broker listing by website domain. Expected — proprietary sourcing targets companies that are NOT on the market, so there is no broker listing to enrich them with. No matcher exists (probe_links.js is a generic href-dumper, not a linker). Nothing actionable; no code written. If proprietary targets later surface on broker sites, a domain-join (companies.website ↔ listings.website_domain) is the precise link to build.
+
+NIGHTLY WATCH unchanged: next run ~13:00 UTC 7/20 (~14:20 landing); the transworld state-backfill (shipped 2fb66ab) self-heals then — verify next audit.
