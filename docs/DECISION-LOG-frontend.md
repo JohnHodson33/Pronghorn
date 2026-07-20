@@ -3,11 +3,25 @@
 Per-lane log per PARALLEL-SESSIONS.md; the PM/integrator folds these into
 DECISION-LOG.md and wires routes into Sidebar.tsx.
 
-## 🔄 HANDOFF — session #3/#4 (7/17 ~morning) — successor resumes here
+## 🔄 HANDOFF — session #5 (7/20) — successor resumes here
 
-- **State**: nothing in flight. Last commit `6b85caf` (Contacts: humanize
-  the river_guide role) — pushed to lane/frontend, typecheck green,
-  browser-verified (?role=river_guide → 269 rows). Session #4 (resumed
+- **IN FLIGHT**: Unit 2 of the PM's 7/20 queue — **DEAL PROPOSALS UI**
+  (approve/dismiss the Outlook-classified next_step on the dashboard Key
+  Actions). Unit 1 (size render on Deals) is DONE + pushed (d7af055).
+  Backend for Unit 2 exists on main: `/api/deals/proposals` (GET pending,
+  POST {id, action:approve|dismiss, next_step?, next_step_due?}), migration
+  0019 deal_proposals, and `/api/dashboard` emits `deal_next_step_proposed`
+  keyActions — BUT the dashboard PAGE uses `lib/dashboard-v3.ts`
+  (`fetchDashboardV3`), NOT /api/dashboard, so proposals aren't wired into
+  the page yet. Plan: add a `deal_proposal` KeyAction kind in
+  dashboard-v3.ts (query deal_proposals like the note_tag pattern), render
+  a `DealProposalCard` client component (mirror TagNoteCard) with
+  approve/dismiss + editable next_step/due + the evidence email snippet.
+  Nothing auto-applies — John approves. Migration 0019 may not be applied
+  yet (proposals GET returns [] + "apply migration 0019" — degrade clean).
+- **Prev state**: session #4 last commit `6b85caf` (Contacts: humanize
+  the river_guide role) — pushed, browser-verified (?role=river_guide →
+  269 rows). Session #4 (resumed
   after overnight idle) units: river-guides item (c) fb481d7 (+ new
   lib/river-guide-display) · river-guides item (j) e9a0092 · contacts
   river_guide humanize 6b85caf. Session #3 units: deals→standard 6dbfd35
