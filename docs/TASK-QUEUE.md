@@ -69,9 +69,21 @@ task, next 2, gotchas). Sessions die at context limits — a replacement session
 must resume from one paste. PM watches lane commit recency and flags stalls
 in MORNING-BRIEF.
 
+**⚙️⚠️ DO NOT ROLL OVER PREMATURELY (added 7/20 — a Lane C session stood down
+reporting "context limit" at only ~5% actual context; that FALSE alarm cost
+John an unnecessary restart). An AUTO-COMPACTION IS NORMAL and does NOT mean
+roll over — the harness summarizes older context and you KEEP WORKING with
+plenty of room afterward. A single compaction event, a summary notice, or a
+vague feeling is NOT a trigger. Only roll over on GENUINE, repeated
+context-pressure warnings when you are actually near the limit (~80%+). When
+in doubt, keep working. PM rule: never surface a "lane needs restart" to John
+off a lane's self-report alone — the lane's context claim can be wrong; treat
+a "stood down" as needs-verification, not fact.**
+
 **⚙️ CONTEXT ROLLOVER PROTOCOL (John 7/13 — "not scalable for me to notice
 it"; ALL LANES, effective now):** when your session sees context-pressure
-warnings from the harness (or you judge yourself past ~80%): (1) STOP taking
+warnings from the harness (or you judge yourself GENUINELY past ~80% — see the
+premature-rollover warning above): (1) STOP taking
 new units; finish + commit + push the current one; (2) refresh your HANDOFF
 section (current task, next 2, gotchas, last commit hash) and add the line
 "ROLLED OVER <date> — successor resumes here"; (3) send the PM session

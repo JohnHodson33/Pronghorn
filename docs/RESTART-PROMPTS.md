@@ -3,9 +3,9 @@
 John: open a fresh session in the named worktree, paste the block, click Allow
 on the first tool call.
 
-**STATUS 7/16 16:45 — 🅲 LANE C NEEDS A PASTE** (stood down cleanly at its
-context limit). Lane A is RUNNING. Lane B successor #3 is RUNNING (started
-~15:15; its block below is kept for the next rollover — do not re-paste).
+**STATUS 7/20 ~13:00 — 🅲 LANE C NEEDS A PASTE** (successor #3; predecessor
+stood down at its context limit ~11:35). Lanes A and B are RUNNING (their
+blocks are kept for the next rollover — do not re-paste while they're alive).
 
 ---
 
@@ -58,36 +58,36 @@ your HANDOFF every unit; nothing SENDS, nothing destructive.
 ---
 
 ## 🅲️ LANE C — CRM & DATA / INTEGRATIONS  (worktree: C:\Users\johnd\Pronghorn-integrations · branch lane/integrations)
-**⬅ PASTE THIS ONE — successor #2 (predecessor stood down at its context limit 7/16 ~16:30).**
+**⬅ PASTE THIS ONE — successor #3 (predecessor stood down at its context limit 7/20 ~11:35).**
 
 ```
 You are Lane C (CRM & Data / Integrations) for the Pronghorn platform,
-successor #2. Worktree C:\Users\johnd\Pronghorn-integrations, branch
+successor #3. Worktree C:\Users\johnd\Pronghorn-integrations, branch
 lane/integrations. FIRST: `git fetch origin && git merge origin/main`. Read
-docs/PM-HANDOFF.md, CLAUDE.md, your lane section in docs/TASK-QUEUE.md, and
-the HANDOFF at the TOP of docs/DECISION-LOG-integrations.md (predecessor stood
-down 7/16 ~16:30 at its context limit, HEAD 736f207 — that section lists your
-exact next units). Migrations 0004-0018 ALL APPLIED; GH secrets set; CI green
-on Node 22; run-state loop proven live. TOP OF QUEUE (John 7/16 ~16:00 — "you
-should be updating this based on my Outlook traffic"): DEAL STATE MUST TRACK
-OUTLOOK — a real miss (Robert Fahrenhorst/Peregrine replied "anytime Tue works
-great" on the AAFE thread 7/15 22:56; the CRM still said "IOI due 7/17" a day
-later). Build (a) sync-failure visibility (outlook-sync.yml was red all day
-7/16 and nothing surfaced it) and (b) scheduling/commitment-intent detection on
-inbound broker replies tied to a deal -> propose next_step/next_step_due as a
-Key Actions card John APPROVES (never silently rewrite a deal from an email).
-Then TASK-QUEUE top-down. GOTCHA (predecessor's [self-iterate] catch): TWO
-runners drain river_guide_runs (local CLI + PM's river-guides-claim.yml every
-15 min) — the claim is an ATOMIC conditional update; do NOT "simplify" it back
-to select-then-update or receipts start lying. NOTE: John has PARKED the sample
-drafts (card 611290ff) and the repo-visibility decision — do not chase either.
-Run /loop, follow the STANDING DIRECTIVE + CONTEXT ROLLOVER PROTOCOL
-+ the reply-before-build rule (poll /api/feedback every loop; reply to any
-unanswered John/Tom comment with a refined spec before building). Durable
-channel = commit to your DECISION-LOG HANDOFF + push every unit; PM polls
-every loop. Guardrails: nothing SENDS, auto-draft stays if:false until John
-approves samples + first rule; nothing destructive; spend only within
-existing keys + honored caps. Commit your HANDOFF every unit.
+docs/PM-HANDOFF.md, CLAUDE.md, your lane section in docs/TASK-QUEUE.md, and the
+HANDOFF at the TOP of docs/DECISION-LOG-integrations.md (predecessor stood down
+7/20 ~11:35 at its context limit — that section lists your exact next units).
+Migrations 0004-0019 ALL APPLIED; GH secrets set; CI green on Node 22.
+Predecessors recently shipped: size-for-everyone (non-PPP ensemble estimator),
+Outlook deal-tracking (deal_proposals + migration 0019), broker-inquiry
+template, /discover guard sync. TOP OF QUEUE (John 7/20 — full specs at the top
+of your Lane C section in TASK-QUEUE): (1) COSTS — add the Upwork VA to VARIABLE
+spend via a manual cost-entry path (POST /api/costs/manual -> usage_events
+service 'upwork'), and rewrite /api/costs to return TWO windows, Month AND
+Year-to-Date, each with the same {subscriptions, variable-by-service, total}
+breakdown. (2) SELF-SERVE DATA INTAKE — the ingest engine behind an upload
+portal for Tom: POST /api/intake (signed-URL upload to Supabase Storage) ->
+Claude column-mapping -> detect record type (contact/company/river_guide/
+enrichment-fill) -> dedupe -> PREVIEW -> on confirm route to the right table
+with provenance (uploaded_by + filename + date); uploaded values WIN over
+enrichment, never invent a field, no silent bulk import. Then TASK-QUEUE
+top-down. GOTCHA: TWO runners drain river_guide_runs (local CLI + PM's
+river-guides-claim.yml every 15 min) — the claim is an ATOMIC conditional
+update; do NOT simplify it. PARKED (do not chase): sample drafts card 611290ff,
+repo-visibility. Run /loop; poll /api/feedback every loop + reply-before-build;
+CONTEXT ROLLOVER PROTOCOL at ~80%; commit + push your HANDOFF every unit (PM
+polls + merges). Guardrails: nothing SENDS; nothing destructive; spend only
+within existing keys + honored caps.
 ```
 
 ---
