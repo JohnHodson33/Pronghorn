@@ -51,12 +51,14 @@ function stageOrder(deals: LiveDeal[]) {
   return [...ALL_STAGES, ...extra];
 }
 
-type SortKey = "company" | "stage" | "owner" | "broker" | "size" | "ebitda" | "asking" | "ourval" | "fit";
+type SortKey = "company" | "stage" | "owner" | "broker" | "size" | "estrev" | "estebitda" | "ebitda" | "asking" | "ourval" | "fit";
 
 // EBITDA sorts on the real number when we have one and the estimate midpoint
 // when we don't — the column already shows them interchangeably.
 const ebitdaSortVal = (d: LiveDeal) =>
   d.ebitda ?? (d.size ? (d.size.ebitda[0] + d.size.ebitda[1]) / 2 : null);
+// ~Rev / ~EBITDA columns sort on the size-model estimate midpoint; unsized last.
+const estMid = (r: [number, number] | undefined) => (r ? (r[0] + r[1]) / 2 : null);
 
 export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[]; initialStage?: string }) {
   const router = useRouter();
@@ -131,7 +133,9 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
         case "size": cmp = TIERS.indexOf(a.size?.tier ?? "unsized") - TIERS.indexOf(b.size?.tier ?? "unsized"); break;
         default: {
           const pick = (d: LiveDeal) =>
-            sortKey === "ebitda" ? ebitdaSortVal(d)
+            sortKey === "estrev" ? estMid(d.size?.revenue)
+            : sortKey === "estebitda" ? estMid(d.size?.ebitda)
+            : sortKey === "ebitda" ? ebitdaSortVal(d)
             : sortKey === "asking" ? d.asking
             : sortKey === "ourval" ? d.ourValuation
             : d.fitScore;
@@ -157,12 +161,15 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
       `pronghorn-deals-${csvDate()}.csv`,
       buildCsv(
         ["company", "stage", "industry", "city", "state", "owner", "broker", "brokerage",
-         "size_tier", "est_ebitda_low", "est_ebitda_high",
+         "size_tier", "est_revenue_low", "est_revenue_high", "est_ebitda_low", "est_ebitda_high",
+         "size_confidence", "size_basis",
          "revenue", "ebitda", "ebitda_type", "asking", "our_valuation", "fit_score",
          "pass_reason", "next_step", "next_step_due"],
         rows.map((d) => [
           d.company, d.stage, d.industry, d.city, d.state, d.owner ?? null, d.broker ?? null,
-          d.brokerage ?? null, TIER_LABELS[d.size?.tier ?? "unsized"], d.size?.ebitda[0] ?? null, d.size?.ebitda[1] ?? null,
+          d.brokerage ?? null, TIER_LABELS[d.size?.tier ?? "unsized"],
+          d.size?.revenue[0] ?? null, d.size?.revenue[1] ?? null, d.size?.ebitda[0] ?? null, d.size?.ebitda[1] ?? null,
+          d.size?.confidence ?? null, d.size?.basis ?? null,
           d.revenue, d.ebitda, d.ebitdaType, d.asking, d.ourValuation,
           d.fitScore, d.passReason, d.nextStep, d.nextStepDue,
         ])
@@ -230,6 +237,14 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
                   />
                 </span>
               </th>
+              {/* est. Revenue/EBITDA on EVERY row (John 7/20 — show the numbers,
+                  not just the tier chip; matches Enrichment + Companies) */}
+              <th className="px-4 py-3 text-right">
+                <SortHeader label="~Rev" numeric active={sortKey === "estrev"} dir={sortDir} onChange={sortSet("estrev")} />
+              </th>
+              <th className="px-4 py-3 text-right">
+                <SortHeader label="~EBITDA" numeric active={sortKey === "estebitda"} dir={sortDir} onChange={sortSet("estebitda")} />
+              </th>
               <th className="px-4 py-3 text-right">
                 <SortHeader label="EBITDA" numeric active={sortKey === "ebitda"} dir={sortDir} onChange={sortSet("ebitda")} />
               </th>
@@ -275,6 +290,14 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
                     {TIER_LABELS[d.size?.tier ?? "unsized"]}
                   </span>
                 </td>
+                <td className="whitespace-nowrap px-4 py-3 text-right text-xs tabular-nums text-zinc-500"
+                  title={d.size ? `estimate via ${d.size.basis} · ${d.size.confidence} confidence` : "no size signal yet"}>
+                  {d.size ? estShort(d.size.revenue) : <span className="text-zinc-300">—</span>}
+                </td>
+                <td className="whitespace-nowrap px-4 py-3 text-right text-xs tabular-nums text-zinc-500"
+                  title={d.size ? `est. revenue × industry margin · ${d.size.confidence} confidence` : "no size signal yet"}>
+                  {d.size ? estShort(d.size.ebitda) : <span className="text-zinc-300">—</span>}
+                </td>
                 <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
                   {d.ebitda !== null ? (
                     <>
@@ -294,7 +317,7 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-4 py-10 text-center text-sm text-zinc-400">
+                <td colSpan={11} className="px-4 py-10 text-center text-sm text-zinc-400">
                   No deals match the current filters.
                 </td>
               </tr>
