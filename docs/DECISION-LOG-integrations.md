@@ -7,6 +7,11 @@ everything below it is older.** Branch `lane/integrations` clean + fully
 pushed, **HEAD fad9aa2**. Worktree `C:\Users\johnd\Pronghorn-integrations`.
 
 **7/20 SESSION #2 (active) — SHIPPED:**
+- **BROKER INQUIRY TEMPLATE** (72294ee): scraper/draft_inquiry.js was the last
+  caller improvising via Claude — now on John's VERBATIM template (web side
+  already was, via web/lib/inquiry.ts). Deterministic $0: customize only
+  {broker first name} + {industry}. Verified live ("Hi Ben," + "landscaping /
+  lawn care"). Repo-wide grep: zero old "private investor"/Claude copy left.
 - **SIZE FOR AS MANY COMPANIES AS POSSIBLE** (John 7/20 🔥🔥🔥, bfe0757/94b6252):
   (a) PPP-for-everyone — import_ppp.js `--filter --all` drops the green-NAICS
   filter, indexes all 968k $150k+ loans; `--match` attempts every proprietary
@@ -68,16 +73,20 @@ pushed, **HEAD fad9aa2**. Worktree `C:\Users\johnd\Pronghorn-integrations`.
   unbuilt. ALWAYS re-read the TOP of the Lane C TASK-QUEUE section after
   every `git merge origin/main` before claiming clear.
 
-**NEXT 3 (actionable cold — full detail in the NEXT block further down):**
-1. **Broker inquiry template** — John's verbatim copy lives in TASK-QUEUE,
-   Lane C section, item **"BROKER-LISTING OUTREACH OVERHAUL" part (B)**.
-   Identity from `inquiry_profiles` row 774f21ce (jhodson@pronghornequity.com
-   · (503) 899-0058 — NEVER the gmail). Apply to the co-pilot contact block,
-   outbox inquiry drafts, request-info drafts; grep + kill the old "I'm a
-   private investor…" copy repo-wide.
-2. **Tracerfy person-mode for river-guide phones** (`enrich/skiptrace.js`
-   exists; the run receipt already counts `found_phone`).
-3. Watch `river-guides.yml` (02:30 PHX) + `river-guides-claim.yml`.
+**NEXT (actionable cold):**
+1. **Tracerfy person-mode for river-guide phones** — wire `enrich/skiptrace.js`
+   (batch person-mode, landlord-trap-safe) into `riverguides/enrich_t1.js` for
+   RESOLVED guides missing a phone that have a name + a company address; the
+   run receipt already counts `found_phone`. Metered ($0.02/hit, service
+   'tracerfy'); river guides are the highest-priority outreach so worth phones.
+2. **Deal proposals seed (blocked on John running migration 0019)** — the
+   moment 0019 lands: `node ingest_deal_mail.js --hours 168` seeds real
+   next-step proposals from the past week; verify they surface as
+   deal_next_step_proposed on /api/dashboard.
+3. Watch `river-guides.yml` (02:30 PHX) + `river-guides-claim.yml` +
+   `enrichment.yml` (now runs the size estimator).
+✅ DONE this session: broker inquiry template (72294ee), size-for-everyone
+100% (bfe0757/94b6252/9e3220e).
 
 --- history below (older states; the block above wins) ---
 
