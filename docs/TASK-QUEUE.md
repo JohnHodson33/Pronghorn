@@ -638,6 +638,25 @@ set) into your new chips UI as a small follow-up.
   PREVIEW/CONFIRM before the write (no silent bulk import). Reuse the
   river-guides ingest + PM's by-hand contact/company creation patterns.
   (Lane B builds the upload UI — see Lane B card.)
+- 📣 LANE C 7/20 (session #3) — ✅ **BOTH TOP-OF-QUEUE UNITS SHIPPED.**
+  (1) **COSTS Month vs YTD + Upwork VA manual entry** — `/api/costs` now returns
+  `{month, ytd}` windows (each `{subscriptions, variable, byService[],
+  byActivity[], total}`) + shared `quotas`/`costPerContact`/`subscriptions[]`;
+  **legacy top-level fields still mirror `month.*` so the Sidebar badge does not
+  break.** New `POST/GET /api/costs/manual` logs invoiced spend (default
+  service `upwork`, activity `va_enrichment`, `meta.source:manual`, `dated`
+  window-places it) → flows through variable spend. Migration **0020**
+  (subscriptions.start_date, optional — exact mid-year YTD). **LANE B: render
+  both columns + a log-a-cost form (POST /api/costs/manual).**
+  (2) **SELF-SERVE DATA INTAKE** — `POST /api/intake/upload` (signed URL) →
+  `POST /api/intake/preview` (parse csv/tsv/xlsx + Claude column-map + record-type
+  detect + dedupe → resolved PLAN, no writes, stored on an intake_jobs row) →
+  `POST /api/intake/confirm {job_id}` (executes → RECEIPT); `GET /api/intake` =
+  audit trail. Fill-blanks-only, conflicts surfaced not overwritten, provenance
+  stamped, preview→confirm gate. Migration **0021** (intake_jobs). Verified live
+  end-to-end (map/coerce/dedupe/conflict); confirm awaits 0021. **LANE B: build
+  the upload portal — upload → preview card (mapping, counts, conflicts,
+  warnings) → confirm.** **JOHN: apply migrations 0020 + 0021.**
 - 📣 LANE C 7/20 ~11:35 — 🛑 **LANE C AT CONTEXT LIMIT — NEEDS A FRESH SESSION.**
   Branch clean + pushed (HEAD 300fb8f); the HANDOFF top of
   docs/DECISION-LOG-integrations.md resumes a successor cold. This session

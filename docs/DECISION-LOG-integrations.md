@@ -4,9 +4,43 @@
 
 🟢 **SESSION #3 ACTIVE (started 7/20 ~12:00) — READ THIS BLOCK FIRST; everything
 below is older.** Worktree `C:\Users\johnd\Pronghorn-integrations`, branch
-`lane/integrations`, merged with origin/main. Working the two top-of-queue John
-7/20 units: (1) COSTS ✅ SHIPPED this session; (2) SELF-SERVE DATA INTAKE — in
-progress.
+`lane/integrations`, merged with origin/main. Both top-of-queue John 7/20 units
+✅ SHIPPED: (1) COSTS; (2) SELF-SERVE DATA INTAKE. Next: TASK-QUEUE top-down
+(Tracerfy river-guide phones — has a design question, see NEXT).
+
+**7/20 SESSION #3 — SHIPPED (intake):**
+- **SELF-SERVE DATA INTAKE** (John 7/20 🔥🔥🔥 — Tom uploads a file, it lands in
+  the right table). Three routes + a shared engine (`web/lib/intake.ts`):
+  `POST /api/intake/upload` mints a signed direct-to-storage URL (reuses
+  `signedUploadUrl`, bucket `intake`, csv/tsv/xlsx/xls) → browser PUTs the file
+  → `POST /api/intake/preview` downloads it, parses (CSV/TSV native + **xlsx via
+  new `xlsx` dep**), **Claude-maps arbitrary headers → our fields** (haiku,
+  metered as `intake_mapping`; heuristic fallback if no ANTHROPIC key), detects
+  record type (contact/company/river_guide/enrichment_fill), **dedupes** (email
+  or name+firm · domain or name+state · deal_id or name+company), builds a
+  resolved PLAN, stores it on an `intake_jobs` row — **no writes** →
+  `POST /api/intake/confirm {job_id}` executes the plan and returns a RECEIPT.
+  `GET /api/intake` = the audit trail. HARD RULES enforced: uploaded values
+  **fill blanks only, never silently overwrite** — every non-blank difference is
+  a CONFLICT surfaced in the preview; **never invent a field** (mapping
+  validated against a per-type whitelist, coercion only on typed cols);
+  provenance = `origin:'intake'` + a `[intake: file by who on date]` notes stamp;
+  **no silent bulk import** (preview→confirm gate). Migration **0021** adds
+  `intake_jobs`. Verified LIVE end-to-end through a running dev server: contacts
+  CSV → Claude mapped 6/6 headers (high conf), 3 creates; companies CSV → numeric
+  coercion ($2,400,000→2400000) + 2 creates; dedupe test vs real "Landmark Pest
+  Management" → matched, filled blank website, flagged the revenue difference as
+  a conflict (not overwritten). executePlan insert/update/upsert shapes validated
+  against the live tables (contacts/companies/river_guides accept them). **ONLY
+  the confirm path awaits migration 0021** (intake_jobs persistence) — preview
+  degrades cleanly to a full plan + "apply 0021" note until then. **JOHN: apply
+  migration 0021.** **LANE B: build the upload portal** — upload → preview card
+  (show mapping, counts, conflicts, warnings) → confirm; coordinate the contract
+  off the /api/intake/{upload,preview,confirm} shapes above.
+
+⚠️ **PM note:** the costs commit (c9890fb) swept in a stray `.claude/launch.json`
+(a benign "web"/port-3211 dev config from another chat session in this worktree
+— `git add -A` picked it up). It's harmless; drop it if it conflicts.
 
 **7/20 SESSION #3 — SHIPPED:**
 - **COSTS: UPWORK VA + MONTH vs YTD** (John 7/20 🔥🔥🔥). (a) Manual cost-entry
