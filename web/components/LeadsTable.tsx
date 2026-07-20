@@ -45,7 +45,7 @@ const levelChip: Record<Completeness, string> = {
   raw: "bg-zinc-50 text-zinc-400",
 };
 
-type SortKey = "level" | "company" | "size" | "industry" | "location" | "owner" | "status" | "email" | "phone" | "linkedin";
+type SortKey = "level" | "company" | "size" | "revenue" | "ebitda" | "industry" | "location" | "owner" | "status" | "email" | "phone" | "linkedin";
 
 // Channel-presence filter (John's "Call now + Has phone = the actual call
 // list", the river-guides reachability filter applied to the enrichment tab).
@@ -257,6 +257,9 @@ export default function LeadsTable({
       switch (sortKey) {
         case "level": cmp = LEVELS.indexOf(levelOf(a)) - LEVELS.indexOf(levelOf(b)); break;
         case "size": cmp = TIERS.indexOf(a.size?.tier ?? "unsized") - TIERS.indexOf(b.size?.tier ?? "unsized"); break;
+        // ~Rev / ~EBITDA: sort by estimate midpoint; unsized (null) sorts last
+        case "revenue": { const av = a.size ? (a.size.revenue[0]+a.size.revenue[1])/2 : -1, bv = b.size ? (b.size.revenue[0]+b.size.revenue[1])/2 : -1; cmp = av - bv; break; }
+        case "ebitda": { const av = a.size ? (a.size.ebitda[0]+a.size.ebitda[1])/2 : -1, bv = b.size ? (b.size.ebitda[0]+b.size.ebitda[1])/2 : -1; cmp = av - bv; break; }
         case "company": cmp = text(a.name).localeCompare(text(b.name)); break;
         case "industry": cmp = text(effIndustry(a)).localeCompare(text(effIndustry(b))); break;
         case "location": cmp = text([a.state, a.city].filter(Boolean).join(" ")).localeCompare(text([b.state, b.city].filter(Boolean).join(" "))); break;
@@ -387,10 +390,13 @@ export default function LeadsTable({
     downloadCsv(
       `pronghorn-leads-${csvDate()}.csv`,
       buildCsv(
-        ["name", "completeness", "size_tier", "industry_verified", "list", "website", "phone", "city", "state",
+        ["name", "completeness", "size_tier", "est_revenue", "est_ebitda", "industry_verified", "list", "website", "phone", "city", "state",
          "owner_name", "owner_email", "owner_phone", "owner_linkedin", "status", "off_target"],
         rows.map((l) => [
-          l.name, levelOf(l), TIER_LABELS[l.size?.tier ?? "unsized"], effIndustry(l), l.list ? `${l.list.industry}${l.list.geography ? ` — ${l.list.geography}` : ""}` : null,
+          l.name, levelOf(l), TIER_LABELS[l.size?.tier ?? "unsized"],
+          l.size ? Math.round((l.size.revenue[0]+l.size.revenue[1])/2) : null,
+          l.size ? Math.round((l.size.ebitda[0]+l.size.ebitda[1])/2) : null,
+          effIndustry(l), l.list ? `${l.list.industry}${l.list.geography ? ` — ${l.list.geography}` : ""}` : null,
           l.website, l.phone, l.city, l.state,
           l.owner_name, l.owner_email, l.owner_phone, l.owner_linkedin, l.status, l.off_target ? "yes" : "no",
         ])
@@ -578,6 +584,13 @@ export default function LeadsTable({
                       selected={tiersSel} onChange={setTiersSel} />
                   </span>
                 </th>
+                {/* est. Revenue/EBITDA on EVERY row (John 7/20 — show the numbers, not just the tier) */}
+                <th className="px-2 py-2 text-right font-medium">
+                  <SortHeader label="~Rev" numeric active={sortKey === "revenue"} dir={sortDir} onChange={sortSet("revenue")} />
+                </th>
+                <th className="px-2 py-2 text-right font-medium">
+                  <SortHeader label="~EBITDA" numeric active={sortKey === "ebitda"} dir={sortDir} onChange={sortSet("ebitda")} />
+                </th>
                 <th className="px-3 py-2 font-medium">
                   <span className="inline-flex items-center gap-1">
                     <SortHeader label="Industry" active={sortKey === "industry"} dir={sortDir} onChange={sortSet("industry")} />
@@ -684,6 +697,14 @@ export default function LeadsTable({
                       >
                         {TIER_LABELS[l.size?.tier ?? "unsized"]}
                       </span>
+                    </td>
+                    <td className="whitespace-nowrap px-2 py-2.5 text-right text-xs text-zinc-600 tabular-nums"
+                        title={l.size ? `estimate via ${l.size.basis} · ${l.size.confidence} confidence` : "no size signal yet"}>
+                      {l.size ? estShort(l.size.revenue) : <span className="text-zinc-300">—</span>}
+                    </td>
+                    <td className="whitespace-nowrap px-2 py-2.5 text-right text-xs text-zinc-600 tabular-nums"
+                        title={l.size ? `est. revenue × industry margin` : "no size signal yet"}>
+                      {l.size ? estShort(l.size.ebitda) : <span className="text-zinc-300">—</span>}
                     </td>
                     <td className="whitespace-nowrap px-3 py-2.5">
                       {effIndustry(l) ? (
