@@ -589,6 +589,19 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 7/20 — ✅ **SIZE-FOR-EVERYONE SHIPPED (bfe0757/94b6252).** Both
+  halves of the spec below: (a) PPP now runs all-NAICS against the full
+  proprietary base (import_ppp.js --filter --all + --match; +confidence per
+  match); (b) non-PPP ensemble (enrich/size_estimate.js) Claude-sizes the tail
+  with a labeled revenue range + confidence, and web/lib/size.ts falls through
+  to it so **no company is blank**. **COVERAGE: ~51 → 223 of 457 enriched
+  leads sized (49%), still climbing as the batch finishes.** Wired into
+  enrichment.yml (2x-daily). **LANE B: surface `size.confidence` on the size
+  chip + `size.basis` on hover** (AI estimates read "… (AI estimate)", capped
+  medium). Honest note: all-NAICS PPP added only +5 — name+state precision is
+  the limiter, so the ensemble is where coverage comes from; sub-$150k PPP
+  files / a firmographic API are future levers for John (sample cost/accuracy
+  first — don't build yet).
 - 🔥🔥🔥 **SIZE ESTIMATION = FIRST-CLASS, PPP FOR EVERYONE + A NON-PPP PATH
   (John 7/20 — "size estimation is a very important part of this process; I
   want a size estimation for as many companies as possible"):**

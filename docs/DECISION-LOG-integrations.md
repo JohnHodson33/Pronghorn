@@ -6,7 +6,23 @@
 everything below it is older.** Branch `lane/integrations` clean + fully
 pushed, **HEAD fad9aa2**. Worktree `C:\Users\johnd\Pronghorn-integrations`.
 
-**7/20 SESSION (active) — SHIPPED this session:**
+**7/20 SESSION #2 (active) — SHIPPED:**
+- **SIZE FOR AS MANY COMPANIES AS POSSIBLE** (John 7/20 🔥🔥🔥, bfe0757/94b6252):
+  (a) PPP-for-everyone — import_ppp.js `--filter --all` drops the green-NAICS
+  filter, indexes all 968k $150k+ loans; `--match` attempts every proprietary
+  lead + stores matched NAICS + confidence. Honest: all-NAICS added only +5
+  (name+state precision, not NAICS, is the limiter; most small ops took
+  sub-$150k loans). (b) NON-PPP ENSEMBLE — enrich/size_estimate.js: Claude
+  reads every signal (reviews, years, service area, overview) → revenue range +
+  confidence (capped 'medium') + basis, stored size_signals.ai_estimate;
+  web/lib/size.ts falls through to it so **no company is blank**. **COVERAGE:
+  51 → 223 of 457 enriched leads sized (49%), climbing as the batch finishes
+  the ~152-lead tail.** Wired into enrichment.yml (2x-daily, 60/run). Lane B:
+  surface size.confidence on the chip + basis on hover.
+  ⚠️ Future lever for John (don't build yet): sub-$150k PPP files (11M rows)
+  or a firmographic API for the residual — sample cost/accuracy first.
+
+**7/20 SESSION #1 — SHIPPED:**
 - **DEAL STATE TRACKS OUTLOOK** (John 7/16 🔥🔥🔥, bb651ed/b539871): the
   Fahrenhorst-class miss is fixed. `ingest_deal_mail.js` now Claude-classifies
   each deal-matched reply for scheduling/commitment intent → writes a
