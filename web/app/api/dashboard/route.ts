@@ -24,7 +24,7 @@ export async function GET() {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
   const db = serverDb();
 
-  const [listingsRes, reviewsRes, dealsRes, leadsRes, listsRes, outboxRes, outreachRes, untaggedNotesRes] = await Promise.all([
+  const [listingsRes, reviewsRes, dealsRes, leadsRes, listsRes, outboxRes, outreachRes, untaggedNotesRes, dealProposalsRes, syncHealthRes] = await Promise.all([
     db.from("listings").select("id, industry, tier").in("tier", [1, 2]),
     // NOTE: only pre-0005 columns here; cim_received_at etc. exist after the
     // migration lands — reviewed_at is the portable timestamp until then.
@@ -43,6 +43,12 @@ export async function GET() {
       .eq("kind", "meeting").is("company_id", null).is("contact_id", null)
       .not("doc_url", "is", null)
       .order("created_at", { ascending: false }).limit(10),
+    // deal next-step changes proposed from Outlook replies — John approves
+    // (0019; never silently rewrites a deal). Tolerated absent pre-migration.
+    db.from("deal_proposals").select("id, deal_id, proposed_next_step, proposed_next_step_due, meeting_when, confidence, source_from, source_url, created_at, deals(name)")
+      .eq("status", "pending").order("created_at", { ascending: false }).limit(15),
+    // outlook-sync health (0018 app_config) — a dead sync must never be silent
+    db.from("app_config").select("value, updated_at").eq("key", "outlook_sync_last_success").maybeSingle(),
   ]);
 
   const funnel = new Map<string, number>();
@@ -114,6 +120,35 @@ export async function GET() {
   for (const n of (untaggedNotesRes.data ?? []) as Row[]) {
     const firstLine = String(n.body ?? "").split("\n")[0].replace(/^\[Notion meeting [^\]]*\]\s*/, "");
     keyActions.push({ kind: "note_needs_tagging", title: firstLine || "Meeting note", detail: "attach to a company/deal", refId: String(n.id), at: String(n.created_at) });
+  }
+
+  // deal next-step changes proposed from Outlook replies — John approves/dismisses
+  // (0019). detail carries the proposed step; the card links to the source email.
+  for (const p of (dealProposalsRes?.data ?? []) as Row[]) {
+    const deal = (Array.isArray(p.deals) ? p.deals[0] : p.deals) as Row | null;
+    const due = p.proposed_next_step_due ? ` (due ${String(p.proposed_next_step_due)})` : "";
+    keyActions.push({
+      kind: "deal_next_step_proposed",
+      title: String(deal?.name ?? "Deal"),
+      detail: `${String(p.proposed_next_step ?? "")}${due} — from ${String(p.source_from ?? "a reply")}`,
+      refId: String(p.id), at: String(p.created_at),
+    });
+  }
+
+  // outlook-sync health: a dead sync must never be silent (John 7/16 — the
+  // Fahrenhorst reply sat 24h partly because the sync was red all day)
+  {
+    const last = (syncHealthRes?.data as Row | null)?.value as string | undefined;
+    const lastMs = last ? new Date(last).getTime() : null;
+    const staleHrs = lastMs ? (Date.now() - lastMs) / 3600e3 : Infinity;
+    if (staleHrs > 6) {
+      keyActions.push({
+        kind: "outlook_sync_stale",
+        title: "Outlook sync is behind",
+        detail: lastMs ? `last successful sync ${Math.round(staleHrs)}h ago — deal updates from email may be missing` : "no successful sync recorded — check the outlook-sync workflow",
+        refId: null, at: last ?? null,
+      });
+    }
   }
 
   keyActions.sort((a, b) => String(a.at ?? "").localeCompare(String(b.at ?? "")));
