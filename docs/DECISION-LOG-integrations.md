@@ -6,6 +6,24 @@
 everything below it is older.** Branch `lane/integrations` clean + fully
 pushed, **HEAD fad9aa2**. Worktree `C:\Users\johnd\Pronghorn-integrations`.
 
+**7/20 SESSION (active) — SHIPPED this session:**
+- **DEAL STATE TRACKS OUTLOOK** (John 7/16 🔥🔥🔥, bb651ed/b539871): the
+  Fahrenhorst-class miss is fixed. `ingest_deal_mail.js` now Claude-classifies
+  each deal-matched reply for scheduling/commitment intent → writes a
+  `deal_proposals` row (migration **0019**, John runs it) that he
+  APPROVES/dismisses from a **deal_next_step_proposed** Key Actions card (POST
+  /api/deals/proposals) — never a silent rewrite. Dry-run over 5 days of real
+  mail proposed "Sign and return NDA" + "Confirm comfort at 12x…" (high conf,
+  with evidence), skipped 73 non-deal senders.
+- **SYNC-HEALTH SIGNAL**: `core/sync_health.js` heartbeats app_config on every
+  successful mail read; dashboard raises **outlook_sync_stale** when last
+  success >6h (a dead sync is never silent again). All degrade clean pre-0019.
+- **/discover guard synced** with Lane A's shared corroborate() (added the
+  self-reference reject; deliberate duplicate, pointer comments both sides).
+- ⚠️ **NEW John ask on John's SQL list: migration 0019** (deal_proposals).
+  Once applied: run `node ingest_deal_mail.js --hours 168` to seed proposals
+  from the last week (catches any Fahrenhorst-class reply already sitting).
+
 **TRUE STATE RIGHT NOW (supersedes every "State (…)" line below):**
 - **Migrations 0011–0018 ALL APPLIED + verified live.** Nothing is pending
   John on the SQL side. (0015 shortlist+toobig · 0016 river_guides · 0017

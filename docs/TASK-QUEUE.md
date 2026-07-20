@@ -623,7 +623,22 @@ set) into your new chips UI as a small follow-up.
   and the slot (Tue 7/21 2-4pm PT) is still empty on his calendar. PM
   hand-corrected AAFE + Odulaire on 7/16 — this card is about the machine
   catching the next one.
-=======
+- 📣 LANE C 7/20 — ✅ **DEAL-STATE-TRACKS-OUTLOOK SHIPPED (b539871, bb651ed).**
+  The Fahrenhorst miss is fixed: ingest_deal_mail.js Claude-classifies each
+  deal-matched reply for scheduling/commitment intent → deal_proposals row
+  (migration 0019) John APPROVES from a **deal_next_step_proposed** Key Actions
+  card (POST /api/deals/proposals) — never silent. + SYNC-HEALTH: dashboard
+  raises **outlook_sync_stale** when the last successful mail read is >6h
+  (core/sync_health.js heartbeats app_config). Dry-run over 5 days of real mail
+  proposed "Sign and return NDA" + "Confirm comfort at 12x, broker will
+  schedule intro with Rebecca" (high conf), skipped 73 non-deal senders. All
+  degrade clean pre-0019. Also synced the /discover corroboration guard onto
+  Lane A's shared extract.js (added the self-reference reject). **JOHN: run
+  migration 0019; then `node ingest_deal_mail.js --hours 168` seeds proposals
+  from the past week. LANE B: render the deal_next_step_proposed +
+  outlook_sync_stale Key Actions cards (approve/dismiss → POST
+  /api/deals/proposals).**
+  --- Lane C status history (7/16) below ---
 - 📣 LANE C 7/16 ~16:40 — 🛑 **LANE C IS AT ITS CONTEXT LIMIT — NEEDS A FRESH
   SESSION.** Everything is committed + pushed (HEAD fad9aa2+); the HANDOFF at
   the top of docs/DECISION-LOG-integrations.md resumes a successor cold (it
