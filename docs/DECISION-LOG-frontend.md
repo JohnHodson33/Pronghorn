@@ -5,23 +5,29 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 
 ## 🔄 HANDOFF — session #5 (7/20) — successor resumes here
 
-- **IN FLIGHT**: Unit 2 of the PM's 7/20 queue — **DEAL PROPOSALS UI**
-  (approve/dismiss the Outlook-classified next_step on the dashboard Key
-  Actions). Unit 1 (size render on Deals) is DONE + pushed (d7af055).
-  Backend for Unit 2 exists on main: `/api/deals/proposals` (GET pending,
-  POST {id, action:approve|dismiss, next_step?, next_step_due?}), migration
-  0019 deal_proposals, and `/api/dashboard` emits `deal_next_step_proposed`
-  keyActions — BUT the dashboard PAGE uses `lib/dashboard-v3.ts`
-  (`fetchDashboardV3`), NOT /api/dashboard, so proposals aren't wired into
-  the page yet. Plan: add a `deal_proposal` KeyAction kind in
-  dashboard-v3.ts (query deal_proposals like the note_tag pattern), render
-  a `DealProposalCard` client component (mirror TagNoteCard) with
-  approve/dismiss + editable next_step/due + the evidence email snippet.
-  Nothing auto-applies — John approves. Migration 0019 may not be applied
-  yet (proposals GET returns [] + "apply migration 0019" — degrade clean).
+- **State**: nothing in flight. Both PM 7/20 priority units DONE + pushed.
+  Session #5 units: Deals ~Rev/~EBITDA size columns `d7af055` · Deal
+  Proposals UI `9f00d53`.
+  (1) **SIZE RENDER** — Deals table now has ~Rev/~EBITDA estimate columns
+  (numeric sort on midpoint, unsized last, basis+confidence hover),
+  matching Enrichment/Companies. Deals are mostly unsized (broker-sourced,
+  no joined lead) → "—"; populated path proven on Enrichment (137 sized).
+  (2) **DEAL PROPOSALS UI** — dashboard Key Actions now shows a
+  `DealProposalCard` (approve/dismiss the Outlook-classified next_step,
+  with the evidence email snippet + editable step/due). Wired via a new
+  `deal_proposal` KeyAction kind in dashboard-v3.ts. ⚠️ **BLOCKED ON JOHN:
+  migration 0019 (deal_proposals) is NOT applied yet** — `/api/deals/
+  proposals` returns "apply migration 0019", so no cards show until John
+  runs 0019 + Lane C seeds (`node ingest_deal_mail.js --hours 168`).
+  Degrade-clean verified; card verified via a temporary mock (reverted).
+- **NEXT — MOBILE CARD-COLLAPSE SWEEP** (John 7/12 STANDING RULE + LIST-UX
+  item 6: tables collapse to card layouts <640px instead of tiny columns).
+  Every table is mobile-*usable* via ScrollShell h-scroll (no body
+  overflow) but does NOT collapse to cards — that's the gap. Cross-cutting
+  (all 7 tables); scope as its own multi-commit unit, ideally one shared
+  responsive-row/`<CardList>` helper. Merge origin/main first.
 - **Prev state**: session #4 last commit `6b85caf` (Contacts: humanize
-  the river_guide role) — pushed, browser-verified (?role=river_guide →
-  269 rows). Session #4 (resumed
+  the river_guide role); river-guides directive fully cleared. Session #4 (resumed
   after overnight idle) units: river-guides item (c) fb481d7 (+ new
   lib/river-guide-display) · river-guides item (j) e9a0092 · contacts
   river_guide humanize 6b85caf. Session #3 units: deals→standard 6dbfd35
