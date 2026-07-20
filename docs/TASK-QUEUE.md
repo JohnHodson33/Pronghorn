@@ -589,6 +589,32 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 🔥🔥🔥 **SIZE ESTIMATION = FIRST-CLASS, PPP FOR EVERYONE + A NON-PPP PATH
+  (John 7/20 — "size estimation is a very important part of this process; I
+  want a size estimation for as many companies as possible"):**
+  (a) **RUN PPP AGAINST EVERY PROPRIETARY COMPANY, not just named industries/
+  tiers.** Any company that enters the funnel from proprietary outreach gets a
+  PPP-match attempt at enrichment (name + state + address/city fuzzy match to
+  the PPP loan DB; store matched loan + draw year on the company/lead so the
+  size lib's PPP path fires). Backfill the match over EVERY existing
+  proprietary company/lead now, not just Platform tier. The payroll-% math is
+  already amendment-4 correct (lib/size.ts); this is purely about feeding it
+  the PPP anchor for the whole base. Report coverage: X of Y proprietary
+  companies now PPP-sized.
+  (b) **NON-PPP SIZE ESTIMATION for the tail PPP can't cover (John: "start
+  thinking of ways to do this outside the PPP database").** Build an ensemble
+  that picks the best available signal per company and always yields a range +
+  CONFIDENCE (never blank): priority = PPP match (high) → LinkedIn employee
+  band (med) → stated employees/crew count/fleet size (med) → Google
+  review-count + service-area breadth + # locations + years-in-business as a
+  weak floor (low). Add a **Claude-over-all-signals estimator**: feed it every
+  captured signal (size_signals jsonb already holds employees_stated,
+  crew_count, fleet_size, locations, review_count) and have it return a revenue
+  range + confidence + one-line basis — flagged clearly as lower-confidence
+  than PPP. Surface the confidence on the size chip so John/Tom know how much
+  to trust each estimate. Later paid option to bring John (don't subscribe):
+  a firmographic API (D&B/ZoomInfo-class) for the residual — sample cost +
+  accuracy first. (Lane B: show confidence on the size chip + basis on hover.)
 - 📣 PM → LANE C (from Lane A, 7/17): **SHARED RIVER-GUIDES EXTRACTOR EXISTS —
   point /discover at it.** Lane A ported your corroboration guard into
   `scraper/riverguides/extract.js` (pure + exported, unit suite 7/7 incl. the
