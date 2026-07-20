@@ -1690,3 +1690,15 @@ NIGHTLY WATCH unchanged: next run ~13:00 UTC 7/20 (~14:20 landing); the transwor
 **FIX (transworld.js + config.json):** (1) enrichDetails now sorts targets by cash_flow DESC before the cap — the cap now protects the highest-value deals regardless of scrape order (pure win, zero added requests); (2) cap raised 150→300 (~+5-6 min/nightly, ~47% of eligible covered). Validated: config parses, adapter loads. Takes effect 7/21 nightly — expect the HVAC row to resolve state=NC, transworld thesis-fit broker coverage to rise materially from 14/56, and T1/T2 null-state → 0. NOTE for future: viking + other capped adapters use the same scrape-order slice — if their eligible-count ever exceeds their cap, apply the same cash_flow-desc sort (transworld was the acute case at 642-vs-150).
 
 NIGHTLY-WATCH pointer → next run ~13:00 UTC 7/21. Next audit verifies: (a) transworld T1/T2 null-state=0, (b) transworld broker coverage jump, (c) usual source_quality/health/auto_promote.
+
+## 2026-07-20 — SYSTEMIC enrich-cap fix across all capped adapters (generalized the transworld find)
+After the transworld cap fix (fe8e150) I audited every capped enrichment adapter for the same scrape-order-slice-under-cap bug (targets filtered by cash-flow floor then `.slice(0, cap)` in SCRAPE ORDER — so when eligible > cap, high-value thesis-fit deals get silently dropped: no broker/state/EBITDA). DB measurement of eligible-vs-cap:
+- **bbf: 385 eligible, cap 150 → dropped 235 (61%!)** — worst; FL green-industry broker source
+- **vr: 161 eligible (asking≥$500K), cap 100 → dropped 61 (38%)**
+- **murphy: 125 eligible, cap 100 → dropped 25 (20%)**
+- businessbroker: 151 eligible, cap 150 → dropped 1 (negligible)
+- viking: 42 eligible, cap 60 → no pressure
+
+**FIX:** added a value-DESC sort before the cap in all 5 adapters (bbf/businessbroker/murphy/viking sort by cash_flow, vr by asking_price) — a pure win (zero added requests) that makes the cap protect the highest-value deals instead of an arbitrary scrape-order slice. PLUS modest cap raises where the drop was material: bbf 150→250, vr 100→150, murphy 100→130 (businessbroker/viking unchanged — no real pressure). Added ~180 detail fetches/nightly total (~3 min). Validated: config parses, all 5 adapters load. Takes effect 7/21 nightly — expect broker coverage to rise on bbf (FL), vr, murphy, and the highest-value deals across all capped sources to always get enriched.
+
+This closes the class of bug end-to-end: transworld (fe8e150) + these 5. Any future capped adapter should sort-by-value-before-cap by default.

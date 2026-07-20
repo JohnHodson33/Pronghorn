@@ -116,6 +116,7 @@ class BusinessBrokerScraper extends SourceScraper {
     const cap = this.config.max_detail_enrich ?? 150;
     const targets = listings
       .filter((l) => l.cash_flow != null && l.cash_flow >= minCash)
+      .sort((a, b) => b.cash_flow - a.cash_flow) // highest cash flow first — cap protects top deals, not a scrape-order slice
       .slice(0, cap);
     if (targets.length === 0) { this.info('Broker enrichment: no listings meet threshold'); return; }
     this.info(`Broker enrichment: ${targets.length} listing(s) (cash flow ≥ ${minCash}, cap ${cap})`);

@@ -63,6 +63,7 @@ class VrScraper extends SourceScraper {
     const cap = this.config.max_detail_enrich ?? 100;
     const targets = listings
       .filter((l) => l.asking_price != null && l.asking_price >= minAsk)
+      .sort((a, b) => b.asking_price - a.asking_price) // highest asking first — cap protects top deals, not a scrape-order slice
       .slice(0, cap);
     if (targets.length === 0) { this.info('Broker enrichment: no listings meet threshold'); return; }
     this.info(`Broker enrichment: ${targets.length} listing(s) (asking ≥ ${minAsk}, cap ${cap})`);

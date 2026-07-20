@@ -70,7 +70,8 @@
       "entry": "https://bizmls.com/bbf/businesses",
       "enrich_details": true,
       "enrich_min_cash_flow": 300000,
-      "max_detail_enrich": 150
+      "max_detail_enrich": 250,
+      "_comment": "~385 listings clear the $300K enrich floor; cap raised 150→250 (7/20) — the old cap dropped 235 eligible FL green-industry deals. enrichBrokers now sorts by cash flow DESC so the cap protects the top deals."
     },
     "bizmls": {
       "enabled": true,
@@ -94,8 +95,8 @@
       "max_pages": 10,
       "enrich_details": true,
       "enrich_min_cash_flow": 300000,
-      "max_detail_enrich": 100,
-      "_comment": "Detail pages name the listing agent + direct line in the 'Get More Information' block (page-header tel: is corporate — ignored)."
+      "max_detail_enrich": 130,
+      "_comment": "Detail pages name the listing agent + direct line in the 'Get More Information' block (page-header tel: is corporate — ignored). Cap 100→130 (7/20) covers all ~125 eligible; enrichBrokers sorts by cash flow DESC so the cap protects the top deals."
     },
     "sunacquisitions": {
       "enabled": true,
@@ -124,8 +125,8 @@
       "max_pages": 25,
       "enrich_details": true,
       "enrich_min_asking": 500000,
-      "max_detail_enrich": 100,
-      "_comment": "Cards lack cash flow, so enrichment gates on asking price. Detail pages expose the named agent (NDA-link JSON + /advisor/ slug) w/ email on most office templates."
+      "max_detail_enrich": 150,
+      "_comment": "Cards lack cash flow, so enrichment gates on asking price. Detail pages expose the named agent (NDA-link JSON + /advisor/ slug) w/ email on most office templates. Cap 100→150 (7/20) covers ~150 of 161 eligible; enrichBrokers sorts by asking DESC so the cap protects the top deals."
     },
     "franchiseresales": {
       "enabled": true,
