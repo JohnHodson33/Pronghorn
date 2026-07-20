@@ -46,6 +46,25 @@ data — see NEXT), else TASK-QUEUE top-down.
 (a benign "web"/port-3211 dev config from another chat session in this worktree
 — `git add -A` picked it up). It's harmless; drop it if it conflicts.
 
+🔴 **TRACERFY RIVER-GUIDE PHONES — DEAD END (probed live 7/20, John greenlit the
+probe; cost $0).** Verdict: **Tracerfy cannot skip-trace by name+city+state.**
+Proof: (1) the batch `/trace/` endpoint HARD-REQUIRES `address_column` — 400s
+without it; (2) with a blank address column its data-cleaner discards the rows
+("No valid rows found after data cleaning") — a STREET address is structurally
+mandatory; (3) no single-person/search/reverse/lookup endpoint exists (all 404)
+— the only API surface is the batch trace. Combined with the fact that
+`river_guides` stores only `location_city`/`location_state`/`company_website`
+(NO street address anywhere), all three original options are non-viable. Probe
+cost $0 (every submission was rejected before a billable queue was created — no
+credits used). **RECOMMENDATION (John's call):** don't force Tracerfy for guides.
+For exited operators LinkedIn + email is the natural primary channel and we're
+already enriching those (riverguides/enrich_t1.js) — verify that coverage rather
+than chase phones. Phone-by-skiptrace for this segment would need EITHER a
+street address we don't have, OR a different vendor that accepts name+city+state
+(Endato/Enformion/IDI-class people-search) — a separate paid-channel decision to
+sample cost+accuracy on, not a Tracerfy tweak. PARK guide phones until John
+decides on a people-search vendor.
+
 **7/20 SESSION #3 — SHIPPED:**
 - **COSTS: UPWORK VA + MONTH vs YTD** (John 7/20 🔥🔥🔥). (a) Manual cost-entry
   path: `POST /api/costs/manual` {cost_usd, units?, service?, activity?, note?,

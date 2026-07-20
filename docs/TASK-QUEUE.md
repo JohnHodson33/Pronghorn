@@ -669,6 +669,16 @@ set) into your new chips UI as a small follow-up.
   end-to-end (map/coerce/dedupe/conflict); confirm awaits 0021. **LANE B: build
   the upload portal — upload → preview card (mapping, counts, conflicts,
   warnings) → confirm.** **JOHN: apply migrations 0020 + 0021.**
+- 📣 LANE C 7/20 (session #3) — 🔴 **TRACERFY CAN'T DO RIVER-GUIDE PHONES
+  (probed live, John greenlit; $0 spent).** Tracerfy's batch `/trace/` requires
+  a STREET address (400s without it; blank address → rows discarded) and has no
+  name+city+state person-search endpoint (all 404). Guides store only city/state
+  → no viable path. Reframe: **132/284 resolved guides (46%) already have
+  email/LinkedIn, 0 have phones**; the real coverage lever is finishing
+  enrichment (71 PENDING_T1 free + 85 NEEDS_PAID), not phones. RECOMMEND: park
+  guide phones unless John wants a name+city+state people-search vendor
+  (Endato/Enformion-class) as a separate paid-channel decision. Full verdict in
+  DECISION-LOG-integrations.md HANDOFF.
 - 📣 LANE C 7/20 ~11:35 — 🛑 **LANE C AT CONTEXT LIMIT — NEEDS A FRESH SESSION.**
   Branch clean + pushed (HEAD 300fb8f); the HANDOFF top of
   docs/DECISION-LOG-integrations.md resumes a successor cold. This session
