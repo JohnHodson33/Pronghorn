@@ -3,11 +3,31 @@
 Per-lane log per PARALLEL-SESSIONS.md; the PM/integrator folds these into
 DECISION-LOG.md and wires routes into Sidebar.tsx.
 
-## 🔄 HANDOFF — session #5 (7/20) — successor resumes here
+## 🔄 HANDOFF — session #6 (7/21) — successor resumes here
 
-- **State**: nothing in flight. Both PM 7/20 priority units DONE + pushed.
-  Session #5 units: Deals ~Rev/~EBITDA size columns `d7af055` · Deal
-  Proposals UI `9f00d53`.
+- **State**: nothing in flight. Both PM 7/21 units DONE + pushed:
+  **COSTS PAGE** `dcac050` (new /costs — Month | YTD side by side, same
+  breakdown each, + "Log a cost" for the Upwork VA invoices) and
+  **DATA INTAKE PORTAL** `1f38172` (new /intake — drag-drop → preview →
+  confirm, for Tom with zero agent involvement).
+  ⚠️ **PM must wire BOTH Sidebar entries** (/costs, /intake) — Sidebar.tsx
+  is PM's file, so neither page is reachable from the nav yet.
+- **⚠️ TWO THINGS BLOCKED ON JOHN (both verified, not guesses)**:
+  1. **Migration 0021 (intake_jobs) is NOT applied** despite TASK-QUEUE
+     saying "APPLIED" — /api/intake/preview returns "Could not find the
+     table 'public.intake_jobs'". The portal degrades correctly (full
+     preview renders, Confirm disabled with the reason shown) so nobody
+     can half-import. Apply 0021 → Confirm lights up. **Confirm is the
+     one path not exercised live.**
+  2. **Migration 0019 (deal_proposals) still not applied** (from
+     session #5) — the dashboard proposal cards stay empty until then.
+- **Local env gaps (not bugs)**: no ANTHROPIC_API_KEY locally, so intake
+  column-mapping falls back to the heuristic (it still mapped Full Name→
+  name, Email Address→email, Company→firm correctly). The merge added the
+  `xlsx` dep — **run `npm install` in web/ after merging** or tsc fails on
+  lib/intake.ts.
+- **Prev session #5 units**: Deals ~Rev/~EBITDA size columns `d7af055` ·
+  Deal Proposals UI `9f00d53`.
   (1) **SIZE RENDER** — Deals table now has ~Rev/~EBITDA estimate columns
   (numeric sort on midpoint, unsized last, basis+confidence hover),
   matching Enrichment/Companies. Deals are mostly unsized (broker-sourced,
