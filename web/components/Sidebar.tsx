@@ -67,6 +67,15 @@ function CostBadge() {
               <span className="font-semibold tabular-nums text-emerald-700">{fmt(costs.costPerContact)}</span>
             </div>
           )}
+          {/* This badge is month-only and lives at the top of a long nav — the
+              full Month + Year-to-Date page sat below the fold and John never
+              found it (7/21). Route to it from where he already looks. */}
+          <Link
+            href="/costs"
+            className="block border-t border-zinc-100 pt-2 font-semibold text-emerald-700 hover:underline"
+          >
+            View full costs — month + year-to-date →
+          </Link>
         </div>
       )}
     </div>
