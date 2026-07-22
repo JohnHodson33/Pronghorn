@@ -3,7 +3,40 @@
 Per-lane log per PARALLEL-SESSIONS.md; the PM/integrator folds these into
 DECISION-LOG.md and wires routes into Sidebar.tsx.
 
-## 🔄 HANDOFF — session #6 (7/21) — successor resumes here
+## 🔄 HANDOFF — session #7 (7/21 eve) — successor resumes here
+
+- **State**: nothing in flight. **John's #1 complaint (list filtering/sorting,
+  asked 5×) is ROLLED OUT EVERYWHERE and verified page-by-page.** PM found the
+  root cause (header filters rendered `label=""` → invisible bare caret) and
+  fixed FilterDropdown + converted /river-guides as the reference; this session
+  rolled it across every remaining list, one commit each:
+  Companies `3d8fa03` · Contacts `9e4b990` · Brokers `bb85a59` ·
+  Listings `4044e35` · Deals+Enrichment `c7f6f8a` · River Guides `64d9ab7`.
+- **Coverage now (each opened and confirmed in the browser, not assumed)**:
+  Companies 14/14 cols sort + 10 named filters · Contacts 6/6 + 5 ·
+  Brokers 8/8 + 6 · Listings 10/10 + 5 · Deals 11/11 + 4 · Enrichment 15 sort
+  + 8 · River Guides 11/11 + 8 · lead-list detail inherits LeadsTable (12 sort
+  + 8). Every filter is named → reads "Filter by industry", never a bare
+  funnel.
+- **Redundant chip rows KILLED** (John: "too many tabs up across"): Companies'
+  toolbar Industry + ★ Shortlist dropdowns, Contacts' Has email/Has phone
+  checkboxes, Brokers' Has phone/email checkbox, Listings' T1–T4 chip row.
+  Tier/Shortlist/etc. now live only in their column headers.
+- **Email/Phone/LinkedIn each own a has/missing filter** on every list; the
+  single combined "reachability" control (Enrichment + River Guides) is gone.
+  Shared helpers in **`web/lib/list-filters.ts`** (presenceOptions /
+  presenceMatch / cmpText / nullsLast) — use these on any new table so the
+  behaviour can't drift again.
+- **⚠️ FINDING FOR JOHN**: on /river-guides "Call now + has phone" returns 0 —
+  correct, not a bug. **ZERO of 467 river guides have a phone number** (API
+  checked directly) while 115 sit in Call now. Lane C's queued Tracerfy
+  skiptrace is the fix.
+- **⚠️ TOOLING GOTCHA (cost me two file reverts)**: never round-trip a source
+  file through PowerShell `Get-Content | Set-Content` — it mangles UTF-8
+  (em-dashes → `â€"`). Use the Edit tool for source edits; PowerShell only for
+  git/npm.
+
+## 🔄 HANDOFF — session #6 (7/21) — retired
 
 - **State**: nothing in flight. Both PM 7/21 units DONE + pushed:
   **COSTS PAGE** `dcac050` (new /costs — Month | YTD side by side, same
