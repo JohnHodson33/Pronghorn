@@ -67,6 +67,15 @@ function CostBadge() {
               <span className="font-semibold tabular-nums text-emerald-700">{fmt(costs.costPerContact)}</span>
             </div>
           )}
+          {/* This badge is month-only and lives at the top of a long nav — the
+              full Month + Year-to-Date page sat below the fold and John never
+              found it (7/21). Route to it from where he already looks. */}
+          <Link
+            href="/costs"
+            className="block border-t border-zinc-100 pt-2 font-semibold text-emerald-700 hover:underline"
+          >
+            View full costs — month + year-to-date →
+          </Link>
         </div>
       )}
     </div>
@@ -136,8 +145,12 @@ const nav: { section: string; items: { label: string; href: string | null }[] }[
 // navy #1E3A30, ivory #EDE7D4, paper #FBF9F2, gold #C9BD96 / #A89A6F.
 export default function Sidebar() {
   const pathname = usePathname();
+  // h-screen + sticky so the nav's overflow-y-auto actually scrolls. Without a
+  // height cap the aside grew with the page and everything below "Contacts"
+  // (Brokers, Outreach, Improvements, Data Intake, Costs) sat below the fold
+  // with no way to reach it — John couldn't find the Costs page at all (7/21).
   return (
-    <aside className="w-60 shrink-0 flex flex-col" style={{ background: "#17301F", borderRight: "1px solid rgba(237,231,212,0.14)" }}>
+    <aside className="w-60 shrink-0 flex flex-col h-screen sticky top-0" style={{ background: "#17301F", borderRight: "1px solid rgba(237,231,212,0.14)" }}>
       <div className="px-5 py-5 flex items-center gap-3" style={{ borderBottom: "1px solid rgba(237,231,212,0.14)" }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/pronghorn-logo.png" alt="Pronghorn" className="h-11 w-auto" />
