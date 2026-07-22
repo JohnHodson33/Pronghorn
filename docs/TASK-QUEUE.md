@@ -132,6 +132,37 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 🔥🔥🔥🔥 **#1 — "MAKE THE LISTS WORK LIKE EXCEL" (John 7/21 — his FIFTH time
+  asking. Top of your queue until provably done.)** His words: "any time we
+  have a list — companies, names, contacts, brokers, river guides — I want to
+  filter by industry, filter by whether we have their contact info… consistent
+  across all the tabs… every column should be filterable and sortable like an
+  Excel document. Right now it's incoherent and restricting."
+  **PM ALREADY FIXED THE ROOT CAUSE — do NOT redo it:** header FilterDropdowns
+  were rendered `label=""`, collapsing to an unlabeled bare caret — invisible,
+  so lists *looked* unfilterable even where filters existed. FilterDropdown now
+  always renders a bordered, titled funnel (+ a `name` prop for the tooltip),
+  and /river-guides is the REFERENCE IMPLEMENTATION (6 named filters: band,
+  industry, exit, email, status, state).
+  **YOUR JOB — apply it everywhere, exhaustively:**
+  (a) EVERY list page — Companies, Contacts, Brokers, Listings, Deals,
+  Enrichment, Lead lists — every column header gets BOTH a SortHeader AND
+  (where categorical or has/missing-able) a named FilterDropdown. Contact
+  columns (email/phone/LinkedIn) each get their OWN has/missing filter, not one
+  combined "reach" control.
+  (b) Pass `name="<Column>"` on every header filter so it reads "Filter by
+  industry", never a bare "Filter".
+  (c) **KILL THE REDUNDANT CHIP ROWS ABOVE THE TABLES** — John: "too many tabs
+  up across saying all the different things I can sort by." Once a column owns
+  its filter, the duplicate chip row goes away (keep at most ONE counts line).
+  This is a big part of the "incoherent" complaint.
+  (d) Identical control layout + behaviour on every page: same order, same
+  look, same URL-param persistence, same clear-filters affordance.
+  **ACCEPTANCE (John will test exactly this):** open any list → every column
+  header visibly offers sort + filter → filter Companies/Contacts/Brokers/
+  River Guides by industry in ≤2 clicks → filter by "has phone"/"has email" →
+  combine two filters → the view survives clicking into a record and back.
+  Mobile parity. Ship page-by-page, commit each.
 - 🔥🔥🔥 **COSTS PAGE: MONTH + YTD COLUMNS + LOG-A-COST (John 7/20; pairs w/
   Lane C's /api/costs two-window rewrite):** show spend as **two columns —
   This Month | Year-to-Date** — each with the SAME breakdown: Subscriptions
