@@ -125,6 +125,7 @@ class BizmlsScraper extends SourceScraper {
     const prefix = this.config.enrich_id_prefix || null;
     const eligible = listings.filter((l) => l.cash_flow != null && l.cash_flow >= minCash);
     const targets = (prefix ? eligible.filter((l) => String(l.source_listing_id).startsWith(prefix)) : eligible)
+      .sort((a, b) => b.cash_flow - a.cash_flow) // highest cash flow first: ~385 eligible vs cap, so the cap must protect the top deals, not a scrape-order slice
       .slice(0, cap);
     const skipped = eligible.length - targets.length;
     if (targets.length === 0) { this.info('Broker enrichment: no listings meet threshold'); return; }
