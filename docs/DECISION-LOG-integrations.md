@@ -46,6 +46,35 @@ data — see NEXT), else TASK-QUEUE top-down.
 (a benign "web"/port-3211 dev config from another chat session in this worktree
 — `git add -A` picked it up). It's harmless; drop it if it conflicts.
 
+📌 **7/21 SESSION #3 RESUMED (PM pinged; I'd been idle awaiting John's steer).**
+Merged origin/main. Three corrections/findings for PM + John:
+1. ⚠️ **MIGRATIONS 0020 AND 0021 ARE BOTH STILL UNAPPLIED.** PM's note said
+   "0021 (intake_jobs) is applied" — it is NOT: `select`/`insert` on
+   `intake_jobs` returns *"Could not find the table 'public.intake_jobs' in the
+   schema cache"*, and `subscriptions.start_date` is likewise absent. Same DB
+   call successfully read `feedback` + `subscriptions`, so this is not a
+   connectivity or cache-lag artifact. **Consequence: intake PREVIEW works, but
+   CONFIRM cannot run** (it degrades cleanly with an "apply 0021" note — no data
+   loss, but no writes either). **Lane B: the upload portal's confirm step will
+   return that note until John applies 0021.** JOHN: apply **0021** (unblocks
+   intake confirm) and optionally **0020** (exact mid-year sub YTD).
+2. ✅ **The `xlsx` dependency WAS added by me, in my own commit.** PM's note said
+   I imported it without adding the dep and that PM installed+committed it —
+   the record shows `d1c98c2` added `"xlsx": "^0.18.5"` to `web/package.json`
+   (+ lockfile), and **no commit has touched package.json since**. No fix commit
+   exists because none was needed. Flagging only so the process note doesn't
+   propagate as fact.
+3. 🐛 **FIXED — intra-file duplicate gap in the intake planner.** `buildPlan`
+   deduped each row against a DB snapshot loaded once, so two rows in the SAME
+   upload describing the same person/company both planned a `create` (duplicate
+   records), and two rows matching the same existing record both planned a fill.
+   Now a per-file identity key (mirroring findMatch precedence: email / domain /
+   deal_id, else name+firm / name+state / name+company) plus a matched-id set
+   make the FIRST row win; later duplicates become `skip` with reason
+   *"duplicate of row N in this file"*. Typecheck clean. Found by re-reading the
+   engine after merge — not yet exercised against a live confirm (blocked on
+   0021).
+
 🔴 **TRACERFY RIVER-GUIDE PHONES — DEAD END (probed live 7/20, John greenlit the
 probe; cost $0).** Verdict: **Tracerfy cannot skip-trace by name+city+state.**
 Proof: (1) the batch `/trace/` endpoint HARD-REQUIRES `address_column` — 400s

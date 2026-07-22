@@ -323,6 +323,23 @@ function findMatch(base: string, vals: Record<string, unknown>, existing: Record
   return undefined;
 }
 
+// Identity key for INTRA-FILE dedupe — mirrors findMatch's precedence. Two rows
+// in the same upload describing the same person/company must not both create a
+// record (the `existing` snapshot can't catch that: it's loaded once, and a
+// planned create has no id yet).
+function intraKey(base: string, vals: Record<string, unknown>): string {
+  if (base === "contacts") {
+    const email = String(vals.email ?? "").toLowerCase().trim();
+    return email ? `e:${email}` : `n:${nkey(vals.name)}|${nkey(vals.firm)}`;
+  }
+  if (base === "companies") {
+    const d = domain(vals.website);
+    return d ? `d:${d}` : `n:${nkey(vals.name)}|${nkey(vals.state)}`;
+  }
+  const id = String(vals.deal_id ?? "").trim();
+  return id ? `i:${id}` : `n:${nkey(vals.full_name)}|${nkey(vals.their_company)}`;
+}
+
 // Build the resolved plan. No writes.
 export async function buildPlan(
   db: SupabaseClient,
@@ -335,6 +352,10 @@ export async function buildPlan(
   const existing = await loadExisting(db, cat.table);
   const rows: PlannedRow[] = [];
   const counts = { rows: parsed.rows.length, create: 0, update: 0, skip: 0, conflicts: 0 };
+  // intra-file dedupe: first row wins, later duplicates are skipped (never a
+  // silent second record, never a double-fill of the same existing row)
+  const seenKey = new Map<string, number>();
+  const seenMatch = new Map<string, number>();
 
   parsed.rows.forEach((srcRow, i) => {
     // pull only mapped, non-empty, coerced values (never invent a field)
@@ -358,12 +379,31 @@ export async function buildPlan(
       if (fillOnly) {
         counts.skip++;
         rows.push({ i, action: "skip", values: vals, conflicts: [], skipReason: "enrichment-fill: no existing record to enrich" });
-      } else {
-        counts.create++;
-        rows.push({ i, action: "create", values: vals, conflicts: [] });
+        return;
       }
+      // intra-file duplicate of an earlier planned create?
+      const key = intraKey(cat.table, vals);
+      const first = seenKey.get(key);
+      if (first !== undefined) {
+        counts.skip++;
+        rows.push({ i, action: "skip", values: vals, conflicts: [], skipReason: `duplicate of row ${first + 1} in this file` });
+        return;
+      }
+      seenKey.set(key, i);
+      counts.create++;
+      rows.push({ i, action: "create", values: vals, conflicts: [] });
       return;
     }
+
+    // two rows matching the SAME existing record — only the first may fill it
+    const matchKey = String((match as Record<string, unknown>)[cat.table === "river_guides" ? "deal_id" : "id"]);
+    const firstForMatch = seenMatch.get(matchKey);
+    if (firstForMatch !== undefined) {
+      counts.skip++;
+      rows.push({ i, action: "skip", values: vals, conflicts: [], skipReason: `duplicate of row ${firstForMatch + 1} in this file (same existing record)` });
+      return;
+    }
+    seenMatch.set(matchKey, i);
 
     // existing match → fill blanks only; differing non-blank = conflict (kept)
     const fill: Record<string, string | number | boolean> = {};
