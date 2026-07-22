@@ -55,15 +55,24 @@ export default function FilterDropdown({
   }
 
   const active = selected.size > 0;
+  // John 7/21 (5th time asking for this): header filters rendered with label=""
+  // collapsed to a bare ▼ with NO accessible name — invisible, so every list
+  // read as "can't filter by this column". Header filters now always render a
+  // bordered, titled funnel so a filterable column advertises itself.
+  const filterTitle = `Filter${label ? ` by ${label.toLowerCase()}` : ""}${active ? ` — ${selected.size} selected` : ""}`;
   return (
     <div ref={ref} className="relative inline-block" onClick={(e) => e.stopPropagation()}>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
+        title={filterTitle}
+        aria-label={filterTitle}
         className={
           header
-            ? `inline-flex items-center gap-1 rounded px-1 py-0.5 text-xs uppercase tracking-wide ${
-                active ? "bg-emerald-100 font-bold text-emerald-800" : "font-medium text-zinc-500 hover:bg-zinc-100"
+            ? `inline-flex items-center gap-0.5 rounded border px-1 py-0.5 text-[10px] uppercase leading-none tracking-wide transition ${
+                active
+                  ? "border-emerald-600 bg-emerald-100 font-bold text-emerald-800"
+                  : "border-zinc-300 bg-white font-medium text-zinc-500 hover:border-emerald-600 hover:text-emerald-700"
               }`
             : `inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm ${
                 active ? "border-emerald-600 bg-emerald-50 font-medium text-emerald-800" : "border-zinc-300 text-zinc-700 hover:bg-zinc-50"
@@ -71,8 +80,14 @@ export default function FilterDropdown({
         }
       >
         {label}
-        {active && <span className={header ? "" : "rounded-full bg-emerald-700 px-1.5 text-xs font-semibold text-white"}>{header ? `(${selected.size})` : selected.size}</span>}
-        <span aria-hidden className="text-[9px] opacity-60">▼</span>
+        {/* the funnel is the affordance — always visible in header mode */}
+        {header && <span aria-hidden className="text-[11px] leading-none">▽</span>}
+        {active && (
+          <span className={header ? "font-bold" : "rounded-full bg-emerald-700 px-1.5 text-xs font-semibold text-white"}>
+            {selected.size}
+          </span>
+        )}
+        {!header && <span aria-hidden className="text-[9px] opacity-60">▼</span>}
       </button>
       {open && (
         <div className={`absolute z-30 mt-1 max-h-72 w-56 max-w-[85vw] overflow-y-auto rounded-lg border border-zinc-200 bg-white py-1 shadow-lg ${alignRight ? "right-0" : "left-0"}`}>

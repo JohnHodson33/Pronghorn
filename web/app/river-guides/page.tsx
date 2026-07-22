@@ -502,7 +502,12 @@ export default function RiverGuides() {
                 />
               </th>
               <th className="px-3 py-2">
-                <SortHeader label="Band" active={sortKey === "band"} dir={sortDir} onChange={sortSet("band")} />
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Band" active={sortKey === "band"} dir={sortDir} onChange={sortSet("band")} />
+                  <FilterDropdown header label=""
+                    options={BANDS.map((b) => ({ value: b, label: BAND_LABEL[b], count: bandCounts[b] ?? 0 }))}
+                    selected={bandsSel} onChange={setBandsSel} />
+                </span>
               </th>
               <th className="px-3 py-2">
                 <SortHeader label="Name" active={sortKey === "name"} dir={sortDir} onChange={sortSet("name")} />
