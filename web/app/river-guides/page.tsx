@@ -504,7 +504,7 @@ export default function RiverGuides() {
               <th className="px-3 py-2">
                 <span className="inline-flex items-center gap-1">
                   <SortHeader label="Band" active={sortKey === "band"} dir={sortDir} onChange={sortSet("band")} />
-                  <FilterDropdown header label=""
+                  <FilterDropdown header label="" name="Band"
                     options={BANDS.map((b) => ({ value: b, label: BAND_LABEL[b], count: bandCounts[b] ?? 0 }))}
                     selected={bandsSel} onChange={setBandsSel} />
                 </span>
@@ -518,13 +518,13 @@ export default function RiverGuides() {
               <th className="px-3 py-2">
                 <span className="inline-flex items-center gap-1">
                   <SortHeader label="Industry" active={sortKey === "industry"} dir={sortDir} onChange={sortSet("industry")} />
-                  <FilterDropdown header label="" options={industryOptions} selected={industriesSel} onChange={setIndustriesSel} />
+                  <FilterDropdown header label="" name="Industry" options={industryOptions} selected={industriesSel} onChange={setIndustriesSel} />
                 </span>
               </th>
               <th className="px-3 py-2">
                 <span className="inline-flex items-center gap-1">
                   <SortHeader label="Exit" active={sortKey === "exit"} dir={sortDir} onChange={sortSet("exit")} />
-                  <FilterDropdown header label="" options={exitOptions} selected={exitSel} onChange={setExitSel} />
+                  <FilterDropdown header label="" name="Exit" options={exitOptions} selected={exitSel} onChange={setExitSel} />
                 </span>
               </th>
               <th className="px-3 py-2 text-right">
@@ -541,7 +541,7 @@ export default function RiverGuides() {
               <th className="px-3 py-2">
                 <span className="inline-flex items-center gap-1">
                   <SortHeader label="Loc" active={sortKey === "state"} dir={sortDir} onChange={sortSet("state")} />
-                  <FilterDropdown header label="" options={stateOptions} selected={statesSel} onChange={setStatesSel} />
+                  <FilterDropdown header label="" name="State" options={stateOptions} selected={statesSel} onChange={setStatesSel} />
                 </span>
               </th>
             </tr>

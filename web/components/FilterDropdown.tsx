@@ -14,12 +14,14 @@ const PANEL_W = 224; // must track the w-56 on the panel below
 
 export default function FilterDropdown({
   label,
+  name,
   options,
   selected,
   onChange,
   header = false,
 }: {
   label: string;
+  name?: string;    // column name for the tooltip when the visible label is ""
   options: FilterOption[];
   selected: Set<string>;
   onChange: (next: Set<string>) => void;
@@ -59,7 +61,8 @@ export default function FilterDropdown({
   // collapsed to a bare ▼ with NO accessible name — invisible, so every list
   // read as "can't filter by this column". Header filters now always render a
   // bordered, titled funnel so a filterable column advertises itself.
-  const filterTitle = `Filter${label ? ` by ${label.toLowerCase()}` : ""}${active ? ` — ${selected.size} selected` : ""}`;
+  const what = label || name;
+  const filterTitle = `Filter${what ? ` by ${what.toLowerCase()}` : ""}${active ? ` — ${selected.size} selected` : ""}`;
   return (
     <div ref={ref} className="relative inline-block" onClick={(e) => e.stopPropagation()}>
       <button
