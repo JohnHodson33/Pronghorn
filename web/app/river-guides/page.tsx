@@ -13,6 +13,7 @@ import SortHeader from "@/components/SortHeader";
 import ScrollShell from "@/components/ScrollShell";
 import { useUrlFilterSync } from "@/lib/use-url-filters";
 import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
+import { presenceOptions, presenceMatch } from "@/lib/list-filters";
 
 type Run = {
   id: string;
@@ -111,7 +112,9 @@ export default function RiverGuides() {
   const [statusSel, setStatusSel] = useState<Set<string>>(new Set());
   const [exitSel, setExitSel] = useState<Set<string>>(new Set());
   const [statesSel, setStatesSel] = useState<Set<string>>(new Set());
-  const [reachSel, setReachSel] = useState<Set<string>>(new Set()); // reachability (John 7/16 13:00)
+  const [emailSel, setEmailSel] = useState<Set<string>>(new Set());
+  const [phoneSel, setPhoneSel] = useState<Set<string>>(new Set());
+  const [linkedinSel, setLinkedinSel] = useState<Set<string>>(new Set());
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -160,7 +163,8 @@ export default function RiverGuides() {
     () => ({
       q, band: csvSet(bandsSel), industry: csvSet(industriesSel),
       status: csvSet(statusSel), exit: csvSet(exitSel), state: csvSet(statesSel),
-      reach: csvSet(reachSel), sort: sortKey, dir: sortKey && sortDir === "asc" ? "asc" : null,
+      email: csvSet(emailSel), phone: csvSet(phoneSel), linkedin: csvSet(linkedinSel),
+      sort: sortKey, dir: sortKey && sortDir === "asc" ? "asc" : null,
     }),
     (p) => {
       if (p.get("q")) setQ(p.get("q")!);
@@ -169,11 +173,18 @@ export default function RiverGuides() {
       if (p.get("status")) setStatusSel(fromCsv(p.get("status")));
       if (p.get("exit")) setExitSel(fromCsv(p.get("exit")));
       if (p.get("state")) setStatesSel(fromCsv(p.get("state")));
-      if (p.get("reach")) setReachSel(fromCsv(p.get("reach")));
+      // legacy ?reach=phone style links map onto the per-channel filters
+      const legacy = fromCsv(p.get("reach"));
+      if (legacy.has("email")) setEmailSel(new Set(["has"]));
+      if (legacy.has("phone")) setPhoneSel(new Set(["has"]));
+      if (legacy.has("linkedin")) setLinkedinSel(new Set(["has"]));
+      if (p.get("email")) setEmailSel(fromCsv(p.get("email")));
+      if (p.get("phone")) setPhoneSel(fromCsv(p.get("phone")));
+      if (p.get("linkedin")) setLinkedinSel(fromCsv(p.get("linkedin")));
       if (p.get("sort")) setSortKey(p.get("sort"));
       if (p.get("dir") === "asc") setSortDir("asc");
     },
-    [q, bandsSel, industriesSel, statusSel, exitSel, statesSel, reachSel, sortKey, sortDir],
+    [q, bandsSel, industriesSel, statusSel, exitSel, statesSel, emailSel, phoneSel, linkedinSel, sortKey, sortDir],
   );
 
   const all = guides ?? [];
@@ -194,24 +205,10 @@ export default function RiverGuides() {
     [all],
   );
   const stateOptions = useMemo(() => opt(all.map((g) => g.location_state)), [all]);
-  // reachability: which usable channels exist (John 7/16 13:00 — filter by it)
-  const reachOf = (g: Guide): string[] => {
-    const r: string[] = [];
-    if (g.contact?.email) r.push("email");
-    if (g.contact?.phone) r.push("phone");
-    if (g.contact?.linkedin_url) r.push("linkedin");
-    return r.length ? r : ["none"];
-  };
-  const reachOptions = useMemo(() => {
-    const m: Record<string, number> = { email: 0, phone: 0, linkedin: 0, none: 0 };
-    for (const g of all) for (const r of reachOf(g)) m[r]++;
-    return [
-      { value: "email", label: "has email", count: m.email },
-      { value: "phone", label: "has phone", count: m.phone },
-      { value: "linkedin", label: "has LinkedIn", count: m.linkedin },
-      { value: "none", label: "no channels yet", count: m.none },
-    ];
-  }, [all]);
+  // each channel owns its own has/missing filter, like every other list
+  const emailOptions = useMemo(() => presenceOptions(all, (g) => g.contact?.email, "email"), [all]);
+  const phoneOptions = useMemo(() => presenceOptions(all, (g) => g.contact?.phone, "phone"), [all]);
+  const linkedinOptions = useMemo(() => presenceOptions(all, (g) => g.contact?.linkedin_url, "LinkedIn"), [all]);
 
   const rows = useMemo(() => {
     const filtered = all.filter((g) => {
@@ -222,7 +219,9 @@ export default function RiverGuides() {
       if (statusSel.size && !statusSel.has(g.enrichment_status)) return false;
       if (exitSel.size && !exitSel.has(`${g.exit_status}${g.current_status_verified ? " ✓" : " ⚠"}`)) return false;
       if (statesSel.size && !statesSel.has(g.location_state ?? "")) return false;
-      if (reachSel.size && !reachOf(g).some((r) => reachSel.has(r))) return false;
+      if (!presenceMatch(emailSel, g.contact?.email)) return false;
+      if (!presenceMatch(phoneSel, g.contact?.phone)) return false;
+      if (!presenceMatch(linkedinSel, g.contact?.linkedin_url)) return false;
       if (q && !`${g.full_name ?? ""} ${g.their_company} ${g.acquirer} ${g.acquirer_pe_sponsor ?? ""} ${g.industry}`.toLowerCase().includes(q.toLowerCase()))
         return false;
       return true;
@@ -238,6 +237,11 @@ export default function RiverGuides() {
           case "score": return g.fit_score ?? g.screen_score ?? -1;
           case "state": return g.location_state ?? "zz";
           case "band": return BANDS.indexOf(g.priority_band);
+          // blanks sort last so "who has an email" reads top-down
+          case "email": return (g.contact?.email ?? "zzz").toLowerCase();
+          case "phone": return (g.contact?.phone ?? "zzz").toLowerCase();
+          case "linkedin": return (g.contact?.linkedin_url ?? "zzz").toLowerCase();
+          case "status": return STATUS_LABEL[g.enrichment_status] ?? g.enrichment_status;
           default: return 0;
         }
       };
@@ -251,7 +255,7 @@ export default function RiverGuides() {
       const d = BANDS.indexOf(a.priority_band) - BANDS.indexOf(b.priority_band);
       return d !== 0 ? d : (b.screen_score ?? 0) - (a.screen_score ?? 0);
     });
-  }, [all, q, bandsSel, industriesSel, statusSel, exitSel, statesSel, reachSel, sortKey, sortDir, openRun]);
+  }, [all, q, bandsSel, industriesSel, statusSel, exitSel, statesSel, emailSel, phoneSel, linkedinSel, sortKey, sortDir, openRun]);
 
   // COST BEFORE THE CLICK (John 7/16: "the cost should show up beforehand… to
   // the extent anything shows up more expensive, I want us to be thoughtful").
@@ -531,12 +535,28 @@ export default function RiverGuides() {
                 <SortHeader label="Score" numeric active={sortKey === "score"} dir={sortDir} onChange={sortSet("score")} />
               </th>
               <th className="px-3 py-2">
-                <FilterDropdown header label="Email" options={reachOptions} selected={reachSel} onChange={setReachSel} />
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Email" active={sortKey === "email"} dir={sortDir} onChange={sortSet("email")} />
+                  <FilterDropdown header label="" name="Email" options={emailOptions} selected={emailSel} onChange={setEmailSel} />
+                </span>
               </th>
-              <th className="px-3 py-2">Phone</th>
-              <th className="px-3 py-2">LinkedIn</th>
               <th className="px-3 py-2">
-                <FilterDropdown header label="Status" options={statusOptions} selected={statusSel} onChange={setStatusSel} />
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Phone" active={sortKey === "phone"} dir={sortDir} onChange={sortSet("phone")} />
+                  <FilterDropdown header label="" name="Phone" options={phoneOptions} selected={phoneSel} onChange={setPhoneSel} />
+                </span>
+              </th>
+              <th className="px-3 py-2">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="LinkedIn" active={sortKey === "linkedin"} dir={sortDir} onChange={sortSet("linkedin")} />
+                  <FilterDropdown header label="" name="LinkedIn" options={linkedinOptions} selected={linkedinSel} onChange={setLinkedinSel} />
+                </span>
+              </th>
+              <th className="px-3 py-2">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Status" active={sortKey === "status"} dir={sortDir} onChange={sortSet("status")} />
+                  <FilterDropdown header label="" name="Status" options={statusOptions} selected={statusSel} onChange={setStatusSel} />
+                </span>
               </th>
               <th className="px-3 py-2">
                 <span className="inline-flex items-center gap-1">
