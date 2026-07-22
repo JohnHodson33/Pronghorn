@@ -11,6 +11,10 @@ import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 import { useUrlFilterSync } from "@/lib/use-url-filters";
 import FilterDropdown from "@/components/FilterDropdown";
 import SortHeader from "@/components/SortHeader";
+import { presenceOptions, presenceMatch, cmpText } from "@/lib/list-filters";
+
+type SortKey = "name" | "brokerage" | "listings" | "industries" | "states" | "email" | "phone" | "crm" | null;
+const SORT_KEYS = ["name", "brokerage", "listings", "industries", "states", "email", "phone", "crm"];
 
 const inputCls = "rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-600";
 
@@ -34,15 +38,21 @@ export default function BrokersTable({ brokers }: { brokers: BrokerRow[] }) {
   const [industry, setIndustry] = useState("");
   const [state, setState] = useState("");
   const [minListings, setMinListings] = useState("");
-  const [withContact, setWithContact] = useState(false);
-  const [sortKey, setSortKey] = useState<"name" | "brokerage" | "listings" | null>(null);
+  const [brokerageSel, setBrokerageSel] = useState("");
+  const [emailSel, setEmailSel] = useState<Set<string>>(new Set());
+  const [phoneSel, setPhoneSel] = useState<Set<string>>(new Set());
+  const [crmSel, setCrmSel] = useState<Set<string>>(new Set());
+  const [sortKey, setSortKey] = useState<SortKey>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   // filters survive back-nav via URL params (John 7/15)
   useUrlFilterSync(
     () => ({
       q, industry: industry || null, state: state || null,
-      min: minListings, contact: withContact ? "1" : null,
+      min: minListings, brokerage: brokerageSel || null,
+      email: emailSel.size ? [...emailSel].join(",") : null,
+      phone: phoneSel.size ? [...phoneSel].join(",") : null,
+      crm: crmSel.size ? [...crmSel].join(",") : null,
       sort: sortKey, dir: sortKey && sortDir === "asc" ? "asc" : null,
     }),
     (p) => {
@@ -50,34 +60,62 @@ export default function BrokersTable({ brokers }: { brokers: BrokerRow[] }) {
       if (p.get("industry")) setIndustry(p.get("industry")!);
       if (p.get("state")) setState(p.get("state")!);
       if (p.get("min")) setMinListings(p.get("min")!);
-      if (p.get("contact") === "1") setWithContact(true);
-      if (["name", "brokerage", "listings"].includes(p.get("sort") ?? "")) setSortKey(p.get("sort") as "name" | "brokerage" | "listings");
+      if (p.get("brokerage")) setBrokerageSel(p.get("brokerage")!);
+      // legacy ?contact=1 (the old "has phone/email" checkbox) → has-phone
+      if (p.get("contact") === "1") setPhoneSel(new Set(["has"]));
+      if (p.get("email")) setEmailSel(new Set(p.get("email")!.split(",")));
+      if (p.get("phone")) setPhoneSel(new Set(p.get("phone")!.split(",")));
+      if (p.get("crm")) setCrmSel(new Set(p.get("crm")!.split(",")));
+      if (SORT_KEYS.includes(p.get("sort") ?? "")) setSortKey(p.get("sort") as SortKey);
       if (p.get("dir") === "asc") setSortDir("asc");
     },
-    [q, industry, state, minListings, withContact, sortKey, sortDir],
+    [q, industry, state, minListings, brokerageSel, emailSel, phoneSel, crmSel, sortKey, sortDir],
   );
 
   const rows = useMemo(() => {
     const iSet = asSet(industry);
     const sSet = asSet(state);
+    const bSet = asSet(brokerageSel);
     const filtered = brokers.filter((b) => {
       if (q && !`${b.name ?? ""} ${b.brokerage ?? ""}`.toLowerCase().includes(q.toLowerCase())) return false;
       if (iSet.size && !b.industries.some((i) => iSet.has(i))) return false;
       if (sSet.size && !b.states.some((s) => sSet.has(s))) return false;
       if (minListings && b.listingCount < Number(minListings)) return false;
-      if (withContact && !b.phone && !b.email) return false;
+      if (bSet.size && !bSet.has(b.brokerage ?? "—")) return false;
+      if (!presenceMatch(emailSel, b.email)) return false;
+      if (!presenceMatch(phoneSel, b.phone)) return false;
+      if (!presenceMatch(crmSel, b.contactId)) return false;
       return true;
     });
     if (!sortKey) return filtered; // server order = listingCount desc
     return [...filtered].sort((a, b) => {
-      const cmp =
-        sortKey === "listings"
-          ? a.listingCount - b.listingCount
-          : String((sortKey === "name" ? a.name : a.brokerage) ?? "zzz").toLowerCase()
-              .localeCompare(String((sortKey === "name" ? b.name : b.brokerage) ?? "zzz").toLowerCase());
+      let cmp: number;
+      switch (sortKey) {
+        case "listings": cmp = a.listingCount - b.listingCount; break;
+        case "name": cmp = cmpText(a.name, b.name); break;
+        case "brokerage": cmp = cmpText(a.brokerage, b.brokerage); break;
+        case "industries": cmp = cmpText(a.industries.join(", "), b.industries.join(", ")); break;
+        case "states": cmp = cmpText(a.states.join(", "), b.states.join(", ")); break;
+        case "email": cmp = cmpText(a.email, b.email); break;
+        case "phone": cmp = cmpText(a.phone, b.phone); break;
+        default: cmp = Number(!!b.contactId) - Number(!!a.contactId); // in-CRM first
+      }
       return sortDir === "asc" ? cmp : -cmp;
     });
-  }, [brokers, q, industry, state, minListings, withContact, sortKey, sortDir]);
+  }, [brokers, q, industry, state, minListings, brokerageSel, emailSel, phoneSel, crmSel, sortKey, sortDir]);
+
+  const sortSet = (key: SortKey) => (d: "asc" | "desc" | null) => {
+    if (!d) setSortKey(null);
+    else { setSortKey(key); setSortDir(d); }
+  };
+  const emailOptions = useMemo(() => presenceOptions(brokers, (b) => b.email, "email"), [brokers]);
+  const phoneOptions = useMemo(() => presenceOptions(brokers, (b) => b.phone, "phone"), [brokers]);
+  const crmOptions = useMemo(() => presenceOptions(brokers, (b) => b.contactId, "CRM contact"), [brokers]);
+  const brokerageOptions = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const b of brokers) { const k = b.brokerage ?? "—"; m[k] = (m[k] ?? 0) + 1; }
+    return Object.entries(m).sort((a, b) => b[1] - a[1]).map(([value, count]) => ({ value, label: value, count }));
+  }, [brokers]);
 
   function exportCsv() {
     downloadCsv(
@@ -108,10 +146,7 @@ export default function BrokersTable({ brokers }: { brokers: BrokerRow[] }) {
           placeholder="Min listings"
           className={`w-28 ${inputCls}`}
         />
-        <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
-          <input type="checkbox" checked={withContact} onChange={(e) => setWithContact(e.target.checked)} className="accent-emerald-700" />
-          Has phone/email
-        </label>
+        {/* "Has phone/email" split onto the Email and Phone columns */}
         <span className="ml-auto flex items-center gap-3">
           <span className="text-sm text-zinc-500 tabular-nums">{rows.length} of {brokers.length}</span>
           <button
@@ -129,29 +164,54 @@ export default function BrokersTable({ brokers }: { brokers: BrokerRow[] }) {
           <thead>
             <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500">
               <th className="px-4 py-3">
-                <SortHeader label="Broker" active={sortKey === "name"} dir={sortDir}
-                  onChange={(d) => { if (!d) setSortKey(null); else { setSortKey("name"); setSortDir(d); } }} />
+                <SortHeader label="Broker" active={sortKey === "name"} dir={sortDir} onChange={sortSet("name")} />
               </th>
               <th className="px-4 py-3">
-                <SortHeader label="Brokerage" active={sortKey === "brokerage"} dir={sortDir}
-                  onChange={(d) => { if (!d) setSortKey(null); else { setSortKey("brokerage"); setSortDir(d); } }} />
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Brokerage" active={sortKey === "brokerage"} dir={sortDir} onChange={sortSet("brokerage")} />
+                  <FilterDropdown header label="" name="Brokerage" options={brokerageOptions}
+                    selected={asSet(brokerageSel)} onChange={(s) => setBrokerageSel([...s].join(","))} />
+                </span>
               </th>
               <th className="px-4 py-3 text-right">
-                <SortHeader label="Listings" numeric active={sortKey === "listings"} dir={sortDir}
-                  onChange={(d) => { if (!d) setSortKey(null); else { setSortKey("listings"); setSortDir(d); } }} />
+                <SortHeader label="Listings" numeric active={sortKey === "listings"} dir={sortDir} onChange={sortSet("listings")} />
               </th>
               <th className="px-4 py-3">
-                <FilterDropdown header label="Industries covered"
-                  options={industries.map((i) => ({ value: i, label: i, count: brokers.filter((b) => b.industries.includes(i)).length }))}
-                  selected={asSet(industry)} onChange={(s) => setIndustry([...s].join(","))} />
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Industries covered" active={sortKey === "industries"} dir={sortDir} onChange={sortSet("industries")} />
+                  <FilterDropdown header label="" name="Industry"
+                    options={industries.map((i) => ({ value: i, label: i, count: brokers.filter((b) => b.industries.includes(i)).length }))}
+                    selected={asSet(industry)} onChange={(s) => setIndustry([...s].join(","))} />
+                </span>
               </th>
               <th className="px-4 py-3">
-                <FilterDropdown header label="States"
-                  options={states.map((s) => ({ value: s, label: s, count: brokers.filter((b) => b.states.includes(s)).length }))}
-                  selected={asSet(state)} onChange={(s) => setState([...s].join(","))} />
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="States" active={sortKey === "states"} dir={sortDir} onChange={sortSet("states")} />
+                  <FilterDropdown header label="" name="State"
+                    options={states.map((s) => ({ value: s, label: s, count: brokers.filter((b) => b.states.includes(s)).length }))}
+                    selected={asSet(state)} onChange={(s) => setState([...s].join(","))} />
+                </span>
               </th>
-              <th className="px-4 py-3">Contact</th>
-              <th className="px-4 py-3 text-right">CRM</th>
+              {/* the combined Contact column is split so Email and Phone each own
+                  a has/missing filter, like every other list */}
+              <th className="px-4 py-3">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Email" active={sortKey === "email"} dir={sortDir} onChange={sortSet("email")} />
+                  <FilterDropdown header label="" name="Email" options={emailOptions} selected={emailSel} onChange={setEmailSel} />
+                </span>
+              </th>
+              <th className="px-4 py-3">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Phone" active={sortKey === "phone"} dir={sortDir} onChange={sortSet("phone")} />
+                  <FilterDropdown header label="" name="Phone" options={phoneOptions} selected={phoneSel} onChange={setPhoneSel} />
+                </span>
+              </th>
+              <th className="px-4 py-3 text-right">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="CRM" active={sortKey === "crm"} dir={sortDir} onChange={sortSet("crm")} />
+                  <FilterDropdown header label="" name="CRM" options={crmOptions} selected={crmSel} onChange={setCrmSel} />
+                </span>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
@@ -174,17 +234,15 @@ export default function BrokersTable({ brokers }: { brokers: BrokerRow[] }) {
                   </div>
                 </td>
                 <td className="px-4 py-3 text-xs text-zinc-600">{b.states.join(", ") || "—"}</td>
-                <td className="px-4 py-3 text-xs text-zinc-500">
-                  {b.phone || b.email ? (
-                    <>
-                      {b.phone && <div>📞 {b.phone}</div>}
-                      {b.email && (
-                        <a href={`mailto:${b.email}`} className="text-emerald-700 hover:underline">{b.email}</a>
-                      )}
-                    </>
+                <td className="max-w-52 px-4 py-3 text-xs text-zinc-500">
+                  {b.email ? (
+                    <a href={`mailto:${b.email}`} className="block truncate text-emerald-700 hover:underline" title={b.email}>{b.email}</a>
                   ) : (
-                    "—"
+                    <span className="text-zinc-300">—</span>
                   )}
+                </td>
+                <td className="whitespace-nowrap px-4 py-3 text-xs text-zinc-500">
+                  {b.phone ? <a href={`tel:${b.phone}`} className="text-emerald-700 hover:underline">{b.phone}</a> : <span className="text-zinc-300">—</span>}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-right">
                   {b.contactId ? (
