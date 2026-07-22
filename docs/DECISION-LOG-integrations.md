@@ -75,6 +75,36 @@ Merged origin/main. Three corrections/findings for PM + John:
    engine after merge — not yet exercised against a live confirm (blocked on
    0021).
 
+✅ **7/21 — OUTLOOK DEAL-PROPOSAL CLASSIFIER: 2 REAL BUGS FIXED + PROPOSALS
+SEEDED (PM priority; 0019 is applied).** `deal_proposals` had 0 rows; seeding it
+exposed two defects in `ingest_deal_mail.js`:
+1. 🐛 **`--dry-run` was not dry** — it wrote the `activities` rows and only
+   guarded the *proposal* insert. My dry run therefore logged 2 activities, and
+   because of bug 2 the follow-up real run then skipped those messages entirely
+   → 0 proposals created. Now both writes are guarded; verified truly dry
+   (activities 46→46, proposals 4→4 across a dry run).
+2. 🐛 **Activity-idempotency short-circuited the proposal path** (the bigger
+   one). `if (seen?.length) continue;` sat ABOVE the classifier, so any message
+   already logged as an activity could never produce a proposal — including all
+   deal mail logged before the proposal feature existed. The classifier only
+   ever saw never-before-seen messages. Now an already-logged message still runs
+   classification (the proposal write has its own idempotency on
+   (deal_id, source_msg_id)). Impact was immediate: re-running produced **4**
+   proposals, not 2 — the 2 extra came from previously-invisible logged mail.
+3. 🐛 **Near-duplicate proposals** — brokers re-send the same ask on a new
+   message, so Landmark got two cards with IDENTICAL evidence ("Sign NDA" +
+   "Sign and return NDA"). Added a guard: skip when a PENDING proposal on that
+   deal already has the same normalized evidence or next_step. Distinct asks
+   still get their own card (Landmark's separate "12x valuation" item survives).
+   ⚠️ The one pre-existing duplicate pair was left in place for John to dismiss
+   (one click on the Key Actions card) rather than deleted — not my data to
+   remove.
+**4 pending proposals now await John** (all high-confidence, real quoted
+evidence; 71 non-deal senders correctly skipped). ⏰ **TIME-SENSITIVE: Monster
+Tree / Roslyn Ridge (Kris) — "I have time today… we've started receiving LOIs",
+due 2026-07-20, ALREADY PAST.** A counterparty offered a call and it went
+unactioned — exactly the Fahrenhorst-class miss this was built to catch.
+
 🔴 **TRACERFY RIVER-GUIDE PHONES — DEAD END (probed live 7/20, John greenlit the
 probe; cost $0).** Verdict: **Tracerfy cannot skip-trace by name+city+state.**
 Proof: (1) the batch `/trace/` endpoint HARD-REQUIRES `address_column` — 400s

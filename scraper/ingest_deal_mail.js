@@ -72,22 +72,35 @@ async function main() {
     const match = byEmail.get(from);
     if (!match) { unmatched++; continue; }
 
-    // idempotency: message id breadcrumb on this deal's activities
+    // idempotency: message id breadcrumb on this deal's activities.
+    // NOTE: an already-logged activity must NOT short-circuit the proposal
+    // path below — that bug made the classifier blind to every message already
+    // logged (incl. all mail logged before proposals existed), so those deals
+    // could never get a next-step proposal. The proposal write has its own
+    // idempotency on (deal_id, source_msg_id).
     const { data: seen } = await supabase.from('activities')
       .select('id').eq('deal_id', match.deal_id).ilike('body', `%[msg:${m.internetMessageId}]%`).limit(1);
-    if (seen?.length) { skipped++; continue; }
+    const alreadyLogged = !!seen?.length;
 
     const isSignal = SIGNAL.test(`${m.subject} ${m.summary}`);
-    const when = (m.receivedDateTime || '').slice(0, 10);
-    const body = `[Outlook ${when}] ${m.subject}\nFrom: ${m.sender}\n${(m.summary || '').trim()}` +
-      (isSignal ? `\n⚑ pursuit signal — review deal stage` : '') + `\n[msg:${m.internetMessageId}]`;
-    const { error } = await supabase.from('activities').insert({
-      company_id: match.company_id, deal_id: match.deal_id,
-      kind: isSignal ? 'note' : 'email', body, doc_url: m.webLink || null,
-    });
-    if (error) { log.error(`${match.name}: ${error.message}`); continue; }
-    logged++;
-    if (isSignal) { flagged++; log.info(`  ⚑ ${match.name}: "${m.subject}" — deal-stage review flagged`); }
+    if (alreadyLogged) {
+      skipped++;
+    } else {
+      const when = (m.receivedDateTime || '').slice(0, 10);
+      const body = `[Outlook ${when}] ${m.subject}\nFrom: ${m.sender}\n${(m.summary || '').trim()}` +
+        (isSignal ? `\n⚑ pursuit signal — review deal stage` : '') + `\n[msg:${m.internetMessageId}]`;
+      if (dryRun) {
+        log.info(`  [dry] would log activity ${match.name}: "${m.subject}"`);
+      } else {
+        const { error } = await supabase.from('activities').insert({
+          company_id: match.company_id, deal_id: match.deal_id,
+          kind: isSignal ? 'note' : 'email', body, doc_url: m.webLink || null,
+        });
+        if (error) { log.error(`${match.name}: ${error.message}`); continue; }
+      }
+      logged++;
+      if (isSignal) { flagged++; log.info(`  ⚑ ${match.name}: "${m.subject}" — deal-stage review flagged`); }
+    }
 
     // SCHEDULING/COMMITMENT classification (John 7/16): propose a next_step
     // change John approves — never a silent rewrite. Cheap pre-filter first.
@@ -110,6 +123,18 @@ async function main() {
       });
       const v = JSON.parse(msg.content[0].text.match(/\{[\s\S]*\}/)[0]);
       if (!v.changes_next_step || v.confidence === 'low') continue;
+      // NEAR-DUPLICATE GUARD: brokers re-send the same ask on a new message
+      // (a second "please sign the NDA" produced a second identical card).
+      // Skip when a PENDING proposal on this deal already carries the same
+      // evidence sentence or the same next step. Distinct asks still get their
+      // own card (e.g. the 12x-valuation item alongside the NDA one).
+      const nz = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+      const { data: pend } = await supabase.from('deal_proposals')
+        .select('proposed_next_step, evidence').eq('deal_id', match.deal_id).eq('status', 'pending');
+      if ((pend || []).some((p) => (nz(p.evidence) && nz(p.evidence) === nz(v.evidence)) || nz(p.proposed_next_step) === nz(v.next_step))) {
+        log.info(`  = proposal ${match.name}: duplicate of a pending card — skipped ("${v.next_step}")`);
+        continue;
+      }
       const { recordUsage } = require('./core/usage');
       await recordUsage('claude', 'classification', msg.usage.input_tokens + msg.usage.output_tokens,
         (msg.usage.input_tokens * 0.8e-6 + msg.usage.output_tokens * 4e-6), { deal_mail_intent: match.deal_id });
