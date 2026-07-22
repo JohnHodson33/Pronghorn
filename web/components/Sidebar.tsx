@@ -124,7 +124,11 @@ const nav: { section: string; items: { label: string; href: string | null }[] }[
   },
   {
     section: "Platform",
-    items: [{ label: "Improvements", href: "/improvements" }],
+    items: [
+      { label: "Improvements", href: "/improvements" },
+      { label: "Data Intake", href: "/intake" },
+      { label: "Costs", href: "/costs" },
+    ],
   },
 ];
 
