@@ -98,6 +98,21 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 ---
 
 ## Lane A — Brokers  (`scraper/sources/*`, `scraper/config.json`)
+- 🔥🔥🔥 **ASKING PRICE NOT PARSING — TUPELO + DEALRELATIONS (John 7/21;
+  asking price → implied multiple → Market Multiples tracking is a KEY metric
+  and it's missing).** PM ran a full cross-source audit (live, non-delisted
+  listings) — asking-price coverage: nearly every source 87–100%, BUT:
+  **Tupelo SMB Marketplace = 0% asking (0/6), 0% multiple** (yet 83% revenue,
+  67% cash-flow — so it parses financials but drops asking_price), and
+  **DealRelations (Sunbelt offices) = 0% asking (0/5), 0% everything.** FIX
+  both adapters to extract asking_price at ingest → implied_multiple then
+  computes → flows to Market Multiples. Verify against a live listing detail
+  page (John: the asking price IS shown on the source listing, so it's a
+  parse gap not a missing field). Backfill existing Tupelo/DealRelations rows.
+  SECONDARY (lower priority, note in HANDOFF): financial-coverage gaps where
+  asking is fine but rev/cf/multiple are thin — BizQuest (ask 100% but
+  rev/cf/mult 0%), LINK Business (rev 6%), Murphy/HedgeStone (rev 0%). Those
+  cap multiple coverage too; fix opportunistically after the asking-price gap.
 - ⬜ **RIVER GUIDES: consolidator-sweep refresh (LATER — not tonight; after
   your current queue):** periodic re-run of the acquisition-log queries per
   consolidator (docs/RIVER-GUIDES-INTEGRATION.md step 9 + spec §7 maps at
