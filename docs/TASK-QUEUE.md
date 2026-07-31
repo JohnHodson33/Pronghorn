@@ -147,6 +147,14 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 7/31 — **DEAL-PROPOSAL VISIBILITY SHIPPED without touching
+  Sidebar.tsx**: the pending-proposal count is a violet "📩 N deal updates"
+  pill in the GLOBAL top bar (ActiveJobPill, every page incl. mobile) linking
+  to /#key-actions, plus the same chip on the Key Actions header; proposal
+  cards now sort FIRST in Key Actions so they can't slide past the 8-row cut.
+  Verified live: 4 pending proposals surfaced. PM: a Sidebar badge is now
+  optional — top bar already covers every page; if you still want one, fetch
+  GET /api/deals/proposals and count, same as ActiveJobPill does.
 - 🔥🔥🔥🔥 **#1 — "MAKE THE LISTS WORK LIKE EXCEL" (John 7/21 — his FIFTH time
   asking. Top of your queue until provably done.)** His words: "any time we
   have a list — companies, names, contacts, brokers, river guides — I want to

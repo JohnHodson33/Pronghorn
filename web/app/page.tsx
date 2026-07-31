@@ -27,6 +27,14 @@ export default async function Dashboard() {
   const data = await fetchDashboardV3();
   if (!data) return <div className="p-8 text-sm text-zinc-400">Database not connected.</div>;
 
+  // proposals first (stable within each half), so an Outlook-detected next
+  // step can't hide behind the 8-row display cut
+  const orderedActions = [
+    ...data.actions.filter((a) => a.kind === "deal_proposal"),
+    ...data.actions.filter((a) => a.kind !== "deal_proposal"),
+  ];
+  const proposalCount = data.actions.filter((a) => a.kind === "deal_proposal").length;
+
   const maxFunnel = Math.max(...data.funnel.map((f) => f.count), 1);
   const maxSub = Math.max(
     ...data.subsectors.map((s) => Math.max(s.brokerListings, s.propTargets)),
@@ -52,11 +60,21 @@ export default async function Dashboard() {
       <PinnedViews />
 
       {/* ---- Key Actions: the human-attention queue ---- */}
-      <section className="rounded-xl border-2 border-emerald-700/20 bg-white">
+      {/* deal proposals float to the top: they're time-boxed human decisions
+          and were sliding past the 8-row cut when the queue was busy (7/31) */}
+      <section id="key-actions" className="rounded-xl border-2 border-emerald-700/20 bg-white">
         <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-3">
           <h2 className="font-semibold">Key actions — needs John or Tom</h2>
-          <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 tabular-nums">
-            {data.actions.length}
+          <span className="flex items-center gap-1.5">
+            {proposalCount > 0 && (
+              <span className="rounded-full bg-violet-100 px-2.5 py-0.5 text-xs font-semibold text-violet-800 tabular-nums"
+                title="Deal next-step updates detected in Outlook replies — approve or dismiss below">
+                📩 {proposalCount} deal update{proposalCount === 1 ? "" : "s"}
+              </span>
+            )}
+            <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 tabular-nums">
+              {data.actions.length}
+            </span>
           </span>
         </div>
         {data.actions.length === 0 ? (
@@ -65,7 +83,7 @@ export default async function Dashboard() {
           </div>
         ) : (
           <ul className="divide-y divide-zinc-100">
-            {data.actions.slice(0, 8).map((a, i) => (
+            {orderedActions.slice(0, 8).map((a, i) => (
               <li key={i}>
                 {a.kind === "note_tag" ? (
                   <TagNoteCard action={a} />
