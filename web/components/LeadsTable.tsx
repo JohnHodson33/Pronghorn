@@ -14,6 +14,7 @@ import InlineField from "@/components/InlineField";
 import FilterDropdown from "@/components/FilterDropdown";
 import SortHeader from "@/components/SortHeader";
 import ScrollShell from "@/components/ScrollShell";
+import CardList from "@/components/CardList";
 import { presenceOptions, presenceMatch } from "@/lib/list-filters";
 
 const tierChip: Record<string, string> = {
@@ -546,6 +547,8 @@ export default function LeadsTable({
           {leads.length === 0 ? "No leads here yet." : "No leads match the filters."}
         </div>
       ) : (
+        <>
+        <div className="hidden sm:block">
         <ScrollShell>
           <table className="w-full text-sm">
             <thead>
@@ -786,6 +789,194 @@ export default function LeadsTable({
             </tbody>
           </table>
         </ScrollShell>
+        </div>
+
+        {/* <640px: same rows, same filters/sort, card layout (mobile parity
+            rule) — selection checkbox, inline-editable owner fields and the
+            promote/discard actions all survive the collapse */}
+        <div className="px-3 py-3 sm:hidden">
+        <CardList
+          emptyText="No leads match the filters."
+          sort={{
+            options: [
+              { value: "level", label: "Level" },
+              { value: "company", label: "Company" },
+              { value: "size", label: "Size" },
+              { value: "revenue", label: "~Rev", numeric: true },
+              { value: "ebitda", label: "~EBITDA", numeric: true },
+              { value: "industry", label: "Industry" },
+              { value: "location", label: "Location" },
+              { value: "owner", label: "Owner" },
+              { value: "email", label: "Email" },
+              { value: "phone", label: "Phone" },
+              { value: "linkedin", label: "LinkedIn" },
+              { value: "status", label: "Status" },
+            ],
+            sortKey,
+            dir: sortDir,
+            onChange: (key, d) => {
+              if (!d) setSortKey(null);
+              else { setSortKey(key as SortKey); setSortDir(d); }
+            },
+          }}
+          controls={
+            <>
+              <FilterDropdown label="Level"
+                options={LEVELS.map((lv) => ({ value: lv, label: `${LEVEL_META[lv].dot} ${lv}`, count: levelCounts[lv] }))}
+                selected={levelsSel} onChange={setLevelsSel} />
+              <FilterDropdown label="Size"
+                options={TIERS.map((t) => ({ value: t, label: TIER_LABELS[t], count: tierCounts[t] }))}
+                selected={tiersSel} onChange={setTiersSel} />
+              <FilterDropdown label="Industry" options={industryOptions} selected={industriesSel} onChange={setIndustriesSel} />
+              <FilterDropdown label="State" options={stateOptions} selected={statesSel} onChange={setStatesSel} />
+              <FilterDropdown label="Email" options={emailOptions} selected={emailSel} onChange={setEmailSel} />
+              <FilterDropdown label="Phone" options={phoneOptions} selected={phoneSel} onChange={setPhoneSel} />
+              <FilterDropdown label="LinkedIn" options={linkedinOptions} selected={linkedinSel} onChange={setLinkedinSel} />
+              <FilterDropdown label="Status" options={statusOptions} selected={statusSel} onChange={setStatusSel} />
+            </>
+          }
+          cards={rows.map((l) => {
+            const lv = levelOf(l);
+            const ready = !!l.owner_name && (!!l.owner_email || !!l.owner_phone);
+            const clickable = !!l.company_id;
+            const stop = (e: React.MouseEvent) => e.stopPropagation();
+            return {
+              key: l.id,
+              onClick: clickable ? () => router.push(`/companies/${l.company_id}?from=enrichment`) : undefined,
+              title: (
+                <span className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selected.has(l.id)}
+                    onClick={stop}
+                    onChange={() =>
+                      setSelected((prev) => {
+                        const n = new Set(prev);
+                        if (n.has(l.id)) n.delete(l.id);
+                        else n.add(l.id);
+                        return n;
+                      })
+                    }
+                    className="accent-emerald-700"
+                  />
+                  <span className={`min-w-0 flex-1 break-words ${clickable ? "text-emerald-800" : ""} ${l.off_target ? "opacity-60" : ""}`}>
+                    {l.name}
+                    {isPe(l) && (
+                      <span className="ml-1 rounded bg-rose-100 px-1 py-0.5 text-[10px] font-bold text-rose-700">PE</span>
+                    )}
+                    {l.website && (
+                      <a href={l.website} target="_blank" rel="noopener noreferrer" onClick={stop}
+                        className="ml-1 text-xs font-normal text-zinc-400">↗</a>
+                    )}
+                  </span>
+                </span>
+              ),
+              titleRight: (
+                <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${levelChip[lv]}`}>
+                  {LEVEL_META[lv].dot} {lv}
+                </span>
+              ),
+              fields: [
+                {
+                  label: "Size",
+                  value: (
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${tierChip[l.size?.tier ?? "unsized"]}`}>
+                        {TIER_LABELS[l.size?.tier ?? "unsized"]}
+                      </span>
+                      {l.size && (
+                        <span className="text-xs text-zinc-500">
+                          {estShort(l.size.revenue)} rev · {estShort(l.size.ebitda)} EBITDA
+                        </span>
+                      )}
+                    </span>
+                  ),
+                },
+                {
+                  label: "Industry",
+                  value: (
+                    <>
+                      {effIndustry(l) ? `${effIndustry(l)}${l.industry_verified ? "" : "?"}` : "—"}
+                      {l.off_target && (
+                        <span className="ml-1 rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-700">off-target</span>
+                      )}
+                    </>
+                  ),
+                },
+                { label: "Location", value: [l.city, l.state].filter(Boolean).join(", ") || "—" },
+                {
+                  label: "Owner",
+                  value: (
+                    <span onClick={stop} className="block">
+                      <InlineField endpoint={`/api/leads/${l.id}`} field="owner_name" value={l.owner_name} placeholder="owner…" className="font-medium" />
+                    </span>
+                  ),
+                },
+                {
+                  label: "Email",
+                  value: (
+                    <span onClick={stop} className="block">
+                      <ChannelCell leadId={l.id} field="owner_email" value={l.owner_email} type="email"
+                        placeholder="email…" href={l.owner_email ? `mailto:${l.owner_email}` : null}
+                        icon="✉" iconTitle={`Email ${l.owner_email}`} />
+                    </span>
+                  ),
+                },
+                {
+                  label: "Phone",
+                  value: (
+                    <span onClick={stop} className="block">
+                      <ChannelCell leadId={l.id} field="owner_phone" value={l.owner_phone} type="tel"
+                        placeholder="phone…" href={l.owner_phone ? `tel:${l.owner_phone}` : null}
+                        icon="☎" iconTitle={`Call ${l.owner_phone}`} />
+                    </span>
+                  ),
+                },
+                {
+                  label: "LinkedIn",
+                  value: (
+                    <span onClick={stop} className="block">
+                      <ChannelCell leadId={l.id} field="owner_linkedin" value={l.owner_linkedin} type="url"
+                        placeholder="linkedin…" href={l.owner_linkedin} icon="↗" iconTitle="Open LinkedIn profile" />
+                    </span>
+                  ),
+                },
+                { label: "Status", value: statusLabel[l.status] ?? l.status },
+                {
+                  label: "Actions",
+                  value: (
+                    <span onClick={stop} className="inline-flex items-center gap-2">
+                      {l.company_id ? (
+                        <span className="text-xs font-semibold text-emerald-700">in CRM ✓</span>
+                      ) : ready ? (
+                        <button
+                          onClick={() => promote(l.id)}
+                          disabled={busy === l.id}
+                          className="rounded-md bg-emerald-700 px-2.5 py-1 text-xs font-semibold text-white disabled:opacity-50"
+                        >
+                          {busy === l.id ? "…" : "+ Companies"}
+                        </button>
+                      ) : (
+                        <span className="text-[11px] text-zinc-300">not ready</span>
+                      )}
+                      {l.off_target && l.status !== "dead" && (
+                        <button
+                          onClick={() => discard(l.id)}
+                          disabled={busy === l.id}
+                          className="rounded-md px-2 py-1 text-xs font-medium text-red-600"
+                        >
+                          discard
+                        </button>
+                      )}
+                    </span>
+                  ),
+                },
+              ],
+            };
+          })}
+        />
+        </div>
+        </>
       )}
       <div className="border-t border-zinc-100 px-5 py-2 text-[11px] text-zinc-400">
         Levels: ● full · ◕ contactable · ◑ identified · ◔ basic · ○ raw — most complete sorts first.
