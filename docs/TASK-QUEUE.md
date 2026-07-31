@@ -1,5 +1,44 @@
 # Task Queue — parallel-session backlog
 
+## 🚨 PROGRAM: BULLETPROOF THE CORE CHAIN (John 7/31 — OVERRIDES lane ordering;
+every lane contributes. His words: "really bad hit rates on enrichment…
+really bad hit rates on sizing… all of that needs to be bulletproof. If we
+need to spend more money or integrate data sources or be creative — let's
+do that. We're not really using this platform the way I want.")**
+
+THE CHAIN (in John's priority order): (1) has it transacted to a PE
+consolidator? → (2) roughly how big (rev/EBITDA)? → (3) who is the owner? →
+(4) owner contact info → (5) outreach at scale.
+
+MEASURED 7/31 (PM, live DB, on-target proprietary n=597): PE-status
+determined 2% · sized 63% (high-confidence ~0) · owner named 45% · owner
+any-channel 23% (email 19%, phone 6%). River guides n=467: named 61% ·
+exit-verified 5% · channel 40%. This is the baseline to beat.
+
+TARGETS (funnel measured weekly, shown on-site): PE-status determined ≥95%
+(negatives COUNT — "checked, no PE evidence" = pe_owned:false w/ audit) ·
+sized ≥90% w/ honest confidence tiers · owner named ≥80% · owner ≥1 channel
+≥60% · river-guide verified ≥50%.
+
+WORKSTREAMS: (A) LANE C QUICK WINS (start NOW): persist pe_owned=FALSE on
+every checked-clean lead (2% determined is mostly missing negatives, not
+missing positives) · cross-reference OUR OWN acquisition ledger (467 river-
+guide deals + consolidator maps) against companies/leads by name+state →
+pe_owned=true w/ source · career-trajectory verify (already queued) also
+writes the employer→consolidator match as a PE signal. (B) PAID-DATA
+BENCHMARK (PM runs, John approves spend): 100-lead gold sample → run
+Apollo (person emails/mobiles + firmographics) AND People Data Labs-class
+person/company enrich AND a Grata-class firmographic trial vs our current
+stack; measure fill-rate + ACCURACY per field per dollar; integrate the
+winner(s) as paid cascade tiers w/ per-run caps + metering. (C) SIZING
+CONFIDENCE: every estimate carries basis+confidence honestly; paid
+firmographic revenue joins the ensemble as a higher-confidence tier;
+PPP match-rate audit (are we missing matches on name variants?). (D)
+DATA-HEALTH PANEL (Lane B): the funnel above as a live dashboard card —
+John watches hit rates move without asking the PM. (E) OUTREACH RIDES ON
+TOP: templates being co-developed w/ John in the PM channel; campaigns
+unlock once (1)-(4) hit targets on a real segment.
+
 ## 🎯 END-STATE GOAL (every session aligns to this)
 A searchable, filterable, executable deal-sourcing + CRM system whose purpose is:
 **scrape every broker + build proprietary lists → enrich to OWNER contact info
@@ -147,6 +186,36 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 🔥🔥🔥🔥 **NEW #1 — ENRICHMENT RUNS: "WHO GAINED WHAT, TAKE ME BACK THERE"
+  (John 7/31 — the run loop still isn't closed for him. His words: "I queued
+  80… I see 'starts within 15 minutes'… then I never really know when it's
+  done, and I don't know how to go back and look at the ones I actually
+  enriched… no good way to do it… this needs to run effectively." Applies to
+  BOTH river guides AND proprietary enrichment — one uniform pattern.)**
+  (Lane C — the data half, ships first): (a) workers record PER-ROW OUTCOMES
+  on every run: for each id processed → {gained_email?, gained_phone?,
+  gained_linkedin?, escalated_paid?, nothing_new?} stored on the run row
+  (river_guide_runs.results jsonb; same addition to enrichment_jobs for
+  leads); (b) run rows carry queued_by + a human label auto-built from the
+  filters at queue time ("Tree Care · Call now · 80 selected"); (c) GET
+  /runs returns the outcome breakdown.
+  (Lane B — the surface): (d) a **RUNS drawer/section on BOTH pages**
+  (river-guides + enrichment), ALWAYS visible (today's history panel hides
+  during an active run and shows only last-5): every run = "Jul 31, 2:14 PM
+  · 80 queued (Tree Care · Call now) · DONE: 31 gained email · 9 LinkedIn ·
+  4 phone · 22 → paid · 14 nothing new" with live progress while running;
+  (e) **click a run → the table shows EXACTLY that run's rows** (exists on
+  river-guides — keep) **PLUS outcome quick-chips within the run view:
+  [Gained contact] [Nothing new] [→ Paid]** so "show me the 31 that gained
+  an email from MY run" is one click; (f) DONE must be unmissable: banner
+  flips to the receipt and STAYS until dismissed, + a subtle badge on the
+  page tab/sidebar entry while a run is active and when one finished
+  unseen; (g) same treatment on /enrichment (leads) — the two channels must
+  feel identical. ACCEPTANCE (John's literal workflow): filter → select 80 →
+  Enrich → leave → come back later → one click on the run → see exactly who
+  gained what → work that list.
+  - 🔨 LANE B 7/31 ~12:00 — taking the surface half now; degrades gracefully
+    (today's counts-only display) until Lane C's per-row results land.
 - 📣 LANE B 7/31 — **DEAL-PROPOSAL VISIBILITY SHIPPED without touching
   Sidebar.tsx**: the pending-proposal count is a violet "📩 N deal updates"
   pill in the GLOBAL top bar (ActiveJobPill, every page incl. mobile) linking
@@ -155,6 +224,10 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
   Verified live: 4 pending proposals surfaced. PM: a Sidebar badge is now
   optional — top bar already covers every page; if you still want one, fetch
   GET /api/deals/proposals and count, same as ActiveJobPill does.
+- 📣 LANE B 7/31 — **MOBILE CARD-COLLAPSE + VA ROUND-TRIP also SHIPPED**
+  (see DECISION-LOG-frontend HANDOFF session #8): all 7 lists collapse to
+  cards <640px w/ full filter/sort parity; Send-to-VA CSV on /river-guides;
+  intake receipts link to the written rows.
 - 🔥🔥🔥🔥 **#1 — "MAKE THE LISTS WORK LIKE EXCEL" (John 7/21 — his FIFTH time
   asking. Top of your queue until provably done.)** His words: "any time we
   have a list — companies, names, contacts, brokers, river guides — I want to
@@ -676,6 +749,50 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 🔥🔥🔥🔥 **NEW #1 — PER-ROW RUN OUTCOMES (John 7/31; pairs with Lane B new-#1 — read that card at the top of Lane B for the full spec + acceptance):** workers record per-row outcomes {gained_email, gained_phone, gained_linkedin, escalated_paid, nothing_new} into river_guide_runs.results jsonb AND enrichment_jobs (leads) · run rows carry queued_by + auto label from queue-time filters ("Tree Care · Call now · 80 selected") · GET /runs + /api/enrich/jobs serve the breakdown. Ship your half FIRST — Lane B renders on it. Migration if needed = 0020 (add to John list).
+- 🔥🔥🔥 **RIVER-GUIDE DISCOVERY AT SCALE + CAREER-TRAJECTORY VERIFICATION
+  (John 7/31 — "finding new river guides is the bottleneck… in a perfect
+  world the site just creates that list"; he ran a SEPARATE Claude session
+  that mapped acquirers → targets → owner-still-there checks → VA, and wants
+  the SITE doing that):**
+  (a) **LINKEDIN CAREER-TRAJECTORY CHECK (the big unlock — John's exact
+  pattern):** upgrade verify_status.js to reason about career transitions:
+  pull the person's CURRENT role/company (verified matcher) and classify —
+  current employer ≈ the acquirer or ANY known consolidator (DB acquirer
+  column + spec §7 maps) → **EMPLOYED, verified** ("owner of Small Co → now
+  District Manager at [PE-backed platform]" = John's giveaway example);
+  current shows retired / advisor / board / new unrelated venture / own new
+  co → **EXITED, verified** (+ SECOND_TIME_SELLER subtype when it's a new
+  venture); ambiguous stays ⚠ w/ evidence. Store the trajectory line as the
+  evidence string. This turns the ~5%/night verify trickle into real
+  coverage — combine with (b).
+  (b) **DEEP CONSOLIDATOR MAPPING, not one-shot sweeps:** systematically
+  enumerate the FULL acquisition log per consolidator (press archive pages,
+  PR-wire searches by year, portfolio/brands pages, "acquisitions" pages) —
+  paginate/iterate until dry, not a single query pass. Auto-discover NEW
+  consolidators (an acquirer seen in any result that isn't in our set gets
+  its own sweep). File HIGH-confidence w/ provenance; queue MEDIUM (incl.
+  the 16 held from 7/17) into a REVIEW list surfaced on the river-guides
+  page ("N candidates awaiting confirm" — John/VA confirm from source_urls,
+  one click keep/reject). Weekly cron this (John's bottleneck statement
+  overrides the earlier hold; still --confirm for writes below HIGH).
+  (c) **INGEST JOHN'S SEPARATE-SESSION LIST:** he built an acquirer→target→
+  owner list in another Claude session + gave it to the VA (file uploaded in
+  a prior chat — check /intake receipts + his Downloads; ask him for the
+  file if not found). Dedupe into river_guides (person,company) w/
+  provenance 'john-manual-research'.
+  (d) VA HANDOFF STAYS THE TAIL: what (a)+(b) can't resolve exports to the
+  VA (NEEDS_PAID / review list) — the site does the finding, the VA does
+  the residual.
+- 🔥🔥 **VA PROJECT COST TRACKING → COST-PER-LEAD (John 7/31 — VA is LIVE,
+  project-by-project; he wants spend + cost-per-lead visibility):** (a)
+  manual cost entry gains a **project** field (meta.project, e.g.
+  "river-guides batch 2 — 78 contacts") + optional link to an intake batch;
+  (b) **/intake asks "what did this batch cost?"** when a VA-results file is
+  imported (prefilled $0 skippable) → auto-creates the usage_event tied to
+  the batch → **true VA cost-per-contact-delivered** computed from the
+  receipt (contacts updated ÷ $); (c) Costs page: per-project VA lines +
+  a VA cost-per-lead stat next to costPerContact;month + YTD both.
 - 🔥🔥🔥 **COSTS: UPWORK VA + MONTHLY vs YTD (John 7/20):** (a) **Upwork VA
   enters variable spend.** The VA (Upwork, ~$6/hr, enriching existing
   contacts) is invoiced not API-metered → add a MANUAL cost-entry path: POST
