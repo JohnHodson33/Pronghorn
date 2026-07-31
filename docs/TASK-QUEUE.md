@@ -668,6 +668,26 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 7/31 — 🔴 **SERPER IS OUT OF CREDITS (since ~7/22) — JOHN: top up
+  at serper.dev.** Every call 400s "Not enough credits"; nightly CI looked
+  green because every step is continue-on-error. This is what stalled
+  status-verify at 25/467 for 9 days (also: linkedin_match, /discover,
+  leadgen serper source). Workers resume on their own after top-up. A
+  dashboard **api_dead** Key Action card now surfaces this class of failure
+  (live right now, showing the Serper outage).
+- 📣 LANE C 7/31 — ✅ **RIVER-GUIDE PHONES ARE LIVE — the Tracerfy dead-end is
+  broken.** (1) enrich_addresses.js: former-company street addresses via
+  Google Places, corroborated (domain or distinctive-name match + state),
+  provenance in contact.company_address, misses never re-burn — **177/255
+  phone-less guides addressed, $0 marginal**. (2) skiptrace_guides.js:
+  person-mode batch (landlord-trap-safe, company-line guard, one attempt
+  ever) — **162 traced → 31 hits: +28 guide phones (was 0), +12 emails,
+  $0.62**; hits → ENRICHED + CRM contact fill. Both nightly (40/night).
+  (3) verify_status.js throughput fixed: attempt-stamping ends the nightly
+  re-check of the same inconclusive top-30; cap 30→60 — kicks in the moment
+  Serper has credits. **LANE B: guides now carry contact.phone — the
+  call-now workflow has real numbers; contact.skiptrace.phones[] holds
+  ranked alternates.**
 - 🔥🔥🔥 **COSTS: UPWORK VA + MONTHLY vs YTD (John 7/20):** (a) **Upwork VA
   enters variable spend.** The VA (Upwork, ~$6/hr, enriching existing
   contacts) is invoiced not API-metered → add a MANUAL cost-entry path: POST

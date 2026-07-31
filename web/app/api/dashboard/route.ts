@@ -24,7 +24,7 @@ export async function GET() {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
   const db = serverDb();
 
-  const [listingsRes, reviewsRes, dealsRes, leadsRes, listsRes, outboxRes, outreachRes, untaggedNotesRes, dealProposalsRes, syncHealthRes] = await Promise.all([
+  const [listingsRes, reviewsRes, dealsRes, leadsRes, listsRes, outboxRes, outreachRes, untaggedNotesRes, dealProposalsRes, syncHealthRes, apiHealthRes] = await Promise.all([
     db.from("listings").select("id, industry, tier").in("tier", [1, 2]),
     // NOTE: only pre-0005 columns here; cim_received_at etc. exist after the
     // migration lands — reviewed_at is the portable timestamp until then.
@@ -49,6 +49,9 @@ export async function GET() {
       .eq("status", "pending").order("created_at", { ascending: false }).limit(15),
     // outlook-sync health (0018 app_config) — a dead sync must never be silent
     db.from("app_config").select("value, updated_at").eq("key", "outlook_sync_last_success").maybeSingle(),
+    // paid-API health beacons (workers report account-level failures; the
+    // Serper credits ran out 7/22 and green continue-on-error CI hid it 9 days)
+    db.from("app_config").select("key, value").like("key", "api_health_%"),
   ]);
 
   const funnel = new Map<string, number>();
@@ -149,6 +152,22 @@ export async function GET() {
         refId: null, at: last ?? null,
       });
     }
+  }
+
+  // dead paid APIs — every enrichment worker downstream of one is silently idle
+  for (const row of (apiHealthRes?.data ?? []) as Row[]) {
+    try {
+      const h = typeof row.value === "string" ? JSON.parse(row.value) : (row.value as Row);
+      if (h && h.ok === false) {
+        const service = String(row.key).replace(/^api_health_/, "");
+        keyActions.push({
+          kind: "api_dead",
+          title: `${service} API is failing`,
+          detail: `${String(h.error ?? "unknown error")} — enrichment workers using ${service} are stalled until this is fixed (top up credits / check the key)`,
+          refId: null, at: (h.at as string) ?? null,
+        });
+      }
+    } catch { /* unparseable beacon — skip */ }
   }
 
   keyActions.sort((a, b) => String(a.at ?? "").localeCompare(String(b.at ?? "")));

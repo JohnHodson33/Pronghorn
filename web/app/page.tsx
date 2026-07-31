@@ -17,6 +17,7 @@ const actionIcon: Record<string, string> = {
   nda: "✍️",
   stale: "⏳",
   deadline: "📅",
+  api_dead: "🔌",
 };
 
 // Chart palette — validated (dataviz six checks, light surface):

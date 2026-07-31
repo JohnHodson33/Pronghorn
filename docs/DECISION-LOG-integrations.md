@@ -2,8 +2,64 @@
 
 ## 🤝 HANDOFF (keep current — replacement session resumes from this)
 
-🟢 **SESSION #3 ACTIVE (started 7/20 ~12:00) — READ THIS BLOCK FIRST; everything
-below is older.** Worktree `C:\Users\johnd\Pronghorn-integrations`, branch
+🟢 **SESSION #4 ACTIVE (started 7/31 ~11:00 after ~10 days lanes-down) — READ
+THIS BLOCK FIRST; everything below is older.** Worktree
+`C:\Users\johnd\Pronghorn-integrations`, branch `lane/integrations`, merged
+origin/main (PM's 7/31 comeback docs absorbed: docs/STATUS-2026-07-31.md).
+
+🔴 **FOUND ON ARRIVAL — SERPER ACCOUNT OUT OF CREDITS since ~7/22** (every call
+400s "Not enough credits"). This is why status-verify sat at 25/467: the
+nightly River Guides runs were green (all steps continue-on-error) while every
+Serper-dependent worker silently failed for 9 days. Dead until John tops up
+credits at serper.dev. Affects: verify_status, linkedin_match, /discover
+sweeps, leadgen serper source. Hunter/Places/Tracerfy/Claude unaffected.
+**JOHN: top up Serper credits** — workers resume on their own (no restart).
+
+**7/31 SESSION #4 — SHIPPED (unit 1, the boot-prompt order):**
+1. **GUIDE STREET ADDRESSES → TRACERFY PHONE TIER UNLOCKED + RUN.**
+   `riverguides/enrich_addresses.js` (new): Google Places text search on the
+   FORMER company (name+city+state), no-guess corroboration — website-domain
+   match OR all-distinctive-name-tokens + same-state + real street line;
+   misses stored as NOT_FOUND so they never re-burn; provenance (place_id,
+   matched_by, query, at) in `contact.company_address` (jsonb — NO migration
+   needed). Live run: **177/255 phone-less RESOLVED guides got a corroborated
+   address** (123 by domain), 342 lookups, $0 marginal (Places free credit).
+   `riverguides/skiptrace_guides.js` (new): Tracerfy batch person-mode over
+   those addresses — landlord-trap-safe (person-mode only), company-line
+   guard (Places main line never becomes the guide's phone), ONE attempt per
+   guide ever (`contact.skiptrace` marker set on hit AND miss — verified all
+   162 markers landed). Guide-style name cleaner (guideName): commas = person
+   LISTS here, not "LAST, FIRST" — the dry run caught splitOwnerName
+   fabricating "Keith Crawford" from "Blake Crawford, Keith Mahan"; also
+   rejects "Swinski family". Live run: queue 127963, 162 traced, **31 hits →
+   +28 guide phones (channel had 0), +12 emails, $0.62**; hits promote
+   enrichment_status→ENRICHED + fill-blanks onto the CRM contact.
+   `enrich/skiptrace.js` refactored (submitAndAwait/fetchQueueRows/getQueue
+   extracted + exported; leads flow unchanged). Both wired into
+   river-guides.yml nightly (40/night each; GOOGLE_PLACES_API_KEY +
+   TRACERFY_API_KEY env added — GH secrets already set 7/16).
+2. **VERIFY THROUGHPUT FIXED (was the outreach bottleneck, 25/467).** Real
+   bug wasn't only the cap: score-ordered selection re-checked the same
+   inconclusive top-30 nightly. verify_status.js now stamps
+   `contact.verify_attempted_at` on inconclusive attempts, selects
+   never-attempted first, 14-day rest before re-check; nightly cap 30→60.
+   Takes effect the moment Serper has credits.
+3. **DEAD-PAID-API IS NEVER SILENT AGAIN.** `core/api_health.js` beacon
+   (app_config `api_health_<service>`, sync_health pattern): verify_status
+   aborts the pass on account-level Serper failures (credit/key regex, not
+   per-query 400s) + writes the beacon; success clears it. Dashboard raises
+   an **api_dead** Key Action card (added in BOTH data layers:
+   /api/dashboard route + lib/dashboard-v3.ts which the page actually uses;
+   icon in app/page.tsx). Beacon is LIVE now showing the Serper outage.
+
+**NEXT (this session):** (3) intake shakedown with a realistic VA-results
+file (check 0021 applied first); (4) YTD variable window 7/1 start — ONLY if
+John confirms; (5) TASK-QUEUE top-down. PARKED (don't chase): sample card
+611290ff, repo visibility.
+
+--- SESSION #3 (7/20-7/21) below — older ---
+
+🟢 **SESSION #3 (started 7/20 ~12:00).** Worktree `C:\Users\johnd\Pronghorn-integrations`, branch
 `lane/integrations`, current with origin/main (HEAD 8861880+). **PM ack (7/20
 ~13:26): I'm live and connected** — both top-of-queue John 7/20 units already
 ✅ SHIPPED before your check-in (COSTS `c9890fb`, INTAKE `d1c98c2`). Calibration
