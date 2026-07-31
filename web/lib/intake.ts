@@ -466,11 +466,23 @@ export async function executePlan(
   db: SupabaseClient,
   plan: Plan,
   provenance: { uploaded_by: string; filename: string },
-): Promise<{ created: number; updated: number; skipped: number; errors: number; errorSamples: string[] }> {
+): Promise<{
+  created: number; updated: number; skipped: number; errors: number; errorSamples: string[];
+  // who was touched, so the receipt can link straight to the rows (7/31 —
+  // the VA round-trip needs "here's exactly who gained data" spot-checking)
+  touched: { action: "create" | "update"; id: string | null; label: string }[];
+}> {
   const cat = CATALOGS[plan.base];
   const stamp = `[intake: ${provenance.filename} by ${provenance.uploaded_by} on ${new Date().toISOString().slice(0, 10)}]`;
   const idField = cat.table === "river_guides" ? "deal_id" : "id";
-  const res = { created: 0, updated: 0, skipped: 0, errors: 0, errorSamples: [] as string[] };
+  const nameField = cat.table === "river_guides" ? "full_name" : "name";
+  const res = {
+    created: 0, updated: 0, skipped: 0, errors: 0, errorSamples: [] as string[],
+    touched: [] as { action: "create" | "update"; id: string | null; label: string }[],
+  };
+  const touch = (action: "create" | "update", id: unknown, label: unknown) => {
+    if (res.touched.length < 100) res.touched.push({ action, id: id == null ? null : String(id), label: String(label ?? "") });
+  };
 
   for (const r of plan.rows) {
     if (r.action === "skip") { res.skipped++; continue; }
@@ -485,16 +497,18 @@ export async function executePlan(
           normalizeRiverGuideCreate(row);
           const { error } = await db.from("river_guides").upsert(row, { onConflict: "deal_id" });
           if (error) throw error;
+          touch("create", row.deal_id, r.values.full_name);
         } else {
-          const { error } = await db.from(cat.table).insert(row);
+          const { data: ins, error } = await db.from(cat.table).insert(row).select("id").maybeSingle();
           if (error) throw error;
+          touch("create", (ins as { id?: unknown } | null)?.id, r.values[nameField]);
         }
         res.created++;
       } else {
         // update: fill blank data fields + append the provenance stamp once
         const patch: Record<string, unknown> = {};
         for (const [f, v] of Object.entries(r.values)) if (f !== "notes") patch[f] = v;
-        const { data: cur } = await db.from(cat.table).select("notes").eq(idField, r.matchId!).maybeSingle();
+        const { data: cur } = await db.from(cat.table).select(`notes, ${nameField}`).eq(idField, r.matchId!).maybeSingle();
         const curNotes = String((cur as { notes?: string } | null)?.notes ?? "").trim();
         const filledNote = typeof r.values.notes === "string" ? r.values.notes : "";
         const parts = [curNotes, filledNote].filter(Boolean);
@@ -502,6 +516,7 @@ export async function executePlan(
         patch.notes = parts.join(" ");
         const { error } = await db.from(cat.table).update(patch).eq(idField, r.matchId!);
         if (error) throw error;
+        touch("update", r.matchId, (cur as Record<string, unknown> | null)?.[nameField] ?? r.values[nameField]);
         res.updated++;
       }
     } catch (e) {

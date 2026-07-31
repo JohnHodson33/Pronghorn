@@ -318,6 +318,33 @@ export default function RiverGuides() {
     setBusy(false);
   }
 
+  // "Send to VA" — the paid-tier handoff (STATUS 7/31 edit #3). Exports the
+  // NEEDS_PAID guides in the current view as a fill-in workbook the VA sends
+  // back through /intake: name+firm are the match keys (do not edit), the
+  // channel columns are what the VA fills, and the instructions column is
+  // ignored by intake's column mapper (unmapped headers are dropped), so the
+  // same file round-trips cleanly as a contact enrichment-fill.
+  const needsPaid = useMemo(() => rows.filter((g) => g.enrichment_status === "NEEDS_PAID" && g.full_name), [rows]);
+  function exportVaCsv() {
+    const instructions =
+      "FILL the email / phone / linkedin columns for each person. Leave a cell BLANK if you cannot verify it — never guess. " +
+      "Paste the URL where you found each datum into the notes column (e.g. 'phone from acme.com/contact'). " +
+      "Do NOT edit the name or firm columns — they are how rows match back to the CRM. " +
+      "When done, save as CSV and upload it at the platform's Data Intake page (/intake); if asked for a type, pick 'Enrichment fill'. " +
+      "Context: each person sold the company in the firm column and we want to reach them — their current direct contact info, not the company's old main line.";
+    downloadCsv(
+      `pronghorn-va-batch-${csvDate()}.csv`,
+      buildCsv(
+        ["name", "firm", "city", "state", "email", "phone", "linkedin", "notes", "instructions"],
+        needsPaid.map((g, i) => [
+          g.full_name, g.their_company, g.location_city, g.location_state,
+          g.contact?.email ?? null, g.contact?.phone ?? null, g.contact?.linkedin_url ?? null,
+          null, i === 0 ? instructions : null,
+        ])
+      )
+    );
+  }
+
   function exportCsv() {
     downloadCsv(
       `pronghorn-river-guides-${csvDate()}.csv`,
@@ -487,6 +514,14 @@ export default function RiverGuides() {
                 : est
                   ? `Enrich selected (${selected.size} · est. ${est.totalEstUsd < 0.01 ? "$0.00" : `$${est.totalEstUsd.toFixed(2)}`})`
                   : `Enrich selected (${selected.size})`}
+          </button>
+          <button
+            onClick={exportVaCsv}
+            disabled={needsPaid.length === 0}
+            className="rounded-lg bg-violet-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-violet-800 disabled:opacity-40"
+            title={`Download the ${needsPaid.length} 'Needs paid' guide${needsPaid.length === 1 ? "" : "s"} in the current view as a VA fill-in CSV (instructions embedded). The VA returns it through Data Intake (/intake) and the found channels fill the linked contacts.`}
+          >
+            Send to VA ({needsPaid.length})
           </button>
           <button onClick={exportCsv} disabled={rows.length === 0} className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-50">
             CSV ({rows.length})

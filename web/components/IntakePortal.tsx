@@ -37,7 +37,19 @@ type Receipt = {
   created: number; updated: number; skipped: number; errors: number;
   errorSamples: string[]; record_type: string; base_table: string;
   confirmed_by: string; at: string;
+  // the rows that were actually written (capped 100) — receipts from before
+  // 7/31 don't carry it, so it stays optional
+  touched?: { action: "create" | "update"; id: string | null; label: string }[];
 };
+
+// deep-link one touched row: companies have a profile page; contacts and
+// river guides link to their list pre-filtered by name search
+function touchedHref(baseTable: string, t: { id: string | null; label: string }): string | null {
+  if (baseTable === "companies" && t.id) return `/companies/${t.id}`;
+  if (baseTable === "contacts") return t.label ? `/contacts?q=${encodeURIComponent(t.label)}` : null;
+  if (baseTable === "river_guides") return t.label ? `/river-guides?q=${encodeURIComponent(t.label)}` : null;
+  return null;
+}
 
 type RecordType = "contact" | "company" | "river_guide" | "enrichment_fill";
 
@@ -379,6 +391,29 @@ export default function IntakePortal() {
             <ul className="mt-3 space-y-1 text-xs text-red-700">
               {receipt.errorSamples.slice(0, 5).map((e, i) => <li key={i}>{e}</li>)}
             </ul>
+          )}
+          {/* exactly who gained data — the VA round-trip's spot-check (7/31) */}
+          {(receipt.touched ?? []).length > 0 && (
+            <div className="mt-4">
+              <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Rows written — click to spot-check
+              </div>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {receipt.touched!.map((t, i) => {
+                  const href = touchedHref(receipt.base_table, t);
+                  const cls = `rounded-full px-2.5 py-1 text-xs font-medium ${
+                    t.action === "create" ? "bg-emerald-100 text-emerald-800" : "bg-sky-100 text-sky-800"
+                  }`;
+                  return href ? (
+                    <a key={i} href={href} className={`${cls} hover:brightness-95`} title={`${t.action}d — open the row`}>
+                      {t.label || t.id || "row"} →
+                    </a>
+                  ) : (
+                    <span key={i} className={cls}>{t.label || t.id || "row"}</span>
+                  );
+                })}
+              </div>
+            </div>
           )}
           <div className="mt-4 flex flex-wrap items-center gap-3">
             {TABLE_HREF[receipt.base_table] && (

@@ -27,10 +27,29 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
   displayed) — verified via javascript_tool computed-style checks + click
   simulation instead; also, everything-404s after merge = stale `.next` (rm
   -rf web/.next + restart, the known gotcha).
-- **NEXT (my queue order)**: (2) deal-proposals visibility — pending count
-  in Key Actions (+ 📣 PM for the Sidebar badge; Sidebar.tsx is PM's);
-  (3) VA round-trip — "Send to VA" CSV export on river-guides NEEDS_PAID +
-  /intake receipt links back to updated rows; (4) TASK-QUEUE top-down.
+- **UNIT 2 DONE — deal-proposals visibility** (`d6b9ddd`): violet "📩 N
+  deal updates" pill in the GLOBAL top bar (extended ActiveJobPill — no
+  Sidebar.tsx touch needed, top bar covers every page incl. mobile) linking
+  to /#key-actions; same chip on the Key Actions header; proposal cards
+  sort FIRST so they can't slide past the 8-row display cut. Verified live
+  with 4 real pending proposals.
+- **UNIT 3 DONE — VA round-trip**: (a) "Send to VA (N)" violet button on
+  /river-guides exports the NEEDS_PAID guides in view (87 live) as a
+  fill-in CSV — columns name/firm/city/state/email/phone/linkedin/notes +
+  an `instructions` column (full VA brief in row 1; intake drops unmapped
+  headers so the same file round-trips as a contact enrichment-fill;
+  name+firm are the match keys). (b) intake receipts now list "Rows
+  written" as clickable chips → /companies/<id> or /contacts?q= /
+  /river-guides?q= — executePlan returns `touched` (capped 100), additive
+  so old receipts still render. Receipt UI verified via temporary mock
+  (reverted); live confirm still needs the PM's real-file shakedown.
+  ⚠️ NOTE: Lane C's Vatest Shakedown test row vanished from
+  /api/river-guides between my morning check (468) and now (467) — someone
+  (PM?) deleted it; I did not recreate it.
+- **NEXT**: (4) TASK-QUEUE top-down — biggest open Lane B items: costs
+  YTD-variable-window question is Lane C's; check recovered ⬜ items
+  (/sources v2 health table; Broker Directory deep-link — ContactsTable
+  already has ?broker=).
 
 ## 🔄 HANDOFF — session #7 (7/21 eve) — retired
 
