@@ -177,7 +177,7 @@ function FieldRow({ label, value }: CardField) {
   return (
     <>
       <dt className="text-[10px] font-medium uppercase leading-5 tracking-wide text-zinc-400">{label}</dt>
-      <dd className="min-w-0 truncate text-sm leading-5 text-zinc-700">{value}</dd>
+      <dd className="min-w-0 break-words text-sm leading-5 text-zinc-700">{value}</dd>
     </>
   );
 }
