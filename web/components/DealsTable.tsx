@@ -13,6 +13,7 @@ import { TIER_LABELS } from "@/lib/size";
 import { useUrlFilterSync } from "@/lib/use-url-filters";
 import FilterDropdown from "@/components/FilterDropdown";
 import SortHeader from "@/components/SortHeader";
+import { presenceOptions, presenceMatch } from "@/lib/list-filters";
 
 const tierChip: Record<string, string> = {
   platform: "bg-emerald-100 text-emerald-800",
@@ -70,6 +71,8 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
   const [q, setQ] = useState("");
   const [stage, setStage] = useState(initialStage ?? "");
   const [tier, setTier] = useState("");
+  const [ownerSel, setOwnerSel] = useState<Set<string>>(new Set());
+  const [brokerSel, setBrokerSel] = useState<Set<string>>(new Set());
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
@@ -78,16 +81,20 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
   useUrlFilterSync(
     () => ({
       q, stage: stage || null, size: tier || null,
+      owner: ownerSel.size ? [...ownerSel].join(",") : null,
+      broker: brokerSel.size ? [...brokerSel].join(",") : null,
       sort: sortKey, dir: sortKey && sortDir === "asc" ? "asc" : null,
     }),
     (p) => {
       if (p.get("q")) setQ(p.get("q")!);
       if (p.get("stage")) setStage(p.get("stage")!);
       if (p.get("size")) setTier(p.get("size")!);
+      if (p.get("owner")) setOwnerSel(new Set(p.get("owner")!.split(",")));
+      if (p.get("broker")) setBrokerSel(new Set(p.get("broker")!.split(",")));
       if (p.get("sort")) setSortKey(p.get("sort") as SortKey);
       if (p.get("dir") === "asc") setSortDir("asc");
     },
-    [q, stage, tier, sortKey, sortDir],
+    [q, stage, tier, ownerSel, brokerSel, sortKey, sortDir],
   );
 
   const counts = useMemo(() => {
@@ -111,6 +118,8 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
     const filtered = deals.filter((d) => {
       if (stageSel.size && !stageSel.has(d.stage)) return false;
       if (tierSel.size && !tierSel.has(d.size?.tier ?? "unsized")) return false;
+      if (!presenceMatch(ownerSel, d.owner)) return false;
+      if (!presenceMatch(brokerSel, d.broker)) return false;
       if (
         q &&
         !`${d.company} ${d.owner ?? ""} ${d.broker ?? ""} ${d.industry ?? ""} ${d.city ?? ""} ${d.state ?? ""} ${d.passReason ?? ""}`
@@ -149,12 +158,14 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
       }
       return sortDir === "asc" ? cmp : -cmp;
     });
-  }, [deals, q, stage, tier, sortKey, sortDir, stages]);
+  }, [deals, q, stage, tier, ownerSel, brokerSel, sortKey, sortDir, stages]);
 
   const sortSet = (key: SortKey) => (d: "asc" | "desc" | null) => {
     if (!d) setSortKey(null);
     else { setSortKey(key); setSortDir(d); }
   };
+  const ownerOptions = useMemo(() => presenceOptions(deals, (d) => d.owner, "owner"), [deals]);
+  const brokerOptions = useMemo(() => presenceOptions(deals, (d) => d.broker, "broker"), [deals]);
 
   function exportCsv() {
     downloadCsv(
@@ -213,6 +224,7 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
                   <FilterDropdown
                     header
                     label=""
+                    name="Stage"
                     options={stages.filter((s) => counts[s]).map((s) => ({ value: s, label: s, count: counts[s] }))}
                     selected={asSet(stage)}
                     onChange={(s) => setStage([...s].join(","))}
@@ -220,10 +232,16 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
                 </span>
               </th>
               <th className="px-4 py-3">
-                <SortHeader label="Owner" active={sortKey === "owner"} dir={sortDir} onChange={sortSet("owner")} />
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Owner" active={sortKey === "owner"} dir={sortDir} onChange={sortSet("owner")} />
+                  <FilterDropdown header label="" name="Owner" options={ownerOptions} selected={ownerSel} onChange={setOwnerSel} />
+                </span>
               </th>
               <th className="px-4 py-3">
-                <SortHeader label="Broker" active={sortKey === "broker"} dir={sortDir} onChange={sortSet("broker")} />
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Broker" active={sortKey === "broker"} dir={sortDir} onChange={sortSet("broker")} />
+                  <FilterDropdown header label="" name="Broker" options={brokerOptions} selected={brokerSel} onChange={setBrokerSel} />
+                </span>
               </th>
               <th className="px-4 py-3">
                 <span className="inline-flex items-center gap-1">
@@ -231,6 +249,7 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
                   <FilterDropdown
                     header
                     label=""
+                    name="Size"
                     options={TIERS.filter((t) => tierCounts[t]).map((t) => ({ value: t, label: TIER_LABELS[t], count: tierCounts[t] }))}
                     selected={asSet(tier)}
                     onChange={(s) => setTier([...s].join(","))}

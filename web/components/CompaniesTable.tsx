@@ -4,7 +4,7 @@
 // (chips don't scale), column-header dropdown filters (owner reach, size
 // tier, deal stage), sortable est. Revenue/EBITDA columns, everything
 // URL-param synced (pinnable). Whole-row click-through to the profile.
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { money } from "@/lib/mock";
 import type { CompanyRow } from "@/lib/crm";
@@ -14,8 +14,10 @@ import { LEVELS, LEVEL_META, type Completeness } from "@/lib/completeness";
 import { PinButton } from "@/components/PinnedViews";
 import { TIERS, TIER_LABELS } from "@/lib/size";
 import FilterDropdown from "@/components/FilterDropdown";
+import SortHeader from "@/components/SortHeader";
 import StarButton from "@/components/StarButton";
 import ScrollShell from "@/components/ScrollShell";
+import { presenceOptions, presenceMatch, cmpText, nullsLast } from "@/lib/list-filters";
 
 // ~$X.XM–$Y.YM display for estimate ranges (never fake precision)
 const estRange = (r: [number, number]) => {
@@ -38,7 +40,13 @@ const levelChip: Record<Completeness, string> = {
   raw: "bg-zinc-50 text-zinc-400",
 };
 
-type SortKey = "revenue" | "ebitda" | null;
+// Every column sorts (John 7/21) — not just the two money columns.
+type SortKey =
+  | "star" | "name" | "level" | "size" | "email" | "phone" | "linkedin"
+  | "industry" | "location" | "revenue" | "ebitda" | "stage" | "origin" | "added"
+  | null;
+const SORT_KEYS = ["star", "name", "level", "size", "email", "phone", "linkedin",
+  "industry", "location", "revenue", "ebitda", "stage", "origin", "added"];
 
 const csv = (s: Set<string>) => (s.size ? [...s].join(",") : null);
 const fromCsv = (v: string | null) => new Set((v ?? "").split(",").filter(Boolean));
@@ -54,6 +62,12 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
   const [withDealOnly, setWithDealOnly] = useState(false);
   const [hidePe, setHidePe] = useState(false); // PE-owned are not targets (John 7/15)
   const [starSel, setStarSel] = useState<Set<string>>(new Set()); // ★ by John/Tom
+  // each channel owns its own has/missing filter (John 7/21)
+  const [emailSel, setEmailSel] = useState<Set<string>>(new Set());
+  const [phoneSel, setPhoneSel] = useState<Set<string>>(new Set());
+  const [linkedinSel, setLinkedinSel] = useState<Set<string>>(new Set());
+  const [statesSel, setStatesSel] = useState<Set<string>>(new Set());
+  const [originsSel, setOriginsSel] = useState<Set<string>>(new Set());
   const [sortKey, setSortKey] = useState<SortKey>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
@@ -69,7 +83,12 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
     if (p.get("deal") === "1") setWithDealOnly(true);
     if (p.get("pe") === "hide") setHidePe(true);
     if (p.get("star")) setStarSel(fromCsv(p.get("star")));
-    if (p.get("sort") === "revenue" || p.get("sort") === "ebitda") setSortKey(p.get("sort") as SortKey);
+    if (p.get("email")) setEmailSel(fromCsv(p.get("email")));
+    if (p.get("phone")) setPhoneSel(fromCsv(p.get("phone")));
+    if (p.get("linkedin")) setLinkedinSel(fromCsv(p.get("linkedin")));
+    if (p.get("state")) setStatesSel(fromCsv(p.get("state")));
+    if (p.get("origin")) setOriginsSel(fromCsv(p.get("origin")));
+    if (SORT_KEYS.includes(p.get("sort") ?? "")) setSortKey(p.get("sort") as SortKey);
     if (p.get("dir") === "asc") setSortDir("asc");
   }, []);
   useEffect(() => {
@@ -78,6 +97,8 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
     const pairs: [string, string | null][] = [
       ["industry", csv(industriesSel)], ["level", csv(levelsSel)],
       ["tier", csv(tiersSel)], ["stage", csv(stagesSel)], ["star", csv(starSel)],
+      ["email", csv(emailSel)], ["phone", csv(phoneSel)], ["linkedin", csv(linkedinSel)],
+      ["state", csv(statesSel)], ["origin", csv(originsSel)],
     ];
     for (const [k, v] of pairs) if (v) p.set(k, v);
     if (withDealOnly) p.set("deal", "1");
@@ -85,7 +106,8 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
     if (sortKey) { p.set("sort", sortKey); if (sortDir === "asc") p.set("dir", "asc"); }
     const qs = p.toString();
     window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
-  }, [q, industriesSel, levelsSel, tiersSel, stagesSel, withDealOnly, hidePe, starSel, sortKey, sortDir]);
+  }, [q, industriesSel, levelsSel, tiersSel, stagesSel, withDealOnly, hidePe, starSel,
+      emailSel, phoneSel, linkedinSel, statesSel, originsSel, sortKey, sortDir]);
 
   const levels = useMemo(() => {
     const m = new Map<string, ReturnType<typeof companyLevel>>();
@@ -114,6 +136,28 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
     for (const c of companies) { const s = c.deals?.[0]?.stage; if (s) m[s] = (m[s] ?? 0) + 1; }
     return Object.entries(m).sort().map(([value, count]) => ({ value, label: value, count }));
   }, [companies]);
+  const stateOptions = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const c of companies) if (c.state) m[c.state] = (m[c.state] ?? 0) + 1;
+    return Object.keys(m).sort().map((value) => ({ value, label: value, count: m[value] }));
+  }, [companies]);
+  const originOptions = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const c of companies) { const o = c.origin ?? "—"; m[o] = (m[o] ?? 0) + 1; }
+    return Object.entries(m).sort((a, b) => b[1] - a[1]).map(([value, count]) => ({ value, label: value, count }));
+  }, [companies]);
+  // the owner's channels drive the per-channel has/missing filters
+  const chan = useCallback((c: CompanyRow) => levels.get(c.id)!.contact, [levels]);
+  const emailOptions = useMemo(() => presenceOptions(companies, (c) => chan(c).email, "email"), [companies, chan]);
+  const phoneOptions = useMemo(() => presenceOptions(companies, (c) => chan(c).phone, "phone"), [companies, chan]);
+  const linkedinOptions = useMemo(() => presenceOptions(companies, (c) => chan(c).linkedin, "LinkedIn"), [companies, chan]);
+  const starOptions = useMemo(
+    () => (["John", "Tom"] as const).map((p) => ({
+      value: p, label: `★ by ${p}`,
+      count: companies.filter((c) => c.shortlist.some((s) => s.person === p)).length,
+    })),
+    [companies]
+  );
 
   // sort value: actual figure wins; else the estimate midpoint; null sorts last
   const sortVal = (c: CompanyRow, k: "revenue" | "ebitda"): number | null => {
@@ -134,26 +178,50 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
       if (withDealOnly && !c.deals?.[0]) return false;
       if (hidePe && c.pe_owned) return false;
       if (starSel.size && !c.shortlist.some((s) => starSel.has(s.person))) return false;
+      if (statesSel.size && !statesSel.has(c.state ?? "")) return false;
+      if (originsSel.size && !originsSel.has(c.origin ?? "—")) return false;
+      if (!presenceMatch(emailSel, chan(c).email)) return false;
+      if (!presenceMatch(phoneSel, chan(c).phone)) return false;
+      if (!presenceMatch(linkedinSel, chan(c).linkedin)) return false;
       return true;
     });
     // shortlisted-first is the standing tiebreak; explicit column sort wins
     const starRank = (c: CompanyRow) => (c.shortlist.length ? 0 : 1);
     if (!sortKey) return [...filtered].sort((a, b) => starRank(a) - starRank(b));
+    const lvlRank = (c: CompanyRow) => LEVELS.indexOf(levels.get(c.id)!.level);
+    const tierRank = (c: CompanyRow) => TIERS.indexOf(c.size?.tier ?? "unsized");
     return [...filtered].sort((a, b) => {
-      const av = sortVal(a, sortKey), bv = sortVal(b, sortKey);
-      if (av === null && bv === null) return 0;
-      if (av === null) return 1; // nulls last regardless of direction
-      if (bv === null) return -1;
-      return sortDir === "asc" ? av - bv : bv - av;
+      let cmp: number;
+      switch (sortKey) {
+        case "star": cmp = starRank(a) - starRank(b); break;
+        case "name": cmp = cmpText(a.name, b.name); break;
+        case "level": cmp = lvlRank(a) - lvlRank(b); break;
+        case "size": cmp = tierRank(a) - tierRank(b); break;
+        case "email": cmp = cmpText(chan(a).email, chan(b).email); break;
+        case "phone": cmp = cmpText(chan(a).phone, chan(b).phone); break;
+        case "linkedin": cmp = cmpText(chan(a).linkedin, chan(b).linkedin); break;
+        case "industry": cmp = cmpText(a.industry, b.industry); break;
+        case "location": cmp = cmpText([a.state, a.city].filter(Boolean).join(" "), [b.state, b.city].filter(Boolean).join(" ")); break;
+        case "stage": cmp = cmpText(a.deals?.[0]?.stage, b.deals?.[0]?.stage); break;
+        case "origin": cmp = cmpText(a.origin, b.origin); break;
+        case "added": cmp = cmpText(a.created_at, b.created_at); break;
+        default: {
+          // revenue / ebitda: actual wins, else estimate midpoint; nulls last
+          const av = sortVal(a, sortKey), bv = sortVal(b, sortKey);
+          const nl = nullsLast(av, bv);
+          if (nl !== null) return nl;
+          return sortDir === "asc" ? av! - bv! : bv! - av!;
+        }
+      }
+      return sortDir === "asc" ? cmp : -cmp;
     });
-  }, [companies, q, industriesSel, levelsSel, tiersSel, stagesSel, withDealOnly, hidePe, starSel, levels, sortKey, sortDir]);
+  }, [companies, q, industriesSel, levelsSel, tiersSel, stagesSel, withDealOnly, hidePe, starSel,
+      emailSel, phoneSel, linkedinSel, statesSel, originsSel, levels, chan, sortKey, sortDir]);
 
-  function toggleSort(k: "revenue" | "ebitda") {
-    if (sortKey !== k) { setSortKey(k); setSortDir("desc"); }
-    else if (sortDir === "desc") setSortDir("asc");
-    else setSortKey(null); // third click clears
-  }
-  const sortArrow = (k: "revenue" | "ebitda") => (sortKey === k ? (sortDir === "desc" ? " ▼" : " ▲") : "");
+  const sortSet = (key: SortKey) => (d: "asc" | "desc" | null) => {
+    if (!d) setSortKey(null);
+    else { setSortKey(key); setSortDir(d); }
+  };
 
   const inputCls = "rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-600";
 
@@ -166,17 +234,8 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
           placeholder="Search companies…"
           className={`w-56 ${inputCls}`}
         />
-        <FilterDropdown label="Industry" options={industryOptions} selected={industriesSel} onChange={setIndustriesSel} />
-        <FilterDropdown
-          label="★ Shortlist"
-          options={(["John", "Tom"] as const).map((p) => ({
-            value: p,
-            label: `★ by ${p}`,
-            count: companies.filter((c) => c.shortlist.some((s) => s.person === p)).length,
-          }))}
-          selected={starSel}
-          onChange={setStarSel}
-        />
+        {/* Industry / ★ Shortlist filters live in their own column headers now —
+            duplicating them up here is half of John's "incoherent" complaint. */}
         <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
           <input
             type="checkbox"
@@ -233,37 +292,81 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500">
-              <th className="px-2 py-3" title="Shortlist">★</th>
-              <th className="px-4 py-3">Company</th>
-              {/* column-header dropdown filters (John 7/15) */}
-              <th className="px-4 py-3">
-                <FilterDropdown header label="Owner reach" options={levelOptions} selected={levelsSel} onChange={setLevelsSel} />
+              {/* every column: sort + (where categorical/presence) a NAMED filter
+                  so the control says what it does (John 7/21) */}
+              <th className="px-2 py-3">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="★" active={sortKey === "star"} dir={sortDir} onChange={sortSet("star")} />
+                  <FilterDropdown header label="" name="Shortlist" options={starOptions} selected={starSel} onChange={setStarSel} />
+                </span>
               </th>
               <th className="px-4 py-3">
-                <FilterDropdown header label="Size" options={tierOptions} selected={tiersSel} onChange={setTiersSel} />
+                <SortHeader label="Company" active={sortKey === "name"} dir={sortDir} onChange={sortSet("name")} />
               </th>
-              {/* dots retired → the actual owner channels (John 7/16) */}
-              <th className="px-4 py-3">Email</th>
-              <th className="px-4 py-3">Phone</th>
-              <th className="px-4 py-3">LinkedIn</th>
-              <th className="px-4 py-3">Industry</th>
-              <th className="px-4 py-3">Location</th>
-              {/* sortable est columns: click toggles desc → asc → off */}
+              <th className="px-4 py-3">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Owner reach" active={sortKey === "level"} dir={sortDir} onChange={sortSet("level")} />
+                  <FilterDropdown header label="" name="Owner reach" options={levelOptions} selected={levelsSel} onChange={setLevelsSel} />
+                </span>
+              </th>
+              <th className="px-4 py-3">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Size" active={sortKey === "size"} dir={sortDir} onChange={sortSet("size")} />
+                  <FilterDropdown header label="" name="Size" options={tierOptions} selected={tiersSel} onChange={setTiersSel} />
+                </span>
+              </th>
+              {/* dots retired → the actual owner channels, each with its OWN filter */}
+              <th className="px-4 py-3">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Email" active={sortKey === "email"} dir={sortDir} onChange={sortSet("email")} />
+                  <FilterDropdown header label="" name="Email" options={emailOptions} selected={emailSel} onChange={setEmailSel} />
+                </span>
+              </th>
+              <th className="px-4 py-3">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Phone" active={sortKey === "phone"} dir={sortDir} onChange={sortSet("phone")} />
+                  <FilterDropdown header label="" name="Phone" options={phoneOptions} selected={phoneSel} onChange={setPhoneSel} />
+                </span>
+              </th>
+              <th className="px-4 py-3">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="LinkedIn" active={sortKey === "linkedin"} dir={sortDir} onChange={sortSet("linkedin")} />
+                  <FilterDropdown header label="" name="LinkedIn" options={linkedinOptions} selected={linkedinSel} onChange={setLinkedinSel} />
+                </span>
+              </th>
+              <th className="px-4 py-3">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Industry" active={sortKey === "industry"} dir={sortDir} onChange={sortSet("industry")} />
+                  <FilterDropdown header label="" name="Industry" options={industryOptions} selected={industriesSel} onChange={setIndustriesSel} />
+                </span>
+              </th>
+              <th className="px-4 py-3">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Location" active={sortKey === "location"} dir={sortDir} onChange={sortSet("location")} />
+                  <FilterDropdown header label="" name="State" options={stateOptions} selected={statesSel} onChange={setStatesSel} />
+                </span>
+              </th>
               <th className="px-4 py-3 text-right">
-                <button onClick={() => toggleSort("revenue")} className={`uppercase tracking-wide ${sortKey === "revenue" ? "font-bold text-emerald-800" : "hover:text-zinc-700"}`} title="Sort by revenue (actuals win, then estimate midpoint; blanks last)">
-                  Revenue{sortArrow("revenue")}
-                </button>
+                <SortHeader label="Revenue" numeric active={sortKey === "revenue"} dir={sortDir} onChange={sortSet("revenue")} />
               </th>
               <th className="px-4 py-3 text-right">
-                <button onClick={() => toggleSort("ebitda")} className={`uppercase tracking-wide ${sortKey === "ebitda" ? "font-bold text-emerald-800" : "hover:text-zinc-700"}`} title="Sort by EBITDA (actuals win, then estimate midpoint; blanks last)">
-                  EBITDA{sortArrow("ebitda")}
-                </button>
+                <SortHeader label="EBITDA" numeric active={sortKey === "ebitda"} dir={sortDir} onChange={sortSet("ebitda")} />
               </th>
               <th className="px-4 py-3">
-                <FilterDropdown header label="Deal stage" options={stageOptions} selected={stagesSel} onChange={setStagesSel} />
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Deal stage" active={sortKey === "stage"} dir={sortDir} onChange={sortSet("stage")} />
+                  <FilterDropdown header label="" name="Deal stage" options={stageOptions} selected={stagesSel} onChange={setStagesSel} />
+                </span>
               </th>
-              <th className="px-4 py-3">Origin</th>
-              <th className="px-4 py-3">Added</th>
+              <th className="px-4 py-3">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Origin" active={sortKey === "origin"} dir={sortDir} onChange={sortSet("origin")} />
+                  <FilterDropdown header label="" name="Origin" options={originOptions} selected={originsSel} onChange={setOriginsSel} />
+                </span>
+              </th>
+              <th className="px-4 py-3">
+                <SortHeader label="Added" numeric active={sortKey === "added"} dir={sortDir} onChange={sortSet("added")} />
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">

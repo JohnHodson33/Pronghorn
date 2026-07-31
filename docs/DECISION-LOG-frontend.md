@@ -3,11 +3,64 @@
 Per-lane log per PARALLEL-SESSIONS.md; the PM/integrator folds these into
 DECISION-LOG.md and wires routes into Sidebar.tsx.
 
-## 🔄 HANDOFF — session #5 (7/20) — successor resumes here
+## 🔄 HANDOFF — session #7 (7/21 eve) — successor resumes here
 
-- **State**: nothing in flight. Both PM 7/20 priority units DONE + pushed.
-  Session #5 units: Deals ~Rev/~EBITDA size columns `d7af055` · Deal
-  Proposals UI `9f00d53`.
+- **State**: nothing in flight. **John's #1 complaint (list filtering/sorting,
+  asked 5×) is ROLLED OUT EVERYWHERE and verified page-by-page.** PM found the
+  root cause (header filters rendered `label=""` → invisible bare caret) and
+  fixed FilterDropdown + converted /river-guides as the reference; this session
+  rolled it across every remaining list, one commit each:
+  Companies `3d8fa03` · Contacts `9e4b990` · Brokers `bb85a59` ·
+  Listings `4044e35` · Deals+Enrichment `c7f6f8a` · River Guides `64d9ab7`.
+- **Coverage now (each opened and confirmed in the browser, not assumed)**:
+  Companies 14/14 cols sort + 10 named filters · Contacts 6/6 + 5 ·
+  Brokers 8/8 + 6 · Listings 10/10 + 5 · Deals 11/11 + 4 · Enrichment 15 sort
+  + 8 · River Guides 11/11 + 8 · lead-list detail inherits LeadsTable (12 sort
+  + 8). Every filter is named → reads "Filter by industry", never a bare
+  funnel.
+- **Redundant chip rows KILLED** (John: "too many tabs up across"): Companies'
+  toolbar Industry + ★ Shortlist dropdowns, Contacts' Has email/Has phone
+  checkboxes, Brokers' Has phone/email checkbox, Listings' T1–T4 chip row.
+  Tier/Shortlist/etc. now live only in their column headers.
+- **Email/Phone/LinkedIn each own a has/missing filter** on every list; the
+  single combined "reachability" control (Enrichment + River Guides) is gone.
+  Shared helpers in **`web/lib/list-filters.ts`** (presenceOptions /
+  presenceMatch / cmpText / nullsLast) — use these on any new table so the
+  behaviour can't drift again.
+- **⚠️ FINDING FOR JOHN**: on /river-guides "Call now + has phone" returns 0 —
+  correct, not a bug. **ZERO of 467 river guides have a phone number** (API
+  checked directly) while 115 sit in Call now. Lane C's queued Tracerfy
+  skiptrace is the fix.
+- **⚠️ TOOLING GOTCHA (cost me two file reverts)**: never round-trip a source
+  file through PowerShell `Get-Content | Set-Content` — it mangles UTF-8
+  (em-dashes → `â€"`). Use the Edit tool for source edits; PowerShell only for
+  git/npm.
+
+## 🔄 HANDOFF — session #6 (7/21) — retired
+
+- **State**: nothing in flight. Both PM 7/21 units DONE + pushed:
+  **COSTS PAGE** `dcac050` (new /costs — Month | YTD side by side, same
+  breakdown each, + "Log a cost" for the Upwork VA invoices) and
+  **DATA INTAKE PORTAL** `1f38172` (new /intake — drag-drop → preview →
+  confirm, for Tom with zero agent involvement).
+  ⚠️ **PM must wire BOTH Sidebar entries** (/costs, /intake) — Sidebar.tsx
+  is PM's file, so neither page is reachable from the nav yet.
+- **⚠️ TWO THINGS BLOCKED ON JOHN (both verified, not guesses)**:
+  1. **Migration 0021 (intake_jobs) is NOT applied** despite TASK-QUEUE
+     saying "APPLIED" — /api/intake/preview returns "Could not find the
+     table 'public.intake_jobs'". The portal degrades correctly (full
+     preview renders, Confirm disabled with the reason shown) so nobody
+     can half-import. Apply 0021 → Confirm lights up. **Confirm is the
+     one path not exercised live.**
+  2. **Migration 0019 (deal_proposals) still not applied** (from
+     session #5) — the dashboard proposal cards stay empty until then.
+- **Local env gaps (not bugs)**: no ANTHROPIC_API_KEY locally, so intake
+  column-mapping falls back to the heuristic (it still mapped Full Name→
+  name, Email Address→email, Company→firm correctly). The merge added the
+  `xlsx` dep — **run `npm install` in web/ after merging** or tsc fails on
+  lib/intake.ts.
+- **Prev session #5 units**: Deals ~Rev/~EBITDA size columns `d7af055` ·
+  Deal Proposals UI `9f00d53`.
   (1) **SIZE RENDER** — Deals table now has ~Rev/~EBITDA estimate columns
   (numeric sort on midpoint, unsized last, basis+confidence hover),
   matching Enrichment/Companies. Deals are mostly unsized (broker-sourced,

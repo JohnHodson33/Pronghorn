@@ -2,19 +2,166 @@
 
 ## 🤝 HANDOFF (keep current — replacement session resumes from this)
 
-🛑 **SESSION STOOD DOWN 7/20 (context limit) — successor #2 handing off. READ
-THIS BLOCK FIRST; everything below is older.** Branch `lane/integrations`
-clean + fully pushed, **HEAD 300fb8f**. Worktree
-`C:\Users\johnd\Pronghorn-integrations`. This session shipped SIZE-FOR-EVERYONE
-(100% of on-target base) + BROKER INQUIRY TEMPLATE — see the "7/20 SESSION #2"
-block just below. Gates at stand-down: no feedback, migration 0019 still
-pending John, no queued river-guide runs. **NEXT for the successor** (detail in
-the "NEXT" block below): (1) Tracerfy person-mode for river-guide phones —
-DESIGN QUESTION first: guides have name + city/state but NO street address;
-decide (a) trace on the former-company address, (b) Tracerfy name+city+state
-lookup if the API supports it, or (c) only trace guides that have a street
-address; (2) once John runs 0019 → `node ingest_deal_mail.js --hours 168`
-seeds real deal proposals.
+🟢 **SESSION #3 ACTIVE (started 7/20 ~12:00) — READ THIS BLOCK FIRST; everything
+below is older.** Worktree `C:\Users\johnd\Pronghorn-integrations`, branch
+`lane/integrations`, current with origin/main (HEAD 8861880+). **PM ack (7/20
+~13:26): I'm live and connected** — both top-of-queue John 7/20 units already
+✅ SHIPPED before your check-in (COSTS `c9890fb`, INTAKE `d1c98c2`). Calibration
+absorbed: auto-compaction ≠ roll over; I keep working through compactions and
+only roll over on genuine ~80%+ pressure. Next: awaiting John's call on the
+Tracerfy river-guide-phones design question (no street addresses exist in guide
+data — see NEXT), else TASK-QUEUE top-down.
+
+**7/20 SESSION #3 — SHIPPED (intake):**
+- **SELF-SERVE DATA INTAKE** (John 7/20 🔥🔥🔥 — Tom uploads a file, it lands in
+  the right table). Three routes + a shared engine (`web/lib/intake.ts`):
+  `POST /api/intake/upload` mints a signed direct-to-storage URL (reuses
+  `signedUploadUrl`, bucket `intake`, csv/tsv/xlsx/xls) → browser PUTs the file
+  → `POST /api/intake/preview` downloads it, parses (CSV/TSV native + **xlsx via
+  new `xlsx` dep**), **Claude-maps arbitrary headers → our fields** (haiku,
+  metered as `intake_mapping`; heuristic fallback if no ANTHROPIC key), detects
+  record type (contact/company/river_guide/enrichment_fill), **dedupes** (email
+  or name+firm · domain or name+state · deal_id or name+company), builds a
+  resolved PLAN, stores it on an `intake_jobs` row — **no writes** →
+  `POST /api/intake/confirm {job_id}` executes the plan and returns a RECEIPT.
+  `GET /api/intake` = the audit trail. HARD RULES enforced: uploaded values
+  **fill blanks only, never silently overwrite** — every non-blank difference is
+  a CONFLICT surfaced in the preview; **never invent a field** (mapping
+  validated against a per-type whitelist, coercion only on typed cols);
+  provenance = `origin:'intake'` + a `[intake: file by who on date]` notes stamp;
+  **no silent bulk import** (preview→confirm gate). Migration **0021** adds
+  `intake_jobs`. Verified LIVE end-to-end through a running dev server: contacts
+  CSV → Claude mapped 6/6 headers (high conf), 3 creates; companies CSV → numeric
+  coercion ($2,400,000→2400000) + 2 creates; dedupe test vs real "Landmark Pest
+  Management" → matched, filled blank website, flagged the revenue difference as
+  a conflict (not overwritten). executePlan insert/update/upsert shapes validated
+  against the live tables (contacts/companies/river_guides accept them). **ONLY
+  the confirm path awaits migration 0021** (intake_jobs persistence) — preview
+  degrades cleanly to a full plan + "apply 0021" note until then. **JOHN: apply
+  migration 0021.** **LANE B: build the upload portal** — upload → preview card
+  (show mapping, counts, conflicts, warnings) → confirm; coordinate the contract
+  off the /api/intake/{upload,preview,confirm} shapes above.
+
+⚠️ **PM note:** the costs commit (c9890fb) swept in a stray `.claude/launch.json`
+(a benign "web"/port-3211 dev config from another chat session in this worktree
+— `git add -A` picked it up). It's harmless; drop it if it conflicts.
+
+📌 **7/21 SESSION #3 RESUMED (PM pinged; I'd been idle awaiting John's steer).**
+Merged origin/main. Three corrections/findings for PM + John:
+1. ⚠️ **MIGRATIONS 0020 AND 0021 ARE BOTH STILL UNAPPLIED.** PM's note said
+   "0021 (intake_jobs) is applied" — it is NOT: `select`/`insert` on
+   `intake_jobs` returns *"Could not find the table 'public.intake_jobs' in the
+   schema cache"*, and `subscriptions.start_date` is likewise absent. Same DB
+   call successfully read `feedback` + `subscriptions`, so this is not a
+   connectivity or cache-lag artifact. **Consequence: intake PREVIEW works, but
+   CONFIRM cannot run** (it degrades cleanly with an "apply 0021" note — no data
+   loss, but no writes either). **Lane B: the upload portal's confirm step will
+   return that note until John applies 0021.** JOHN: apply **0021** (unblocks
+   intake confirm) and optionally **0020** (exact mid-year sub YTD).
+2. ✅ **The `xlsx` dependency WAS added by me, in my own commit.** PM's note said
+   I imported it without adding the dep and that PM installed+committed it —
+   the record shows `d1c98c2` added `"xlsx": "^0.18.5"` to `web/package.json`
+   (+ lockfile), and **no commit has touched package.json since**. No fix commit
+   exists because none was needed. Flagging only so the process note doesn't
+   propagate as fact.
+3. 🐛 **FIXED — intra-file duplicate gap in the intake planner.** `buildPlan`
+   deduped each row against a DB snapshot loaded once, so two rows in the SAME
+   upload describing the same person/company both planned a `create` (duplicate
+   records), and two rows matching the same existing record both planned a fill.
+   Now a per-file identity key (mirroring findMatch precedence: email / domain /
+   deal_id, else name+firm / name+state / name+company) plus a matched-id set
+   make the FIRST row win; later duplicates become `skip` with reason
+   *"duplicate of row N in this file"*. Typecheck clean. Found by re-reading the
+   engine after merge — not yet exercised against a live confirm (blocked on
+   0021).
+
+✅ **7/21 — OUTLOOK DEAL-PROPOSAL CLASSIFIER: 2 REAL BUGS FIXED + PROPOSALS
+SEEDED (PM priority; 0019 is applied).** `deal_proposals` had 0 rows; seeding it
+exposed two defects in `ingest_deal_mail.js`:
+1. 🐛 **`--dry-run` was not dry** — it wrote the `activities` rows and only
+   guarded the *proposal* insert. My dry run therefore logged 2 activities, and
+   because of bug 2 the follow-up real run then skipped those messages entirely
+   → 0 proposals created. Now both writes are guarded; verified truly dry
+   (activities 46→46, proposals 4→4 across a dry run).
+2. 🐛 **Activity-idempotency short-circuited the proposal path** (the bigger
+   one). `if (seen?.length) continue;` sat ABOVE the classifier, so any message
+   already logged as an activity could never produce a proposal — including all
+   deal mail logged before the proposal feature existed. The classifier only
+   ever saw never-before-seen messages. Now an already-logged message still runs
+   classification (the proposal write has its own idempotency on
+   (deal_id, source_msg_id)). Impact was immediate: re-running produced **4**
+   proposals, not 2 — the 2 extra came from previously-invisible logged mail.
+3. 🐛 **Near-duplicate proposals** — brokers re-send the same ask on a new
+   message, so Landmark got two cards with IDENTICAL evidence ("Sign NDA" +
+   "Sign and return NDA"). Added a guard: skip when a PENDING proposal on that
+   deal already has the same normalized evidence or next_step. Distinct asks
+   still get their own card (Landmark's separate "12x valuation" item survives).
+   ⚠️ The one pre-existing duplicate pair was left in place for John to dismiss
+   (one click on the Key Actions card) rather than deleted — not my data to
+   remove.
+**4 pending proposals now await John** (all high-confidence, real quoted
+evidence; 71 non-deal senders correctly skipped). ⏰ **TIME-SENSITIVE: Monster
+Tree / Roslyn Ridge (Kris) — "I have time today… we've started receiving LOIs",
+due 2026-07-20, ALREADY PAST.** A counterparty offered a call and it went
+unactioned — exactly the Fahrenhorst-class miss this was built to catch.
+
+🔴 **TRACERFY RIVER-GUIDE PHONES — DEAD END (probed live 7/20, John greenlit the
+probe; cost $0).** Verdict: **Tracerfy cannot skip-trace by name+city+state.**
+Proof: (1) the batch `/trace/` endpoint HARD-REQUIRES `address_column` — 400s
+without it; (2) with a blank address column its data-cleaner discards the rows
+("No valid rows found after data cleaning") — a STREET address is structurally
+mandatory; (3) no single-person/search/reverse/lookup endpoint exists (all 404)
+— the only API surface is the batch trace. Combined with the fact that
+`river_guides` stores only `location_city`/`location_state`/`company_website`
+(NO street address anywhere), all three original options are non-viable. Probe
+cost $0 (every submission was rejected before a billable queue was created — no
+credits used). **RECOMMENDATION (John's call):** don't force Tracerfy for guides.
+For exited operators LinkedIn + email is the natural primary channel and we're
+already enriching those (riverguides/enrich_t1.js) — verify that coverage rather
+than chase phones. Phone-by-skiptrace for this segment would need EITHER a
+street address we don't have, OR a different vendor that accepts name+city+state
+(Endato/Enformion/IDI-class people-search) — a separate paid-channel decision to
+sample cost+accuracy on, not a Tracerfy tweak. PARK guide phones until John
+decides on a people-search vendor.
+
+**7/20 SESSION #3 — SHIPPED:**
+- **COSTS: UPWORK VA + MONTH vs YTD** (John 7/20 🔥🔥🔥). (a) Manual cost-entry
+  path: `POST /api/costs/manual` {cost_usd, units?, service?, activity?, note?,
+  entered_by:John|Tom, dated?} → `usage_events` (default service `upwork`,
+  activity `va_enrichment`, meta.source='manual'; `dated` places it in the right
+  window). `GET /api/costs/manual` lists recent manual entries (verify what was
+  logged). Flows through variable spend like any service. (b) `/api/costs` now
+  returns TWO windows — `month` and `ytd` — each `{label, subscriptions,
+  variable, byService[], byActivity[], total}`, plus shared `quotas`,
+  `costPerContact`, `ownerContactsAcquired`, `subscriptions[]`. **Legacy
+  top-level fields (`monthTotal`/`subsMonthly`/`variableTotal`/`byService`/
+  `byActivity`) still mirror `month.*` so the current Sidebar badge does NOT
+  break** — Lane B migrates to `month`/`ytd` on its own timeline. YTD variable =
+  usage_events since Jan 1 (PAGINATED — no silent 1000-row cap). YTD subs =
+  active subs × months active this year (fractional accrual from `start_date`,
+  else assumed active since Jan 1 — DISCLOSED in `ytd.note`, never a silent
+  fabrication). Migration **0020** adds `subscriptions.start_date` (nullable) to
+  make YTD subs exact for mid-year subs — degrades clean if unapplied (falls
+  back to Jan-1). Verified live math: subsMonthly $54, month var $12.06 →
+  monthTotal $66.06; subsYtd ~$356 (Jan-1 assumption), ytdTotal ~$368.
+  **LANE B: render both columns + the log-a-cost form** (POST /api/costs/manual).
+  **JOHN: apply migration 0020** (optional — only makes mid-year sub YTD exact;
+  set start_date on Vercel Pro once it actually starts billing).
+
+**PRIOR SESSION (#2) — SHIPPED (still true):** SIZE-FOR-EVERYONE (100% of
+on-target base, 375/375) + BROKER INQUIRY TEMPLATE. Detail in the "7/20 SESSION
+#2" block below.
+
+**STILL PENDING JOHN (unchanged):** migration 0019 (deal_proposals) → then
+`node ingest_deal_mail.js --hours 168` seeds real deal proposals. Sample card
+611290ff + repo-visibility PARKED (don't chase).
+
+**NEXT for this session / a successor:** (2) SELF-SERVE DATA INTAKE (in
+progress — POST /api/intake ingest engine); then TASK-QUEUE top-down —
+(3) Tracerfy person-mode for river-guide phones (DESIGN QUESTION first: guides
+have name + city/state but NO street address; decide (a) trace former-company
+address, (b) Tracerfy name+city+state if the API supports it, or (c) only trace
+guides with a street address).
 
 **7/20 SESSION #2 (active) — SHIPPED:**
 - **BROKER INQUIRY TEMPLATE** (72294ee): scraper/draft_inquiry.js was the last

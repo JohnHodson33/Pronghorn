@@ -98,6 +98,21 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 ---
 
 ## Lane A — Brokers  (`scraper/sources/*`, `scraper/config.json`)
+- 🔥🔥🔥 **ASKING PRICE NOT PARSING — TUPELO + DEALRELATIONS (John 7/21;
+  asking price → implied multiple → Market Multiples tracking is a KEY metric
+  and it's missing).** PM ran a full cross-source audit (live, non-delisted
+  listings) — asking-price coverage: nearly every source 87–100%, BUT:
+  **Tupelo SMB Marketplace = 0% asking (0/6), 0% multiple** (yet 83% revenue,
+  67% cash-flow — so it parses financials but drops asking_price), and
+  **DealRelations (Sunbelt offices) = 0% asking (0/5), 0% everything.** FIX
+  both adapters to extract asking_price at ingest → implied_multiple then
+  computes → flows to Market Multiples. Verify against a live listing detail
+  page (John: the asking price IS shown on the source listing, so it's a
+  parse gap not a missing field). Backfill existing Tupelo/DealRelations rows.
+  SECONDARY (lower priority, note in HANDOFF): financial-coverage gaps where
+  asking is fine but rev/cf/multiple are thin — BizQuest (ask 100% but
+  rev/cf/mult 0%), LINK Business (rev 6%), Murphy/HedgeStone (rev 0%). Those
+  cap multiple coverage too; fix opportunistically after the asking-price gap.
 - ⬜ **RIVER GUIDES: consolidator-sweep refresh (LATER — not tonight; after
   your current queue):** periodic re-run of the acquisition-log queries per
   consolidator (docs/RIVER-GUIDES-INTEGRATION.md step 9 + spec §7 maps at
@@ -132,6 +147,37 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 🔥🔥🔥🔥 **#1 — "MAKE THE LISTS WORK LIKE EXCEL" (John 7/21 — his FIFTH time
+  asking. Top of your queue until provably done.)** His words: "any time we
+  have a list — companies, names, contacts, brokers, river guides — I want to
+  filter by industry, filter by whether we have their contact info… consistent
+  across all the tabs… every column should be filterable and sortable like an
+  Excel document. Right now it's incoherent and restricting."
+  **PM ALREADY FIXED THE ROOT CAUSE — do NOT redo it:** header FilterDropdowns
+  were rendered `label=""`, collapsing to an unlabeled bare caret — invisible,
+  so lists *looked* unfilterable even where filters existed. FilterDropdown now
+  always renders a bordered, titled funnel (+ a `name` prop for the tooltip),
+  and /river-guides is the REFERENCE IMPLEMENTATION (6 named filters: band,
+  industry, exit, email, status, state).
+  **YOUR JOB — apply it everywhere, exhaustively:**
+  (a) EVERY list page — Companies, Contacts, Brokers, Listings, Deals,
+  Enrichment, Lead lists — every column header gets BOTH a SortHeader AND
+  (where categorical or has/missing-able) a named FilterDropdown. Contact
+  columns (email/phone/LinkedIn) each get their OWN has/missing filter, not one
+  combined "reach" control.
+  (b) Pass `name="<Column>"` on every header filter so it reads "Filter by
+  industry", never a bare "Filter".
+  (c) **KILL THE REDUNDANT CHIP ROWS ABOVE THE TABLES** — John: "too many tabs
+  up across saying all the different things I can sort by." Once a column owns
+  its filter, the duplicate chip row goes away (keep at most ONE counts line).
+  This is a big part of the "incoherent" complaint.
+  (d) Identical control layout + behaviour on every page: same order, same
+  look, same URL-param persistence, same clear-filters affordance.
+  **ACCEPTANCE (John will test exactly this):** open any list → every column
+  header visibly offers sort + filter → filter Companies/Contacts/Brokers/
+  River Guides by industry in ≤2 clicks → filter by "has phone"/"has email" →
+  combine two filters → the view survives clicking into a record and back.
+  Mobile parity. Ship page-by-page, commit each.
 - 🔥🔥🔥 **COSTS PAGE: MONTH + YTD COLUMNS + LOG-A-COST (John 7/20; pairs w/
   Lane C's /api/costs two-window rewrite):** show spend as **two columns —
   This Month | Year-to-Date** — each with the SAME breakdown: Subscriptions
@@ -650,6 +696,35 @@ set) into your new chips UI as a small follow-up.
   PREVIEW/CONFIRM before the write (no silent bulk import). Reuse the
   river-guides ingest + PM's by-hand contact/company creation patterns.
   (Lane B builds the upload UI — see Lane B card.)
+- 📣 LANE C 7/20 (session #3) — ✅ **BOTH TOP-OF-QUEUE UNITS SHIPPED.**
+  (1) **COSTS Month vs YTD + Upwork VA manual entry** — `/api/costs` now returns
+  `{month, ytd}` windows (each `{subscriptions, variable, byService[],
+  byActivity[], total}`) + shared `quotas`/`costPerContact`/`subscriptions[]`;
+  **legacy top-level fields still mirror `month.*` so the Sidebar badge does not
+  break.** New `POST/GET /api/costs/manual` logs invoiced spend (default
+  service `upwork`, activity `va_enrichment`, `meta.source:manual`, `dated`
+  window-places it) → flows through variable spend. Migration **0020**
+  (subscriptions.start_date, optional — exact mid-year YTD). **LANE B: render
+  both columns + a log-a-cost form (POST /api/costs/manual).**
+  (2) **SELF-SERVE DATA INTAKE** — `POST /api/intake/upload` (signed URL) →
+  `POST /api/intake/preview` (parse csv/tsv/xlsx + Claude column-map + record-type
+  detect + dedupe → resolved PLAN, no writes, stored on an intake_jobs row) →
+  `POST /api/intake/confirm {job_id}` (executes → RECEIPT); `GET /api/intake` =
+  audit trail. Fill-blanks-only, conflicts surfaced not overwritten, provenance
+  stamped, preview→confirm gate. Migration **0021** (intake_jobs). Verified live
+  end-to-end (map/coerce/dedupe/conflict); confirm awaits 0021. **LANE B: build
+  the upload portal — upload → preview card (mapping, counts, conflicts,
+  warnings) → confirm.** **JOHN: apply migrations 0020 + 0021.**
+- 📣 LANE C 7/20 (session #3) — 🔴 **TRACERFY CAN'T DO RIVER-GUIDE PHONES
+  (probed live, John greenlit; $0 spent).** Tracerfy's batch `/trace/` requires
+  a STREET address (400s without it; blank address → rows discarded) and has no
+  name+city+state person-search endpoint (all 404). Guides store only city/state
+  → no viable path. Reframe: **132/284 resolved guides (46%) already have
+  email/LinkedIn, 0 have phones**; the real coverage lever is finishing
+  enrichment (71 PENDING_T1 free + 85 NEEDS_PAID), not phones. RECOMMEND: park
+  guide phones unless John wants a name+city+state people-search vendor
+  (Endato/Enformion-class) as a separate paid-channel decision. Full verdict in
+  DECISION-LOG-integrations.md HANDOFF.
 - 📣 LANE C 7/20 ~11:35 — 🛑 **LANE C AT CONTEXT LIMIT — NEEDS A FRESH SESSION.**
   Branch clean + pushed (HEAD 300fb8f); the HANDOFF top of
   docs/DECISION-LOG-integrations.md resumes a successor cold. This session
