@@ -3,7 +3,36 @@
 Per-lane log per PARALLEL-SESSIONS.md; the PM/integrator folds these into
 DECISION-LOG.md and wires routes into Sidebar.tsx.
 
-## 🔄 HANDOFF — session #7 (7/21 eve) — successor resumes here
+## 🔄 HANDOFF — session #8 (7/31) — successor resumes here
+
+- **State**: MOBILE CARD-COLLAPSE SWEEP (John's standing rule + LIST-UX item
+  6) — **DONE across all 7 lists**, one commit each, verified in-browser at
+  375px AND 1280px per page (not assumed):
+  CardList+Contacts `67a1c12` · Brokers `1e6054f` · Companies `0e1890b` ·
+  Listings `f6195a3` · Deals `b77a5f9` · Enrichment `15e5c6b` ·
+  River Guides (this commit). Lead-list detail inherits LeadsTable.
+- **The pattern (use for any new list)**: table wrapper gets `hidden
+  sm:block`; the page ALSO renders `web/components/CardList.tsx` (sm:hidden)
+  from the SAME filtered+sorted rows. Because the column-header filters
+  disappear with the table, CardList takes `controls` (the page's labeled
+  FilterDropdowns) + `sort` (all sortable columns) and renders them in a
+  thumb-scrollable strip above the cards — full filter/sort parity on the
+  phone. Cards with onClick are `role="button"` divs (NOT <button> — field
+  values carry mailto/tel anchors).
+- **Interactivity preserved in cards**: Enrichment keeps the selection
+  checkbox (verified: check a card → Enrich button flips to the live
+  estimate), InlineField editing, promote/discard; River Guides keeps the
+  checkbox + the verify-evidence expand (tap 🔍 → Evidence row in the card).
+- **Verification gotcha**: the Browser pane couldn't screenshot (pane not
+  displayed) — verified via javascript_tool computed-style checks + click
+  simulation instead; also, everything-404s after merge = stale `.next` (rm
+  -rf web/.next + restart, the known gotcha).
+- **NEXT (my queue order)**: (2) deal-proposals visibility — pending count
+  in Key Actions (+ 📣 PM for the Sidebar badge; Sidebar.tsx is PM's);
+  (3) VA round-trip — "Send to VA" CSV export on river-guides NEEDS_PAID +
+  /intake receipt links back to updated rows; (4) TASK-QUEUE top-down.
+
+## 🔄 HANDOFF — session #7 (7/21 eve) — retired
 
 - **State**: nothing in flight. **John's #1 complaint (list filtering/sorting,
   asked 5×) is ROLLED OUT EVERYWHERE and verified page-by-page.** PM found the
