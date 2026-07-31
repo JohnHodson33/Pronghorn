@@ -25,12 +25,7 @@ every checked-clean lead (2% determined is mostly missing negatives, not
 missing positives) · cross-reference OUR OWN acquisition ledger (467 river-
 guide deals + consolidator maps) against companies/leads by name+state →
 pe_owned=true w/ source · career-trajectory verify (already queued) also
-writes the employer→consolidator match as a PE signal. (B) PAID-DATA
-BENCHMARK (PM runs, John approves spend): 100-lead gold sample → run
-Apollo (person emails/mobiles + firmographics) AND People Data Labs-class
-person/company enrich AND a Grata-class firmographic trial vs our current
-stack; measure fill-rate + ACCURACY per field per dollar; integrate the
-winner(s) as paid cascade tiers w/ per-run caps + metering. (C) SIZING
+writes the employer→consolidator match as a PE signal. (B) PROVE-BEFORE-PAY LADDER (John 7/31 — NO subscriptions on unproven value): step 1 = land the free fixes (A) and RE-MEASURE the funnel — do not spend until we know the free ceiling; step 2 = ONE-TIME <$100 benchmark, zero subscriptions: the SAME 100-lead gold sample through (i) People Data Labs pay-as-you-go (free ~100 records, then ~$0.20-0.30/match, no sub), (ii) Apollo FREE tier credits only, (iii) the Upwork VA (~$30-60 of hours) — measure fill + accuracy + cost-per-VERIFIED-contact for each; step 3 = winners integrate as METERED pay-per-record tiers w/ caps (nothing to unwind); step 4 = a subscription is allowed ONLY when 2 straight months of pay-per-use volume exceeds the sub price (the sub becomes the cheaper option by arithmetic, not hope). Grata-class broad-sourcing platforms: SKIP for now (John may narrow to one industry; our scraper+PPP+ledger competes there). (C) SIZING
 CONFIDENCE: every estimate carries basis+confidence honestly; paid
 firmographic revenue joins the ensemble as a higher-confidence tier;
 PPP match-rate audit (are we missing matches on name variants?). (D)
