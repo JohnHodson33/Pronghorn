@@ -95,11 +95,34 @@ sweeps, leadgen serper source. Hunter/Places/Tracerfy/Claude unaffected.
    it (+3 emails); if John "queued 80 and never heard back" recently, that
    was it.
 
-**NEXT (this session):** BULLETPROOF quick wins (PE negatives backfill ·
-acquisition-ledger cross-ref · PPP match audit — program directive at top of
-TASK-QUEUE); then discovery-at-scale (career-trajectory verify blocked on
-Serper credits). YTD variable window still awaiting John. PARKED: sample
-card 611290ff, repo visibility.
+**7/31 SESSION #4 — SHIPPED (unit 4, BULLETPROOF quick wins):**
+6. **PE-STATUS: 2% → 100% DETERMINED (n=457 enriched leads).** The PM was
+   right — it was missing negatives. (a) `enrich/pe_backfill.js` (new, $0):
+   any lead whose tier-1/flags pass ran and found no PE evidence now carries
+   pe_owned=false + pe_basis='checked-no-evidence' + pe_checked_at stamped
+   from the pass that ran (443 negatives + 457 stamps written live). (b)
+   ROOT CAUSE fixed in flags_backfill.js — it only ever persisted positives;
+   now every check writes a verdict + timestamp. (c) **ACQUISITION-LEDGER
+   CROSS-REF** (same script): river_guides matched by normalized name+state
+   → 2 leads were acquired companies (Birch Tree Care→Canopy 2023, Sunny
+   Arizona Pool→Pool Troopers 2024), 3 leads ARE consolidator brands
+   (Poolwerx/SavATree/Bartlett), 2 CRM companies flagged. All with basis
+   strings citing the RG deal id. Wired into enrichment.yml nightly so the
+   invariant holds for new leads. **FUNNEL (PM re-measure): PE-status
+   determined 457/457 (100%) of enriched proprietary leads.**
+7. **PPP MATCH-RATE AUDIT: variants are NOT the limiter.** Rebuilt the index
+   with &↔and, DBA-split, the-prefix, multi-suffix variants over all 968k
+   loans: exactly **+1** new match (an &↔and case — fix landed in
+   import_ppp.js norm; 25/680 leads now PPP-matched). The sizing ceiling is
+   the $150k loan floor, not name matching — the levers stay the sub-$150k
+   files (11M rows) or a firmographic API (both John-decision paid options,
+   per the 7/20 note; workstream B benchmark is the right vehicle).
+
+**NEXT (this session / successor):** discovery-at-scale (career-trajectory
+verify + deep consolidator mapping — trajectory part BLOCKED on Serper
+credits; John's separate-session list to ingest via /intake); VA project
+cost tracking (queue card). YTD variable window still awaiting John. PARKED:
+sample card 611290ff, repo visibility.
 
 --- SESSION #3 (7/20-7/21) below — older ---
 
