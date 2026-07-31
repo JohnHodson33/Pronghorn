@@ -11,6 +11,7 @@ import { margin, money, multiple } from "@/lib/mock";
 import type { UiListing } from "@/lib/types";
 import { useUrlFilterSync } from "@/lib/use-url-filters";
 import FilterDropdown from "@/components/FilterDropdown";
+import SortHeader from "@/components/SortHeader";
 
 const tierBadge: Record<number, string> = {
   1: "bg-emerald-100 text-emerald-800",
@@ -39,7 +40,8 @@ const multipleNum = (l: UiListing) =>
   l.asking !== null && l.cashFlow ? l.asking / l.cashFlow : null;
 
 type SortKey =
-  | "tier" | "revenue" | "cashFlow" | "margin" | "asking" | "multiple" | "firstSeen" | "state";
+  | "tier" | "revenue" | "cashFlow" | "margin" | "asking" | "multiple" | "firstSeen" | "state"
+  | "status" | "name";
 
 const accessors: Record<SortKey, (l: UiListing) => number | string | null> = {
   tier: (l) => l.tier,
@@ -50,7 +52,11 @@ const accessors: Record<SortKey, (l: UiListing) => number | string | null> = {
   multiple: multipleNum,
   firstSeen: (l) => l.firstSeen,
   state: (l) => l.state,
+  status: (l) => l.status,
+  name: (l) => l.name,
 };
+// numeric columns open desc (biggest first); text/tier/date open asc
+const NUMERIC_SORTS: SortKey[] = ["revenue", "cashFlow", "margin", "asking", "multiple"];
 
 // Everything a saved view captures.
 type FilterState = {
@@ -254,19 +260,13 @@ export default function ListingsTableV2({
     URL.revokeObjectURL(a.href);
   }
 
-  const toggleTier = (t: number) =>
-    setTiers((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t].sort()));
-
-  const arrow = (key: SortKey) => (sortKey === key ? (sortDir === "asc" ? " ▲" : " ▼") : "");
-  const SortTh = ({ k, children, align = "left" }: { k: SortKey; children: React.ReactNode; align?: "left" | "right" }) => (
-    <th
-      onClick={() => clickSort(k)}
-      className={`cursor-pointer select-none px-4 py-3 hover:text-zinc-900 ${align === "right" ? "text-right" : "text-left"} ${sortKey === k ? "text-emerald-700" : ""}`}
-      title="Click to sort"
-    >
-      {children}
-      <span className="text-emerald-600">{arrow(k)}</span>
-    </th>
+  // the shared SortHeader everywhere, so Listings behaves like every other list
+  const sortSet = (key: SortKey) => (d: "asc" | "desc" | null) => {
+    if (!d) { setSortKey("tier"); setSortDir("asc"); return; } // tier is the natural default
+    setSortKey(key); setSortDir(d);
+  };
+  const sortTh = (k: SortKey, label: string) => (
+    <SortHeader label={label} numeric={NUMERIC_SORTS.includes(k)} active={sortKey === k} dir={sortDir} onChange={sortSet(k)} />
   );
 
   const inputCls = "rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-600";
@@ -335,14 +335,9 @@ export default function ListingsTableV2({
         <input value={minCF} onChange={(e) => setMinCF(e.target.value.replace(/\D/g, ""))} placeholder="Min cash flow $" className={`w-32 ${inputCls}`} />
         <input value={maxCF} onChange={(e) => setMaxCF(e.target.value.replace(/\D/g, ""))} placeholder="Max cash flow $" className={`w-32 ${inputCls}`} />
         <input value={maxMult} onChange={(e) => setMaxMult(e.target.value.replace(/[^0-9.]/g, ""))} placeholder="Max multiple ×" className={`w-28 ${inputCls}`} />
-        <div className="flex items-center gap-1">
-          {[1, 2, 3, 4].map((t) => (
-            <button key={t} onClick={() => toggleTier(t)}
-              className={`rounded-md px-2.5 py-1 text-xs font-semibold transition ${tiers.includes(t) ? tierBadge[t] : "bg-zinc-50 text-zinc-300"}`}>
-              T{t}
-            </button>
-          ))}
-        </div>
+        {/* the T1–T4 chip row is retired — Tier owns its filter in the header
+            (John 7/21: "too many tabs up across saying all the different
+            things I can sort by") */}
         <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
           <input type="checkbox" checked={priorityOnly} onChange={(e) => setPriorityOnly(e.target.checked)} className="accent-emerald-700" />
           Priority states
@@ -359,36 +354,49 @@ export default function ListingsTableV2({
           <thead>
             <tr className="border-b border-zinc-200 text-xs uppercase tracking-wide text-zinc-500">
               <th className="px-4 py-3 text-left">
-                <FilterDropdown header label="Status"
-                  options={[...new Set(allRows.map((l) => l.status))].sort().map((s) => ({
-                    value: s, label: s.replace(/_/g, " "), count: allRows.filter((l) => l.status === s).length,
-                  }))}
-                  selected={asSet(status)} onChange={(s) => setStatus([...s].join(","))} />
+                <span className="inline-flex items-center gap-1">
+                  {sortTh("status", "Status")}
+                  <FilterDropdown header label="" name="Status"
+                    options={[...new Set(allRows.map((l) => l.status))].sort().map((s) => ({
+                      value: s, label: s.replace(/_/g, " "), count: allRows.filter((l) => l.status === s).length,
+                    }))}
+                    selected={asSet(status)} onChange={(s) => setStatus([...s].join(","))} />
+                </span>
               </th>
-              <SortTh k="tier">Tier</SortTh>
               <th className="px-4 py-3 text-left">
                 <span className="inline-flex items-center gap-1">
-                  Listing
-                  <FilterDropdown header label="industry"
+                  {sortTh("tier", "Tier")}
+                  <FilterDropdown header label="" name="Tier"
+                    options={[1, 2, 3, 4].map((t) => ({ value: String(t), label: `Tier ${t}`, count: allRows.filter((l) => l.tier === t).length }))}
+                    selected={new Set(tiers.map(String))}
+                    onChange={(s) => setTiers([...s].map(Number).sort())} />
+                </span>
+              </th>
+              <th className="px-4 py-3 text-left">
+                <span className="inline-flex items-center gap-1">
+                  {sortTh("name", "Listing")}
+                  <FilterDropdown header label="" name="Industry"
                     options={industries.map((i) => ({ value: i, label: i, count: allRows.filter((l) => l.industry === i).length }))}
                     selected={asSet(industry)} onChange={(s) => setIndustry([...s].join(","))} />
-                  <FilterDropdown header label="source"
+                  <FilterDropdown header label="" name="Source"
                     options={sources.map((s) => ({ value: s, label: s, count: allRows.filter((l) => l.source === s).length }))}
                     selected={asSet(source)} onChange={(s) => setSource([...s].join(","))} />
                 </span>
               </th>
-              <SortTh k="state">
-                Location
-                <FilterDropdown header label=""
-                  options={states.map((s) => ({ value: s, label: s, count: allRows.filter((l) => l.state === s).length }))}
-                  selected={asSet(state)} onChange={(s) => setState([...s].join(","))} />
-              </SortTh>
-              <SortTh k="revenue" align="right">Revenue</SortTh>
-              <SortTh k="cashFlow" align="right">EBITDA / SDE</SortTh>
-              <SortTh k="margin" align="right">Margin</SortTh>
-              <SortTh k="asking" align="right">Asking</SortTh>
-              <SortTh k="multiple" align="right">Multiple</SortTh>
-              <SortTh k="firstSeen">First seen</SortTh>
+              <th className="px-4 py-3 text-left">
+                <span className="inline-flex items-center gap-1">
+                  {sortTh("state", "Location")}
+                  <FilterDropdown header label="" name="State"
+                    options={states.map((s) => ({ value: s, label: s, count: allRows.filter((l) => l.state === s).length }))}
+                    selected={asSet(state)} onChange={(s) => setState([...s].join(","))} />
+                </span>
+              </th>
+              <th className="px-4 py-3 text-right">{sortTh("revenue", "Revenue")}</th>
+              <th className="px-4 py-3 text-right">{sortTh("cashFlow", "EBITDA / SDE")}</th>
+              <th className="px-4 py-3 text-right">{sortTh("margin", "Margin")}</th>
+              <th className="px-4 py-3 text-right">{sortTh("asking", "Asking")}</th>
+              <th className="px-4 py-3 text-right">{sortTh("multiple", "Multiple")}</th>
+              <th className="px-4 py-3 text-left">{sortTh("firstSeen", "First seen")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">

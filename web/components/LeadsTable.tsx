@@ -14,6 +14,7 @@ import InlineField from "@/components/InlineField";
 import FilterDropdown from "@/components/FilterDropdown";
 import SortHeader from "@/components/SortHeader";
 import ScrollShell from "@/components/ScrollShell";
+import { presenceOptions, presenceMatch } from "@/lib/list-filters";
 
 const tierChip: Record<string, string> = {
   platform: "bg-emerald-100 text-emerald-800",
@@ -46,16 +47,6 @@ const levelChip: Record<Completeness, string> = {
 };
 
 type SortKey = "level" | "company" | "size" | "revenue" | "ebitda" | "industry" | "location" | "owner" | "status" | "email" | "phone" | "linkedin";
-
-// Channel-presence filter (John's "Call now + Has phone = the actual call
-// list", the river-guides reachability filter applied to the enrichment tab).
-const REACH: { value: string; label: string; test: (l: EnrichmentLead) => boolean }[] = [
-  { value: "email", label: "Has email", test: (l) => !!l.owner_email },
-  { value: "phone", label: "Has phone", test: (l) => !!l.owner_phone },
-  { value: "linkedin", label: "Has LinkedIn", test: (l) => !!l.owner_linkedin },
-  { value: "any", label: "Any channel", test: (l) => !!(l.owner_email || l.owner_phone || l.owner_linkedin) },
-  { value: "none", label: "No channel", test: (l) => !(l.owner_email || l.owner_phone || l.owner_linkedin) },
-];
 
 // The lead list a row came from ("Tree Care — Phoenix") — provenance, not a
 // column; it filters from the toolbar since there's no header to hang it on.
@@ -148,7 +139,11 @@ export default function LeadsTable({
   const [statesSel, setStatesSel] = useState<Set<string>>(toSet(saved.state));
   const [listsSel, setListsSel] = useState<Set<string>>(toSet(saved.list));
   const [statusSel, setStatusSel] = useState<Set<string>>(toSet(saved.status));
-  const [reachSel, setReachSel] = useState<Set<string>>(toSet(saved.reach));
+  // one combined "reach" control became three — John wants "has phone" on the
+  // Phone column, not buried in a shared dropdown on Email
+  const [emailSel, setEmailSel] = useState<Set<string>>(toSet(saved.email));
+  const [phoneSel, setPhoneSel] = useState<Set<string>>(toSet(saved.phone));
+  const [linkedinSel, setLinkedinSel] = useState<Set<string>>(toSet(saved.linkedin));
   const [levelsSel, setLevelsSel] = useState<Set<string>>(toSet(saved.level));
   const [tiersSel, setTiersSel] = useState<Set<string>>(toSet(saved.tier));
   const [sortKey, setSortKey] = useState<SortKey | null>((saved.sort as SortKey) || null);
@@ -164,14 +159,16 @@ export default function LeadsTable({
         JSON.stringify({
           q, industry: [...industriesSel].join(","),
           state: [...statesSel].join(","), list: [...listsSel].join(","),
-          status: [...statusSel].join(","), reach: [...reachSel].join(","),
+          status: [...statusSel].join(","),
+          email: [...emailSel].join(","), phone: [...phoneSel].join(","),
+          linkedin: [...linkedinSel].join(","),
           level: [...levelsSel].join(","), tier: [...tiersSel].join(","),
           offTarget: showOffTarget ? "1" : "0", hidePe: hidePe ? "1" : "0",
           sort: sortKey ?? "", dir: sortDir,
         })
       );
     } catch {}
-  }, [q, industriesSel, statesSel, listsSel, statusSel, reachSel, levelsSel, tiersSel, showOffTarget, hidePe, sortKey, sortDir]);
+  }, [q, industriesSel, statesSel, listsSel, statusSel, emailSel, phoneSel, linkedinSel, levelsSel, tiersSel, showOffTarget, hidePe, sortKey, sortDir]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -200,10 +197,10 @@ export default function LeadsTable({
     const m = countBy(listNameOf);
     return Object.keys(m).sort().map((value) => ({ value, label: value, count: m[value] }));
   }, [leads]);
-  const reachOptions = useMemo(
-    () => REACH.map((r) => ({ value: r.value, label: r.label, count: leads.filter((l) => !l.off_target && r.test(l)).length })),
-    [leads]
-  );
+  const onTarget = useMemo(() => leads.filter((l) => !l.off_target), [leads]);
+  const emailOptions = useMemo(() => presenceOptions(onTarget, (l) => l.owner_email, "email"), [onTarget]);
+  const phoneOptions = useMemo(() => presenceOptions(onTarget, (l) => l.owner_phone, "phone"), [onTarget]);
+  const linkedinOptions = useMemo(() => presenceOptions(onTarget, (l) => l.owner_linkedin, "LinkedIn"), [onTarget]);
   const statusOptions = useMemo(() => {
     const m = countBy((l) => l.status);
     return Object.keys(m)
@@ -233,8 +230,9 @@ export default function LeadsTable({
       if (statesSel.size && !statesSel.has(l.state ?? "")) return false;
       if (listsSel.size && !listsSel.has(listNameOf(l) ?? "")) return false;
       if (statusSel.size && !statusSel.has(l.status)) return false;
-      // multi-select reach = OR (Has email + Has phone shows either)
-      if (reachSel.size && !REACH.some((r) => reachSel.has(r.value) && r.test(l))) return false;
+      if (!presenceMatch(emailSel, l.owner_email)) return false;
+      if (!presenceMatch(phoneSel, l.owner_phone)) return false;
+      if (!presenceMatch(linkedinSel, l.owner_linkedin)) return false;
       if (
         q &&
         !`${l.name} ${l.city ?? ""} ${l.state ?? ""} ${l.owner_name ?? ""} ${effIndustry(l) ?? ""}`
@@ -273,7 +271,7 @@ export default function LeadsTable({
       }
       return cmp !== 0 ? (sortDir === "asc" ? cmp : -cmp) : byDefault(a, b);
     });
-  }, [leads, q, industriesSel, statesSel, listsSel, statusSel, reachSel, levelsSel, tiersSel, showOffTarget, hidePe, sortKey, sortDir]);
+  }, [leads, q, industriesSel, statesSel, listsSel, statusSel, emailSel, phoneSel, linkedinSel, levelsSel, tiersSel, showOffTarget, hidePe, sortKey, sortDir]);
 
   const sortSet = (key: SortKey) => (d: "asc" | "desc" | null) => {
     if (!d) setSortKey(null);
@@ -568,7 +566,7 @@ export default function LeadsTable({
                 <th className="px-2 py-2 font-medium">
                   <span className="inline-flex items-center gap-1">
                     <SortHeader label="Level" active={sortKey === "level"} dir={sortDir} onChange={sortSet("level")} />
-                    <FilterDropdown header label=""
+                    <FilterDropdown header label="" name="Level"
                       options={LEVELS.map((lv) => ({ value: lv, label: `${LEVEL_META[lv].dot} ${lv}`, count: levelCounts[lv] }))}
                       selected={levelsSel} onChange={setLevelsSel} />
                   </span>
@@ -579,7 +577,7 @@ export default function LeadsTable({
                 <th className="px-2 py-2 font-medium">
                   <span className="inline-flex items-center gap-1">
                     <SortHeader label="Size" active={sortKey === "size"} dir={sortDir} onChange={sortSet("size")} />
-                    <FilterDropdown header label=""
+                    <FilterDropdown header label="" name="Size"
                       options={TIERS.map((t) => ({ value: t, label: TIER_LABELS[t], count: tierCounts[t] }))}
                       selected={tiersSel} onChange={setTiersSel} />
                   </span>
@@ -594,37 +592,44 @@ export default function LeadsTable({
                 <th className="px-3 py-2 font-medium">
                   <span className="inline-flex items-center gap-1">
                     <SortHeader label="Industry" active={sortKey === "industry"} dir={sortDir} onChange={sortSet("industry")} />
-                    <FilterDropdown header label="" options={industryOptions}
+                    <FilterDropdown header label="" name="Industry" options={industryOptions}
                       selected={industriesSel} onChange={setIndustriesSel} />
                   </span>
                 </th>
                 <th className="px-3 py-2 font-medium">
                   <span className="inline-flex items-center gap-1">
                     <SortHeader label="Location" active={sortKey === "location"} dir={sortDir} onChange={sortSet("location")} />
-                    <FilterDropdown header label="" options={stateOptions}
+                    <FilterDropdown header label="" name="State" options={stateOptions}
                       selected={statesSel} onChange={setStatesSel} />
                   </span>
                 </th>
                 <th className="px-3 py-2 font-medium">
                   <SortHeader label="Owner" active={sortKey === "owner"} dir={sortDir} onChange={sortSet("owner")} />
                 </th>
-                {/* dots → labeled columns with the actual values (John 7/16) */}
+                {/* dots → labeled columns with the actual values (John 7/16);
+                    each channel owns its OWN has/missing filter (John 7/21) */}
                 <th className="px-3 py-2 font-medium">
                   <span className="inline-flex items-center gap-1">
                     <SortHeader label="Email" active={sortKey === "email"} dir={sortDir} onChange={sortSet("email")} />
-                    <FilterDropdown header label="" options={reachOptions} selected={reachSel} onChange={setReachSel} />
+                    <FilterDropdown header label="" name="Email" options={emailOptions} selected={emailSel} onChange={setEmailSel} />
                   </span>
                 </th>
                 <th className="px-3 py-2 font-medium">
-                  <SortHeader label="Phone" active={sortKey === "phone"} dir={sortDir} onChange={sortSet("phone")} />
+                  <span className="inline-flex items-center gap-1">
+                    <SortHeader label="Phone" active={sortKey === "phone"} dir={sortDir} onChange={sortSet("phone")} />
+                    <FilterDropdown header label="" name="Phone" options={phoneOptions} selected={phoneSel} onChange={setPhoneSel} />
+                  </span>
                 </th>
                 <th className="px-3 py-2 font-medium">
-                  <SortHeader label="LinkedIn" active={sortKey === "linkedin"} dir={sortDir} onChange={sortSet("linkedin")} />
+                  <span className="inline-flex items-center gap-1">
+                    <SortHeader label="LinkedIn" active={sortKey === "linkedin"} dir={sortDir} onChange={sortSet("linkedin")} />
+                    <FilterDropdown header label="" name="LinkedIn" options={linkedinOptions} selected={linkedinSel} onChange={setLinkedinSel} />
+                  </span>
                 </th>
                 <th className="px-3 py-2 font-medium">
                   <span className="inline-flex items-center gap-1">
                     <SortHeader label="Status" active={sortKey === "status"} dir={sortDir} onChange={sortSet("status")} />
-                    <FilterDropdown header label="" options={statusOptions}
+                    <FilterDropdown header label="" name="Status" options={statusOptions}
                       selected={statusSel} onChange={setStatusSel} />
                   </span>
                 </th>

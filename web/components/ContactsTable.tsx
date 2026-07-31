@@ -12,6 +12,7 @@ import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 import { PinButton } from "@/components/PinnedViews";
 import FilterDropdown from "@/components/FilterDropdown";
 import SortHeader from "@/components/SortHeader";
+import { presenceOptions, presenceMatch, cmpText } from "@/lib/list-filters";
 
 export type DirectoryContact = {
   id: string;
@@ -41,6 +42,9 @@ const roleStyle: Record<string, string> = {
 // CONTACT_ROLES) reads "river guide" in the filter and the badge.
 const roleLabel = (role: string) => (role === "river_guide" ? "river guide" : role);
 
+type SortKey = "name" | "role" | "company" | "email" | "phone" | "notes" | null;
+const SORT_KEYS = ["name", "role", "company", "email", "phone", "notes"];
+
 const inputCls = "rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-600";
 
 export default function ContactsTable({ contacts }: { contacts: DirectoryContact[] }) {
@@ -56,10 +60,12 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
   const [q, setQ] = useState("");
   const [role, setRole] = useState("");
   const [industry, setIndustry] = useState("");
-  const [withEmail, setWithEmail] = useState(false);
-  const [withPhone, setWithPhone] = useState(false);
+  // each channel owns a has/missing filter on its own column (John 7/21)
+  const [emailSel, setEmailSel] = useState<Set<string>>(new Set());
+  const [phoneSel, setPhoneSel] = useState<Set<string>>(new Set());
+  const [notesSel, setNotesSel] = useState<Set<string>>(new Set());
   const [brokerId, setBrokerId] = useState<string | null>(null);
-  const [sortKey, setSortKey] = useState<"name" | "company" | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
   // URL → state on mount; state → URL on change (replaceState: no history spam)
@@ -68,10 +74,12 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
     if (p.get("q")) setQ(p.get("q")!);
     if (p.get("role")) setRole(p.get("role")!);
     if (p.get("industry")) setIndustry(p.get("industry")!);
-    if (p.get("email") === "1") setWithEmail(true);
-    if (p.get("phone") === "1") setWithPhone(true);
+    // old ?email=1 / ?phone=1 pinned views still hydrate as "has"
+    if (p.get("email")) setEmailSel(new Set(p.get("email") === "1" ? ["has"] : p.get("email")!.split(",")));
+    if (p.get("phone")) setPhoneSel(new Set(p.get("phone") === "1" ? ["has"] : p.get("phone")!.split(",")));
+    if (p.get("notes")) setNotesSel(new Set(p.get("notes")!.split(",")));
     if (p.get("broker")) setBrokerId(p.get("broker"));
-    if (p.get("sort") === "name" || p.get("sort") === "company") setSortKey(p.get("sort") as "name" | "company");
+    if (SORT_KEYS.includes(p.get("sort") ?? "")) setSortKey(p.get("sort") as SortKey);
     if (p.get("dir") === "desc") setSortDir("desc");
   }, []);
   useEffect(() => {
@@ -79,13 +87,14 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
     if (q) p.set("q", q);
     if (role) p.set("role", role);
     if (industry) p.set("industry", industry);
-    if (withEmail) p.set("email", "1");
-    if (withPhone) p.set("phone", "1");
+    if (emailSel.size) p.set("email", [...emailSel].join(","));
+    if (phoneSel.size) p.set("phone", [...phoneSel].join(","));
+    if (notesSel.size) p.set("notes", [...notesSel].join(","));
     if (brokerId) p.set("broker", brokerId);
     if (sortKey) { p.set("sort", sortKey); if (sortDir === "desc") p.set("dir", "desc"); }
     const qs = p.toString();
     window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
-  }, [q, role, industry, withEmail, withPhone, brokerId, sortKey, sortDir]);
+  }, [q, role, industry, emailSel, phoneSel, notesSel, brokerId, sortKey, sortDir]);
 
   const industryCounts = useMemo(() => {
     const m: Record<string, number> = {};
@@ -101,15 +110,30 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
         return false;
       if (roleSet.size && !roleSet.has(c.role ?? "other")) return false;
       if (indSet.size && !indSet.has(c.companyIndustry ?? "")) return false;
-      if (withEmail && !c.email) return false;
-      if (withPhone && !c.phone) return false;
+      if (!presenceMatch(emailSel, c.email)) return false;
+      if (!presenceMatch(phoneSel, c.phone)) return false;
+      if (!presenceMatch(notesSel, c.notes)) return false;
       if (brokerId && c.broker_id !== brokerId) return false;
       return true;
     });
     if (!sortKey) return filtered; // server order = name asc already
-    const val = (c: DirectoryContact) => (sortKey === "name" ? c.name ?? "zzz" : c.companyName ?? "zzz").toLowerCase();
-    return [...filtered].sort((a, b) => val(a).localeCompare(val(b)) * (sortDir === "asc" ? 1 : -1));
-  }, [contacts, q, role, industry, withEmail, withPhone, brokerId, sortKey, sortDir]);
+    const pick = (c: DirectoryContact) =>
+      sortKey === "name" ? c.name
+      : sortKey === "role" ? (c.role ? roleLabel(c.role) : null)
+      : sortKey === "company" ? c.companyName
+      : sortKey === "email" ? c.email
+      : sortKey === "phone" ? c.phone
+      : c.notes;
+    return [...filtered].sort((a, b) => cmpText(pick(a), pick(b)) * (sortDir === "asc" ? 1 : -1));
+  }, [contacts, q, role, industry, emailSel, phoneSel, notesSel, brokerId, sortKey, sortDir]);
+
+  const sortSet = (key: SortKey) => (d: "asc" | "desc" | null) => {
+    if (!d) setSortKey(null);
+    else { setSortKey(key); setSortDir(d); }
+  };
+  const emailOptions = useMemo(() => presenceOptions(contacts, (c) => c.email, "email"), [contacts]);
+  const phoneOptions = useMemo(() => presenceOptions(contacts, (c) => c.phone, "phone"), [contacts]);
+  const notesOptions = useMemo(() => presenceOptions(contacts, (c) => c.notes, "notes"), [contacts]);
 
   function exportCsv() {
     downloadCsv(
@@ -125,14 +149,7 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4">
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name / email / company…" className={`w-64 ${inputCls}`} />
-        <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
-          <input type="checkbox" checked={withEmail} onChange={(e) => setWithEmail(e.target.checked)} className="accent-emerald-700" />
-          Has email
-        </label>
-        <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
-          <input type="checkbox" checked={withPhone} onChange={(e) => setWithPhone(e.target.checked)} className="accent-emerald-700" />
-          Has phone
-        </label>
+        {/* Has email / Has phone moved onto the Email and Phone columns */}
         <span className="ml-auto flex items-center gap-3">
           <span className="text-sm text-zinc-500 tabular-nums">{rows.length} of {contacts.length}</span>
           <PinButton defaultLabel={[role, industry, "contacts"].filter(Boolean).join(" ")} />
@@ -162,26 +179,42 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
           <thead>
             <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500">
               <th className="px-4 py-3">
-                <SortHeader label="Name" active={sortKey === "name"} dir={sortDir}
-                  onChange={(d) => { if (!d) setSortKey(null); else { setSortKey("name"); setSortDir(d); } }} />
-              </th>
-              <th className="px-4 py-3">
-                <FilterDropdown header label="Role"
-                  options={Object.entries(roles).sort((a, b) => b[1] - a[1]).map(([r, n]) => ({ value: r, label: roleLabel(r), count: n }))}
-                  selected={asSet(role)} onChange={(s) => setRole([...s].join(","))} />
+                <SortHeader label="Name" active={sortKey === "name"} dir={sortDir} onChange={sortSet("name")} />
               </th>
               <th className="px-4 py-3">
                 <span className="inline-flex items-center gap-1">
-                  <SortHeader label="Company" active={sortKey === "company"} dir={sortDir}
-                    onChange={(d) => { if (!d) setSortKey(null); else { setSortKey("company"); setSortDir(d); } }} />
-                  <FilterDropdown header label=""
+                  <SortHeader label="Role" active={sortKey === "role"} dir={sortDir} onChange={sortSet("role")} />
+                  <FilterDropdown header label="" name="Role"
+                    options={Object.entries(roles).sort((a, b) => b[1] - a[1]).map(([r, n]) => ({ value: r, label: roleLabel(r), count: n }))}
+                    selected={asSet(role)} onChange={(s) => setRole([...s].join(","))} />
+                </span>
+              </th>
+              <th className="px-4 py-3">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Company" active={sortKey === "company"} dir={sortDir} onChange={sortSet("company")} />
+                  <FilterDropdown header label="" name="Industry"
                     options={Object.entries(industryCounts).sort((a, b) => b[1] - a[1]).map(([i, n]) => ({ value: i, label: i, count: n }))}
                     selected={asSet(industry)} onChange={(s) => setIndustry([...s].join(","))} />
                 </span>
               </th>
-              <th className="px-4 py-3">Email</th>
-              <th className="px-4 py-3">Phone</th>
-              <th className="px-4 py-3">Notes</th>
+              <th className="px-4 py-3">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Email" active={sortKey === "email"} dir={sortDir} onChange={sortSet("email")} />
+                  <FilterDropdown header label="" name="Email" options={emailOptions} selected={emailSel} onChange={setEmailSel} />
+                </span>
+              </th>
+              <th className="px-4 py-3">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Phone" active={sortKey === "phone"} dir={sortDir} onChange={sortSet("phone")} />
+                  <FilterDropdown header label="" name="Phone" options={phoneOptions} selected={phoneSel} onChange={setPhoneSel} />
+                </span>
+              </th>
+              <th className="px-4 py-3">
+                <span className="inline-flex items-center gap-1">
+                  <SortHeader label="Notes" active={sortKey === "notes"} dir={sortDir} onChange={sortSet("notes")} />
+                  <FilterDropdown header label="" name="Notes" options={notesOptions} selected={notesSel} onChange={setNotesSel} />
+                </span>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
