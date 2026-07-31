@@ -668,6 +668,49 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 🔥🔥🔥 **RIVER-GUIDE DISCOVERY AT SCALE + CAREER-TRAJECTORY VERIFICATION
+  (John 7/31 — "finding new river guides is the bottleneck… in a perfect
+  world the site just creates that list"; he ran a SEPARATE Claude session
+  that mapped acquirers → targets → owner-still-there checks → VA, and wants
+  the SITE doing that):**
+  (a) **LINKEDIN CAREER-TRAJECTORY CHECK (the big unlock — John's exact
+  pattern):** upgrade verify_status.js to reason about career transitions:
+  pull the person's CURRENT role/company (verified matcher) and classify —
+  current employer ≈ the acquirer or ANY known consolidator (DB acquirer
+  column + spec §7 maps) → **EMPLOYED, verified** ("owner of Small Co → now
+  District Manager at [PE-backed platform]" = John's giveaway example);
+  current shows retired / advisor / board / new unrelated venture / own new
+  co → **EXITED, verified** (+ SECOND_TIME_SELLER subtype when it's a new
+  venture); ambiguous stays ⚠ w/ evidence. Store the trajectory line as the
+  evidence string. This turns the ~5%/night verify trickle into real
+  coverage — combine with (b).
+  (b) **DEEP CONSOLIDATOR MAPPING, not one-shot sweeps:** systematically
+  enumerate the FULL acquisition log per consolidator (press archive pages,
+  PR-wire searches by year, portfolio/brands pages, "acquisitions" pages) —
+  paginate/iterate until dry, not a single query pass. Auto-discover NEW
+  consolidators (an acquirer seen in any result that isn't in our set gets
+  its own sweep). File HIGH-confidence w/ provenance; queue MEDIUM (incl.
+  the 16 held from 7/17) into a REVIEW list surfaced on the river-guides
+  page ("N candidates awaiting confirm" — John/VA confirm from source_urls,
+  one click keep/reject). Weekly cron this (John's bottleneck statement
+  overrides the earlier hold; still --confirm for writes below HIGH).
+  (c) **INGEST JOHN'S SEPARATE-SESSION LIST:** he built an acquirer→target→
+  owner list in another Claude session + gave it to the VA (file uploaded in
+  a prior chat — check /intake receipts + his Downloads; ask him for the
+  file if not found). Dedupe into river_guides (person,company) w/
+  provenance 'john-manual-research'.
+  (d) VA HANDOFF STAYS THE TAIL: what (a)+(b) can't resolve exports to the
+  VA (NEEDS_PAID / review list) — the site does the finding, the VA does
+  the residual.
+- 🔥🔥 **VA PROJECT COST TRACKING → COST-PER-LEAD (John 7/31 — VA is LIVE,
+  project-by-project; he wants spend + cost-per-lead visibility):** (a)
+  manual cost entry gains a **project** field (meta.project, e.g.
+  "river-guides batch 2 — 78 contacts") + optional link to an intake batch;
+  (b) **/intake asks "what did this batch cost?"** when a VA-results file is
+  imported (prefilled $0 skippable) → auto-creates the usage_event tied to
+  the batch → **true VA cost-per-contact-delivered** computed from the
+  receipt (contacts updated ÷ $); (c) Costs page: per-project VA lines +
+  a VA cost-per-lead stat next to costPerContact;month + YTD both.
 - 🔥🔥🔥 **COSTS: UPWORK VA + MONTHLY vs YTD (John 7/20):** (a) **Upwork VA
   enters variable spend.** The VA (Upwork, ~$6/hr, enriching existing
   contacts) is invoiced not API-metered → add a MANUAL cost-entry path: POST
