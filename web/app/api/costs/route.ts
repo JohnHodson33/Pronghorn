@@ -87,6 +87,11 @@ export async function GET() {
   const monthStart = new Date();
   monthStart.setUTCDate(1); monthStart.setUTCHours(0, 0, 0, 0);
   const jan1 = new Date(Date.UTC(now.getUTCFullYear(), 0, 1, 0, 0, 0, 0));
+  // John 7/31: metering (and the platform) didn't exist before July — variable
+  // YTD accrues from the TRACKING EPOCH like subscriptions do, never "globally
+  // back" to Jan. Bump this once a year rolls over and the epoch is Jan 1.
+  const TRACKING_EPOCH = new Date(Date.UTC(2026, 6, 1)); // 2026-07-01
+  const ytdStart = TRACKING_EPOCH.getTime() > jan1.getTime() ? TRACKING_EPOCH : jan1;
 
   let ytdEvents: UsageRow[];
   let monthEvents: UsageRow[];
@@ -94,7 +99,7 @@ export async function GET() {
   let owners: number;
   try {
     const [ytd, month, subsRes, ownersRes] = await Promise.all([
-      fetchUsageSince(db, jan1.toISOString()),
+      fetchUsageSince(db, ytdStart.toISOString()),
       fetchUsageSince(db, monthStart.toISOString()),
       // select('*') so a missing optional column can't error the whole query
       db.from("subscriptions").select("*").eq("active", true),
