@@ -1,5 +1,44 @@
 # Task Queue — parallel-session backlog
 
+## 🚨 PROGRAM: BULLETPROOF THE CORE CHAIN (John 7/31 — OVERRIDES lane ordering;
+every lane contributes. His words: "really bad hit rates on enrichment…
+really bad hit rates on sizing… all of that needs to be bulletproof. If we
+need to spend more money or integrate data sources or be creative — let's
+do that. We're not really using this platform the way I want.")**
+
+THE CHAIN (in John's priority order): (1) has it transacted to a PE
+consolidator? → (2) roughly how big (rev/EBITDA)? → (3) who is the owner? →
+(4) owner contact info → (5) outreach at scale.
+
+MEASURED 7/31 (PM, live DB, on-target proprietary n=597): PE-status
+determined 2% · sized 63% (high-confidence ~0) · owner named 45% · owner
+any-channel 23% (email 19%, phone 6%). River guides n=467: named 61% ·
+exit-verified 5% · channel 40%. This is the baseline to beat.
+
+TARGETS (funnel measured weekly, shown on-site): PE-status determined ≥95%
+(negatives COUNT — "checked, no PE evidence" = pe_owned:false w/ audit) ·
+sized ≥90% w/ honest confidence tiers · owner named ≥80% · owner ≥1 channel
+≥60% · river-guide verified ≥50%.
+
+WORKSTREAMS: (A) LANE C QUICK WINS (start NOW): persist pe_owned=FALSE on
+every checked-clean lead (2% determined is mostly missing negatives, not
+missing positives) · cross-reference OUR OWN acquisition ledger (467 river-
+guide deals + consolidator maps) against companies/leads by name+state →
+pe_owned=true w/ source · career-trajectory verify (already queued) also
+writes the employer→consolidator match as a PE signal. (B) PAID-DATA
+BENCHMARK (PM runs, John approves spend): 100-lead gold sample → run
+Apollo (person emails/mobiles + firmographics) AND People Data Labs-class
+person/company enrich AND a Grata-class firmographic trial vs our current
+stack; measure fill-rate + ACCURACY per field per dollar; integrate the
+winner(s) as paid cascade tiers w/ per-run caps + metering. (C) SIZING
+CONFIDENCE: every estimate carries basis+confidence honestly; paid
+firmographic revenue joins the ensemble as a higher-confidence tier;
+PPP match-rate audit (are we missing matches on name variants?). (D)
+DATA-HEALTH PANEL (Lane B): the funnel above as a live dashboard card —
+John watches hit rates move without asking the PM. (E) OUTREACH RIDES ON
+TOP: templates being co-developed w/ John in the PM channel; campaigns
+unlock once (1)-(4) hit targets on a real segment.
+
 ## 🎯 END-STATE GOAL (every session aligns to this)
 A searchable, filterable, executable deal-sourcing + CRM system whose purpose is:
 **scrape every broker + build proprietary lists → enrich to OWNER contact info
