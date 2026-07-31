@@ -20,13 +20,29 @@ export async function GET(req: Request) {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
   const url = new URL(req.url);
   const jobId = url.searchParams.get("job");
+  // select * so the endpoint serves 0022's results/queued_by/label when they
+  // exist and still works before the migration
   let q = serverDb().from("enrichment_jobs")
-    .select("id, lead_list_id, lead_ids, status, cost_estimate, cost_actual, counts, created_at, finished_at")
+    .select("*")
     .order("created_at", { ascending: false }).limit(25);
   if (jobId) q = q.eq("id", jobId);
   const { data, error } = await q;
   if (error) return NextResponse.json({ error: `${error.message} — apply migration 0008`, jobs: [] }, { status: 200 });
-  return NextResponse.json({ jobs: data });
+
+  // outcome breakdown (0022) — aggregate counts + id lists per outcome so the
+  // UI's quick-chips ("Gained contact" / "Nothing new") are one lookup
+  const OUTCOMES = ["gained_owner", "gained_email", "gained_phone", "gained_linkedin", "escalated_paid", "nothing_new"];
+  const jobs = (data ?? []).map((j: Record<string, unknown>) => {
+    const res = j.results as Record<string, Record<string, boolean>> | null;
+    if (!res) return j;
+    const outcomes: Record<string, { count: number; ids: string[] }> = {};
+    for (const k of OUTCOMES) {
+      const ids = Object.entries(res).filter(([, o]) => o?.[k]).map(([id]) => id);
+      if (ids.length) outcomes[k] = { count: ids.length, ids };
+    }
+    return { ...j, outcomes };
+  });
+  return NextResponse.json({ jobs });
 }
 
 export async function POST(req: Request) {
@@ -51,10 +67,21 @@ export async function POST(req: Request) {
   if (b.estimateOnly) return NextResponse.json({ count, tier1, tier2, estimate });
   if (!count) return NextResponse.json({ error: "selection is fully enriched — every lead already has owner + email + phone/LinkedIn" }, { status: 422 });
 
-  const { data: job, error } = await db.from("enrichment_jobs").insert({
+  // queued_by + label (0022): who queued it and the UI's filter summary —
+  // retried without them on a pre-0022 DB so queueing never breaks
+  const baseRow = {
     lead_list_id: b.listId ?? null, lead_ids: leadIds, cost_estimate: estimate,
     counts: { total: count, processed: 0, tier1, tier2 },
-  }).select("id").single();
-  if (error) return NextResponse.json({ error: `${error.message} — apply migration 0008` }, { status: 503 });
+  };
+  const meta = {
+    ...(typeof b.queuedBy === "string" && b.queuedBy.trim() ? { queued_by: b.queuedBy.trim().slice(0, 40) } : {}),
+    ...(typeof b.label === "string" && b.label.trim() ? { label: b.label.trim().slice(0, 120) } : {}),
+  };
+  let ins = await db.from("enrichment_jobs").insert({ ...baseRow, ...meta }).select("id").single();
+  if (ins.error && Object.keys(meta).length && /queued_by|label/.test(ins.error.message)) {
+    ins = await db.from("enrichment_jobs").insert(baseRow).select("id").single();
+  }
+  const { data: job, error } = ins;
+  if (error || !job) return NextResponse.json({ error: `${error?.message} — apply migration 0008` }, { status: 503 });
   return NextResponse.json({ jobId: job.id, count, tier1, tier2, estimate, note: "queued — runner picks it up within 15 min (or the next worker pass)" });
 }

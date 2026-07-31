@@ -48,9 +48,24 @@ export async function GET() {
     .select("*").order("created_at", { ascending: false }).limit(20);
   if (error) return NextResponse.json({ active: [], recent: [], note: "apply migration 0018 to enable run tracking" });
 
-  const rows = (data ?? []).map((r) => ({ ...r, ...describe(r as never) }));
+  // outcome breakdown (0022): results = {id: {gained_email?, …}} → aggregate
+  // counts + the id lists Lane B's quick-chips filter on ("show me the 31
+  // that gained an email from MY run")
+  const OUTCOMES = ["gained_email", "gained_phone", "gained_linkedin", "gained_owner", "escalated_paid", "nothing_new"] as const;
+  const withOutcomes = (r: Record<string, unknown>) => {
+    const res = r.results as Record<string, Record<string, boolean>> | null;
+    if (!res) return r;
+    const outcomes: Record<string, { count: number; ids: string[] }> = {};
+    for (const k of OUTCOMES) {
+      const ids = Object.entries(res).filter(([, o]) => o?.[k]).map(([id]) => id);
+      if (ids.length) outcomes[k] = { count: ids.length, ids };
+    }
+    return { ...r, outcomes };
+  };
+
+  const rows = (data ?? []).map((r) => withOutcomes({ ...r, ...describe(r as never) }));
   return NextResponse.json({
     active: rows.filter((r) => r.state === "queued" || r.state === "running"),
-    recent: rows.filter((r) => r.state === "done" || r.state === "failed").slice(0, 5),
+    recent: rows.filter((r) => r.state === "done" || r.state === "failed").slice(0, 10),
   });
 }

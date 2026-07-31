@@ -735,7 +735,22 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
-- 🔥🔥🔥🔥 **NEW #1 — PER-ROW RUN OUTCOMES (John 7/31; pairs with Lane B new-#1 — read that card at the top of Lane B for the full spec + acceptance):** workers record per-row outcomes {gained_email, gained_phone, gained_linkedin, escalated_paid, nothing_new} into river_guide_runs.results jsonb AND enrichment_jobs (leads) · run rows carry queued_by + auto label from queue-time filters ("Tree Care · Call now · 80 selected") · GET /runs + /api/enrich/jobs serve the breakdown. Ship your half FIRST — Lane B renders on it. Migration if needed = 0020 (add to John list).
+- 📣 LANE C 7/31 (~12:45) — ✅ **RUN-OUTCOMES DATA HALF SHIPPED (John's new
+  #1). LANE B: BUILD ON THIS NOW.** Migration **0022** (results + queued_by +
+  label on BOTH river_guide_runs and enrichment_jobs — JOHN: add 0022 to your
+  SQL list; everything degrades clean until then). Contract: (a) POST
+  /api/river-guides/enrich and POST /api/enrich now accept **{queuedBy,
+  label}** — send the filter summary as label ("Tree Care · Call now · 80
+  selected"); (b) workers store per-row outcomes — guides in-loop
+  (enrich_t1), leads via before/after snapshot diff in run_jobs (covers
+  tier-1 + tier-2 + skiptrace in one shot; extra key gained_owner); (c) GET
+  /api/river-guides/runs and GET /api/enrich now return per-run
+  **`outcomes`: {gained_email: {count, ids[]}, gained_phone, gained_linkedin,
+  gained_owner, escalated_paid, nothing_new}** — your quick-chips are one
+  lookup (ids[] is the exact row set to show), `label`/`queued_by` on the
+  run row; /runs `recent` now returns last 10. Verified live: queue → claim
+  → receipt with a real run; outcome storage kicks in the moment 0022 lands.
+- 🔥🔥🔥🔥 **NEW #1 — PER-ROW RUN OUTCOMES (John 7/31; pairs with Lane B new-#1 — read that card at the top of Lane B for the full spec + acceptance):** workers record per-row outcomes {gained_email, gained_phone, gained_linkedin, escalated_paid, nothing_new} into river_guide_runs.results jsonb AND enrichment_jobs (leads) · run rows carry queued_by + auto label from queue-time filters ("Tree Care · Call now · 80 selected") · GET /runs + /api/enrich/jobs serve the breakdown. ✅ LANE C HALF DONE (see 📣 above; migration = **0022**, not 0020).
 - 🔥🔥🔥 **RIVER-GUIDE DISCOVERY AT SCALE + CAREER-TRAJECTORY VERIFICATION
   (John 7/31 — "finding new river guides is the bottleneck… in a perfect
   world the site just creates that list"; he ran a SEPARATE Claude session

@@ -79,9 +79,27 @@ sweeps, leadgen serper source. Hunter/Places/Tracerfy/Claude unaffected.
    detection run), preview shows fills+conflicts, confirm routes to the
    guide rows.**
 
-**NEXT (this session):** (4) YTD variable window 7/1 start — ONLY if John
-confirms; (5) TASK-QUEUE top-down. PARKED (don't chase): sample card
-611290ff, repo visibility.
+**7/31 SESSION #4 — SHIPPED (unit 3, John's 12:00 re-prioritization):**
+5. **PER-ROW RUN OUTCOMES — data half (John's new #1).** Migration **0022**
+   (results/queued_by/label jsonb+text on river_guide_runs AND
+   enrichment_jobs — **JOHN: run 0022**). enrich_t1 records per-guide
+   outcomes in-loop (partial writes every 10 rows so a crash keeps them);
+   run_jobs diffs a before/after snapshot (tier-agnostic — tier1+tier2+
+   skiptrace show up without threading the subprocess; bonus key
+   gained_owner). Both POST routes accept {queuedBy, label} (guarded insert,
+   retried without meta pre-0022). GET /runs + GET /api/enrich serve
+   per-run `outcomes` {key: {count, ids[]}} for Lane B's quick-chips;
+   /runs recent 5→10. Verified live end-to-end (queue→claim→receipt) minus
+   outcome persistence which activates on 0022. ⚠️ Found while testing: a
+   STALE queued run (48 guides) was sitting unclaimed — the worker drained
+   it (+3 emails); if John "queued 80 and never heard back" recently, that
+   was it.
+
+**NEXT (this session):** BULLETPROOF quick wins (PE negatives backfill ·
+acquisition-ledger cross-ref · PPP match audit — program directive at top of
+TASK-QUEUE); then discovery-at-scale (career-trajectory verify blocked on
+Serper credits). YTD variable window still awaiting John. PARKED: sample
+card 611290ff, repo visibility.
 
 --- SESSION #3 (7/20-7/21) below — older ---
 
