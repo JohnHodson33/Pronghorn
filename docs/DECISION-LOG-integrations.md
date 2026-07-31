@@ -52,9 +52,35 @@ sweeps, leadgen serper source. Hunter/Places/Tracerfy/Claude unaffected.
    /api/dashboard route + lib/dashboard-v3.ts which the page actually uses;
    icon in app/page.tsx). Beacon is LIVE now showing the Serper outage.
 
-**NEXT (this session):** (3) intake shakedown with a realistic VA-results
-file (check 0021 applied first); (4) YTD variable window 7/1 start — ONLY if
-John confirms; (5) TASK-QUEUE top-down. PARKED (don't chase): sample card
+**7/31 SESSION #4 — SHIPPED (unit 2, intake shakedown):**
+4. **INTAKE VA ROUND-TRIP: SHAKEN DOWN LIVE + THE GUIDE GAP FIXED.**
+   Migrations 0020+0021 are now APPLIED (verified live; subs start_date=7/1
+   set by PM 7/21). Ran a realistic messy VA-results CSV (mixed-format
+   phones, "not found"/"n/a" cells, an intra-file duplicate, an unknown
+   person, a no-name row) through upload→preview→confirm→receipt on a real
+   dev server. FOUND+FIXED three things: (a) **a VA guide-results file
+   couldn't reach the guide rows at all** — FillTarget was contact|company
+   only, so contact info filled the CRM contact and river_guides.contact
+   stayed empty (guides page keeps "no phone"). enrichment_fill now supports
+   fill_target 'river_guide': email/phone/linkedin_url are virtual fields
+   mapped into the contact jsonb (blank-only re-checked at write time vs
+   stale plans) + auto-synced onto the linked CRM contact; Claude mapper
+   told about the new target (it picked it unprompted, high confidence) +
+   looksLikeGuideFill fallback. (b) **VA "not found"/"n/a"/"none"/"-" cells
+   were fillable values** — coerce now nulls them. (c) **VA notes were LOST
+   when a guide already had notes** — notes was conflict-tracked instead of
+   append-always; now it always flows to the execute-time append (with the
+   [intake: file by who on date] stamp). Verified in DB: channels landed on
+   a sacrificial test guide + synced to its CRM contact; a REAL guide's
+   Tracerfy phone survived as a surfaced conflict (not overwritten); junk
+   values nulled; audit row committed. Test rows deleted + the two real-row
+   note-appends from the test scrubbed. **The VA return path is ready: Tom
+   uploads the VA file on /intake, picks "Enrichment fill" (or lets
+   detection run), preview shows fills+conflicts, confirm routes to the
+   guide rows.**
+
+**NEXT (this session):** (4) YTD variable window 7/1 start — ONLY if John
+confirms; (5) TASK-QUEUE top-down. PARKED (don't chase): sample card
 611290ff, repo visibility.
 
 --- SESSION #3 (7/20-7/21) below — older ---

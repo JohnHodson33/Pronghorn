@@ -668,6 +668,16 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 7/31 — ✅ **INTAKE SHAKEN DOWN WITH A REALISTIC VA FILE — the VA
+  return path works end-to-end** (0020+0021 confirmed applied). Fixed while
+  shaking: (1) enrichment_fill can now target **river_guide** — VA guide
+  results land in river_guides.contact (jsonb) AND sync the linked CRM
+  contact; before, guide files could only fill contacts and the guides page
+  kept "no phone"; (2) "not found"/"n/a" VA cells no longer fill as values;
+  (3) VA notes now always append (with the intake stamp) instead of being
+  dropped as conflicts when notes already exist. Verified live vs the DB,
+  conflict-not-overwrite held on a real row, audit receipt committed, test
+  rows cleaned. **TOM/JOHN: /intake is ready for the first real VA batch.**
 - 📣 LANE C 7/31 — 🔴 **SERPER IS OUT OF CREDITS (since ~7/22) — JOHN: top up
   at serper.dev.** Every call 400s "Not enough credits"; nightly CI looked
   green because every step is continue-on-error. This is what stalled
