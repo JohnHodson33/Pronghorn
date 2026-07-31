@@ -147,6 +147,34 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 🔥🔥🔥🔥 **NEW #1 — ENRICHMENT RUNS: "WHO GAINED WHAT, TAKE ME BACK THERE"
+  (John 7/31 — the run loop still isn't closed for him. His words: "I queued
+  80… I see 'starts within 15 minutes'… then I never really know when it's
+  done, and I don't know how to go back and look at the ones I actually
+  enriched… no good way to do it… this needs to run effectively." Applies to
+  BOTH river guides AND proprietary enrichment — one uniform pattern.)**
+  (Lane C — the data half, ships first): (a) workers record PER-ROW OUTCOMES
+  on every run: for each id processed → {gained_email?, gained_phone?,
+  gained_linkedin?, escalated_paid?, nothing_new?} stored on the run row
+  (river_guide_runs.results jsonb; same addition to enrichment_jobs for
+  leads); (b) run rows carry queued_by + a human label auto-built from the
+  filters at queue time ("Tree Care · Call now · 80 selected"); (c) GET
+  /runs returns the outcome breakdown.
+  (Lane B — the surface): (d) a **RUNS drawer/section on BOTH pages**
+  (river-guides + enrichment), ALWAYS visible (today's history panel hides
+  during an active run and shows only last-5): every run = "Jul 31, 2:14 PM
+  · 80 queued (Tree Care · Call now) · DONE: 31 gained email · 9 LinkedIn ·
+  4 phone · 22 → paid · 14 nothing new" with live progress while running;
+  (e) **click a run → the table shows EXACTLY that run's rows** (exists on
+  river-guides — keep) **PLUS outcome quick-chips within the run view:
+  [Gained contact] [Nothing new] [→ Paid]** so "show me the 31 that gained
+  an email from MY run" is one click; (f) DONE must be unmissable: banner
+  flips to the receipt and STAYS until dismissed, + a subtle badge on the
+  page tab/sidebar entry while a run is active and when one finished
+  unseen; (g) same treatment on /enrichment (leads) — the two channels must
+  feel identical. ACCEPTANCE (John's literal workflow): filter → select 80 →
+  Enrich → leave → come back later → one click on the run → see exactly who
+  gained what → work that list.
 - 🔥🔥🔥🔥 **#1 — "MAKE THE LISTS WORK LIKE EXCEL" (John 7/21 — his FIFTH time
   asking. Top of your queue until provably done.)** His words: "any time we
   have a list — companies, names, contacts, brokers, river guides — I want to
@@ -668,6 +696,7 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 🔥🔥🔥🔥 **NEW #1 — PER-ROW RUN OUTCOMES (John 7/31; pairs with Lane B new-#1 — read that card at the top of Lane B for the full spec + acceptance):** workers record per-row outcomes {gained_email, gained_phone, gained_linkedin, escalated_paid, nothing_new} into river_guide_runs.results jsonb AND enrichment_jobs (leads) · run rows carry queued_by + auto label from queue-time filters ("Tree Care · Call now · 80 selected") · GET /runs + /api/enrich/jobs serve the breakdown. Ship your half FIRST — Lane B renders on it. Migration if needed = 0020 (add to John list).
 - 🔥🔥🔥 **RIVER-GUIDE DISCOVERY AT SCALE + CAREER-TRAJECTORY VERIFICATION
   (John 7/31 — "finding new river guides is the bottleneck… in a perfect
   world the site just creates that list"; he ran a SEPARATE Claude session
