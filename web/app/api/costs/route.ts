@@ -22,7 +22,7 @@ export const dynamic = "force-dynamic";
 // known monthly search caps for subscription services (for the quota display)
 const QUOTA_CAPS: Record<string, number> = { hunter: 500 };
 
-type UsageRow = { service: string; activity: string; units: number | string; cost_usd: number | string };
+type UsageRow = { service: string; activity: string; units: number | string; cost_usd: number | string; meta?: { project?: string | null; intake_job_id?: string | null; note?: string | null } | null };
 
 // Page through usage_events so a high-volume window is never silently capped
 // (Supabase caps a single request at 1000 rows). Honest totals > fast totals.
@@ -32,7 +32,7 @@ async function fetchUsageSince(db: SupabaseClient, sinceIso: string): Promise<Us
   for (let from = 0; ; from += PAGE) {
     const { data, error } = await db
       .from("usage_events")
-      .select("service, activity, units, cost_usd")
+      .select("service, activity, units, cost_usd, meta")
       .gte("at", sinceIso)
       .order("at", { ascending: true })
       .range(from, from + PAGE - 1);
@@ -161,10 +161,37 @@ export async function GET() {
       : null,
   };
 
+  // --- VA project lines + cost-per-lead (John 7/31: VA is live project-by-
+  // project). Grouped by meta.project over YTD upwork spend; cost-per-contact
+  // uses ONLY intake-linked entries (their units = contacts actually updated
+  // by the batch receipt) — hour-logged entries can't honestly claim a
+  // per-contact rate, so they show in the lines but not the rate.
+  const vaEvents = ytdEvents.filter((e) => e.service === "upwork");
+  const projMap = new Map<string, { costUsd: number; units: number; intakeLinked: boolean }>();
+  let linkedCost = 0, linkedContacts = 0;
+  for (const e of vaEvents) {
+    const key = e.meta?.project?.trim() || "(no project)";
+    const p = projMap.get(key) ?? { costUsd: 0, units: 0, intakeLinked: false };
+    p.costUsd += Number(e.cost_usd) || 0;
+    p.units += Number(e.units) || 0;
+    if (e.meta?.intake_job_id) {
+      p.intakeLinked = true;
+      linkedCost += Number(e.cost_usd) || 0;
+      linkedContacts += Number(e.units) || 0;
+    }
+    projMap.set(key, p);
+  }
+  const vaProjects = [...projMap.entries()]
+    .map(([project, p]) => ({ project, costUsd: round(p.costUsd), units: p.units, intakeLinked: p.intakeLinked }))
+    .sort((a, b) => b.costUsd - a.costUsd);
+
   return NextResponse.json({
     // NEW: two windows, same breakdown each
     month: monthWindow,
     ytd: ytdWindow,
+    // VA per-project spend (YTD) + honest per-contact rate (intake-linked only)
+    vaProjects,
+    vaCostPerContact: linkedContacts ? round(linkedCost / linkedContacts) : null,
     // shared context
     quotas,
     ownerContactsAcquired: owners,

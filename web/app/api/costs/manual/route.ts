@@ -50,6 +50,11 @@ export async function POST(req: Request) {
   const service = String(b.service ?? "upwork").trim() || "upwork";
   const activity = String(b.activity ?? "va_enrichment").trim() || "va_enrichment";
   const note = b.note == null ? null : String(b.note).trim() || null;
+  // VA work is project-by-project (John 7/31) — a project label groups spend
+  // on the Costs page; an intake_job_id ties it to a delivered batch so
+  // cost-per-contact can be computed from the receipt, never estimated
+  const project = b.project == null ? null : String(b.project).trim().slice(0, 120) || null;
+  const intakeJobId = b.intake_job_id == null ? null : String(b.intake_job_id).trim() || null;
 
   // `dated` (YYYY-MM-DD or ISO) places the cost in the right window; default now
   let at: string;
@@ -67,7 +72,7 @@ export async function POST(req: Request) {
     units: units ?? 1,
     cost_usd: Number(cost.toFixed(5)),
     at,
-    meta: { note, entered_by: enteredBy, dated: b.dated ?? null, source: "manual" },
+    meta: { note, entered_by: enteredBy, dated: b.dated ?? null, source: "manual", ...(project ? { project } : {}), ...(intakeJobId ? { intake_job_id: intakeJobId } : {}) },
   };
   const { data, error } = await serverDb().from("usage_events").insert(row).select("id").single();
   if (error) return NextResponse.json({ error: `${error.message} — apply migration 0009` }, { status: 503 });

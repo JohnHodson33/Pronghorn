@@ -33,7 +33,33 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "job has no plan to execute" }, { status: 400 });
   }
 
+  // optional VA batch cost (John 7/31: "what did this batch cost?" at import —
+  // prefilled $0 and skippable in the UI). Validated BEFORE the write so a bad
+  // value can't leave a committed batch with its cost silently dropped.
+  const rawCost = b.batch_cost_usd;
+  const batchCost = rawCost == null || rawCost === "" ? null : Number(rawCost);
+  if (batchCost != null && (!Number.isFinite(batchCost) || batchCost < 0)) {
+    return NextResponse.json({ error: "batch_cost_usd, if given, must be a non-negative number" }, { status: 400 });
+  }
+
   const result = await executePlan(db, plan, { uploaded_by: String(job.uploaded_by), filename: String(job.filename) });
+
+  // log the batch cost against the delivered contacts (units = rows actually
+  // updated) → true VA cost-per-contact-delivered, computed not estimated
+  let costPerContactDelivered: number | null = null;
+  if (batchCost != null && batchCost > 0) {
+    costPerContactDelivered = result.updated ? Number((batchCost / result.updated).toFixed(2)) : null;
+    await db.from("usage_events").insert({
+      service: "upwork", activity: "va_enrichment",
+      units: result.updated || 1, cost_usd: Number(batchCost.toFixed(2)),
+      meta: {
+        source: "manual", entered_by: confirmedBy,
+        project: String(b.project ?? "").trim().slice(0, 120) || String(job.filename),
+        intake_job_id: jobId,
+        note: `VA batch: ${result.updated} contacts updated of ${plan.rows.length} rows`,
+      },
+    }).then(() => {}, () => {}); // metering is best-effort; the import itself already succeeded
+  }
 
   const receipt = {
     ...result,
@@ -41,6 +67,7 @@ export async function POST(req: Request) {
     base_table: plan.base,
     confirmed_by: confirmedBy,
     at: new Date().toISOString(),
+    ...(batchCost != null ? { batch_cost_usd: batchCost, cost_per_contact_delivered: costPerContactDelivered } : {}),
   };
   await db.from("intake_jobs").update({
     status: "committed", receipt, committed_at: new Date().toISOString(),

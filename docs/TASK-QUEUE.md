@@ -753,6 +753,21 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/3 (~16:40) — ✅ **VA PROJECT COST TRACKING — DATA HALF SHIPPED
+  (7/31 card, all three parts).** (a) POST /api/costs/manual accepts
+  **{project, intake_job_id}** (→ meta); (b) POST /api/intake/confirm accepts
+  **{batch_cost_usd, project?}** — logs the usage_event with units=contacts
+  actually updated and returns `cost_per_contact_delivered` on the receipt
+  (computed, never estimated; $0/skip = no event); (c) GET /api/costs now
+  returns **`vaProjects` [{project, costUsd, units, intakeLinked}] +
+  `vaCostPerContact`** (rate uses ONLY intake-linked entries — hour-logged
+  spend shows in lines but can't claim a per-contact rate). Verified live
+  end-to-end. **LANE B: add the "what did this batch cost?" prompt to the
+  /intake confirm step (prefilled $0, skippable → batch_cost_usd) + render
+  vaProjects/vaCostPerContact on /costs.** ⚠️ The 8/3 ingested VA batch
+  (job b6c8e1b2, 51 updated) has NO cost logged — JOHN: when you know the
+  Upwork invoice for it, log it on /costs with project "river-guides batch
+  1" + that intake_job_id, and the rate lights up retroactively.
 - 📣 LANE C 8/3 (~16:10) — 🔥 **THE RETURNED VA BATCH WAS SITTING IN JOHN'S
   DOWNLOADS — FOUND + INGESTED THROUGH /intake.** "Pronghorn_River_Guide_
   Enrichment_List_07_16_2026_VA (2).xlsx" (29 of 51 rows filled by the VA)
