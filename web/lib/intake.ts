@@ -102,7 +102,15 @@ export function parseFile(filename: string, buf: Buffer): ParsedFile {
   if (ext === "tsv") return parseDelimited(buf.toString("utf8"), "\t");
   if (ext === "xlsx" || ext === "xls") {
     const wb = XLSX.read(buf, { type: "buffer" });
-    const sheet = wb.Sheets[wb.SheetNames[0]];
+    // real workbooks lead with an "Instructions" tab (John's VA files do) —
+    // pick the sheet that actually holds the data: most rows wins, and a
+    // proper header row (≥3 non-empty cells) beats a title-text sheet
+    const best = wb.SheetNames.map((n) => {
+      const aoa0 = XLSX.utils.sheet_to_json<(string | number)[]>(wb.Sheets[n], { header: 1, blankrows: false, defval: "" });
+      const headerCells = (aoa0[0] ?? []).filter((c) => String(c).trim() !== "").length;
+      return { n, rows: aoa0.length, headerCells };
+    }).sort((a, b) => (b.headerCells >= 3 ? b.rows : 0) - (a.headerCells >= 3 ? a.rows : 0))[0];
+    const sheet = wb.Sheets[best?.n ?? wb.SheetNames[0]];
     // header:1 → array-of-arrays so we control header trimming and blank rows
     const aoa = XLSX.utils.sheet_to_json<(string | number)[]>(sheet, { header: 1, blankrows: false, defval: "" });
     const header = (aoa.shift() ?? []).map((h) => String(h).trim());

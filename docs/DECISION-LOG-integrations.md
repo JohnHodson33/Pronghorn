@@ -29,6 +29,14 @@ enriched-only; PM's 63% was of ALL on-target). SHIPPED TODAY:
    backfilled for past runs (per-row deltas weren't recorded pre-0022);
    chips light up from the FIRST run after 0022 lands. Serper still OUT of
    credits (beacon + api_dead card live).
+5. **(8/3 ~16:10) RETURNED VA BATCH FOUND IN DOWNLOADS + INGESTED**: 51
+   guides updated via /intake (29 VA-filled rows; fill-blanks, conflicts
+   surfaced, receipt committed). Channel coverage 208/286 resolved (73%,
+   target ≥60% ✅). Intake now picks the DATA sheet in multi-sheet workbooks
+   (VA files lead with an Instructions tab — real-file gap found live).
+   John's River-Guides-Multi-Industry.xlsx = the 7/15 seed source (433/433
+   already in DB; discovery card (c) closed, no ingest needed). VA cost not
+   logged yet — intake-asks-cost is the next queue card.
 
 🟢 **SESSION #4 ACTIVE (started 7/31 ~11:00 after ~10 days lanes-down) — READ
 THIS BLOCK FIRST; everything below is older.** Worktree

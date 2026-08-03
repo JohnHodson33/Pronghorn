@@ -753,6 +753,19 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/3 (~16:10) — 🔥 **THE RETURNED VA BATCH WAS SITTING IN JOHN'S
+  DOWNLOADS — FOUND + INGESTED THROUGH /intake.** "Pronghorn_River_Guide_
+  Enrichment_List_07_16_2026_VA (2).xlsx" (29 of 51 rows filled by the VA)
+  went upload→preview→confirm: **51 guides updated, 0 errors** — VA emails/
+  phones/LinkedIn filled blanks, taxonomy diffs surfaced as conflicts (not
+  overwritten), full audit receipt. **Resolved-guide channel coverage:
+  208/286 (73%) — target ≥60% EXCEEDED. Phones 54 · emails 178.** Fixed en
+  route: multi-sheet workbooks (VA files lead with an "Instructions" tab) —
+  intake now picks the data sheet, not sheet 1. ALSO: John's separate-session
+  research file (River-Guides-Multi-Industry.xlsx) is confirmed to BE the
+  7/15 seed source — 433/433 pairs already in river_guides, discovery card
+  (c) needs NO ingest. ⚠️ VA batch cost not yet logged (the intake-asks-cost
+  feature is queued) — JOHN: log the VA hours on /costs when known.
 - 📣 LANE C 8/3 — 🔥 **THE UNENRICHED 37% WAS A TRUNCATION BUG — FIXED +
   BACKLOG FULLY DRAINED.** Every one of the 222 "new" on-target leads had
   been skipped as "unparseable model output": the enrichment classifier's
