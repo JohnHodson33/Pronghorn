@@ -21,6 +21,7 @@ type Run = {
   id: string;
   deal_ids: string[] | null;
   state: "queued" | "running" | "done" | "failed";
+  label?: string | null; // 0022 column; pre-0022 runs carry it in counts
   counts: { total?: number; processed?: number; found_email?: number; found_linkedin?: number; found_phone?: number; escalated_paid?: number; label?: string } | null;
   results?: Record<string, RunOutcome> | null; // per-row outcomes (Lane C's half)
   note: string | null;
@@ -149,16 +150,24 @@ export default function RiverGuides() {
     } catch { /* runs API optional — page still works */ }
   }
 
-  async function load() {
+  // A blipped fetch (deploy swap, cold start) used to show a permanent-looking
+  // "backend isn't up yet — migration 0016" banner (long obsolete; John hit it
+  // 7/31 and reasonably asked if the site was broken). Now: retry with backoff
+  // before declaring anything, and say something honest when we do.
+  async function load(attempt = 0) {
     try {
       const res = await fetch("/api/river-guides", { cache: "no-store" });
-      if (!res.ok) { setApiDown(true); setGuides([]); return; }
+      if (!res.ok) throw new Error(String(res.status));
       const j = await res.json();
       setGuides(j.guides ?? j.rows ?? []);
       setApiDown(false);
     } catch {
-      setApiDown(true);
-      setGuides([]);
+      if (attempt < 3) {
+        setTimeout(() => load(attempt + 1), (attempt + 1) * 3000);
+      } else {
+        setApiDown(true);
+        setGuides([]);
+      }
     }
   }
   useEffect(() => { load(); loadRuns(); }, []);
@@ -398,9 +407,17 @@ export default function RiverGuides() {
       </header>
 
       {apiDown && (
-        <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-          The river-guides backend isn&apos;t up yet (Lane C: migration 0016 + ingest + /api/river-guides).
-          This page lights up automatically when it lands — the 433 seeded candidates load here.
+        <div className="flex flex-wrap items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          <span>
+            Couldn&apos;t load the river guides after several tries — usually a brief deploy window or
+            connection blip. Your data is safe.
+          </span>
+          <button
+            onClick={() => { setApiDown(false); setGuides(null); load(); }}
+            className="rounded border border-amber-300 px-2 py-0.5 text-xs font-semibold hover:bg-amber-100"
+          >
+            Retry now
+          </button>
         </div>
       )}
 
@@ -459,7 +476,7 @@ export default function RiverGuides() {
         runs={[...runs.active, ...runs.recent].map((r): RunRow => ({
           id: r.id,
           state: r.state,
-          label: r.counts?.label ?? null,
+          label: r.label ?? r.counts?.label ?? null,
           note: r.note,
           stale: r.stale,
           counts: r.counts,
@@ -610,7 +627,7 @@ export default function RiverGuides() {
               <tr><td colSpan={11} className="px-4 py-10 text-center text-sm text-zinc-400">Loading…</td></tr>
             ) : rows.length === 0 ? (
               <tr><td colSpan={11} className="px-4 py-10 text-center text-sm text-zinc-400">
-                {apiDown ? "Waiting on the backend — nothing to show yet." : "No river guides match the filters."}
+                {apiDown ? "Couldn't load — use Retry above." : "No river guides match the filters."}
               </td></tr>
             ) : (
               rows.map((g) => {

@@ -25,12 +25,7 @@ every checked-clean lead (2% determined is mostly missing negatives, not
 missing positives) · cross-reference OUR OWN acquisition ledger (467 river-
 guide deals + consolidator maps) against companies/leads by name+state →
 pe_owned=true w/ source · career-trajectory verify (already queued) also
-writes the employer→consolidator match as a PE signal. (B) PAID-DATA
-BENCHMARK (PM runs, John approves spend): 100-lead gold sample → run
-Apollo (person emails/mobiles + firmographics) AND People Data Labs-class
-person/company enrich AND a Grata-class firmographic trial vs our current
-stack; measure fill-rate + ACCURACY per field per dollar; integrate the
-winner(s) as paid cascade tiers w/ per-run caps + metering. (C) SIZING
+writes the employer→consolidator match as a PE signal. (B) PROVE-BEFORE-PAY LADDER (John 7/31 — NO subscriptions on unproven value): step 1 = land the free fixes (A) and RE-MEASURE the funnel — do not spend until we know the free ceiling; step 2 = ONE-TIME <$100 benchmark, zero subscriptions: the SAME 100-lead gold sample through (i) People Data Labs pay-as-you-go (free ~100 records, then ~$0.20-0.30/match, no sub), (ii) Apollo FREE tier credits only, (iii) the Upwork VA (~$30-60 of hours) — measure fill + accuracy + cost-per-VERIFIED-contact for each; step 3 = winners integrate as METERED pay-per-record tiers w/ caps (nothing to unwind); step 4 = a subscription is allowed ONLY when 2 straight months of pay-per-use volume exceeds the sub price (the sub becomes the cheaper option by arithmetic, not hope). Grata-class broad-sourcing platforms: SKIP for now (John may narrow to one industry; our scraper+PPP+ledger competes there). (C) SIZING
 CONFIDENCE: every estimate carries basis+confidence honestly; paid
 firmographic revenue joins the ensemble as a higher-confidence tier;
 PPP match-rate audit (are we missing matches on name variants?). (D)
@@ -749,7 +744,22 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
-- 🔥🔥🔥🔥 **NEW #1 — PER-ROW RUN OUTCOMES (John 7/31; pairs with Lane B new-#1 — read that card at the top of Lane B for the full spec + acceptance):** workers record per-row outcomes {gained_email, gained_phone, gained_linkedin, escalated_paid, nothing_new} into river_guide_runs.results jsonb AND enrichment_jobs (leads) · run rows carry queued_by + auto label from queue-time filters ("Tree Care · Call now · 80 selected") · GET /runs + /api/enrich/jobs serve the breakdown. Ship your half FIRST — Lane B renders on it. Migration if needed = 0020 (add to John list).
+- 📣 LANE C 7/31 (~12:45) — ✅ **RUN-OUTCOMES DATA HALF SHIPPED (John's new
+  #1). LANE B: BUILD ON THIS NOW.** Migration **0022** (results + queued_by +
+  label on BOTH river_guide_runs and enrichment_jobs — JOHN: add 0022 to your
+  SQL list; everything degrades clean until then). Contract: (a) POST
+  /api/river-guides/enrich and POST /api/enrich now accept **{queuedBy,
+  label}** — send the filter summary as label ("Tree Care · Call now · 80
+  selected"); (b) workers store per-row outcomes — guides in-loop
+  (enrich_t1), leads via before/after snapshot diff in run_jobs (covers
+  tier-1 + tier-2 + skiptrace in one shot; extra key gained_owner); (c) GET
+  /api/river-guides/runs and GET /api/enrich now return per-run
+  **`outcomes`: {gained_email: {count, ids[]}, gained_phone, gained_linkedin,
+  gained_owner, escalated_paid, nothing_new}** — your quick-chips are one
+  lookup (ids[] is the exact row set to show), `label`/`queued_by` on the
+  run row; /runs `recent` now returns last 10. Verified live: queue → claim
+  → receipt with a real run; outcome storage kicks in the moment 0022 lands.
+- 🔥🔥🔥🔥 **NEW #1 — PER-ROW RUN OUTCOMES (John 7/31; pairs with Lane B new-#1 — read that card at the top of Lane B for the full spec + acceptance):** workers record per-row outcomes {gained_email, gained_phone, gained_linkedin, escalated_paid, nothing_new} into river_guide_runs.results jsonb AND enrichment_jobs (leads) · run rows carry queued_by + auto label from queue-time filters ("Tree Care · Call now · 80 selected") · GET /runs + /api/enrich/jobs serve the breakdown. ✅ LANE C HALF DONE (see 📣 above; migration = **0022**, not 0020).
 - 🔥🔥🔥 **RIVER-GUIDE DISCOVERY AT SCALE + CAREER-TRAJECTORY VERIFICATION
   (John 7/31 — "finding new river guides is the bottleneck… in a perfect
   world the site just creates that list"; he ran a SEPARATE Claude session
@@ -793,6 +803,36 @@ set) into your new chips UI as a small follow-up.
   the batch → **true VA cost-per-contact-delivered** computed from the
   receipt (contacts updated ÷ $); (c) Costs page: per-project VA lines +
   a VA cost-per-lead stat next to costPerContact;month + YTD both.
+- 📣 LANE C 7/31 — ✅ **INTAKE SHAKEN DOWN WITH A REALISTIC VA FILE — the VA
+  return path works end-to-end** (0020+0021 confirmed applied). Fixed while
+  shaking: (1) enrichment_fill can now target **river_guide** — VA guide
+  results land in river_guides.contact (jsonb) AND sync the linked CRM
+  contact; before, guide files could only fill contacts and the guides page
+  kept "no phone"; (2) "not found"/"n/a" VA cells no longer fill as values;
+  (3) VA notes now always append (with the intake stamp) instead of being
+  dropped as conflicts when notes already exist. Verified live vs the DB,
+  conflict-not-overwrite held on a real row, audit receipt committed, test
+  rows cleaned. **TOM/JOHN: /intake is ready for the first real VA batch.**
+- 📣 LANE C 7/31 — 🔴 **SERPER IS OUT OF CREDITS (since ~7/22) — JOHN: top up
+  at serper.dev.** Every call 400s "Not enough credits"; nightly CI looked
+  green because every step is continue-on-error. This is what stalled
+  status-verify at 25/467 for 9 days (also: linkedin_match, /discover,
+  leadgen serper source). Workers resume on their own after top-up. A
+  dashboard **api_dead** Key Action card now surfaces this class of failure
+  (live right now, showing the Serper outage).
+- 📣 LANE C 7/31 — ✅ **RIVER-GUIDE PHONES ARE LIVE — the Tracerfy dead-end is
+  broken.** (1) enrich_addresses.js: former-company street addresses via
+  Google Places, corroborated (domain or distinctive-name match + state),
+  provenance in contact.company_address, misses never re-burn — **177/255
+  phone-less guides addressed, $0 marginal**. (2) skiptrace_guides.js:
+  person-mode batch (landlord-trap-safe, company-line guard, one attempt
+  ever) — **162 traced → 31 hits: +28 guide phones (was 0), +12 emails,
+  $0.62**; hits → ENRICHED + CRM contact fill. Both nightly (40/night).
+  (3) verify_status.js throughput fixed: attempt-stamping ends the nightly
+  re-check of the same inconclusive top-30; cap 30→60 — kicks in the moment
+  Serper has credits. **LANE B: guides now carry contact.phone — the
+  call-now workflow has real numbers; contact.skiptrace.phones[] holds
+  ranked alternates.**
 - 🔥🔥🔥 **COSTS: UPWORK VA + MONTHLY vs YTD (John 7/20):** (a) **Upwork VA
   enters variable spend.** The VA (Upwork, ~$6/hr, enriching existing
   contacts) is invoiced not API-metered → add a MANUAL cost-entry path: POST

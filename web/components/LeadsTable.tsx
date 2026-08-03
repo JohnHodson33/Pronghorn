@@ -60,6 +60,7 @@ type Job = {
   id: string;
   status: string;
   lead_ids?: string[] | null;
+  label?: string | null; // 0022 column; pre-0022 jobs carry it in counts
   counts: { total?: number; processed?: number; tier1?: number; tier2?: number; found_owner?: number; found_email?: number; label?: string } | null;
   results?: Record<string, { gained_email?: boolean; gained_phone?: boolean; gained_linkedin?: boolean; escalated_paid?: boolean; nothing_new?: boolean }> | null;
   created_at: string;
@@ -604,7 +605,7 @@ export default function LeadsTable({
             runs={allJobs.slice(0, 12).map((j): RunRow => ({
               id: j.id,
               state: j.status === "queued" ? "queued" : j.status === "running" ? "running" : j.status === "failed" ? "failed" : "done",
-              label: j.counts?.label ?? null,
+              label: j.label ?? j.counts?.label ?? null,
               note: jobNote(j),
               counts: j.counts,
               ids: j.lead_ids ?? null,

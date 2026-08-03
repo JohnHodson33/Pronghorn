@@ -85,19 +85,29 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, queued: 0, note: "Nothing queued — every selected row still needs its name resolved (identity resolution runs nightly)." });
   }
 
-  // Human run label from the queue-time filters (John 7/31: "Tree Care ·
-  // Call now · 80 selected"). Lives inside the counts jsonb so it needs no
-  // migration; Lane C may promote it to a real column with their results half.
+  // Human run label from the queue-time filters ("Tree Care · Call now · 80
+  // selected"). 0022 gives it a real column (+ queued_by); a copy inside the
+  // counts jsonb keeps labels working on a pre-0022 DB.
   const label = typeof b.label === "string" && b.label.trim() ? b.label.trim().slice(0, 120) : null;
 
-  // RUN RECORD first, so the page has something to poll immediately
-  const { data: run, error: runErr } = await db.from("river_guide_runs").insert({
+  // RUN RECORD first, so the page has something to poll immediately —
+  // retried without the 0022 columns so queueing never breaks on the gap.
+  const baseRow = {
     deal_ids: eligible, state: "queued",
     counts: { total: eligible.length, processed: 0, found_email: 0, found_linkedin: 0, found_phone: 0, escalated_paid: 0, ...(label ? { label } : {}) },
     cost_estimate: est.totalEstUsd,
     note: `Queued — the worker starts within ~${WORKER_CADENCE_MIN} minutes`,
-  }).select("id").single();
-  if (runErr) return NextResponse.json({ error: `${runErr.message} — apply migration 0018 (river_guide_runs)` }, { status: 500 });
+  };
+  const meta = {
+    ...(typeof b.queuedBy === "string" && b.queuedBy.trim() ? { queued_by: b.queuedBy.trim().slice(0, 40) } : {}),
+    ...(label ? { label } : {}),
+  };
+  let ins = await db.from("river_guide_runs").insert({ ...baseRow, ...meta }).select("id").single();
+  if (ins.error && Object.keys(meta).length && /queued_by|label/.test(ins.error.message)) {
+    ins = await db.from("river_guide_runs").insert(baseRow).select("id").single();
+  }
+  const { data: run, error: runErr } = ins;
+  if (runErr || !run) return NextResponse.json({ error: `${runErr?.message} — apply migration 0018 (river_guide_runs)` }, { status: 500 });
 
   const { error: updErr } = await db.from("river_guides")
     .update({ enrichment_status: "PENDING_T1", updated_at: new Date().toISOString() })

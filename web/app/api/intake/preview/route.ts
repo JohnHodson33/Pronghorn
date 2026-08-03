@@ -25,7 +25,7 @@ export async function POST(req: Request) {
   if (!path) return NextResponse.json({ error: "path required (from /api/intake/upload)" }, { status: 400 });
   if (!["John", "Tom"].includes(uploadedBy)) return NextResponse.json({ error: "uploaded_by must be John or Tom" }, { status: 400 });
   const hint = (["contact", "company", "river_guide", "enrichment_fill"].includes(b.record_type) ? b.record_type : undefined) as RecordType | undefined;
-  const fillTargetHint = (["contact", "company"].includes(b.fill_target) ? b.fill_target : undefined) as FillTarget | undefined;
+  const fillTargetHint = (["contact", "company", "river_guide"].includes(b.fill_target) ? b.fill_target : undefined) as FillTarget | undefined;
 
   const db = serverDb();
 

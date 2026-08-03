@@ -65,6 +65,14 @@ async function main() {
     const total = fresh.length + enrichedSet.length;
     await setProgress(job.id, { status: 'running', started_at: new Date().toISOString(), counts: { total, processed: 0, found_owner: 0, found_email: 0, tier1: fresh.length, tier2: enrichedSet.length } });
 
+    // BEFORE-snapshot for per-row outcomes (0022, John 7/31: "which ones did I
+    // actually enrich"). Diffed against the final re-fetch — tier-agnostic, so
+    // tier-1, tier-2 and the skiptrace tier all show up without threading
+    // through the subprocess.
+    const before = new Map([...fresh, ...enrichedSet].map((l) => [l.id, {
+      owner: !!l.owner_name, email: !!l.owner_email, phone: !!l.owner_phone, linkedin: !!l.owner_linkedin,
+    }]));
+
     try {
       let processed = 0;
       // TIER 1: untouched leads → full enrichment worker (updates its own progress via --job)
@@ -118,6 +126,21 @@ async function main() {
         // Hunter is a flat sub ($0 marginal); tier-2 marginal = Exa; skiptrace per-hit
         cost_actual: Number((fresh.length * 0.01 + t2.processed * 0.006 + st.costUsd).toFixed(2)),
       });
+      // per-row outcomes (0022) — separate guarded write; degrades pre-migration
+      const results = {};
+      for (const l of after) {
+        const b = before.get(l.id);
+        if (!b) continue;
+        const o = {};
+        if (l.owner_name && !b.owner) o.gained_owner = true;
+        if (l.owner_email && !b.email) o.gained_email = true;
+        if (l.owner_phone && !b.phone) o.gained_phone = true;
+        if (l.owner_linkedin && !b.linkedin) o.gained_linkedin = true;
+        if (!Object.keys(o).length) o.nothing_new = true;
+        results[l.id] = o;
+      }
+      const { error: rErr } = await supabase.from('enrichment_jobs').update({ results }).eq('id', job.id);
+      if (rErr && /results/.test(rErr.message)) log.warn('  per-row outcomes not stored — apply migration 0022');
       log.info(`  job done: ${processed} processed (${fresh.length} tier1, ${t2.processed} tier2 → +${t2.emails} emails, +${t2.linkedins} linkedins)`);
     } catch (e) {
       log.error(`  job ${job.id} failed: ${e.message}`);

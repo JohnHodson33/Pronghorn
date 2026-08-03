@@ -61,6 +61,13 @@ async function updateRun(runId, counts, note) {
   if (!runId) return;
   await supabase.from('river_guide_runs').update({ counts, ...(note ? { note } : {}) }).eq('id', runId);
 }
+// per-row outcomes (0022) — separate guarded write so a pre-migration DB
+// degrades to counts-only instead of failing the whole run update
+async function updateRunResults(runId, results) {
+  if (!runId || !results) return;
+  const { error } = await supabase.from('river_guide_runs').update({ results }).eq('id', runId);
+  if (error && /results/.test(error.message)) log.warn('  run outcomes not stored — apply migration 0022');
+}
 
 async function main() {
   const arg = (f, d) => { const i = process.argv.indexOf(f); return i > -1 ? process.argv[i + 1] : d; };
@@ -94,6 +101,7 @@ async function main() {
   // phones only arrive via the Tracerfy tier (person-mode) — counted here so
   // the run receipt stays honest when that tier is wired to river guides
   let hunterUsed = 0, emails = 0, linkedins = 0, phones = 0, toPaid = 0, done = 0;
+  const results = {}; // per-row outcomes (0022): deal_id → {gained_*, escalated_paid, nothing_new}
   const Anthropic = require('@anthropic-ai/sdk');
   const anthropic = new Anthropic();
   const { findVerifiedLinkedin } = require('../enrich/linkedin_match');
@@ -102,6 +110,7 @@ async function main() {
     try {
       const nm = nameParts(g.full_name);
       if (!nm) continue;
+      const had = { email: !!g.contact?.email, linkedin: !!g.contact?.linkedin_url, phone: !!g.contact?.phone };
       const contact = { ...(g.contact || {}) }; // live schema: contact jsonb {email, phone, linkedin_url}
       const patch = {};
       const status = g.company_website_status || 'NOT_FOUND';
@@ -149,11 +158,20 @@ async function main() {
         if (Object.keys(cPatch).length) await supabase.from('contacts').update(cPatch).eq('id', g.contact_id);
       }
       log.info(`  ${gotAnything ? '✓' : '→paid'} ${g.full_name} (${status})${contact.email ? ' email ' + contact.email : ''}${contact.linkedin_url ? ' li' : ''}`);
+      // per-row outcome (only-true keys; John's "which ones actually gained")
+      const o = {};
+      if (contact.email && !had.email) o.gained_email = true;
+      if (contact.linkedin_url && !had.linkedin) o.gained_linkedin = true;
+      if (contact.phone && !had.phone) o.gained_phone = true;
+      if (!gotAnything) o.escalated_paid = true;
+      if (!Object.keys(o).length) o.nothing_new = true;
+      results[g.deal_id] = o;
       // live progress for the page (John: watching numbers move is the point)
       await updateRun(run?.id, {
         total: guides.length, processed: done, found_email: emails,
         found_linkedin: linkedins, found_phone: phones, escalated_paid: toPaid,
       }, `Enriching ${done}/${guides.length} — ${emails} emails, ${linkedins} LinkedIn found so far…`);
+      if (done % 10 === 0) await updateRunResults(run?.id, results); // partial outcomes survive a crash
     } catch (e) { log.error(`  ${g.full_name}: ${e.message}`); }
   }
 
@@ -165,6 +183,7 @@ async function main() {
       cost_actual: Number((linkedins * 0.0021).toFixed(3)), // serper+haiku per verified match
       note: receipt,
     }).eq('id', run.id);
+    await updateRunResults(run.id, results);
   }
   log.info(`tier-1 ${receipt}`);
 }
