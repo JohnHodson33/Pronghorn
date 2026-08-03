@@ -21,7 +21,7 @@ export const INTAKE_EXTENSIONS = ["csv", "tsv", "xlsx", "xls"];
 export const MAX_ROWS = 5000; // v1 cap; larger files report truncation
 
 export type RecordType = "contact" | "company" | "river_guide" | "enrichment_fill";
-export type FillTarget = "contact" | "company";
+export type FillTarget = "contact" | "company" | "river_guide";
 
 // Field catalogs — the ONLY columns intake may write to (never invent a field).
 type Catalog = { table: string; fields: string[]; required: string[]; numeric: string[]; boolean: string[] };
@@ -42,17 +42,29 @@ export const CATALOGS: Record<Exclude<RecordType, "enrichment_fill">, Catalog> =
   },
   river_guide: {
     table: "river_guides",
-    fields: ["full_name", "their_company", "role", "acquirer", "acquirer_pe_sponsor", "acquirer_website", "deal_year", "location_city", "location_state", "company_website", "exit_status", "industry", "source_url", "source", "notes", "deal_id"],
+    fields: ["full_name", "their_company", "role", "acquirer", "acquirer_pe_sponsor", "acquirer_website", "deal_year", "location_city", "location_state", "company_website", "exit_status", "industry", "source_url", "source", "notes", "deal_id", "email", "phone", "linkedin_url"],
     required: ["full_name", "their_company"],
     numeric: ["deal_year"],
     boolean: [],
   },
 };
 
+// river_guides stores contact channels in the `contact` jsonb, not columns —
+// these intake fields read/write there (the whole point of the VA round-trip:
+// a returned guide-results file must land on the GUIDE row, not only the CRM
+// contact, or the river-guides page keeps showing "no phone").
+const RG_CONTACT_FIELDS = new Set(["email", "phone", "linkedin_url"]);
+
 // enrichment_fill resolves to a base table + fill-only mode
 export function resolveType(rt: RecordType, fillTarget?: FillTarget): { base: Exclude<RecordType, "enrichment_fill">; fillOnly: boolean } {
   if (rt === "enrichment_fill") return { base: fillTarget ?? "contact", fillOnly: true };
   return { base: rt, fillOnly: false };
+}
+
+// A guide-shaped fill file (names + companies + found channels) should target
+// the guide rows even when the mapper says enrichment_fill without a target.
+export function looksLikeGuideFill(headers: string[]): boolean {
+  return /guide|acquir|exited|deal.?year/i.test(headers.join(" "));
 }
 
 // ---------- parsing ----------
@@ -187,7 +199,7 @@ export async function mapColumns(
 
 Record types and their allowed fields:
 ${catalogDesc}
-enrichment_fill → the file is UPDATES to fill blanks on EXISTING records (not new records); also return "fill_target": "contact" | "company" and map to that type's fields.
+enrichment_fill → the file is UPDATES to fill blanks on EXISTING records (not new records); also return "fill_target": "contact" | "company" | "river_guide" and map to that type's fields. A file of found contact info for exited owners/river guides (VA research results) is enrichment_fill with fill_target river_guide.
 
 Decide the record_type from the headers/sample (respect the user hint if given). Then map each allowed field of that type to the best-fitting source header, or null.
 Output JSON only: {"record_type": "...", "fill_target": "contact|company (only if enrichment_fill)", "mapping": {"<ourField>": "<sourceHeader>|null", ...}, "confidence": "high|medium|low", "notes": "one line"}`;
@@ -229,7 +241,9 @@ ${hint ? `User hint — record_type: ${hint}${fillTargetHint ? `, fill_target: $
 
   const record_type = (["contact", "company", "river_guide", "enrichment_fill"].includes(out.record_type as string)
     ? out.record_type : (hint ?? "contact")) as RecordType;
-  const fill_target = (out.fill_target === "company" ? "company" : out.fill_target === "contact" ? "contact" : fillTargetHint) as FillTarget | undefined;
+  const fill_target = ((["company", "contact", "river_guide"].includes(out.fill_target as string) ? out.fill_target : undefined)
+    ?? fillTargetHint
+    ?? (out.record_type === "enrichment_fill" && looksLikeGuideFill(parsed.headers) ? "river_guide" : undefined)) as FillTarget | undefined;
   const { base } = resolveType(record_type, fill_target);
   const headerSet = new Set(parsed.headers);
   // VALIDATE: keep only our-fields mapped to real source headers (never invent)
@@ -247,6 +261,8 @@ ${hint ? `User hint — record_type: ${hint}${fillTargetHint ? `, fill_target: $
 function coerce(field: string, raw: string, cat: Catalog): string | number | boolean | null {
   const v = (raw ?? "").trim();
   if (v === "") return null;
+  // VA/research convention for "couldn't find it" — never fill it as a value
+  if (/^(n\/?a|not\s*(found|available)|none|null|unknown|tbd|\?+|-+|—+)$/i.test(v)) return null;
   if (cat.numeric.includes(field)) {
     const n = Number(v.replace(/[$,\s]/g, ""));
     return Number.isFinite(n) ? n : null;
@@ -284,7 +300,7 @@ export type Plan = {
 async function loadExisting(db: SupabaseClient, base: string): Promise<Record<string, unknown>[]> {
   const cols = base === "contacts" ? "id,name,firm,email,phone,linkedin,title,role,notes"
     : base === "companies" ? "id,name,state,website,industry,city,revenue,ebitda,ebitda_type,pe_owned,pe_owner,notes"
-    : "deal_id,full_name,their_company,acquirer,acquirer_pe_sponsor,deal_year,location_city,location_state,company_website,exit_status,industry,notes";
+    : "deal_id,full_name,their_company,acquirer,acquirer_pe_sponsor,deal_year,location_city,location_state,company_website,exit_status,industry,notes,contact,contact_id";
   const out: Record<string, unknown>[] = [];
   // dynamic table name defeats supabase's typed inference — use a loose builder
   const table = db.from(base) as unknown as {
@@ -409,7 +425,13 @@ export async function buildPlan(
     const fill: Record<string, string | number | boolean> = {};
     const conflicts: PlannedRow["conflicts"] = [];
     for (const [f, up] of Object.entries(vals)) {
-      const cur = (match as Record<string, unknown>)[f];
+      // notes APPEND at execute time (with the provenance stamp) — an uploaded
+      // note differing from existing notes is normal, not a conflict
+      if (f === "notes") { fill[f] = up; continue; }
+      // river-guide contact channels live in the contact jsonb, not columns
+      const cur = cat.table === "river_guides" && RG_CONTACT_FIELDS.has(f)
+        ? ((match as { contact?: Record<string, unknown> }).contact ?? {})[f]
+        : (match as Record<string, unknown>)[f];
       const curBlank = cur == null || String(cur).trim() === "";
       if (curBlank) fill[f] = up;
       else if (nkey(cur) !== nkey(up)) conflicts.push({ field: f, existing: cur, uploaded: up });
@@ -466,11 +488,23 @@ export async function executePlan(
   db: SupabaseClient,
   plan: Plan,
   provenance: { uploaded_by: string; filename: string },
-): Promise<{ created: number; updated: number; skipped: number; errors: number; errorSamples: string[] }> {
+): Promise<{
+  created: number; updated: number; skipped: number; errors: number; errorSamples: string[];
+  // who was touched, so the receipt can link straight to the rows (7/31 —
+  // the VA round-trip needs "here's exactly who gained data" spot-checking)
+  touched: { action: "create" | "update"; id: string | null; label: string }[];
+}> {
   const cat = CATALOGS[plan.base];
   const stamp = `[intake: ${provenance.filename} by ${provenance.uploaded_by} on ${new Date().toISOString().slice(0, 10)}]`;
   const idField = cat.table === "river_guides" ? "deal_id" : "id";
-  const res = { created: 0, updated: 0, skipped: 0, errors: 0, errorSamples: [] as string[] };
+  const nameField = cat.table === "river_guides" ? "full_name" : "name";
+  const res = {
+    created: 0, updated: 0, skipped: 0, errors: 0, errorSamples: [] as string[],
+    touched: [] as { action: "create" | "update"; id: string | null; label: string }[],
+  };
+  const touch = (action: "create" | "update", id: unknown, label: unknown) => {
+    if (res.touched.length < 100) res.touched.push({ action, id: id == null ? null : String(id), label: String(label ?? "") });
+  };
 
   for (const r of plan.rows) {
     if (r.action === "skip") { res.skipped++; continue; }
@@ -482,26 +516,61 @@ export async function executePlan(
         row.notes = [r.values.notes, stamp].filter(Boolean).join(" ");
         if (cat.table === "river_guides") {
           if (!row.deal_id) row.deal_id = `INTAKE-${slug(String(r.values.full_name))}-${slug(String(r.values.their_company))}`;
+          // contact channels are jsonb, not columns
+          const ch: Record<string, unknown> = {};
+          for (const f of RG_CONTACT_FIELDS) if (row[f] != null) { ch[f] = row[f]; delete row[f]; }
+          if (Object.keys(ch).length) row.contact = ch;
           normalizeRiverGuideCreate(row);
           const { error } = await db.from("river_guides").upsert(row, { onConflict: "deal_id" });
           if (error) throw error;
+          touch("create", row.deal_id, r.values.full_name);
         } else {
-          const { error } = await db.from(cat.table).insert(row);
+          const { data: ins, error } = await db.from(cat.table).insert(row).select("id").maybeSingle();
           if (error) throw error;
+          touch("create", (ins as { id?: unknown } | null)?.id, r.values[nameField]);
         }
         res.created++;
       } else {
         // update: fill blank data fields + append the provenance stamp once
         const patch: Record<string, unknown> = {};
         for (const [f, v] of Object.entries(r.values)) if (f !== "notes") patch[f] = v;
-        const { data: cur } = await db.from(cat.table).select("notes").eq(idField, r.matchId!).maybeSingle();
-        const curNotes = String((cur as { notes?: string } | null)?.notes ?? "").trim();
+        // merge: Lane C's river_guides contact-jsonb handling + Lane B's
+        // nameField select (the intake receipt links need the row's name)
+        const selCols = cat.table === "river_guides"
+          ? `notes,contact,contact_id,${nameField}`
+          : `notes,${nameField}`;
+        const { data: cur } = await db.from(cat.table).select(selCols).eq(idField, r.matchId!).maybeSingle();
+        const curRow = (cur ?? {}) as { notes?: string; contact?: Record<string, unknown> | null; contact_id?: string | null };
+        if (cat.table === "river_guides") {
+          // channels go into the contact jsonb — re-checked blank-only at write
+          // time (the plan snapshot could be stale vs a nightly enrich pass)
+          const merged = { ...(curRow.contact ?? {}) };
+          let touched = false;
+          for (const f of RG_CONTACT_FIELDS) {
+            if (patch[f] == null) continue;
+            const v = patch[f]; delete patch[f];
+            if (merged[f] == null || String(merged[f]).trim() === "") { merged[f] = v; touched = true; }
+          }
+          if (touched) patch.contact = merged;
+          // a filled channel flows onto the linked CRM contact too (blanks only)
+          if (touched && curRow.contact_id) {
+            const { data: c } = await db.from("contacts").select("email,phone,linkedin").eq("id", curRow.contact_id).maybeSingle();
+            const cc = (c ?? {}) as { email?: string | null; phone?: string | null; linkedin?: string | null };
+            const cPatch: Record<string, unknown> = {};
+            if (merged.email && !cc.email) cPatch.email = merged.email;
+            if (merged.phone && !cc.phone) cPatch.phone = merged.phone;
+            if (merged.linkedin_url && !cc.linkedin) cPatch.linkedin = merged.linkedin_url;
+            if (Object.keys(cPatch).length) await db.from("contacts").update(cPatch).eq("id", curRow.contact_id);
+          }
+        }
+        const curNotes = String(curRow.notes ?? "").trim();
         const filledNote = typeof r.values.notes === "string" ? r.values.notes : "";
         const parts = [curNotes, filledNote].filter(Boolean);
         if (!parts.join(" ").includes(stamp)) parts.push(stamp);
         patch.notes = parts.join(" ");
         const { error } = await db.from(cat.table).update(patch).eq(idField, r.matchId!);
         if (error) throw error;
+        touch("update", r.matchId, (cur as Record<string, unknown> | null)?.[nameField] ?? r.values[nameField]);
         res.updated++;
       }
     } catch (e) {

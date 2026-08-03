@@ -11,6 +11,7 @@ import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 import { useUrlFilterSync } from "@/lib/use-url-filters";
 import FilterDropdown from "@/components/FilterDropdown";
 import SortHeader from "@/components/SortHeader";
+import CardList from "@/components/CardList";
 import { presenceOptions, presenceMatch, cmpText } from "@/lib/list-filters";
 
 type SortKey = "name" | "brokerage" | "listings" | "industries" | "states" | "email" | "phone" | "crm" | null;
@@ -159,7 +160,7 @@ export default function BrokersTable({ brokers }: { brokers: BrokerRow[] }) {
         </span>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
+      <div className="hidden overflow-x-auto rounded-xl border border-zinc-200 bg-white sm:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500">
@@ -273,6 +274,100 @@ export default function BrokersTable({ brokers }: { brokers: BrokerRow[] }) {
           </tbody>
         </table>
       </div>
+
+      {/* <640px: same rows, same filters/sort, card layout (mobile parity rule) */}
+      <CardList
+        emptyText="No brokers match the current filters."
+        sort={{
+          options: [
+            { value: "name", label: "Broker" },
+            { value: "brokerage", label: "Brokerage" },
+            { value: "listings", label: "Listings", numeric: true },
+            { value: "industries", label: "Industries" },
+            { value: "states", label: "States" },
+            { value: "email", label: "Email" },
+            { value: "phone", label: "Phone" },
+            { value: "crm", label: "CRM" },
+          ],
+          sortKey,
+          dir: sortDir,
+          onChange: (key, d) => {
+            if (!d) setSortKey(null);
+            else { setSortKey(key as SortKey); setSortDir(d); }
+          },
+        }}
+        controls={
+          <>
+            <FilterDropdown label="Brokerage" options={brokerageOptions}
+              selected={asSet(brokerageSel)} onChange={(s) => setBrokerageSel([...s].join(","))} />
+            <FilterDropdown label="Industry"
+              options={industries.map((i) => ({ value: i, label: i, count: brokers.filter((b) => b.industries.includes(i)).length }))}
+              selected={asSet(industry)} onChange={(s) => setIndustry([...s].join(","))} />
+            <FilterDropdown label="State"
+              options={states.map((s) => ({ value: s, label: s, count: brokers.filter((b) => b.states.includes(s)).length }))}
+              selected={asSet(state)} onChange={(s) => setState([...s].join(","))} />
+            <FilterDropdown label="Email" options={emailOptions} selected={emailSel} onChange={setEmailSel} />
+            <FilterDropdown label="Phone" options={phoneOptions} selected={phoneSel} onChange={setPhoneSel} />
+            <FilterDropdown label="CRM" options={crmOptions} selected={crmSel} onChange={setCrmSel} />
+          </>
+        }
+        cards={rows.map((b) => ({
+          key: b.id,
+          title: (
+            <Link href={`/brokers/${b.id}`} className="text-emerald-800 underline-offset-2 hover:underline">
+              {b.name}
+            </Link>
+          ),
+          titleRight: (
+            <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs font-semibold tabular-nums text-zinc-600">
+              {b.listingCount} listings
+            </span>
+          ),
+          fields: [
+            { label: "Brokerage", value: b.brokerage ?? "—" },
+            {
+              label: "Industries",
+              value: b.industries.length ? (
+                <span className="flex flex-wrap gap-1">
+                  {b.industries.slice(0, 4).map((i) => (
+                    <span key={i} className="rounded bg-emerald-50 px-1.5 py-0.5 text-xs text-emerald-800">{i}</span>
+                  ))}
+                  {b.industries.length > 4 && <span className="text-xs text-zinc-400">+{b.industries.length - 4}</span>}
+                </span>
+              ) : "—",
+            },
+            { label: "States", value: b.states.join(", ") || "—" },
+            {
+              label: "Email",
+              value: b.email ? (
+                <a href={`mailto:${b.email}`} className="text-emerald-700 underline-offset-2 hover:underline">{b.email}</a>
+              ) : "—",
+            },
+            {
+              label: "Phone",
+              value: b.phone ? (
+                <a href={`tel:${b.phone}`} className="text-emerald-700 underline-offset-2 hover:underline">{b.phone}</a>
+              ) : "—",
+            },
+            {
+              label: "CRM",
+              value: b.contactId ? (
+                <Link href={`/contacts?broker=${b.id}`} className="text-xs font-semibold text-emerald-700 hover:underline">
+                  in Contacts ✓ →
+                </Link>
+              ) : (
+                <button
+                  onClick={() => addToContacts(b.id)}
+                  disabled={busy === b.id}
+                  className="rounded-md border border-zinc-300 px-2.5 py-1 text-xs font-semibold text-zinc-600 disabled:opacity-50"
+                >
+                  {busy === b.id ? "…" : "+ Contacts"}
+                </button>
+              ),
+            },
+          ],
+        }))}
+      />
     </div>
   );
 }

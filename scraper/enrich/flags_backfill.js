@@ -93,7 +93,11 @@ async function main() {
 
       const enrich = { ...e, flags_backfill: { at: new Date().toISOString(), exa_checked: platform } };
       const patch = { enrichment: enrich };
+      // negatives PERSIST (John 7/31 program): "checked, no PE evidence" must
+      // be distinguishable from never-checked, or determined% stays a lie
       if (v.pe_owned === true && v.pe_owner) { enrich.pe_owned = true; enrich.pe_owner = v.pe_owner; pe++; }
+      else if (enrich.pe_owned !== true) { enrich.pe_owned = false; enrich.pe_basis = 'checked-no-evidence'; }
+      enrich.pe_checked_at = new Date().toISOString();
       if (v.hq_us === false) {
         enrich.hq_us = false;
         enrich.off_target_reason = 'non-US headquarters';

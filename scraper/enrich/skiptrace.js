@@ -121,12 +121,22 @@ async function runSkiptrace(leads, budget, log, { dryRun = false } = {}) {
     return { submitted: targets.length, hits: 0, phones: 0, emails: 0, costUsd: 0 };
   }
 
+  const { queueId, queue } = await submitAndAwait(targets.map((t) => t.row), log);
+  if (!queue) { log?.warn(`  skiptrace: queue ${queueId} still pending — results import on a later pass via --import ${queueId}`); return { submitted: targets.length, hits: 0, phones: 0, emails: 0, costUsd: 0, queueId }; }
+
+  return importQueueResults(queueId, queue, targets.map((t) => t.lead), log);
+}
+
+/** Submit person-mode rows [{first_name,last_name,address,city,state}] as a
+ *  Tracerfy batch and poll until done. Shared by the leads cascade and the
+ *  river-guides phone tier. Returns {queueId, queue|null (still pending)}. */
+async function submitAndAwait(rows, log) {
   // multipart CSV upload (the endpoint 415s raw JSON despite the docs).
   // NOTE: the results CSV has a FIXED schema — custom passthrough columns are
-  // dropped — so results re-match to leads by street+name, not by id.
+  // dropped — so results re-match to records by street+name, not by id.
   const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
   const cols = ['first_name', 'last_name', 'address', 'city', 'state'];
-  const csv = [cols.join(','), ...targets.map((t) => cols.map((c) => esc(t.row[c])).join(','))].join('\n');
+  const csv = [cols.join(','), ...rows.map((r) => cols.map((c) => esc(r[c])).join(','))].join('\n');
   const fd = new FormData();
   fd.append('csv_file', new Blob([csv], { type: 'text/csv' }), 'pronghorn-skiptrace.csv');
   // mail_* mappings point at the SAME address/city/state columns — the PM's
@@ -152,9 +162,19 @@ async function runSkiptrace(leads, budget, log, { dryRun = false } = {}) {
     if (queue && !queue.pending) break;
     await sleep(21000);
   }
-  if (!queue || queue.pending) { log?.warn(`  skiptrace: queue ${queueId} still pending — results import on a later pass via --import ${queueId}`); return { submitted: targets.length, hits: 0, phones: 0, emails: 0, costUsd: 0, queueId }; }
+  return { queueId, queue: queue && !queue.pending ? queue : null };
+}
 
-  return importQueueResults(queueId, queue, targets.map((t) => t.lead), log);
+/** Download + parse a finished queue's results CSV. */
+async function fetchQueueRows(queue) {
+  const csvRes = await fetch(queue.download_url);
+  return parseCsv(await csvRes.text());
+}
+
+/** Look up a queue by id (for --import flows). */
+async function getQueue(queueId) {
+  const all = await tfy('GET', '/queues/');
+  return (all || []).find((x) => x.id === Number(queueId)) || null;
 }
 
 const normKey = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
@@ -165,8 +185,7 @@ const rowKey = (street, first, last) => `${normKey(street)}|${normKey(first)}|${
  *  re-match to leads by street + first + last name. Result columns:
  *  primary_phone, primary_phone_type, Email-1..5, Mobile-1..5, Landline-1..3. */
 async function importQueueResults(queueId, queue, leadsCtx, log) {
-  const csvRes = await fetch(queue.download_url);
-  const rows = parseCsv(await csvRes.text());
+  const rows = await fetchQueueRows(queue);
 
   // build the street|first|last → lead index (from run context, else from DB)
   let pool = leadsCtx;
@@ -264,4 +283,9 @@ async function main() {
 }
 
 if (require.main === module) main().catch((e) => { console.error(e.message); process.exit(1); });
-module.exports = { runSkiptrace, skiptraceEligible, importQueueResults };
+module.exports = {
+  runSkiptrace, skiptraceEligible, importQueueResults,
+  // shared batch machinery (river-guides phone tier reuses these)
+  submitAndAwait, fetchQueueRows, getQueue, splitOwnerName, rowKey,
+  COST_PER_HIT,
+};

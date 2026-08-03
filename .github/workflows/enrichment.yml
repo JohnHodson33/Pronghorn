@@ -58,3 +58,11 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: node enrich/size_estimate.js --limit 60
+      # PE-status invariant (John 7/31 program): persist negatives on checked
+      # leads + cross-ref the river-guides acquisition ledger. $0 — no API calls.
+      - name: PE-status backfill (negatives + acquisition ledger)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node enrich/pe_backfill.js
+        continue-on-error: true

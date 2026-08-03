@@ -3,7 +3,55 @@
 Per-lane log per PARALLEL-SESSIONS.md; the PM/integrator folds these into
 DECISION-LOG.md and wires routes into Sidebar.tsx.
 
-## 🔄 HANDOFF — session #7 (7/21 eve) — successor resumes here
+## 🔄 HANDOFF — session #8 (7/31) — successor resumes here
+
+- **State**: MOBILE CARD-COLLAPSE SWEEP (John's standing rule + LIST-UX item
+  6) — **DONE across all 7 lists**, one commit each, verified in-browser at
+  375px AND 1280px per page (not assumed):
+  CardList+Contacts `67a1c12` · Brokers `1e6054f` · Companies `0e1890b` ·
+  Listings `f6195a3` · Deals `b77a5f9` · Enrichment `15e5c6b` ·
+  River Guides (this commit). Lead-list detail inherits LeadsTable.
+- **The pattern (use for any new list)**: table wrapper gets `hidden
+  sm:block`; the page ALSO renders `web/components/CardList.tsx` (sm:hidden)
+  from the SAME filtered+sorted rows. Because the column-header filters
+  disappear with the table, CardList takes `controls` (the page's labeled
+  FilterDropdowns) + `sort` (all sortable columns) and renders them in a
+  thumb-scrollable strip above the cards — full filter/sort parity on the
+  phone. Cards with onClick are `role="button"` divs (NOT <button> — field
+  values carry mailto/tel anchors).
+- **Interactivity preserved in cards**: Enrichment keeps the selection
+  checkbox (verified: check a card → Enrich button flips to the live
+  estimate), InlineField editing, promote/discard; River Guides keeps the
+  checkbox + the verify-evidence expand (tap 🔍 → Evidence row in the card).
+- **Verification gotcha**: the Browser pane couldn't screenshot (pane not
+  displayed) — verified via javascript_tool computed-style checks + click
+  simulation instead; also, everything-404s after merge = stale `.next` (rm
+  -rf web/.next + restart, the known gotcha).
+- **UNIT 2 DONE — deal-proposals visibility** (`d6b9ddd`): violet "📩 N
+  deal updates" pill in the GLOBAL top bar (extended ActiveJobPill — no
+  Sidebar.tsx touch needed, top bar covers every page incl. mobile) linking
+  to /#key-actions; same chip on the Key Actions header; proposal cards
+  sort FIRST so they can't slide past the 8-row display cut. Verified live
+  with 4 real pending proposals.
+- **UNIT 3 DONE — VA round-trip**: (a) "Send to VA (N)" violet button on
+  /river-guides exports the NEEDS_PAID guides in view (87 live) as a
+  fill-in CSV — columns name/firm/city/state/email/phone/linkedin/notes +
+  an `instructions` column (full VA brief in row 1; intake drops unmapped
+  headers so the same file round-trips as a contact enrichment-fill;
+  name+firm are the match keys). (b) intake receipts now list "Rows
+  written" as clickable chips → /companies/<id> or /contacts?q= /
+  /river-guides?q= — executePlan returns `touched` (capped 100), additive
+  so old receipts still render. Receipt UI verified via temporary mock
+  (reverted); live confirm still needs the PM's real-file shakedown.
+  ⚠️ NOTE: Lane C's Vatest Shakedown test row vanished from
+  /api/river-guides between my morning check (468) and now (467) — someone
+  (PM?) deleted it; I did not recreate it.
+- **NEXT**: (4) TASK-QUEUE top-down — biggest open Lane B items: costs
+  YTD-variable-window question is Lane C's; check recovered ⬜ items
+  (/sources v2 health table; Broker Directory deep-link — ContactsTable
+  already has ?broker=).
+
+## 🔄 HANDOFF — session #7 (7/21 eve) — retired
 
 - **State**: nothing in flight. **John's #1 complaint (list filtering/sorting,
   asked 5×) is ROLLED OUT EVERYWHERE and verified page-by-page.** PM found the

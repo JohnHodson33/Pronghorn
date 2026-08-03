@@ -12,6 +12,7 @@ import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 import { PinButton } from "@/components/PinnedViews";
 import FilterDropdown from "@/components/FilterDropdown";
 import SortHeader from "@/components/SortHeader";
+import CardList from "@/components/CardList";
 import { presenceOptions, presenceMatch, cmpText } from "@/lib/list-filters";
 
 export type DirectoryContact = {
@@ -174,7 +175,7 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
         </button>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
+      <div className="hidden overflow-x-auto rounded-xl border border-zinc-200 bg-white sm:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500">
@@ -278,6 +279,82 @@ export default function ContactsTable({ contacts }: { contacts: DirectoryContact
           </tbody>
         </table>
       </div>
+
+      {/* <640px: same rows, same filters/sort, card layout (mobile parity rule) */}
+      <CardList
+        emptyText="No contacts match the current filters."
+        sort={{
+          options: [
+            { value: "name", label: "Name" },
+            { value: "role", label: "Role" },
+            { value: "company", label: "Company" },
+            { value: "email", label: "Email" },
+            { value: "phone", label: "Phone" },
+            { value: "notes", label: "Notes" },
+          ],
+          sortKey,
+          dir: sortDir,
+          onChange: (key, d) => {
+            if (!d) setSortKey(null);
+            else { setSortKey(key as SortKey); setSortDir(d); }
+          },
+        }}
+        controls={
+          <>
+            <FilterDropdown label="Role" name="Role"
+              options={Object.entries(roles).sort((a, b) => b[1] - a[1]).map(([r, n]) => ({ value: r, label: roleLabel(r), count: n }))}
+              selected={asSet(role)} onChange={(s) => setRole([...s].join(","))} />
+            <FilterDropdown label="Industry" name="Industry"
+              options={Object.entries(industryCounts).sort((a, b) => b[1] - a[1]).map(([i, n]) => ({ value: i, label: i, count: n }))}
+              selected={asSet(industry)} onChange={(s) => setIndustry([...s].join(","))} />
+            <FilterDropdown label="Email" name="Email" options={emailOptions} selected={emailSel} onChange={setEmailSel} />
+            <FilterDropdown label="Phone" name="Phone" options={phoneOptions} selected={phoneSel} onChange={setPhoneSel} />
+            <FilterDropdown label="Notes" name="Notes" options={notesOptions} selected={notesSel} onChange={setNotesSel} />
+          </>
+        }
+        cards={rows.map((c) => ({
+          key: c.id,
+          title: c.name ?? "—",
+          titleRight: c.role ? (
+            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${roleStyle[c.role] ?? "bg-zinc-100 text-zinc-600"}`}>
+              {roleLabel(c.role)}
+            </span>
+          ) : undefined,
+          onClick: c.company_id ? () => router.push(`/companies/${c.company_id}`) : undefined,
+          fields: [
+            {
+              label: "Company",
+              value: c.companyName ? (
+                <>
+                  {c.companyName}
+                  {c.companyIndustry && (
+                    <span className="ml-1.5 rounded bg-emerald-50 px-1.5 py-0.5 text-xs font-medium text-emerald-800">
+                      {c.companyIndustry}
+                    </span>
+                  )}
+                </>
+              ) : "—",
+            },
+            {
+              label: "Email",
+              value: c.email ? (
+                <a href={`mailto:${c.email}`} onClick={(e) => e.stopPropagation()} className="text-emerald-700 underline-offset-2 hover:underline">
+                  {c.email}
+                </a>
+              ) : "—",
+            },
+            {
+              label: "Phone",
+              value: c.phone ? (
+                <a href={`tel:${c.phone}`} onClick={(e) => e.stopPropagation()} className="text-emerald-700 underline-offset-2 hover:underline">
+                  {c.phone}
+                </a>
+              ) : "—",
+            },
+            ...(c.notes ? [{ label: "Notes", value: c.notes }] : []),
+          ],
+        }))}
+      />
     </div>
   );
 }

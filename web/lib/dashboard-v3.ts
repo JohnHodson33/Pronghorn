@@ -22,7 +22,7 @@ function subsectorOf(industry: string | null): string | null {
 }
 
 export type KeyAction = {
-  kind: "promote" | "send_inquiry" | "nda" | "stale" | "deadline" | "queued_email" | "note_tag" | "deal_proposal";
+  kind: "promote" | "send_inquiry" | "nda" | "stale" | "deadline" | "queued_email" | "note_tag" | "deal_proposal" | "api_dead";
   label: string;
   detail: string;
   href: string;
@@ -224,6 +224,28 @@ export async function fetchDashboardV3(): Promise<DashboardV3 | null> {
       docUrl: n.doc_url,
     });
   }
+  // Paid-API health beacons (app_config, written by scraper workers) — the
+  // Serper account ran dry 7/22 and green continue-on-error CI hid it for 9
+  // days while enrichment silently idled. A dead API needs a human (top up /
+  // fix the key), so it belongs in this queue. Tolerant pre-0018.
+  const apiHealthRes = await db.from("app_config").select("key, value").like("key", "api_health_%");
+  for (const row of (apiHealthRes.data ?? []) as { key: string; value: unknown }[]) {
+    try {
+      const h = (typeof row.value === "string" ? JSON.parse(row.value) : row.value) as
+        { ok: boolean; error: string | null; at: string } | null;
+      if (h && h.ok === false) {
+        const service = row.key.replace(/^api_health_/, "");
+        actions.push({
+          kind: "api_dead",
+          label: `${service} API is failing — enrichment stalled`,
+          detail: `${h.error ?? "unknown error"} (since ${h.at?.slice(0, 10) ?? "?"}) — top up credits or fix the key, workers resume on their own`,
+          href: "/costs",
+          urgent: true,
+        });
+      }
+    } catch { /* unparseable beacon — skip */ }
+  }
+
   type ProposalRow = {
     id: string; deal_id: string; proposed_next_step: string | null;
     proposed_next_step_due: string | null; evidence: string | null;

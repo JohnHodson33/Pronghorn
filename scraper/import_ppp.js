@@ -95,7 +95,9 @@ async function filter(all) {
   log.info(`PPP filter${all ? ' (all NAICS)' : ' (green)'}: ${kept} loans kept of ${total} (${(fs.statSync(out).size / 1e6).toFixed(1)}MB → ${path.basename(out)})`);
 }
 
-const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+// "&" ↔ "and" unified — the 7/31 variant audit found it the ONLY variant class
+// dropping real matches ("Comfort Masters Heating and Air" vs "… & AIR")
+const norm = (s) => String(s || '').toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, ' ').trim();
 const SUFFIX = /\s(llc|inc|co|corp|corporation|company|ltd|pllc|incorporated)$/;
 
 // green-adjacent NAICS keep the match at 'high' confidence; other NAICS that a

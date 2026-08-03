@@ -1,0 +1,77 @@
+# AUTO-INTEGRATOR (PM 8/3) — the anti-stall backbone.
+#
+# WHY: three times now, lanes finished work that sat unmerged for days because
+# the local PM loop died (usage limits, laptop restarts, context deaths) and
+# nothing shipped until John noticed. John 8/3: "I need the PM loop to drive
+# progress… without me restarting it every day."
+#
+# WHAT: every 30 min, in CI (survives laptops, sessions, and usage limits):
+#   1. try to merge each lane branch into main — CLEAN merges only
+#   2. verify the web build still passes with the merges applied
+#   3. push main only when both hold; conflicts/build failures leave main
+#      untouched for the human PM loop to resolve
+# Vercel auto-deploys main once the Git integration is connected (John's step),
+# completing the lanes→main→prod pipeline with zero local dependencies.
+#
+# TASK-QUEUE keep-both note: TASK-QUEUE.md conflicts are the common case; the
+# integrator does NOT attempt them (union merges risk mangling directives) —
+# a conflicted lane is simply skipped and reported in the run summary.
+
+name: Auto-integrator
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "13,43 * * * *"
+
+concurrency:
+  group: integrator
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+      - name: Merge clean lane branches
+        id: merge
+        run: |
+          git config user.name "pronghorn-integrator"
+          git config user.email "integrator@pronghornequity.com"
+          merged=""
+          for b in lane/brokers lane/frontend lane/integrations; do
+            if ! git rev-parse --verify "origin/$b" >/dev/null 2>&1; then continue; fi
+            ahead=$(git rev-list --count HEAD.."origin/$b")
+            [ "$ahead" = "0" ] && continue
+            if git merge --no-edit "origin/$b" >/dev/null 2>&1; then
+              echo "merged $b ($ahead commits)"
+              merged="$merged $b"
+            else
+              git merge --abort
+              echo "::warning::$b has conflicts — left for the PM loop"
+            fi
+          done
+          if [ -n "$merged" ]; then echo "did_merge=true" >> $GITHUB_OUTPUT;
+          else echo "did_merge=false" >> $GITHUB_OUTPUT; echo "nothing to merge"; fi
+      - uses: actions/setup-node@v4
+        if: steps.merge.outputs.did_merge == 'true'
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Build gate
+        if: steps.merge.outputs.did_merge == 'true'
+        working-directory: web
+        run: |
+          npm ci
+          npm run build
+      - name: Push main
+        if: steps.merge.outputs.did_merge == 'true'
+        run: git push origin main
