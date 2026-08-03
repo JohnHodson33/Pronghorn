@@ -35,6 +35,8 @@ jobs:
       SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       HUNTER_API_KEY: ${{ secrets.HUNTER_API_KEY }}
+      GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+      TRACERFY_API_KEY: ${{ secrets.TRACERFY_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -43,12 +45,18 @@ jobs:
           cache: npm
           cache-dependency-path: scraper/package-lock.json
       - run: npm ci
-      - name: Status verification (highest leverage — 30/night)
-        run: node riverguides/verify_status.js --limit 30
+      - name: Status verification (highest leverage — 60/night, never-attempted first)
+        run: node riverguides/verify_status.js --limit 60
         continue-on-error: true
       - name: Identity resolution (25/night, never guesses)
         run: node riverguides/resolve_names.js --limit 25
         continue-on-error: true
       - name: Tier-1 enrichment waterfall (20/night)
         run: node riverguides/enrich_t1.js --limit 20
+        continue-on-error: true
+      - name: Former-company street addresses (Places, $0 marginal — 40/night)
+        run: node riverguides/enrich_addresses.js --limit 40
+        continue-on-error: true
+      - name: Phone tier (Tracerfy person-mode, $0.02/hit, one attempt ever — 40/night)
+        run: node riverguides/skiptrace_guides.js --limit 40
         continue-on-error: true
