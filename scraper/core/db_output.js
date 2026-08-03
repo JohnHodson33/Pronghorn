@@ -159,6 +159,10 @@ async function syncListings(listings) {
           last_seen_at:     now,
           // volatile financials
           asking_price:     l.asking_price,
+          // only when the adapter parsed one — the screener also writes
+          // gross_revenue (extracted from descriptions) and screened rows are
+          // never re-screened, so a source null must not clobber it
+          ...(l.gross_revenue != null && { gross_revenue: l.gross_revenue }),
           cash_flow:        l.cash_flow,
           cash_flow_type:   l.cash_flow_type,
           implied_multiple: l.implied_multiple,

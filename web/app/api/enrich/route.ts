@@ -68,14 +68,16 @@ export async function POST(req: Request) {
   if (!count) return NextResponse.json({ error: "selection is fully enriched — every lead already has owner + email + phone/LinkedIn" }, { status: 422 });
 
   // queued_by + label (0022): who queued it and the UI's filter summary —
-  // retried without them on a pre-0022 DB so queueing never breaks
+  // retried without them on a pre-0022 DB so queueing never breaks. A copy of
+  // the label inside counts jsonb keeps labels working before 0022 lands.
+  const label = typeof b.label === "string" && b.label.trim() ? b.label.trim().slice(0, 120) : null;
   const baseRow = {
     lead_list_id: b.listId ?? null, lead_ids: leadIds, cost_estimate: estimate,
-    counts: { total: count, processed: 0, tier1, tier2 },
+    counts: { total: count, processed: 0, tier1, tier2, ...(label ? { label } : {}) },
   };
   const meta = {
     ...(typeof b.queuedBy === "string" && b.queuedBy.trim() ? { queued_by: b.queuedBy.trim().slice(0, 40) } : {}),
-    ...(typeof b.label === "string" && b.label.trim() ? { label: b.label.trim().slice(0, 120) } : {}),
+    ...(label ? { label } : {}),
   };
   let ins = await db.from("enrichment_jobs").insert({ ...baseRow, ...meta }).select("id").single();
   if (ins.error && Object.keys(meta).length && /queued_by|label/.test(ins.error.message)) {

@@ -66,6 +66,7 @@ export async function GET() {
   const rows = (data ?? []).map((r) => withOutcomes({ ...r, ...describe(r as never) }));
   return NextResponse.json({
     active: rows.filter((r) => r.state === "queued" || r.state === "running"),
+    // 10, not 5 — the runs surface is the durable "take me back there" ledger (7/31)
     recent: rows.filter((r) => r.state === "done" || r.state === "failed").slice(0, 10),
   });
 }

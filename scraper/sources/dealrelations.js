@@ -104,10 +104,24 @@ class DealRelationsScraper extends SourceScraper {
       if (locM && locM[1].trim()) fields['state/prov'] = locM[1].trim();
     }
 
-    // Name: og:title is the descriptive name on template A but only the slug on
-    // template B — fall back to a humanized slug (drop any leading listing number).
-    const og = ($('meta[property="og:title"]').attr('content') || '').replace(/\s+/g, ' ').trim();
-    const title = og && !/^\d/.test(og) && !/dealrelations/i.test(og)
+    // Template C (newer Rails front-ends: kmf, crowneatlantic, vrbiztriangle,
+    // smallbusinessdeal, sunbeltatlanta, businessmodificationgroup,
+    // seilertucker …): no td.display grid. Financials appear as tight
+    // label/value pairs in one of two structural shapes — sibling elements
+    // ("<p>Price:</p><p>$X</p>", "<td>PRICE:</td><td>$X</td>") or prose runs
+    // ("<strong>Asking Price:</strong> $3,700,000<br>"). Parse structurally,
+    // first match wins (related-listing teasers repeat the labels lower down).
+    if (Object.keys(fields).length === 0) this.parseTemplateC($, fields);
+
+    // Name: og:title is "Firm | Listing title" on templates A/C (firm part may
+    // be empty), only the slug on template B — take the segment after the last
+    // pipe, else fall back to a humanized slug (drop any leading listing number).
+    const ogRaw = ($('meta[property="og:title"]').attr('content') || '').replace(/\s+/g, ' ').trim();
+    const piped = ogRaw.includes('|');
+    const og = piped ? ogRaw.split('|').pop().trim() : ogRaw;
+    // Leading-digit og is a slug echo on template B — but a piped og is a real
+    // title where digits are legitimate ("25 Year Old Towing Company").
+    const title = og && (piped || !/^\d/.test(og)) && !/dealrelations/i.test(og)
       ? og
       : this.titleCase(slug.replace(/^\d+-/, '').replace(/-/g, ' '));
     const stateName = (fields['state/prov'] || '').toLowerCase();
@@ -139,7 +153,7 @@ class DealRelationsScraper extends SourceScraper {
       url,
       description: null,
       location: {
-        city: fields['county'] ? `${fields['county']} County` : null,
+        city: fields['_city'] || (fields['county'] ? `${fields['county']} County` : null),
         state,
         raw: [fields['county'], fields['state/prov']].filter(Boolean).join(', ') || null,
       },
@@ -147,16 +161,83 @@ class DealRelationsScraper extends SourceScraper {
       asking_price: this.parseMoney(fields['price']),
       gross_revenue: this.parseMoney(fields['sales']),
       cash_flow: this.parseMoney(fields['disc earn']),
-      cash_flow_type: fields['disc earn'] ? 'SDE' : null,
+      cash_flow_type: fields['disc earn'] ? (fields['_cf_type'] || 'SDE') : null,
       broker: agentName ? { name: this.titleCase(agentName), company: brokerName, phone: agentPhone, email: null } : null,
       raw: {
         listing_no: fields['listing no'] || null,
         sic: fields['sic'] || null,
+        year_established: fields['_year'] || undefined,
         state_inferred: stateInferred || undefined, // state came from a title region hint, not a structured field
         down_payment: this.parseMoney(fields['down']),
         view_status: this.viewStatus($),
       },
     });
+  }
+
+  // Label → canonical fields{} key. Colon required in the source label — that
+  // is what separates real spec labels from table headers / prose mentions.
+  static C_LABELS = [
+    [/^asking\s+price:$/i, 'price', null],
+    [/^price:$/i, 'price', null],
+    [/^(gross\s+)?revenue:$/i, 'sales', null],
+    [/^sales:$/i, 'sales', null],
+    [/^cash\s*flow(\s*\(sde\))?:$/i, 'disc earn', 'SDE'],
+    [/^sde:$/i, 'disc earn', 'SDE'],
+    [/^profits?:$/i, 'disc earn', 'CASH_FLOW'],
+    [/^ebitda:$/i, 'disc earn', 'EBITDA'],
+    [/^down\s+payment:$/i, 'down', null],
+    [/^location:$/i, 'state/prov', null],
+    [/^industry:$/i, 'category', null],
+    [/^listing\s*#:$/i, 'listing no', null],
+    [/^year\s+established:$/i, '_year', null],
+  ];
+
+  parseTemplateC($, fields) {
+    const moneyKeys = new Set(['price', 'sales', 'disc earn', 'down']);
+    const take = (key, cfType, rawVal) => {
+      const val = String(rawVal || '').replace(/\s+/g, ' ').trim();
+      if (!val || val.length > 80) return;
+      if (moneyKeys.has(key)) {
+        // Accept only a leading dollar figure; "Undisclosed"/"N/A"/"TBD" and
+        // prose like "Included in asking price $X" stay null — never invent.
+        const m = val.match(/^\$?\s*([\d,]+(?:\.\d+)?)\s*(?:\+)?$/);
+        if (!m) return;
+        if (fields[key] === undefined) {
+          fields[key] = m[1];
+          if (key === 'disc earn' && cfType) fields['_cf_type'] = cfType;
+        }
+        return;
+      }
+      if (fields[key] === undefined && !/^(undisclosed|not disclosed|n\/?a|tbd)$/i.test(val)) fields[key] = val;
+    };
+
+    // Full text, not own-text: labels are often wrapped ("<p><strong>Price:
+    // </strong></p>"). A container holding label AND value can't match the
+    // anchored ^label:$ regexes, so full text stays safe.
+    const label = (el) => $(el).text().replace(/\s+/g, ' ').trim();
+
+    // One document-order pass over both shapes — sibling pairs
+    // ("<h5>Price:</h5><p>$X</p>", "<td>PRICE:</td><td>$X</td>") and prose
+    // runs ("<strong>Price:</strong> $X<br>"). Document order matters: the
+    // main listing renders above any related-listing teasers, so the first
+    // valid value per label must win regardless of which shape carries it.
+    $('p, td, th, dt, li, h3, h4, h5, h6, span, div, strong, b').each((_, el) => {
+      const t = label(el);
+      for (const [re, key, cfType] of DealRelationsScraper.C_LABELS) {
+        if (!re.test(t)) continue;
+        const sib = $(el)[0].nextSibling;
+        if (sib && sib.type === 'text' && sib.data.trim()) take(key, cfType, sib.data);
+        else take(key, cfType, $(el).next().text());
+        break;
+      }
+    });
+
+    // "City, ST" locations carry a city template A never has.
+    const loc = fields['state/prov'];
+    if (loc && /,/.test(loc)) {
+      const city = loc.split(',')[0].trim();
+      if (/^[A-Za-z .'-]{2,40}$/.test(city) && !/county$/i.test(city)) fields['_city'] = city;
+    }
   }
 
   viewStatus($) {

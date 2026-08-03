@@ -3,7 +3,33 @@
 Per-lane log per PARALLEL-SESSIONS.md; the PM/integrator folds these into
 DECISION-LOG.md and wires routes into Sidebar.tsx.
 
-## 🔄 HANDOFF — session #8 (7/31) — successor resumes here
+## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
+
+### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **RUNS SURFACE SHIPPED** (`4f52860` + merge `be0e42d`): shared
+  `web/components/RunsPanel.tsx` on BOTH /river-guides and /enrichment —
+  always visible, click a run → table shows EXACTLY that run's rows (other
+  filters suspended; honesty note when leads fall outside the latest-200
+  window), outcome quick-chips read `results` (Lane C's 0022 — degrade to
+  counts until John applies it), completion receipts persist until
+  dismissed (`web/lib/run-seen.ts`, 48h freshness), top-bar pill flags
+  unseen finishes. Queue-time labels: enrich POSTs store label in the 0022
+  column (pre-0022 fallback: a copy inside counts jsonb).
+- **DATA-HEALTH PANEL SHIPPED** (workstream D of the 7/31 PROGRAM):
+  `web/lib/data-health.ts` + card on `/` — the chain funnel (PE-determined /
+  sized / named / reachable + guides named/verified/channel) live vs
+  targets, weekly snapshots in app_config key `data_health_snapshots`
+  (seeded w/ the PM's 7/31 baseline), delta chips per metric. Verified live:
+  PE-determined 69.4% (+67.4 vs baseline — Lane C's negative-persistence is
+  visibly working), sized 70.1%, named 44.4%, reachable 24.4%.
+- **Merge gotcha survived**: origin/main's 0022 work conflicted in both
+  enrich routes + runs route; resolution = Lane C's structure (real
+  label/queued_by columns w/ pre-0022 retry) + my counts-jsonb label copy
+  as degrade. After ANY merge touching api routes: rm -rf web/.next — the
+  dev server kept serving the conflicted file from cache (500s + stale
+  parse errors) long after the working tree was clean.
+
+### 7/31 session
 
 - **State**: MOBILE CARD-COLLAPSE SWEEP (John's standing rule + LIST-UX item
   6) — **DONE across all 7 lists**, one commit each, verified in-browser at

@@ -1702,3 +1702,86 @@ After the transworld cap fix (fe8e150) I audited every capped enrichment adapter
 **FIX:** added a value-DESC sort before the cap in all 5 adapters (bbf/businessbroker/murphy/viking sort by cash_flow, vr by asking_price) — a pure win (zero added requests) that makes the cap protect the highest-value deals instead of an arbitrary scrape-order slice. PLUS modest cap raises where the drop was material: bbf 150→250, vr 100→150, murphy 100→130 (businessbroker/viking unchanged — no real pressure). Added ~180 detail fetches/nightly total (~3 min). Validated: config parses, all 5 adapters load. Takes effect 7/21 nightly — expect broker coverage to rise on bbf (FL), vr, murphy, and the highest-value deals across all capped sources to always get enriched.
 
 This closes the class of bug end-to-end: transworld (fe8e150) + these 5. Any future capped adapter should sort-by-value-before-cap by default.
+
+## 2026-08-03 — ASKING-PRICE PARSE GAP FIXED (John's 7/21+7/31 #1) + thin-financials tail
+
+**The story:** the fixes were built and locally backfilled 7/31, but the session
+died before commit — so the 8/1–8/3 CI nightlies ran the OLD adapters and
+re-nulled everything (asking is in the update patch). All committed+pushed now
+(350303d + 24139b6); the auto-integrator ships them to main, tonight's nightly
+runs the fixed code, values self-maintain from here.
+
+**Tupelo (tupelomarket): ask 1% → 88%, mult 1% → 68%** (358 live). Root cause:
+the marketplace cards NEVER show asking price (adapter hardcoded null). Fix:
+every listing gets one GET to the per-listing CRM API
+(crm.tupelosmb.com/api/public/listings/<cuid> — askingPrice/revenue/cashFlow/
+ebitda/industries/createdAt, authoritative over card parse) — PLUS a detail-page
+SSR fallback because ~60% of marketplace cuids 404 on the CRM API (7/31
+discovery). Backfill run: 139 via API + 183/202 404s recovered via fallback,
+0 errors. 1 new Tier 1 surfaced immediately on re-screen.
+
+**DealRelations: ask 13% → 86%, cf 13% → 77%, mult 13% → 72%** (198 live).
+Root cause: 7 newer subdomains (kmf, crowneatlantic, vrbiztriangle,
+smallbusinessdeal, sunbeltatlanta, businessmodificationgroup, seilertucker)
+use new Rails front-end templates the parser didn't know — plus og:title
+"Firm | Title" produced the broken "|" names John saw. Fix: template C = one
+document-order pass over sibling label/value pairs AND strong-prose runs,
+colon-anchored labels, first-match-wins (related-listing teasers repeat labels
+lower down); "Undisclosed"/prose values stay null (never invent);
+Profits→CASH_FLOW, Cash Flow (SDE)→SDE, EBITDA→EBITDA typed honestly.
+Verified 8/8 saved live templates. seilertucker genuinely publishes
+"Undisclosed" — its nulls are correct.
+
+**core/db_output.js:** update patch now refreshes gross_revenue — but ONLY when
+the adapter parsed one (the Claude screener also writes extracted revenue and
+screened rows never re-screen; a source null must not clobber it). Without this
+no revenue backfill could ever land on existing rows.
+
+**Thin-financials tail (PM audit list) — fixed vs structural:**
+- bizben FIXED (biggest pool, 4,734 live): (1) 0→null coercion — BizBen writes
+  0 for undisclosed; 452 rows had fake $0 cash flow, 356 fake $0 revenue
+  (self-heals on next run via update patch); (2) new detail-page enrichment —
+  the regular pool's index API has NO rev/cf keys but detail pages embed the
+  full record (RSC stream, urlPath-verified extraction), cap 250, native
+  before "tw:" syndications, asking-desc. Expect cf/mult coverage to climb
+  across runs.
+- murphy FIXED: "Total Sales" parsed from the detail pages broker enrichment
+  already fetches (zero extra requests; rev 0% → ~the enriched subset).
+- hedgestone FIXED: new capped revenue enrichment (150, cf-desc) off the
+  detail spec list.
+- bizquest rev/cf STRUCTURAL: index cards render "Cash Flow: Sign In to View"
+  (login-gated); we don't authenticate. Its value stays mirror-dedup to
+  bizbuysell originals.
+- bizbuysell rev STRUCTURAL: index JSON-LD carries no revenue; detail pages
+  Akamai-blocked.
+- transworld rev STRUCTURAL: search AND detail APIs verified live — no revenue
+  field exists at all (price/SDE/ebitda_price/inventory/ffe only).
+- linkbusiness NO CHANGE NEEDED: adapter parses correctly; live index sampled
+  at ~24/24 cards with Sales when published — DB 46% IS the source's
+  publication rate (the audit's 6% was stale/pre-refresh).
+
+**SERPER (PM 8/3 ask):** Lane A broker scraping has ZERO Serper dependency
+(direct HTTP/JSON + puppeteer only) — nightly coverage unaffected by the
+credit outage. The shared river-guides EXTRACTOR (extract.js) is also
+Serper-free. What IS Serper-dependent: riverguides/enrich_t1.js,
+resolve_names.js, enrich_addresses.js, verify_status.js — i.e. the
+river-guides contact-enrichment cascade. Until John tops up, those will
+no-op/fail on the search tier.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-08-03: branch synced w/ origin/main, committed+pushed through
+24139b6 (auto-integrator merges clean pushes to main every 30 min). John's #1
+(asking-price gap) DONE + backfilled + verified: tupelo ask 88%/mult 68%,
+dealrelations ask 86%/mult 72% (was 1%/13%). Thin-financials tail DONE (bizben/
+murphy/hedgestone fixed; bizquest/bizbuysell/transworld rev structural —
+verified live, source doesn't publish; linkbusiness already correct). db_output
+now refreshes gross_revenue (conditional, screener-safe).
+VERIFY NEXT LOOP: (1) bizben/murphy/hedgestone backfill run results (was
+running at handoff — check rev/cf coverage moved; log in scratchpad
+tail_backfill.log); (2) after tonight's nightly, re-check tupelo+dealrelations
+coverage HELD (nightly now runs fixed code from main — if it re-nulled, the
+auto-integrator hasn't merged yet); (3) bizben fake-zero rows self-healed.
+OPEN: cannabinoid subdomain 404s every dealrelations run (dead — consider
+dropping from config.subdomains); murphy rev limited to the enriched subset
+(cap 130) by design. Serper outage: no Lane A impact (see 8/3 entry). Then
+TASK-QUEUE top-down + self-iterate audits.
