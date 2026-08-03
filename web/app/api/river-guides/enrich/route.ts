@@ -85,19 +85,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, queued: 0, note: "Nothing queued — every selected row still needs its name resolved (identity resolution runs nightly)." });
   }
 
-  // RUN RECORD first, so the page has something to poll immediately.
-  // queued_by + label (0022): who clicked Enrich and the filter summary the UI
-  // sends ("Tree Care · Call now · 80 selected") — retried without them on a
-  // pre-0022 DB so queueing never breaks on the migration gap.
+  // Human run label from the queue-time filters ("Tree Care · Call now · 80
+  // selected"). 0022 gives it a real column (+ queued_by); a copy inside the
+  // counts jsonb keeps labels working on a pre-0022 DB.
+  const label = typeof b.label === "string" && b.label.trim() ? b.label.trim().slice(0, 120) : null;
+
+  // RUN RECORD first, so the page has something to poll immediately —
+  // retried without the 0022 columns so queueing never breaks on the gap.
   const baseRow = {
     deal_ids: eligible, state: "queued",
-    counts: { total: eligible.length, processed: 0, found_email: 0, found_linkedin: 0, found_phone: 0, escalated_paid: 0 },
+    counts: { total: eligible.length, processed: 0, found_email: 0, found_linkedin: 0, found_phone: 0, escalated_paid: 0, ...(label ? { label } : {}) },
     cost_estimate: est.totalEstUsd,
     note: `Queued — the worker starts within ~${WORKER_CADENCE_MIN} minutes`,
   };
   const meta = {
     ...(typeof b.queuedBy === "string" && b.queuedBy.trim() ? { queued_by: b.queuedBy.trim().slice(0, 40) } : {}),
-    ...(typeof b.label === "string" && b.label.trim() ? { label: b.label.trim().slice(0, 120) } : {}),
+    ...(label ? { label } : {}),
   };
   let ins = await db.from("river_guide_runs").insert({ ...baseRow, ...meta }).select("id").single();
   if (ins.error && Object.keys(meta).length && /queued_by|label/.test(ins.error.message)) {

@@ -209,8 +209,16 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
   feel identical. ACCEPTANCE (John's literal workflow): filter → select 80 →
   Enrich → leave → come back later → one click on the run → see exactly who
   gained what → work that list.
-  - 🔨 LANE B 7/31 ~12:00 — taking the surface half now; degrades gracefully
-    (today's counts-only display) until Lane C's per-row results land.
+  - ✅ LANE B 8/3 — surface half SHIPPED (RunsPanel on both pages: always
+    visible, exact run-row filter, outcome chips wired to `results`,
+    unmissable-done receipts + top-bar pill, queue-time labels). Chips light
+    up the moment 0022's per-row results appear.
+- 📣 LANE B 8/3 — **DATA-HEALTH PANEL (PROGRAM workstream D) LIVE on `/`**:
+  chain funnel vs targets w/ weekly deltas (snapshots in app_config
+  `data_health_snapshots`, PM 7/31 baseline seeded). Live read at ship time:
+  PE-determined 69.4% (+67.4 — Lane C's negatives fix showing), sized 70.1%,
+  named 44.4%, reachable 24.4%; guides named 61.9% / verified 5.4% /
+  channel 40.3%.
 - 📣 LANE B 7/31 — **DEAL-PROPOSAL VISIBILITY SHIPPED without touching
   Sidebar.tsx**: the pending-proposal count is a violet "📩 N deal updates"
   pill in the GLOBAL top bar (ActiveJobPill, every page incl. mobile) linking
