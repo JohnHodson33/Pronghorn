@@ -60,9 +60,12 @@ export async function fetchDataHealth(): Promise<DataHealth | null> {
     review_count: number | null; industry_verified: string | null;
     lead_lists: { query_industry: string } | { query_industry: string }[] | null;
   };
+  // scope = Lane C's funnel scope (8/3): on-target AND not dead — a discarded
+  // lead shouldn't count against the chain
   const leadsRes = await db.from("leads")
     .select("off_target, owner_name, owner_email, owner_phone, owner_linkedin, enrichment, review_count, industry_verified, lead_lists(query_industry)")
     .or("off_target.is.null,off_target.eq.false")
+    .neq("status", "dead")
     .limit(5000);
   if (leadsRes.error) return null;
   const leads = (leadsRes.data ?? []) as unknown as LeadRow[];
