@@ -7,6 +7,7 @@ import PinnedViews from "@/components/PinnedViews";
 import TagNoteCard from "@/components/TagNoteCard";
 import DealProposalCard from "@/components/DealProposalCard";
 import { fetchDashboardV3 } from "@/lib/dashboard-v3";
+import { fetchDataHealth, type Metric } from "@/lib/data-health";
 
 export const dynamic = "force-dynamic";
 
@@ -24,9 +25,41 @@ const actionIcon: Record<string, string> = {
 const C_BROKER = "#047857"; // emerald-700
 const C_PROP = "#3b82f6"; // blue-500
 
+// one funnel-stage row on the data-health card: label, count, target-marked
+// bar, pct + weekly delta
+function HealthRow({ m, delta }: { m: Metric; delta: number | undefined }) {
+  const onTarget = m.pct >= m.target;
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-2 text-sm">
+        <span className="min-w-0 truncate text-zinc-700">{m.label}</span>
+        <span className="flex shrink-0 items-baseline gap-1.5 tabular-nums">
+          <span className={`font-bold ${onTarget ? "text-emerald-700" : "text-zinc-900"}`}>{m.pct}%</span>
+          <span className="text-xs text-zinc-400">/{m.target}%</span>
+          {delta !== undefined && delta !== 0 && (
+            <span className={`rounded-full px-1.5 text-[11px] font-semibold ${delta > 0 ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-700"}`}>
+              {delta > 0 ? "+" : ""}{delta}
+            </span>
+          )}
+        </span>
+      </div>
+      <div className="relative mt-1 h-2 overflow-hidden rounded bg-zinc-100">
+        <div
+          className={`h-2 rounded ${onTarget ? "bg-emerald-600" : "bg-amber-500"}`}
+          style={{ width: `${Math.min(m.pct, 100)}%` }}
+        />
+        {/* target tick */}
+        <div className="absolute top-0 h-2 w-0.5 bg-zinc-500/70" style={{ left: `${m.target}%` }} title={`target ${m.target}%`} />
+      </div>
+      <div className="mt-0.5 text-[11px] tabular-nums text-zinc-400">{m.count} of {m.n}</div>
+    </div>
+  );
+}
+
 export default async function Dashboard() {
   const data = await fetchDashboardV3();
   if (!data) return <div className="p-8 text-sm text-zinc-400">Database not connected.</div>;
+  const health = await fetchDataHealth();
 
   // proposals first (stable within each half), so an Outlook-detected next
   // step can't hide behind the 8-row display cut
@@ -115,6 +148,38 @@ export default async function Dashboard() {
           </ul>
         )}
       </section>
+
+      {/* ---- Data health: the bulletproof-chain funnel (PROGRAM 7/31) ---- */}
+      {health && (
+        <section className="rounded-xl border border-zinc-200 bg-white p-5">
+          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+            <div>
+              <h2 className="font-semibold">Data health — the core chain</h2>
+              <p className="text-xs text-zinc-500">
+                PE-status → size → owner → contact, measured live vs the program targets.
+                {health.deltaRefAt && <> Deltas vs {health.deltaRefAt}.</>}
+              </p>
+            </div>
+            <span className="text-xs tabular-nums text-zinc-400">
+              {health.leadsN} on-target leads · {health.guidesN} river guides
+            </span>
+          </div>
+          <div className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
+            <div className="space-y-3">
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-zinc-400">Proprietary leads</div>
+              {health.metrics.filter((m) => m.key.startsWith("lead_")).map((m) => (
+                <HealthRow key={m.key} m={m} delta={health.deltas[m.key]} />
+              ))}
+            </div>
+            <div className="space-y-3">
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-zinc-400">River guides</div>
+              {health.metrics.filter((m) => m.key.startsWith("rg_")).map((m) => (
+                <HealthRow key={m.key} m={m} delta={health.deltas[m.key]} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ---- Total pipeline funnel (both prongs) ---- */}
       <section className="rounded-xl border border-zinc-200 bg-white p-5">
