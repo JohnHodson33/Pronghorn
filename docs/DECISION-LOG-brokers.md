@@ -1785,3 +1785,15 @@ OPEN: cannabinoid subdomain 404s every dealrelations run (dead — consider
 dropping from config.subdomains); murphy rev limited to the enriched subset
 (cap 130) by design. Serper outage: no Lane A impact (see 8/3 entry). Then
 TASK-QUEUE top-down + self-iterate audits.
+
+## 2026-08-03 (cont.) — tail backfill VERIFIED
+bizben/murphy/hedgestone run clean (0 errors each): murphy rev 0%→28% (123
+detail pages), hedgestone rev 1%→19% (138 enriched), bizben rev 27%→36% /
+cf→27% / mult 16%→24% AND 1,628 wrongly-delisted rows relisted (earlier
+pagination-chain breaks had aged them out; full run saw them again). Fake-zero
+placeholders purged by one-off update (352 gross_revenue=0, 175 cash_flow=0
+nulled — the conditional revenue guard preserves stored values by design, so
+zeros needed the one-off). Remaining rev gaps on all three = what the sources
+publish (undisclosed) — honest nulls. STILL TO VERIFY next loop: tomorrow's
+nightly holds tupelo/dealrelations/bizben coverage (needs auto-integrator to
+have merged lane/brokers→main first).
