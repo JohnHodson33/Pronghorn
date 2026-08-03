@@ -15,6 +15,7 @@ import FilterDropdown from "@/components/FilterDropdown";
 import SortHeader from "@/components/SortHeader";
 import ScrollShell from "@/components/ScrollShell";
 import CardList from "@/components/CardList";
+import RunsPanel, { type RunRow } from "@/components/RunsPanel";
 import { presenceOptions, presenceMatch } from "@/lib/list-filters";
 
 const tierChip: Record<string, string> = {
@@ -58,10 +59,23 @@ type Estimate = { count: number; tier1: number; tier2: number; estimate: number 
 type Job = {
   id: string;
   status: string;
-  counts: { total?: number; processed?: number; tier1?: number; tier2?: number; found_owner?: number; found_email?: number } | null;
+  lead_ids?: string[] | null;
+  counts: { total?: number; processed?: number; tier1?: number; tier2?: number; found_owner?: number; found_email?: number; label?: string } | null;
+  results?: Record<string, { gained_email?: boolean; gained_phone?: boolean; gained_linkedin?: boolean; escalated_paid?: boolean; nothing_new?: boolean }> | null;
   created_at: string;
   finished_at: string | null;
 };
+
+// one honest line per job for the runs surface (mirrors the river-guides
+// runs API's describe(); enrichment jobs don't carry a server-built note)
+function jobNote(j: Job): string {
+  const c = j.counts ?? {};
+  if (j.status === "queued") return "Queued — the runner picks this up within ~15 min";
+  if (j.status === "running") return `Enriching ${c.processed ?? 0}/${c.total ?? 0} — ${c.found_owner ?? 0} owners, ${c.found_email ?? 0} emails found so far…`;
+  if (j.status === "failed") return "Run failed — see the runner log";
+  const found = (c.found_owner ?? 0) + (c.found_email ?? 0);
+  return `Done: ${c.processed ?? c.total ?? 0} processed — ${c.found_owner ?? 0} owners, ${c.found_email ?? 0} emails${found === 0 ? " (nothing new found)" : ""}`;
+}
 
 // The dots are RETIRED platform-wide (John 7/16: "I'd rather just have the
 // actual contacts — phone, email, LinkedIn — and see if they're filled").
@@ -176,6 +190,23 @@ export default function LeadsTable({
   const [estimate, setEstimate] = useState<Estimate | null>(null);
   const [job, setJob] = useState<Job | null>(null);
   const [jobDone, setJobDone] = useState<Job | null>(null);
+  // the RUNS surface (John 7/31): every job, always visible, click → filter
+  const [allJobs, setAllJobs] = useState<Job[]>([]);
+  const [openRunId, setOpenRunId] = useState<string | null>(null);
+  const [openRunIds, setOpenRunIds] = useState<string[] | null>(null);
+  useEffect(() => {
+    let alive = true;
+    const loadJobs = async () => {
+      try {
+        const res = await fetch("/api/enrich");
+        const j = await res.json();
+        if (alive) setAllJobs((j.jobs ?? []) as Job[]);
+      } catch {}
+    };
+    loadJobs();
+    const iv = setInterval(loadJobs, 15000);
+    return () => { alive = false; clearInterval(iv); };
+  }, []);
 
   const effIndustry = (l: EnrichmentLead) => l.industry_verified ?? l.list?.industry ?? null;
   const levelOf = (l: EnrichmentLead) => completeness(l);
@@ -222,7 +253,12 @@ export default function LeadsTable({
   }, [leads]);
 
   const rows = useMemo(() => {
-    const filtered = leads.filter((l) => {
+    // run view = EXACTLY the clicked run's rows (John 7/31) — the other
+    // filters would silently hide run rows, so they don't apply while a run
+    // is open (sorting below still does)
+    const filtered = openRunIds?.length
+      ? leads.filter((l) => openRunIds.includes(l.id))
+      : leads.filter((l) => {
       if (!showOffTarget && l.off_target) return false;
       if (hidePe && isPe(l)) return false;
       if (levelsSel.size && !levelsSel.has(levelOf(l))) return false;
@@ -272,7 +308,7 @@ export default function LeadsTable({
       }
       return cmp !== 0 ? (sortDir === "asc" ? cmp : -cmp) : byDefault(a, b);
     });
-  }, [leads, q, industriesSel, statesSel, listsSel, statusSel, emailSel, phoneSel, linkedinSel, levelsSel, tiersSel, showOffTarget, hidePe, sortKey, sortDir]);
+  }, [leads, q, industriesSel, statesSel, listsSel, statusSel, emailSel, phoneSel, linkedinSel, levelsSel, tiersSel, showOffTarget, hidePe, sortKey, sortDir, openRunIds]);
 
   const sortSet = (key: SortKey) => (d: "asc" | "desc" | null) => {
     if (!d) setSortKey(null);
@@ -333,6 +369,17 @@ export default function LeadsTable({
     };
   }, [job, enrichingCount, router]);
 
+  // human label for the run from the queue-time filters (7/31 item g)
+  function runLabel(n: number) {
+    return [
+      ...[...industriesSel],
+      ...[...levelsSel],
+      ...[...tiersSel].map((t) => TIER_LABELS[t] ?? t),
+      ...[...statusSel].map((s) => statusLabel[s] ?? s),
+      `${n} selected`,
+    ].join(" · ").slice(0, 120);
+  }
+
   async function enrichSelected() {
     const ids = [...selected];
     if (ids.length === 0) return;
@@ -343,7 +390,7 @@ export default function LeadsTable({
       const res = await fetch("/api/enrich", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ leadIds: ids }),
+        body: JSON.stringify({ leadIds: ids, label: runLabel(ids.length) }),
       });
       const j = await res.json();
       if (res.ok) {
@@ -541,6 +588,39 @@ export default function LeadsTable({
       </div>
 
       {notice && <div className="border-b border-zinc-100 bg-amber-50 px-5 py-2 text-sm text-amber-800">{notice}</div>}
+
+      {/* RUNS surface (John 7/31 NEW #1) — uniform with /river-guides: always
+          visible, click a run → the table shows exactly that run's leads,
+          outcome chips once Lane C's per-row results land */}
+      {allJobs.length > 0 && (
+        <div className="border-b border-zinc-100 px-5 py-3">
+          <RunsPanel
+            channel="leads"
+            openRunId={openRunId}
+            onOpenRun={(run, ids) => {
+              setOpenRunId(run ? run.id : null);
+              setOpenRunIds(run ? ids : null);
+            }}
+            runs={allJobs.slice(0, 12).map((j): RunRow => ({
+              id: j.id,
+              state: j.status === "queued" ? "queued" : j.status === "running" ? "running" : j.status === "failed" ? "failed" : "done",
+              label: j.counts?.label ?? null,
+              note: jobNote(j),
+              counts: j.counts,
+              ids: j.lead_ids ?? null,
+              results: j.results ?? null,
+              created_at: j.created_at,
+              finished_at: j.finished_at,
+            }))}
+          />
+          {openRunIds && rows.length < openRunIds.length && (
+            <div className="mt-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs text-amber-800">
+              Showing {rows.length} of this run&apos;s {openRunIds.length} leads — the rest aren&apos;t in this
+              view&apos;s latest-200 window (find them via their lead list, or clear the run filter).
+            </div>
+          )}
+        </div>
+      )}
 
       {rows.length === 0 ? (
         <div className="px-5 py-14 text-center text-sm text-zinc-400">

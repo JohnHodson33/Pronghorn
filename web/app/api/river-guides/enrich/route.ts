@@ -85,10 +85,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, queued: 0, note: "Nothing queued — every selected row still needs its name resolved (identity resolution runs nightly)." });
   }
 
+  // Human run label from the queue-time filters (John 7/31: "Tree Care ·
+  // Call now · 80 selected"). Lives inside the counts jsonb so it needs no
+  // migration; Lane C may promote it to a real column with their results half.
+  const label = typeof b.label === "string" && b.label.trim() ? b.label.trim().slice(0, 120) : null;
+
   // RUN RECORD first, so the page has something to poll immediately
   const { data: run, error: runErr } = await db.from("river_guide_runs").insert({
     deal_ids: eligible, state: "queued",
-    counts: { total: eligible.length, processed: 0, found_email: 0, found_linkedin: 0, found_phone: 0, escalated_paid: 0 },
+    counts: { total: eligible.length, processed: 0, found_email: 0, found_linkedin: 0, found_phone: 0, escalated_paid: 0, ...(label ? { label } : {}) },
     cost_estimate: est.totalEstUsd,
     note: `Queued — the worker starts within ~${WORKER_CADENCE_MIN} minutes`,
   }).select("id").single();

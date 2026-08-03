@@ -51,9 +51,12 @@ export async function POST(req: Request) {
   if (b.estimateOnly) return NextResponse.json({ count, tier1, tier2, estimate });
   if (!count) return NextResponse.json({ error: "selection is fully enriched — every lead already has owner + email + phone/LinkedIn" }, { status: 422 });
 
+  // human run label from queue-time filters (7/31) — inside counts jsonb so
+  // no migration is needed; Lane C may promote it with their per-row results
+  const label = typeof b.label === "string" && b.label.trim() ? b.label.trim().slice(0, 120) : null;
   const { data: job, error } = await db.from("enrichment_jobs").insert({
     lead_list_id: b.listId ?? null, lead_ids: leadIds, cost_estimate: estimate,
-    counts: { total: count, processed: 0, tier1, tier2 },
+    counts: { total: count, processed: 0, tier1, tier2, ...(label ? { label } : {}) },
   }).select("id").single();
   if (error) return NextResponse.json({ error: `${error.message} — apply migration 0008` }, { status: 503 });
   return NextResponse.json({ jobId: job.id, count, tier1, tier2, estimate, note: "queued — runner picks it up within 15 min (or the next worker pass)" });

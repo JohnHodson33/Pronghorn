@@ -12,6 +12,7 @@ import FilterDropdown from "@/components/FilterDropdown";
 import SortHeader from "@/components/SortHeader";
 import ScrollShell from "@/components/ScrollShell";
 import CardList from "@/components/CardList";
+import RunsPanel, { type RunRow, type RunOutcome } from "@/components/RunsPanel";
 import { useUrlFilterSync } from "@/lib/use-url-filters";
 import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 import { presenceOptions, presenceMatch } from "@/lib/list-filters";
@@ -20,7 +21,8 @@ type Run = {
   id: string;
   deal_ids: string[] | null;
   state: "queued" | "running" | "done" | "failed";
-  counts: { total?: number; processed?: number; found_email?: number; found_linkedin?: number; found_phone?: number; escalated_paid?: number } | null;
+  counts: { total?: number; processed?: number; found_email?: number; found_linkedin?: number; found_phone?: number; escalated_paid?: number; label?: string } | null;
+  results?: Record<string, RunOutcome> | null; // per-row outcomes (Lane C's half)
   note: string | null;
   stale?: boolean;
   created_at?: string;
@@ -127,6 +129,9 @@ export default function RiverGuides() {
   const [est, setEst] = useState<Estimate | null>(null);
   const [estBusy, setEstBusy] = useState(false);
   const [openRun, setOpenRun] = useState<Run | null>(null); // "show me that run's list"
+  // outcome quick-chips narrow the run filter to a subset ("the 31 that
+  // gained an email"); null = the whole run
+  const [openRunIds, setOpenRunIds] = useState<string[] | null>(null);
   const [busy, setBusy] = useState(false);
   // Find-more discovery bar
   const [discIndustry, setDiscIndustry] = useState("");
@@ -212,9 +217,13 @@ export default function RiverGuides() {
   const linkedinOptions = useMemo(() => presenceOptions(all, (g) => g.contact?.linkedin_url, "LinkedIn"), [all]);
 
   const rows = useMemo(() => {
-    const filtered = all.filter((g) => {
-      // run filter: "show me exactly who was in that enrichment run"
-      if (openRun?.deal_ids?.length && !openRun.deal_ids.includes(g.deal_id)) return false;
+    // run view = EXACTLY that run's rows (John 7/31) — other filters don't
+    // apply while a run is open, so they can't silently hide run rows; the
+    // outcome chips pass a narrower id set than the whole run
+    const runIds = openRunIds ?? openRun?.deal_ids;
+    const filtered = runIds?.length
+      ? all.filter((g) => runIds.includes(g.deal_id))
+      : all.filter((g) => {
       if (bandsSel.size && !bandsSel.has(g.priority_band)) return false;
       if (industriesSel.size && !industriesSel.has(g.industry)) return false;
       if (statusSel.size && !statusSel.has(g.enrichment_status)) return false;
@@ -256,7 +265,7 @@ export default function RiverGuides() {
       const d = BANDS.indexOf(a.priority_band) - BANDS.indexOf(b.priority_band);
       return d !== 0 ? d : (b.screen_score ?? 0) - (a.screen_score ?? 0);
     });
-  }, [all, q, bandsSel, industriesSel, statusSel, exitSel, statesSel, emailSel, phoneSel, linkedinSel, sortKey, sortDir, openRun]);
+  }, [all, q, bandsSel, industriesSel, statusSel, exitSel, statesSel, emailSel, phoneSel, linkedinSel, sortKey, sortDir, openRun, openRunIds]);
 
   // COST BEFORE THE CLICK (John 7/16: "the cost should show up beforehand… to
   // the extent anything shows up more expensive, I want us to be thoughtful").
@@ -281,6 +290,15 @@ export default function RiverGuides() {
     return () => { cancelled = true; clearTimeout(t); };
   }, [selected]);
 
+  // human label for the run, from the filters live at queue time (7/31 item g)
+  function runLabel() {
+    return [
+      ...[...industriesSel],
+      ...[...bandsSel].map((b) => BAND_LABEL[b] ?? b),
+      `${selected.size} selected`,
+    ].join(" · ").slice(0, 120);
+  }
+
   async function enrichSelected() {
     setBusy(true);
     setNotice(null);
@@ -288,7 +306,7 @@ export default function RiverGuides() {
       const res = await fetch("/api/river-guides/enrich", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dealIds: [...selected] }),
+        body: JSON.stringify({ dealIds: [...selected], label: runLabel() }),
       });
       const j = await res.json().catch(() => ({}));
       if (res.ok) { setNotice(j.note ?? `Queued ${selected.size} for tier-1 enrichment.`); setSelected(new Set()); load(); }
@@ -424,49 +442,33 @@ export default function RiverGuides() {
           </div>
         );
       })}
-      {/* RUN HISTORY (John 7/16: "I want to click on the previously run session
-          of enrichment and have it pull up that whole list"). Each past run is
-          clickable → the table filters to exactly the people in that run. */}
-      {!runs.active.length && runs.recent.length > 0 && (
-        <div className="rounded-xl border border-zinc-200 bg-white p-3">
-          <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Enrichment runs — click one to see exactly who was in it
-          </div>
-          <div className="space-y-1">
-            {runs.recent.slice(0, 5).map((r) => {
-              const isOpen = openRun?.id === r.id;
-              const c = r.counts ?? {};
-              return (
-                <div key={r.id} className="flex flex-wrap items-center gap-2 text-sm">
-                  <button
-                    onClick={() => setOpenRun(isOpen ? null : r)}
-                    className={`rounded border px-2 py-0.5 text-xs font-semibold ${isOpen ? "border-emerald-700 bg-emerald-700 text-white" : "border-zinc-300 text-zinc-600 hover:border-emerald-600 hover:text-emerald-700"}`}
-                  >
-                    {isOpen ? "showing this run ✓" : `show these ${c.total ?? r.deal_ids?.length ?? 0}`}
-                  </button>
-                  <span className="text-zinc-400">
-                    {r.finished_at ? new Date(r.finished_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}
-                  </span>
-                  <span className={r.state === "failed" ? "text-red-700" : "text-zinc-700"}>{r.note}</span>
-                  {(c.escalated_paid ?? 0) > 0 && (
-                    <button
-                      onClick={() => { setOpenRun(r); setStatusSel(new Set(["NEEDS_PAID"])); }}
-                      className="rounded border border-violet-300 px-2 py-0.5 text-xs font-semibold text-violet-800 hover:bg-violet-50"
-                    >
-                      {c.escalated_paid} → paid queue
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          {openRun && (
-            <button onClick={() => setOpenRun(null)} className="mt-2 text-xs font-semibold text-emerald-800 hover:underline">
-              ← clear run filter (showing all {all.length})
-            </button>
-          )}
-        </div>
-      )}
+      {/* RUNS SURFACE (John 7/31 NEW #1 — supersedes the 7/16 history panel):
+          ALWAYS visible (the old panel hid during an active run), every run
+          clickable → the table filters to exactly that run's rows; outcome
+          quick-chips light up when Lane C's per-row results land; a finished
+          run stays flagged until dismissed. */}
+      <RunsPanel
+        channel="river-guides"
+        openRunId={openRun?.id ?? null}
+        onOpenRun={(run, ids) => {
+          if (!run) { setOpenRun(null); setOpenRunIds(null); return; }
+          const orig = [...runs.active, ...runs.recent].find((x) => x.id === run.id) ?? null;
+          setOpenRun(orig);
+          setOpenRunIds(ids);
+        }}
+        runs={[...runs.active, ...runs.recent].map((r): RunRow => ({
+          id: r.id,
+          state: r.state,
+          label: r.counts?.label ?? null,
+          note: r.note,
+          stale: r.stale,
+          counts: r.counts,
+          ids: r.deal_ids,
+          results: r.results ?? null,
+          created_at: r.created_at ?? null,
+          finished_at: r.finished_at,
+        }))}
+      />
       {runs.note && !runs.active.length && !runs.recent.length && (
         <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">{runs.note}</div>
       )}
