@@ -61,8 +61,80 @@ class BizbenScraper extends SourceScraper {
       }
     }
 
+    // The regular (fast_track=false) pool's index records carry NO revenue or
+    // cash-flow keys at all — but the detail pages SSR the full record. Detail-
+    // enrich the subset missing financials (highest asking first, capped).
+    if (this.config.enrich_details !== false) await this.enrichDetails(listings);
+
     this.info(`Scrape complete — ${listings.length} listings (${pageErrors} errors)`);
     return { listings, stats: { pagesOk, pageErrors } };
+  }
+
+  // Detail pages are Next.js RSC streams that embed the listing record as
+  // escaped JSON (\"revenue\":867996,\"cashFlow\":247396). Extract from the
+  // window around a cashFlow/revenue key that also contains THIS listing's
+  // urlPath — related-listing teasers embed other records on the same page.
+  async enrichDetails(listings) {
+    const cap = this.config.max_detail_enrich ?? 250;
+    // "tw:" urlPaths are out-of-state syndicated records that rarely embed
+    // financials — spend the cap on native listings first, highest asking first.
+    const isTw = (l) => /tw:/.test(l.url) ? 1 : 0;
+    const targets = listings
+      .filter((l) => (l.cash_flow == null || l.gross_revenue == null) && l.url)
+      .sort((a, b) => isTw(a) - isTw(b) || (b.asking_price ?? 0) - (a.asking_price ?? 0))
+      .slice(0, cap);
+    if (targets.length === 0) { this.info('Detail enrichment: nothing missing financials'); return; }
+    this.info(`Detail enrichment: ${targets.length} listing(s) missing rev/cf (cap ${cap}, asking-desc)`);
+
+    let enriched = 0;
+    let errors = 0;
+    for (const l of targets) {
+      try {
+        const res = await this.fetchRetry(l.url, { headers: { 'User-Agent': UA } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const html = await res.text();
+        const slugPath = l.url.split('/business-for-sale/')[1] || '';
+        const rec = this.extractEmbedded(html, slugPath);
+        if (rec) {
+          if (l.gross_revenue == null && rec.revenue) l.gross_revenue = rec.revenue;
+          if (l.cash_flow == null && rec.cashFlow) { l.cash_flow = rec.cashFlow; l.cash_flow_type = 'SDE'; }
+          if (rec.revenue || rec.cashFlow) enriched++;
+        }
+        await this.sleep(400);
+      } catch (err) {
+        if (++errors >= 10) { this.warn('Detail enrichment: too many errors, stopping'); break; }
+      }
+    }
+    this.info(`Detail enrichment complete — ${enriched} gained financials (${errors} errors)`);
+  }
+
+  extractEmbedded(html, slugPath) {
+    if (!slugPath) return null;
+    const grab = (re, win) => {
+      const m = win.match(re);
+      const v = m ? parseFloat(m[1].replace(/,/g, '')) : NaN;
+      return Number.isFinite(v) && v > 0 ? v : null; // 0 = undisclosed
+    };
+    // Primary: the page's main \"post\":{...} prop IS the detail record —
+    // sanity-checked by requiring this listing's urlPath inside the window.
+    const pi = html.indexOf('\\"post\\":{');
+    if (pi >= 0) {
+      const win = html.slice(pi, pi + 4000);
+      if (win.includes(slugPath)) {
+        const revenue = grab(/\\"revenue\\":([\d.]+)/, win);
+        const cashFlow = grab(/\\"cashFlow\\":([\d.]+)/, win) ?? grab(/\\"adjustedNet\\":\\"([\d,]+)\\"/, win);
+        if (revenue || cashFlow) return { revenue, cashFlow };
+      }
+    }
+    // Fallback: tight window around an escaped copy of this listing's urlPath.
+    const needle = slugPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    for (const m of html.matchAll(new RegExp(needle, 'g'))) {
+      const win = html.slice(Math.max(0, m.index - 1200), m.index + 1200);
+      const revenue = grab(/\\"revenue\\":([\d.]+)/, win);
+      const cashFlow = grab(/\\"cashFlow\\":([\d.]+)/, win) ?? grab(/\\"adjustedNet\\":\\"([\d,]+)\\"/, win);
+      if (revenue || cashFlow) return { revenue, cashFlow };
+    }
+    return null;
   }
 
   // Fetch one page with retry + exponential backoff on transient failures
@@ -107,9 +179,11 @@ class BizbenScraper extends SourceScraper {
         raw: [b.city, b.county, stateRaw].filter(Boolean).join(', ') || null,
       },
       industry: [b.businessCategory, (b.businessTypes || []).slice(0, 3).join(' / ')].filter(Boolean).join(': ') || null,
-      asking_price: this.parseMoney(b.askingPrice),
-      gross_revenue: this.parseMoney(b.revenue ?? b.revenueInt),
-      cash_flow: this.parseMoney(b.cashFlow ?? b.adjustedNet),
+      asking_price: this.parseMoney(b.askingPrice) || null,
+      // BizBen writes 0 for undisclosed — a $0-revenue business listing is a
+      // placeholder, not a fact. Coerce to null (was polluting 450+ rows).
+      gross_revenue: this.parseMoney(b.revenue ?? b.revenueInt) || null,
+      cash_flow: this.parseMoney(b.cashFlow ?? b.adjustedNet) || null,
       cash_flow_type: 'SDE', // BizBen "cash flow" = adjusted net / owner benefit
       broker: brokerName ? { name: brokerName, company: null, phone: b.phoneNumber || null, email: b.email || null } : null,
       date_listed: b.createdAt ? new Date(b.createdAt).toISOString().slice(0, 10) : null,

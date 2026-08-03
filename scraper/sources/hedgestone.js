@@ -39,8 +39,41 @@ class HedgestoneScraper extends SourceScraper {
       }
     }
 
+    // Cards omit revenue but detail pages publish "Gross Revenue: $X" in the
+    // spec list. Enrich the highest-cash-flow listings up to the cap.
+    if (this.config.enrich_details !== false) await this.enrichRevenue(listings);
+
     this.info(`Scrape complete — ${listings.length} listings (${pageErrors} errors)`);
     return { listings, stats: { pagesOk, pageErrors } };
+  }
+
+  // Detail spec list: "<li><strong>Gross Revenue: <span id=\"gross-revenue\"
+  // …tooltip…</span></strong><span class=\"col span_6\">$1,062,000</span></li>".
+  // Anchor on the label, take the first value-span within the same li window.
+  async enrichRevenue(listings) {
+    const cap = this.config.max_detail_enrich ?? 150;
+    const targets = listings
+      .filter((l) => l.gross_revenue == null && l.url)
+      .sort((a, b) => (b.cash_flow ?? -1) - (a.cash_flow ?? -1))
+      .slice(0, cap);
+    if (targets.length === 0) { this.info('Revenue enrichment: nothing to do'); return; }
+    this.info(`Revenue enrichment: ${targets.length} listing(s) (cap ${cap}, cash-flow-desc)`);
+
+    let enriched = 0;
+    let errors = 0;
+    for (const l of targets) {
+      try {
+        const res = await this.fetchRetry(l.url, { headers: { 'User-Agent': UA } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const html = await res.text();
+        const m = html.match(/Gross Revenue:[\s\S]{0,500}?<span class="col span_6">\s*\$([\d,]+)/i);
+        if (m) { l.gross_revenue = this.parseMoney(m[1]); enriched++; }
+        await this.sleep(700);
+      } catch (err) {
+        if (++errors >= 8) { this.warn('Revenue enrichment: too many errors, stopping'); break; }
+      }
+    }
+    this.info(`Revenue enrichment complete — ${enriched} enriched (${errors} errors)`);
   }
 
   parse(html, seen) {
