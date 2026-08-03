@@ -162,12 +162,17 @@ async function enrichLead(anthropic, lead, totals, log) {
     website: lead.website, phone: lead.phone,
   }) + `\n\n=== SCRAPED CONTEXT ===\n${context.slice(0, 14000)}`;
 
+  // max_tokens 500 silently rotted as the schema grew (pe_owned, size_signals,
+  // too_big_signals, overview…): every response truncated mid-JSON → 222 leads
+  // skipped "unparseable model output" (found 8/3 — 37% of the funnel). 1200
+  // gives the full schema headroom; a truncation now says so instead of lying.
   const msg = await anthropic.messages.create({
-    model: MODEL, max_tokens: 500, system: SYSTEM,
+    model: MODEL, max_tokens: 1200, system: SYSTEM,
     messages: [{ role: 'user', content: user }],
   });
   totals.tokIn += msg.usage.input_tokens;
   totals.tokOut += msg.usage.output_tokens;
+  if (msg.stop_reason === 'max_tokens') return { skip: 'model output truncated at max_tokens' };
   const jsonMatch = msg.content[0].text.match(/\{[\s\S]*\}/); // model may fence or append prose
   let out;
   try { out = JSON.parse(jsonMatch ? jsonMatch[0] : ''); } catch { return { skip: 'unparseable model output' }; }
