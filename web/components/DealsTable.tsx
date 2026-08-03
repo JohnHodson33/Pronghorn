@@ -13,6 +13,7 @@ import { TIER_LABELS } from "@/lib/size";
 import { useUrlFilterSync } from "@/lib/use-url-filters";
 import FilterDropdown from "@/components/FilterDropdown";
 import SortHeader from "@/components/SortHeader";
+import CardList from "@/components/CardList";
 import { presenceOptions, presenceMatch } from "@/lib/list-filters";
 
 const tierChip: Record<string, string> = {
@@ -211,7 +212,7 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
 
       {/* LIST-UX STANDARD: the stage chip row is retired — Stage filters from
           its own column header (multi-select, counts in the panel). */}
-      <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
+      <div className="hidden overflow-x-auto rounded-xl border border-zinc-200 bg-white sm:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500">
@@ -344,6 +345,87 @@ export default function DealsTable({ deals, initialStage }: { deals: LiveDeal[];
           </tbody>
         </table>
       </div>
+
+      {/* <640px: same rows, same filters/sort, card layout (mobile parity rule) */}
+      <CardList
+        emptyText="No deals match the current filters."
+        sort={{
+          options: [
+            { value: "company", label: "Company" },
+            { value: "stage", label: "Stage" },
+            { value: "owner", label: "Owner" },
+            { value: "broker", label: "Broker" },
+            { value: "size", label: "Size" },
+            { value: "estrev", label: "~Rev", numeric: true },
+            { value: "estebitda", label: "~EBITDA", numeric: true },
+            { value: "ebitda", label: "EBITDA", numeric: true },
+            { value: "asking", label: "Asking", numeric: true },
+            { value: "ourval", label: "Our val", numeric: true },
+            { value: "fit", label: "Fit", numeric: true },
+          ],
+          sortKey,
+          dir: sortDir,
+          onChange: (key, d) => {
+            if (!d) setSortKey(null);
+            else { setSortKey(key as SortKey); setSortDir(d); }
+          },
+        }}
+        controls={
+          <>
+            <FilterDropdown label="Stage"
+              options={stages.filter((s) => counts[s]).map((s) => ({ value: s, label: s, count: counts[s] }))}
+              selected={asSet(stage)} onChange={(s) => setStage([...s].join(","))} />
+            <FilterDropdown label="Owner" options={ownerOptions} selected={ownerSel} onChange={setOwnerSel} />
+            <FilterDropdown label="Broker" options={brokerOptions} selected={brokerSel} onChange={setBrokerSel} />
+            <FilterDropdown label="Size"
+              options={TIERS.filter((t) => tierCounts[t]).map((t) => ({ value: t, label: TIER_LABELS[t], count: tierCounts[t] }))}
+              selected={asSet(tier)} onChange={(s) => setTier([...s].join(","))} />
+          </>
+        }
+        cards={rows.map((d) => ({
+          key: d.id,
+          onClick: () => router.push(`/deals/${d.id}`),
+          title: (
+            <span className={d.stage === "Passed" ? "text-zinc-400" : undefined}>
+              {d.company}
+              <span className="block text-xs font-normal text-zinc-500">
+                {[d.industry, [d.city, d.state].filter(Boolean).join(", ")].filter(Boolean).join(" · ")}
+                {d.stage === "Passed" && d.passReason && ` · passed: ${d.passReason}`}
+              </span>
+            </span>
+          ),
+          titleRight: (
+            <span className={`whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${stageChip[d.stage] ?? "bg-zinc-100 text-zinc-600"}`}>
+              {d.stage}
+            </span>
+          ),
+          fields: [
+            ...(d.owner ? [{ label: "Owner", value: d.owner }] : []),
+            ...(d.broker ? [{ label: "Broker", value: d.broker }] : []),
+            {
+              label: "Size",
+              value: (
+                <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${tierChip[d.size?.tier ?? "unsized"]}`}>
+                  {TIER_LABELS[d.size?.tier ?? "unsized"]}
+                </span>
+              ),
+            },
+            { label: "~Rev", value: d.size ? estShort(d.size.revenue) : "—" },
+            {
+              label: "EBITDA",
+              value: d.ebitda !== null ? (
+                <>
+                  <span className="font-semibold text-emerald-800">{money(d.ebitda)}</span>
+                  <span className="ml-1 text-xs text-zinc-400">{d.ebitdaType}</span>
+                </>
+              ) : d.size ? estShort(d.size.ebitda) : "—",
+            },
+            { label: "Asking", value: money(d.asking) },
+            ...(d.ourValuation !== null ? [{ label: "Our val", value: money(d.ourValuation) }] : []),
+            ...(d.fitScore !== null ? [{ label: "Fit", value: String(d.fitScore) }] : []),
+          ],
+        }))}
+      />
     </div>
   );
 }

@@ -12,6 +12,7 @@ import type { UiListing } from "@/lib/types";
 import { useUrlFilterSync } from "@/lib/use-url-filters";
 import FilterDropdown from "@/components/FilterDropdown";
 import SortHeader from "@/components/SortHeader";
+import CardList from "@/components/CardList";
 
 const tierBadge: Record<number, string> = {
   1: "bg-emerald-100 text-emerald-800",
@@ -349,7 +350,7 @@ export default function ListingsTableV2({
         <span className="ml-auto text-sm text-zinc-500 tabular-nums">{rows.length} of {allRows.length}</span>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
+      <div className="hidden overflow-x-auto rounded-xl border border-zinc-200 bg-white sm:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-xs uppercase tracking-wide text-zinc-500">
@@ -464,6 +465,110 @@ export default function ListingsTableV2({
           </tbody>
         </table>
       </div>
+
+      {/* <640px: same rows, same filters/sort, card layout (mobile parity rule) */}
+      <CardList
+        emptyText="No listings match the current filters."
+        sort={{
+          options: [
+            { value: "status", label: "Status" },
+            { value: "tier", label: "Tier" },
+            { value: "name", label: "Listing" },
+            { value: "state", label: "Location" },
+            { value: "revenue", label: "Revenue", numeric: true },
+            { value: "cashFlow", label: "EBITDA / SDE", numeric: true },
+            { value: "margin", label: "Margin", numeric: true },
+            { value: "asking", label: "Asking", numeric: true },
+            { value: "multiple", label: "Multiple", numeric: true },
+            { value: "firstSeen", label: "First seen" },
+          ],
+          sortKey,
+          dir: sortDir,
+          onChange: (key, d) => {
+            if (!d) { setSortKey("tier"); setSortDir("asc"); }
+            else { setSortKey(key as SortKey); setSortDir(d); }
+          },
+        }}
+        controls={
+          <>
+            <FilterDropdown label="Status"
+              options={[...new Set(allRows.map((l) => l.status))].sort().map((s) => ({
+                value: s, label: s.replace(/_/g, " "), count: allRows.filter((l) => l.status === s).length,
+              }))}
+              selected={asSet(status)} onChange={(s) => setStatus([...s].join(","))} />
+            <FilterDropdown label="Tier"
+              options={[1, 2, 3, 4].map((t) => ({ value: String(t), label: `Tier ${t}`, count: allRows.filter((l) => l.tier === t).length }))}
+              selected={new Set(tiers.map(String))}
+              onChange={(s) => setTiers([...s].map(Number).sort())} />
+            <FilterDropdown label="Industry"
+              options={industries.map((i) => ({ value: i, label: i, count: allRows.filter((l) => l.industry === i).length }))}
+              selected={asSet(industry)} onChange={(s) => setIndustry([...s].join(","))} />
+            <FilterDropdown label="Source"
+              options={sources.map((s) => ({ value: s, label: s, count: allRows.filter((l) => l.source === s).length }))}
+              selected={asSet(source)} onChange={(s) => setSource([...s].join(","))} />
+            <FilterDropdown label="State"
+              options={states.map((s) => ({ value: s, label: s, count: allRows.filter((l) => l.state === s).length }))}
+              selected={asSet(state)} onChange={(s) => setState([...s].join(","))} />
+          </>
+        }
+        cards={rows.map((l) => ({
+          key: l.id,
+          title: (
+            <Link href={`/listings/${l.id}`} className="text-emerald-800 underline-offset-2 hover:underline">
+              {l.name}
+            </Link>
+          ),
+          titleRight: (
+            <span className="flex items-center gap-1.5">
+              {l.tier !== null && (
+                <span className={`rounded px-2 py-0.5 text-xs font-semibold ${tierBadge[l.tier]}`}>T{l.tier}</span>
+              )}
+              <span className={`whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle[l.status]}`}>
+                {l.status.replace(/_/g, " ")}
+              </span>
+            </span>
+          ),
+          fields: [
+            {
+              label: "Industry",
+              value: (
+                <>
+                  {l.industry} · {l.source}
+                  {l.url && (
+                    <>
+                      {" · "}
+                      <a href={l.url} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline">source ↗</a>
+                    </>
+                  )}
+                </>
+              ),
+            },
+            {
+              label: "Location",
+              value: (
+                <>
+                  {l.city ? `${l.city}, ` : ""}{l.state ?? "—"}
+                  {l.priorityState && <span className="ml-1 text-emerald-700">★</span>}
+                </>
+              ),
+            },
+            { label: "Revenue", value: money(l.revenue) },
+            {
+              label: "EBITDA/SDE",
+              value: (
+                <>
+                  <span className="font-semibold">{money(l.cashFlow)}</span>
+                  {l.cashFlowType !== "unknown" && <span className="ml-1 text-xs text-zinc-500">{l.cashFlowType}</span>}
+                </>
+              ),
+            },
+            { label: "Margin", value: margin(l.cashFlow, l.revenue) },
+            { label: "Asking", value: money(l.asking) },
+            { label: "Multiple", value: <span className="font-semibold">{multiple(l.asking, l.cashFlow)}</span> },
+            { label: "First seen", value: l.firstSeen },
+          ],
+        }))}
+      />
       <p className="text-xs text-zinc-400">
         Click a column header to sort (click again to reverse). Hover a row for the Claude screener&apos;s tier reasoning.
         Export CSV downloads exactly what&apos;s filtered and sorted above.

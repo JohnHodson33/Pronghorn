@@ -17,6 +17,7 @@ import FilterDropdown from "@/components/FilterDropdown";
 import SortHeader from "@/components/SortHeader";
 import StarButton from "@/components/StarButton";
 import ScrollShell from "@/components/ScrollShell";
+import CardList from "@/components/CardList";
 import { presenceOptions, presenceMatch, cmpText, nullsLast } from "@/lib/list-filters";
 
 // ~$X.XM–$Y.YM display for estimate ranges (never fake precision)
@@ -288,6 +289,7 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
         </span>
       </div>
 
+      <div className="hidden sm:block">
       <ScrollShell className="rounded-xl border border-zinc-200 bg-white">
         <table className="w-full text-sm">
           <thead>
@@ -495,6 +497,124 @@ export default function CompaniesTable({ companies }: { companies: CompanyRow[] 
           </tbody>
         </table>
       </ScrollShell>
+      </div>
+
+      {/* <640px: same rows, same filters/sort, card layout (mobile parity rule) */}
+      <CardList
+        emptyText="No companies match the current filters."
+        sort={{
+          options: [
+            { value: "star", label: "★ Shortlist" },
+            { value: "name", label: "Company" },
+            { value: "level", label: "Owner reach" },
+            { value: "size", label: "Size" },
+            { value: "email", label: "Email" },
+            { value: "phone", label: "Phone" },
+            { value: "linkedin", label: "LinkedIn" },
+            { value: "industry", label: "Industry" },
+            { value: "location", label: "Location" },
+            { value: "revenue", label: "Revenue", numeric: true },
+            { value: "ebitda", label: "EBITDA", numeric: true },
+            { value: "stage", label: "Deal stage" },
+            { value: "origin", label: "Origin" },
+            { value: "added", label: "Added", numeric: true },
+          ],
+          sortKey,
+          dir: sortDir,
+          onChange: (key, d) => {
+            if (!d) setSortKey(null);
+            else { setSortKey(key as SortKey); setSortDir(d); }
+          },
+        }}
+        controls={
+          <>
+            <FilterDropdown label="★" name="Shortlist" options={starOptions} selected={starSel} onChange={setStarSel} />
+            <FilterDropdown label="Reach" name="Owner reach" options={levelOptions} selected={levelsSel} onChange={setLevelsSel} />
+            <FilterDropdown label="Size" options={tierOptions} selected={tiersSel} onChange={setTiersSel} />
+            <FilterDropdown label="Email" options={emailOptions} selected={emailSel} onChange={setEmailSel} />
+            <FilterDropdown label="Phone" options={phoneOptions} selected={phoneSel} onChange={setPhoneSel} />
+            <FilterDropdown label="LinkedIn" options={linkedinOptions} selected={linkedinSel} onChange={setLinkedinSel} />
+            <FilterDropdown label="Industry" options={industryOptions} selected={industriesSel} onChange={setIndustriesSel} />
+            <FilterDropdown label="State" options={stateOptions} selected={statesSel} onChange={setStatesSel} />
+            <FilterDropdown label="Stage" name="Deal stage" options={stageOptions} selected={stagesSel} onChange={setStagesSel} />
+            <FilterDropdown label="Origin" options={originOptions} selected={originsSel} onChange={setOriginsSel} />
+          </>
+        }
+        cards={rows.map((c) => {
+          const lv = levels.get(c.id)!;
+          const ct = lv.contact;
+          return {
+            key: c.id,
+            onClick: () => router.push(`/companies/${c.id}`),
+            title: (
+              <>
+                {c.name}
+                {c.pe_owned && (
+                  <span className="ml-1.5 rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-700">PE</span>
+                )}
+              </>
+            ),
+            titleRight: (
+              <span className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${tierChip[c.size?.tier ?? "unsized"]}`}>
+                  {TIER_LABELS[c.size?.tier ?? "unsized"]}
+                </span>
+                <StarButton companyId={c.id} shortlist={c.shortlist} compact />
+              </span>
+            ),
+            fields: [
+              {
+                label: "Reach",
+                value: (
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${levelChip[lv.level]}`}>
+                    {LEVEL_META[lv.level].dot} {lv.level}
+                  </span>
+                ),
+              },
+              {
+                label: "Email",
+                value: ct.email ? (
+                  <a href={`mailto:${ct.email}`} onClick={(e) => e.stopPropagation()} className="text-emerald-800 underline-offset-2 hover:underline">{ct.email}</a>
+                ) : "—",
+              },
+              {
+                label: "Phone",
+                value: ct.phone ? (
+                  <a href={`tel:${ct.phone}`} onClick={(e) => e.stopPropagation()} className="text-emerald-800 underline-offset-2 hover:underline">{ct.phone}</a>
+                ) : "—",
+              },
+              {
+                label: "LinkedIn",
+                value: ct.linkedin ? (
+                  <a href={ct.linkedin} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-emerald-800 underline-offset-2 hover:underline">profile ↗</a>
+                ) : "—",
+              },
+              { label: "Industry", value: c.industry ?? "—" },
+              { label: "Location", value: [c.city, c.state].filter(Boolean).join(", ") || "—" },
+              {
+                label: "Revenue",
+                value: c.revenue !== null ? money(Number(c.revenue)) : c.size ? estRange(c.size.revenue) : "—",
+              },
+              {
+                label: "EBITDA",
+                value: c.ebitda !== null ? (
+                  <span className="font-semibold text-emerald-800">
+                    {money(Number(c.ebitda))}{c.ebitda_type && <span className="ml-1 text-xs font-normal text-zinc-500">{c.ebitda_type}</span>}
+                  </span>
+                ) : c.size ? estRange(c.size.ebitda) : "—",
+              },
+              ...(c.deals?.[0]?.stage ? [{
+                label: "Stage",
+                value: (
+                  <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-800">{c.deals[0].stage}</span>
+                ),
+              }] : []),
+              { label: "Origin", value: c.origin ?? "—" },
+              { label: "Added", value: c.created_at.slice(0, 10) },
+            ],
+          };
+        })}
+      />
     </div>
   );
 }

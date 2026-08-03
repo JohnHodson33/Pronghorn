@@ -11,6 +11,7 @@ import Link from "next/link";
 import FilterDropdown from "@/components/FilterDropdown";
 import SortHeader from "@/components/SortHeader";
 import ScrollShell from "@/components/ScrollShell";
+import CardList from "@/components/CardList";
 import { useUrlFilterSync } from "@/lib/use-url-filters";
 import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 import { presenceOptions, presenceMatch } from "@/lib/list-filters";
@@ -325,6 +326,33 @@ export default function RiverGuides() {
     setBusy(false);
   }
 
+  // "Send to VA" — the paid-tier handoff (STATUS 7/31 edit #3). Exports the
+  // NEEDS_PAID guides in the current view as a fill-in workbook the VA sends
+  // back through /intake: name+firm are the match keys (do not edit), the
+  // channel columns are what the VA fills, and the instructions column is
+  // ignored by intake's column mapper (unmapped headers are dropped), so the
+  // same file round-trips cleanly as a contact enrichment-fill.
+  const needsPaid = useMemo(() => rows.filter((g) => g.enrichment_status === "NEEDS_PAID" && g.full_name), [rows]);
+  function exportVaCsv() {
+    const instructions =
+      "FILL the email / phone / linkedin columns for each person. Leave a cell BLANK if you cannot verify it — never guess. " +
+      "Paste the URL where you found each datum into the notes column (e.g. 'phone from acme.com/contact'). " +
+      "Do NOT edit the name or firm columns — they are how rows match back to the CRM. " +
+      "When done, save as CSV and upload it at the platform's Data Intake page (/intake); if asked for a type, pick 'Enrichment fill'. " +
+      "Context: each person sold the company in the firm column and we want to reach them — their current direct contact info, not the company's old main line.";
+    downloadCsv(
+      `pronghorn-va-batch-${csvDate()}.csv`,
+      buildCsv(
+        ["name", "firm", "city", "state", "email", "phone", "linkedin", "notes", "instructions"],
+        needsPaid.map((g, i) => [
+          g.full_name, g.their_company, g.location_city, g.location_state,
+          g.contact?.email ?? null, g.contact?.phone ?? null, g.contact?.linkedin_url ?? null,
+          null, i === 0 ? instructions : null,
+        ])
+      )
+    );
+  }
+
   function exportCsv() {
     downloadCsv(
       `pronghorn-river-guides-${csvDate()}.csv`,
@@ -503,12 +531,21 @@ export default function RiverGuides() {
                   ? `Enrich selected (${selected.size} · est. ${est.totalEstUsd < 0.01 ? "$0.00" : `$${est.totalEstUsd.toFixed(2)}`})`
                   : `Enrich selected (${selected.size})`}
           </button>
+          <button
+            onClick={exportVaCsv}
+            disabled={needsPaid.length === 0}
+            className="rounded-lg bg-violet-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-violet-800 disabled:opacity-40"
+            title={`Download the ${needsPaid.length} 'Needs paid' guide${needsPaid.length === 1 ? "" : "s"} in the current view as a VA fill-in CSV (instructions embedded). The VA returns it through Data Intake (/intake) and the found channels fill the linked contacts.`}
+          >
+            Send to VA ({needsPaid.length})
+          </button>
           <button onClick={exportCsv} disabled={rows.length === 0} className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-50">
             CSV ({rows.length})
           </button>
         </span>
       </div>
 
+      <div className="hidden sm:block">
       <ScrollShell className="rounded-xl border border-zinc-200 bg-white">
         <table className="w-full text-sm">
           <thead>
@@ -703,6 +740,146 @@ export default function RiverGuides() {
           </tbody>
         </table>
       </ScrollShell>
+      </div>
+
+      {/* <640px: same rows, same filters/sort, card layout (mobile parity
+          rule) — selection checkbox, evidence expand and all links survive */}
+      <CardList
+        emptyText={guides === null ? "Loading…" : apiDown ? "Waiting on the backend — nothing to show yet." : "No river guides match the filters."}
+        sort={{
+          options: [
+            { value: "band", label: "Band" },
+            { value: "name", label: "Name" },
+            { value: "company", label: "Former company" },
+            { value: "industry", label: "Industry" },
+            { value: "exit", label: "Exit" },
+            { value: "score", label: "Score", numeric: true },
+            { value: "email", label: "Email" },
+            { value: "phone", label: "Phone" },
+            { value: "linkedin", label: "LinkedIn" },
+            { value: "status", label: "Status" },
+            { value: "state", label: "Location" },
+          ],
+          sortKey,
+          dir: sortDir,
+          onChange: (key, d) => {
+            if (!d) setSortKey(null);
+            else { setSortKey(key); setSortDir(d); }
+          },
+        }}
+        controls={
+          <>
+            <FilterDropdown label="Band"
+              options={BANDS.map((b) => ({ value: b, label: BAND_LABEL[b], count: bandCounts[b] ?? 0 }))}
+              selected={bandsSel} onChange={setBandsSel} />
+            <FilterDropdown label="Industry" options={industryOptions} selected={industriesSel} onChange={setIndustriesSel} />
+            <FilterDropdown label="Exit" options={exitOptions} selected={exitSel} onChange={setExitSel} />
+            <FilterDropdown label="Email" options={emailOptions} selected={emailSel} onChange={setEmailSel} />
+            <FilterDropdown label="Phone" options={phoneOptions} selected={phoneSel} onChange={setPhoneSel} />
+            <FilterDropdown label="LinkedIn" options={linkedinOptions} selected={linkedinSel} onChange={setLinkedinSel} />
+            <FilterDropdown label="Status" options={statusOptions} selected={statusSel} onChange={setStatusSel} />
+            <FilterDropdown label="State" options={stateOptions} selected={statesSel} onChange={setStatesSel} />
+          </>
+        }
+        cards={rows.map((g) => {
+          const href = g.company_id ? `/companies/${g.company_id}` : null;
+          return {
+            key: g.deal_id,
+            title: (
+              <span className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={selected.has(g.deal_id)}
+                  onChange={() => setSelected((prev) => { const n = new Set(prev); n.has(g.deal_id) ? n.delete(g.deal_id) : n.add(g.deal_id); return n; })}
+                  className="accent-emerald-700"
+                />
+                <span className="min-w-0 flex-1">
+                  {g.full_name ?? <span className="italic text-amber-600">TBD</span>}
+                  <span className="block text-xs font-normal text-zinc-400">{ARCHETYPE_LABEL[g.archetype] ?? g.archetype}</span>
+                </span>
+              </span>
+            ),
+            titleRight: (
+              <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${bandChip[g.priority_band]}`}>{BAND_LABEL[g.priority_band]}</span>
+            ),
+            fields: [
+              {
+                label: "Company",
+                value: (
+                  <>
+                    {href ? (
+                      <Link href={href} className="font-medium text-emerald-800 underline-offset-2 hover:underline">{g.their_company}</Link>
+                    ) : (
+                      <span className="font-medium">{g.their_company}</span>
+                    )}
+                    <span className="block text-xs text-zinc-500">
+                      → {g.acquirer}{g.acquirer_pe_sponsor ? ` (${g.acquirer_pe_sponsor})` : ""}{g.deal_year ? ` · ${g.deal_year}` : ""}
+                    </span>
+                  </>
+                ),
+              },
+              { label: "Industry", value: g.industry },
+              {
+                label: "Exit",
+                value: g.notes ? (
+                  <button
+                    type="button"
+                    onClick={() => setEvidenceOpen((prev) => { const n = new Set(prev); n.has(g.deal_id) ? n.delete(g.deal_id) : n.add(g.deal_id); return n; })}
+                    className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset ${g.current_status_verified ? "bg-emerald-50 text-emerald-800 ring-emerald-200" : "bg-amber-50 text-amber-700 ring-amber-300"}`}
+                    aria-expanded={evidenceOpen.has(g.deal_id)}
+                  >
+                    {g.exit_status} {g.current_status_verified ? "✓" : "⚠"}
+                    <span aria-hidden className="opacity-60">{evidenceOpen.has(g.deal_id) ? "▲" : "🔍"}</span>
+                  </button>
+                ) : (
+                  <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${g.current_status_verified ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-700"}`}>
+                    {g.exit_status} {g.current_status_verified ? "✓" : "⚠"}
+                  </span>
+                ),
+              },
+              ...(evidenceOpen.has(g.deal_id) && g.notes ? [{
+                label: "Evidence",
+                value: (
+                  <span className="block whitespace-pre-wrap text-xs text-zinc-700">
+                    <span className="font-semibold text-amber-800">
+                      {g.current_status_verified ? "verified ✓ — " : "as-of-close, UNVERIFIED ⚠ — "}
+                    </span>
+                    {g.notes}
+                  </span>
+                ),
+              }] : []),
+              { label: "Score", value: String(g.fit_score ?? g.screen_score ?? "—") },
+              {
+                label: "Email",
+                value: g.contact?.email ? (
+                  <a href={`mailto:${g.contact.email}`} className="text-emerald-800 underline-offset-2 hover:underline">{g.contact.email}</a>
+                ) : "—",
+              },
+              {
+                label: "Phone",
+                value: g.contact?.phone ? (
+                  <a href={`tel:${g.contact.phone}`} className="text-emerald-800 underline-offset-2 hover:underline">{g.contact.phone}</a>
+                ) : "—",
+              },
+              {
+                label: "LinkedIn",
+                value: g.contact?.linkedin_url ? (
+                  <a href={g.contact.linkedin_url} target="_blank" rel="noreferrer" className="text-emerald-800 underline-offset-2 hover:underline">profile ↗</a>
+                ) : "—",
+              },
+              {
+                label: "Status",
+                value: (
+                  <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${STATUS_CHIP[g.enrichment_status] ?? "bg-zinc-100 text-zinc-600"}`}>
+                    {STATUS_LABEL[g.enrichment_status] ?? g.enrichment_status}
+                  </span>
+                ),
+              },
+              { label: "Location", value: [g.location_city, g.location_state].filter(Boolean).join(", ") || "—" },
+            ],
+          };
+        })}
+      />
 
       <p className="text-[11px] text-zinc-400">
         Bands: Call now (screen ≥70) · Enrich &amp; assess (58–69) · Nurture (&lt;58) · Resolve name (identity TBD, overrides score).

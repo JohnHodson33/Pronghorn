@@ -13,6 +13,7 @@ type Job = {
 export default function ActiveJobPill() {
   const [job, setJob] = useState<Job | null>(null);
   const [queuedMail, setQueuedMail] = useState(0);
+  const [pendingProposals, setPendingProposals] = useState(0);
 
   useEffect(() => {
     let alive = true;
@@ -32,6 +33,15 @@ export default function ActiveJobPill() {
         if (alive) setQueuedMail(n);
       } catch {
         if (alive) setQueuedMail(0);
+      }
+      // Outlook-detected deal next-steps awaiting approve/dismiss (0019) —
+      // they were only visible on the dashboard, so they sat unseen (7/31)
+      try {
+        const res = await fetch("/api/deals/proposals");
+        const j = await res.json();
+        if (alive) setPendingProposals((j.proposals ?? []).length);
+      } catch {
+        if (alive) setPendingProposals(0);
       }
     };
     tick();
@@ -62,6 +72,15 @@ export default function ActiveJobPill() {
           title="Inquiry drafts awaiting your one-click send"
         >
           📮 {queuedMail} to send
+        </a>
+      )}
+      {pendingProposals > 0 && (
+        <a
+          href="/#key-actions"
+          className="flex items-center gap-1 rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-800 hover:bg-violet-200"
+          title="Deal next-step updates detected in Outlook replies — approve or dismiss on Key Actions"
+        >
+          📩 {pendingProposals} deal update{pendingProposals === 1 ? "" : "s"}
         </a>
       )}
     </span>
