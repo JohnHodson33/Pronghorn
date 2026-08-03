@@ -99,6 +99,12 @@ class MurphyScraper extends SourceScraper {
             enriched++;
           }
         }
+        // Revenue the ajax cards omit — same fetched page, zero extra requests:
+        // "<li><b>Total Sales :</b> <span> $1,287,029</span></li>"
+        if (l.gross_revenue == null) {
+          const rev = (html.match(/Total Sales\s*:?\s*<\/b>\s*<span>\s*\$([\d,]+)/i) || [])[1];
+          if (rev) l.gross_revenue = this.parseMoney(rev);
+        }
         await this.sleep(800);
       } catch (err) {
         if (++errors >= 8) { this.warn('Broker enrichment: too many errors, stopping'); break; }
