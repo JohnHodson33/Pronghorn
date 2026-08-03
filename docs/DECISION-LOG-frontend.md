@@ -6,6 +6,14 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 2 (afternoon)**: /api/feedback polled — 0 submitted. Recovered
+  ⬜ items cleared: /sources health absorbed (`2ad4a2a`, + [self-iterate]
+  search/filter/CSV; live read 22,815 unique / +910 wk / 32 producing;
+  "enabled but quiet" filter = the drift signal, currently 0) · Broker
+  Directory deep-link verified already-live (no build). Next loop: continue
+  TASK-QUEUE top-down (older 🔥 items largely shipped — verify against live
+  pages before touching; PROGRAM outcome chips light up when John applies
+  0022).
 - **RUNS SURFACE SHIPPED** (`4f52860` + merge `be0e42d`): shared
   `web/components/RunsPanel.tsx` on BOTH /river-guides and /enrichment —
   always visible, click a run → table shows EXACTLY that run's rows (other

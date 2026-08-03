@@ -743,11 +743,12 @@ set) into your new chips UI as a small follow-up.
 - ⬜ Outreach Library → functional: sequence builder, variables, one-click export.
 - ⬜ Cold Calling → functional: call queue + script + company card, mark dispositions.
 - ⬜ SELF-ITERATE: critique each page vs end-state; fix dead ends, add missing links.
-- ⬜ (B sweep 7/13, recovered by PM from brokers-worktree uncommitted) /sources
-  page: absorb the displaced v2 source-health table (last run, dedup totals,
-  +7d per source — loaders still in lib/dashboard.ts).
-- ⬜ (B sweep 7/13, recovered) Broker Directory "in Contacts ✓" → deep-link a
-  filtered contacts view (needs a ?broker= or search param on /contacts).
+- ✅ (B sweep 7/13, recovered) /sources health table — SHIPPED 8/3 `2ad4a2a`:
+  per-source unique/+7d/dupes-filtered on the roster page + fleet totals +
+  [self-iterate] search/filter/CSV per the every-list rule.
+- ✅ (B sweep 7/13, recovered) Broker Directory "in Contacts ✓" deep-link —
+  already live since the LIST-UX rollout (BrokersTable → /contacts?broker=,
+  ContactsTable hydrates it); verified, nothing to build.
 - ⬜ (B sweep 7/13, recovered) Enrichment/leads industry chips → click-to-filter
   (chips are display-only today; the dropdown does the work).
 
