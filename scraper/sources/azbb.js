@@ -91,6 +91,24 @@ class AzbbScraper extends SourceScraper {
     const locM = body.match(/Location:\s*([A-Za-z][A-Za-z .,'-]{2,40}?)(?:\s*(?:Asking|Cash|Gross|Revenue|Down|Category|$))/i);
     const locRaw = locM ? locM[1].trim() : null;
 
+    // "CONTACT THE AGENT … contact Tony Gonzales. … Tony@bbaz.com … (480) 249-0046"
+    // — the agent block is prose on the same page (no extra request). Scope all
+    // matching to that block so footer/social contacts can't leak in.
+    let broker = null;
+    const ci = body.search(/CONTACT THE AGENT/i);
+    if (ci >= 0) {
+      const block = body.slice(ci, ci + 1200);
+      const nm = (block.match(/contact\s+([A-Z][a-zA-Z.'-]+(?:\s+[A-Z][a-zA-Z.'-]+){1,2})[.,]/) || [])[1];
+      // Email from its own element in the raw-HTML block (">Tony@bbaz.com<") —
+      // the collapsed body text glues the preceding sentence onto it
+      // ("…this listing.Tony@bbaz.com").
+      const hi = html.search(/CONTACT THE AGENT/i);
+      const hblock = hi >= 0 ? html.slice(hi, hi + 2500) : '';
+      const email = (hblock.match(/>\s*([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})\s*</) || [])[1];
+      const phone = (block.match(/\(?\d{3}\)?[\s.-]\d{3}[-.\s]\d{4}/) || [])[0];
+      if (nm) broker = { name: nm.trim(), company: 'Business Brokers of Arizona', phone: phone || null, email: email || null };
+    }
+
     return this.listing({
       source_listing_id: slug,
       name,
@@ -106,6 +124,7 @@ class AzbbScraper extends SourceScraper {
       gross_revenue: grab('Gross Revenue') || grab('Gross Sales') || grab('Revenue'),
       cash_flow: grab('Cash Flow') || grab('SDE') || grab('Seller.s Discretionary Earnings'),
       cash_flow_type: /cash flow/i.test(body) ? 'cash flow' : /\bSDE\b/i.test(body) ? 'SDE' : null,
+      broker,
       raw: { down_payment: grab('Down Payment') },
     });
   }

@@ -132,21 +132,21 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 ---
 
 ## Lane A — Brokers  (`scraper/sources/*`, `scraper/config.json`)
-- 🔥🔥🔥 **ASKING PRICE NOT PARSING — TUPELO + DEALRELATIONS (John 7/21;
-  asking price → implied multiple → Market Multiples tracking is a KEY metric
-  and it's missing).** PM ran a full cross-source audit (live, non-delisted
-  listings) — asking-price coverage: nearly every source 87–100%, BUT:
-  **Tupelo SMB Marketplace = 0% asking (0/6), 0% multiple** (yet 83% revenue,
-  67% cash-flow — so it parses financials but drops asking_price), and
-  **DealRelations (Sunbelt offices) = 0% asking (0/5), 0% everything.** FIX
-  both adapters to extract asking_price at ingest → implied_multiple then
-  computes → flows to Market Multiples. Verify against a live listing detail
-  page (John: the asking price IS shown on the source listing, so it's a
-  parse gap not a missing field). Backfill existing Tupelo/DealRelations rows.
-  SECONDARY (lower priority, note in HANDOFF): financial-coverage gaps where
-  asking is fine but rev/cf/multiple are thin — BizQuest (ask 100% but
-  rev/cf/mult 0%), LINK Business (rev 6%), Murphy/HedgeStone (rev 0%). Those
-  cap multiple coverage too; fix opportunistically after the asking-price gap.
+- ✅ **[DONE + BACKFILLED + VERIFIED 8/3 — Lane A] ASKING PRICE NOT PARSING —
+  TUPELO + DEALRELATIONS (John 7/21).** Results (live, non-delisted):
+  **tupelo ask 1%→88%, mult 1%→68% · dealrelations ask 13%→86%, mult 13%→72%.**
+  Tupelo: cards never show asking — now every listing gets a per-listing CRM
+  API GET + a detail-page SSR fallback (~60% of cuids 404 on the API).
+  DealRelations: 7 newer subdomains used unrecognized Rails templates — new
+  structural template-C parser + og:title pipe fix (the broken "|" names).
+  SECONDARY tail also done 8/3: murphy rev 0%→28% (detail-page piggyback),
+  hedgestone rev 1%→19% (new capped enrichment), bizben rev→36%/mult 16%→24%
+  (0-placeholder purge + RSC detail extraction; 1,628 wrongly-delisted rows
+  relisted). STRUCTURAL (verified live, source doesn't publish): bizquest
+  rev/cf login-gated; bizbuysell rev absent from index JSON-LD, details
+  blocked; transworld APIs have no revenue field. linkbusiness adapter was
+  already correct (46% = publication rate). Details in
+  DECISION-LOG-brokers.md 8/3 entries.
 - ⬜ **RIVER GUIDES: consolidator-sweep refresh (LATER — not tonight; after
   your current queue):** periodic re-run of the acquisition-log queries per
   consolidator (docs/RIVER-GUIDES-INTEGRATION.md step 9 + spec §7 maps at
