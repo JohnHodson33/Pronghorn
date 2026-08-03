@@ -2,6 +2,34 @@
 
 ## 🤝 HANDOFF (keep current — replacement session resumes from this)
 
+📌 **8/3 SESSION #4 RESUMED (PM ping; merged main — auto-integrator is live).**
+PM calibration absorbed: scope funnel claims precisely (my 7/31 "100%" was
+enriched-only; PM's 63% was of ALL on-target). SHIPPED TODAY:
+1. 🔥 **FOUND + FIXED THE UNENRICHED-37% ROOT CAUSE: max_tokens truncation.**
+   All 222 "new" on-target leads were enrichment-SKIPPED with "unparseable
+   model output" — the classifier's max_tokens was 500 while the output
+   schema kept growing (pe_owned, size_signals, too_big_signals, overview…),
+   so EVERY response truncated mid-JSON. Raised to 1200 + stop_reason check
+   (truncation now says so). Verified 5/5 clean, then **drained the whole
+   backlog: 222/222 enriched, 0 skipped, $1.21 total.** There are now ZERO
+   unenriched on-target leads.
+2. **FUNNEL RE-MEASURE (scoped: ALL on-target proprietary, my filter =
+   not-off_target and not-dead, n=536; PM measured n=597 — reconcile
+   definitions when re-measuring): PE-determined 536/536 = 100%** (PM's 7/31
+   baseline 63%) · owner named 47% (was 45) · named+channel 25% (was 23),
+   email 120, phone 37. Named/channel gains come next from tier-2 + the
+   license-board resolvers — I did NOT hand-run tier-2 (Hunter monthly quota
+   discipline; nightly caps handle it).
+3. **PE-AT-INGEST** (PM item): leadgen.yml now runs the acquisition-ledger
+   cross-ref right after list building ($0) — consolidator brands and
+   already-acquired companies get flagged before anyone works them (todays
+   catches: Poolwerx AZ, SavATree SC). Sizing tail pass also run over the
+   217 fresh enrichments (size_estimate, ~$0.25).
+4. ⏳ **0022 STILL PENDING JOHN** — per-row outcomes can't be honestly
+   backfilled for past runs (per-row deltas weren't recorded pre-0022);
+   chips light up from the FIRST run after 0022 lands. Serper still OUT of
+   credits (beacon + api_dead card live).
+
 🟢 **SESSION #4 ACTIVE (started 7/31 ~11:00 after ~10 days lanes-down) — READ
 THIS BLOCK FIRST; everything below is older.** Worktree
 `C:\Users\johnd\Pronghorn-integrations`, branch `lane/integrations`, merged

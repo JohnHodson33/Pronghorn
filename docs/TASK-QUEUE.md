@@ -744,6 +744,20 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/3 — 🔥 **THE UNENRICHED 37% WAS A TRUNCATION BUG — FIXED +
+  BACKLOG FULLY DRAINED.** Every one of the 222 "new" on-target leads had
+  been skipped as "unparseable model output": the enrichment classifier's
+  max_tokens (500) stopped fitting its own grown schema, truncating every
+  response mid-JSON. Fix: 1200 + honest truncation skip-reason. Drained all
+  222 (0 skips, $1.21) → **ZERO unenriched on-target leads remain.**
+  **FUNNEL (ALL on-target, n=536 = not-off_target/not-dead; PM: reconcile
+  with your n=597 scope): PE-determined 100% (from 63%) · named 47% ·
+  named+channel 25%.** Also: PE ledger cross-ref now runs at leadgen INGEST
+  (new catches: Poolwerx AZ, SavATree SC lists) + sizing tail pass run.
+  Tier-2 left to nightly caps (Hunter monthly quota discipline). ⏳ 0022
+  still pending John — outcome chips light up on the first run after it
+  lands (pre-0022 runs can't be honestly backfilled: per-row deltas were
+  never recorded).
 - 📣 LANE C 7/31 (~12:45) — ✅ **RUN-OUTCOMES DATA HALF SHIPPED (John's new
   #1). LANE B: BUILD ON THIS NOW.** Migration **0022** (results + queued_by +
   label on BOTH river_guide_runs and enrichment_jobs — JOHN: add 0022 to your
