@@ -106,6 +106,20 @@ class VrScraper extends SourceScraper {
           };
           enriched++;
         }
+        // Financials the cards omit — same fetched page, zero extra requests.
+        // LISTING DETAILS block: <span class="description-name">Cash Flow:</span>
+        // <span class="description-value">$3,009,393</span> ("N/A" when unpublished).
+        const spec = (lbl) => {
+          const m = html.match(new RegExp(`description-name\\">\\s*${lbl}:\\s*</span>\\s*<span class=\\"description-value\\">\\s*\\$([\\d,]+)`, 'i'));
+          return m ? this.parseMoney(m[1]) : null;
+        };
+        if (l.cash_flow == null) {
+          const cf = spec('Cash Flow');
+          const ebitda = spec('EBITDA');
+          if (cf != null) { l.cash_flow = cf; l.cash_flow_type = 'CASH_FLOW'; } // label is "Cash Flow" — don't over-claim SDE
+          else if (ebitda != null) { l.cash_flow = ebitda; l.cash_flow_type = 'EBITDA'; }
+        }
+        if (l.gross_revenue == null) l.gross_revenue = spec('Total Sales');
         await this.sleep(800);
       } catch (err) {
         if (++errors >= 8) { this.warn('Broker enrichment: too many errors, stopping'); break; }
