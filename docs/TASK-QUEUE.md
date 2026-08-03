@@ -761,7 +761,7 @@ set) into your new chips UI as a small follow-up.
   **FUNNEL (ALL on-target, n=536 = not-off_target/not-dead; PM: reconcile
   with your n=597 scope): PE-determined 100% (from 63%) · named 47% ·
   named+channel 25%.** Also: PE ledger cross-ref now runs at leadgen INGEST
-  (new catches: Poolwerx AZ, SavATree SC lists) + sizing tail pass run.
+  (new catches: Poolwerx AZ, SavATree SC lists) + sizing tail pass: 101/101 fresh enrichments estimated ($0.15) — 0 unsized tail.
   Tier-2 left to nightly caps (Hunter monthly quota discipline). ⏳ 0022
   still pending John — outcome chips light up on the first run after it
   lands (pre-0022 runs can't be honestly backfilled: per-row deltas were
