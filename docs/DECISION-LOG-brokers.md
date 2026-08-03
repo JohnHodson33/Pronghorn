@@ -1797,3 +1797,44 @@ zeros needed the one-off). Remaining rev gaps on all three = what the sources
 publish (undisclosed) — honest nulls. STILL TO VERIFY next loop: tomorrow's
 nightly holds tupelo/dealrelations/bizben coverage (needs auto-integrator to
 have merged lane/brokers→main first).
+
+## 2026-08-03 (eve) — self-iterate audits: gabb REBUILT (was dead 12 days), vr CF, azbb agents
+Auto-integrator confirmed working (all 8/3 commits merged to main — tonight's
+nightly runs the fixed adapters). source_health + source_quality flags, all
+actioned:
+- **gabb 🔴 DEAD since 7/22 — REBUILT.** gabb.org moved Webflow→Next.js; the
+  old Railway webhook API returns 404 "Application not found". New adapter
+  crawls the SSR index + parses detail-page schema.org Product JSON-LD. sku =
+  the OLD listing-number id space → 30 old rows relisted in place, 134 new.
+  Now: 164 live, ask 95%, brokers 100% NAMED with firm (better than the old
+  feed). Note: new site shows actives only — the old sold-transaction data
+  (closed multiples) is gone from the public site; noted as a loss.
+- **vr CF 0% → 22% (rev 0% → 21%).** Detail pages publish a LISTING DETAILS
+  spec block (Total Sales/Cash Flow/EBITDA) — now parsed in the same fetch the
+  broker enrichment already makes. Backfill enriched 88/150 before transient
+  office-domain errors stopped the pass; persists + re-runs nightly, coverage
+  accumulates. CASH_FLOW type (label doesn't claim SDE).
+- **azbb broker gap (4 AZ T1 trades, 0 contacts) → brkr 95%.** Detail pages
+  carry a "CONTACT THE AGENT" prose block — name/email/phone now parsed
+  (email from its own HTML element; collapsed text glued sentences onto it).
+  The T1 roofing/electrical/plumbing listings now have named agents.
+- Low-value flags (bizquest 0 T1/T2 in 1,597; linkbusiness 0 in 443) — known,
+  structural, mirror/multiples value only; no action.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-08-03 eve: all pushed through azbb commit; auto-integrator
+merges to main every 30 min (verified working). DONE this session: John's #1
+asking-price gap (tupelo 88%/68%, dealrelations 86%/72%) + thin-financials
+tail (bizben/murphy/hedgestone/vr fixed; bizquest/bizbuysell/transworld
+structural) + gabb REBUILT after 12 days dark + azbb named agents + db_output
+gross_revenue refresh (conditional, screener-safe).
+VERIFY NEXT LOOP: after tonight's nightly (~13:00 UTC, lands ~14:20), confirm
+coverage HELD on tupelo/dealrelations/bizben/vr/gabb (fixed code is on main).
+OPEN: cannabinoid subdomain 404s each dealrelations run (dead — drop from
+config.subdomains when next touching config); gabb sold-transaction data lost
+with old API (closed-multiples source gone); vr enrichment stops on 8
+transient errors some runs (self-heals, watch it). Serper outage: zero Lane A
+impact (broker scraping + shared extract.js are Serper-free; riverguides
+enrich_t1/resolve_names/enrich_addresses/verify_status ARE Serper-dependent —
+Lane C's cascade, noted for John's top-up). Then TASK-QUEUE top-down +
+self-iterate.
