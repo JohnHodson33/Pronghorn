@@ -6,6 +6,17 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 29 (8/4 ~16:25) — possible_duplicate (0024) + a route bug**:
+  Lane C's dedupe landed with a third candidate kind. Extended ReviewPen
+  (amber badge, full `notes` evidence, header count, semantics explainer:
+  keep = not-a-dupe → file as own deal; reject = same deal, leave existing
+  row alone). FOUND + FIXED in their review route: `isDeal = kind === "deal"`
+  meant a kept maybe-dupe filed on the CONSOLIDATOR branch → a nameless
+  "<acquirer> (platform — targets TBD)" row, i.e. re-manufacturing the junk
+  twins the dedupe just removed. Now files as a deal + carries the pen
+  evidence into the row's notes. Flagged to Lane C as theirs to overrule.
+  New path unexercisable until John applies 0024 (built against committed
+  SQL, not a guess); deal/consolidator verified non-regressed.
 - **Loop iter 27 (8/4 ~16:00) — VERIFICATIONS CLOSED + OUTREACH-READY**:
   both queued verifications passed on real data — focus-gate burn shows
   100% in-focus (18 in / 0 out, per-industry lines correct) and the review

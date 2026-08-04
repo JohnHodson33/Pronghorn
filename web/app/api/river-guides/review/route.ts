@@ -51,8 +51,13 @@ export async function POST(req: Request) {
 
   let filedDealId: string | null = null;
   if (action === "keep") {
-    // same filing shape as the sweep's HIGH path — a kept candidate is a real deal
-    const isDeal = cand.kind === "deal";
+    // same filing shape as the sweep's HIGH path — a kept candidate is a real deal.
+    // possible_duplicate (0024) files like a DEAL, not like a consolidator:
+    // "keep" on a maybe-dupe means "this is NOT a duplicate, it's a distinct
+    // deal", and it carries company + seller. Filing it on the consolidator
+    // branch would create a nameless "<acquirer> (platform — targets TBD)" row —
+    // exactly the junk-twin class the 8/4 dedupe just cleaned up.
+    const isDeal = cand.kind === "deal" || cand.kind === "possible_duplicate";
     const company = isDeal ? String(cand.company) : `${cand.acquirer} (platform — targets TBD)`;
     filedDealId = `RG-REVIEW-${slug(isDeal ? String(cand.company) : String(cand.acquirer))}-${id.slice(0, 6)}`;
     const { error: insErr } = await db.from("river_guides").upsert({
@@ -74,7 +79,12 @@ export async function POST(req: Request) {
       enrichment_status: isDeal && cand.seller_name ? "PENDING_T1" : "NEEDS_NAME",
       priority_band: isDeal && cand.seller_name ? "ENRICH_THEN_ASSESS" : "RESOLVE_NAME_FIRST",
       deal_year: cand.deal_year ?? null,
-      notes: `Kept from the discovery review pen by ${decidedBy} on ${new Date().toISOString().slice(0, 10)}.`,
+      // keep the pen's evidence (for a maybe-dupe: which row it may duplicate
+      // and any seller-name conflict) so the adjudication stays auditable
+      notes: [
+        `Kept from the discovery review pen by ${decidedBy} on ${new Date().toISOString().slice(0, 10)}.`,
+        cand.kind === "possible_duplicate" ? `Human ruled NOT a duplicate. Pen evidence: ${cand.notes ?? "(none recorded)"}` : null,
+      ].filter(Boolean).join(" "),
     }, { onConflict: "deal_id", ignoreDuplicates: true });
     if (insErr) return NextResponse.json({ error: insErr.message }, { status: 500 });
   }
