@@ -1924,3 +1924,47 @@ which the sweep never reads, so (c) is NOT blocked on (b).
 RESTATING for PM (answered in prior commit, may have crossed in flight):
 the 19:48 UTC 23-row batch is NOT Lane A's — one --confirm run only (19:37,
 9 rows). Forensics + DQ flags in the "PM Q&A" entry above.
+
+## 2026-08-04 (late-3) — self-iterate audit: southernmergers parse gap FIXED; calder/sunacquisitions verified STRUCTURAL
+Post-focus-gate audits: source_health **30/30 green** (gabb healthy after the
+rebuild — the 🔴 is gone), source_quality **broker-contact gaps: none
+actionable ✅** (azbb closed), freshness all <48h.
+
+Swept the ask% column for any remaining instance of John's parse-gap class.
+Three outliers, each verified against the LIVE page before judging:
+- **southernmergers — REAL GAP, FIXED. ask 4% → 79%, cf 4% → 79%, mult →
+  67%, city → 96%** (24 live rows). The site moved to a `<label>Selling
+  Price:</label> $X` template; the adapter only read the legacy
+  `.valuesItems` block, which returns ZERO elements on current pages — a
+  $2.9M-asking / $624K-EBITDA aerospace distributor was stored all-null.
+  Fix is a FILL-ONLY label pass (rows still carrying the old block parse
+  byte-identically — verified on one of each). 'Adj. EBITDA' types as EBITDA,
+  not SDE. State stays null where unpublished (city ≠ licence to infer).
+- **calder — STRUCTURAL, no change.** 0% ask is correct: fetched a live
+  detail page for its largest deal, no asking/price field anywhere (M&A
+  advisor, price-on-request). The adapter's existing comment was accurate.
+- **sunacquisitions — STRUCTURAL, no change** (5 rows; documented 7/10 as
+  EBITDA-lines-only, no asking price).
+Also verified Lane C's seam-stitch on my focus gate end-to-end: app_config
+now holds the allowlist as a JSON-string, the parse lands, and a live run
+scopes to 25/50 consolidators (25 skipped: pool 9, kitchen 5, fencing 10,
+other 1). Gate is fully wired config → code.
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-08-04 late: synced with origin/main, all work pushed.
+CLOSED THIS SESSION: John's #1 asking-price gap (tupelo ask 88%/mult 67%,
+dealrelations 86%/72%) + post-nightly verification that coverage HELD +
+thin-financials tail (bizben/murphy/hedgestone/vr) + gabb adapter REBUILT
+after 12 days dark + azbb named agents + southernmergers parse gap +
+db_output gross_revenue refresh + Serper focus gate item (c).
+STATE: source_health 30/30 green; source_quality broker-gaps none-actionable;
+every remaining 0%-ask source verified structural (calder, sunacquisitions,
+bizquest/bizbuysell login/block-gated, transworld no revenue field).
+OPEN/WATCH: (1) vr enrichment stops on 8 transient errors some runs
+(self-heals, coverage accumulates); (2) gabb sold-transaction data lost with
+the old API (closed-multiples source gone — flag if John wants it back);
+(3) 19:48 UTC 8/4 23-row river_guides batch is NOT Lane A's (disclaimed
+twice with forensics) and carries 2 unnamed-target rows + 2 aggregator-cited
+HIGHs for its owner to fix; (4) Serper: zero Lane A dependency (broker
+scraping + extract.js are Serper-free; the river-guides enrich/resolve/verify
+cascade is Lane C's). NEXT: TASK-QUEUE top-down + self-iterate audits.
