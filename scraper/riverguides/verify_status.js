@@ -39,17 +39,19 @@ async function serper(q) {
   }
 }
 
-const SYSTEM = `You verify the CURRENT status of a person who sold their company to a consolidator. You get: who they are, what they sold, who bought it, the deal year, and fresh web/LinkedIn search results.
+const SYSTEM = `You verify the CURRENT status of a person who sold their company to a consolidator, by reasoning about their CAREER TRAJECTORY. You get: who they are, what they sold, who bought it, the deal year, a list of KNOWN CONSOLIDATORS (PE-backed platforms from our acquisition ledger), and fresh web/LinkedIn search results.
 
-Determine TODAY's status:
-- EXITED: evidence they have left the acquirer (new venture, "former", retired, advisor/board roles, unrelated current title)
-- EMPLOYED: evidence they still work at/under the acquirer (current title at acquirer or at their old company operating under the acquirer)
+Reason: what is this person's CURRENT role and employer, and what does the transition from "owner of <their company>" to that role mean?
+- EMPLOYED: their current employer is the acquirer, their old company operating under it, OR ANY of the known consolidators — a former owner now holding a corporate title at a platform (e.g. "owner of Small Co → now District Manager at Senske") is the classic earnout/retention giveaway.
+- EXITED: current evidence shows retired, advisor/board roles, an unrelated venture, or a NEW company of their own (set second_venture).
 - UNKNOWN: results are thin, ambiguous, or about a different same-named person — say so; never guess.
 
 Also capture their linkedin profile URL ONLY if a result clearly shows it's this person (company/deal/geo corroboration in the snippet).
 
 Output JSON only:
 {"current_status": "EXITED|EMPLOYED|UNKNOWN", "confidence": "high|medium|low",
+ "current_employer": "their current employer as shown in results, or null",
+ "trajectory": "one line: owner of <company> → <current role/employer today>",
  "evidence": "one line citing which result and what it shows",
  "linkedin_url": "url or null", "second_venture": "name of any new company they now run, or null"}`;
 
@@ -85,6 +87,12 @@ async function main() {
   const totals = { in: 0, out: 0, serper: 0 };
   let verified = 0, flipped = 0;
 
+  // known-consolidator set (our acquisition ledger, ~50 names): a former owner
+  // whose CURRENT employer is ANY of these is EMPLOYED — John's trajectory
+  // pattern ("owner of Small Co → District Manager at [PE platform]")
+  const { data: acqRows } = await supabase.from('river_guides').select('acquirer');
+  const consolidators = [...new Set((acqRows || []).map((r) => r.acquirer).filter(Boolean))];
+
   // an attempt that ends inconclusive still consumed the lookups — stamp it so
   // tonight's cap moves on to never-attempted guides instead of retrying
   const markAttempted = async (g) => {
@@ -108,7 +116,9 @@ async function main() {
         messages: [{ role: 'user', content: JSON.stringify({
           person: g.full_name, sold_company: g.their_company, acquirer: g.acquirer,
           deal_year: g.deal_year, state: g.location_state,
-          status_at_close: g.exit_status, results: results.slice(0, 10),
+          status_at_close: g.exit_status,
+          known_consolidators: consolidators,
+          results: results.slice(0, 10),
         }) }],
       });
       totals.in += msg.usage.input_tokens; totals.out += msg.usage.output_tokens;
@@ -123,7 +133,8 @@ async function main() {
       const patch = {
         exit_status: v.current_status,
         current_status_verified: true,
-        notes: [g.notes, `status-verify ${new Date().toISOString().slice(0, 10)}: ${v.evidence}${v.second_venture ? ` · second venture: ${v.second_venture}` : ''}`].filter(Boolean).join('\n'),
+        // the trajectory line IS the evidence John wants on the row
+        notes: [g.notes, `status-verify ${new Date().toISOString().slice(0, 10)}: ${v.trajectory ? v.trajectory + ' — ' : ''}${v.evidence}${v.second_venture ? ` · second venture: ${v.second_venture}` : ''}`].filter(Boolean).join('\n'),
       };
       if (v.second_venture) patch.archetype_subtype = 'SECOND_TIME_SELLER';
       if (v.linkedin_url && !g.contact?.linkedin_url) patch.contact = { ...(g.contact || {}), linkedin_url: v.linkedin_url };
