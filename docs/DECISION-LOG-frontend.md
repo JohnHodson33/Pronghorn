@@ -6,6 +6,12 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 22 (8/4 ~10:45)**: PM is back (Serper sentinel card, John
+  8/4). Shipped the Lane B half AHEAD of Lane C's data: /costs Serper
+  runway card rendering off a proposed `serper` contract on /api/costs
+  (📣 in TASK-QUEUE with the exact shape) — absent field = hidden,
+  verified live. Key-Actions alert (item c) wires same-day once Lane C
+  lands the data. Iters 17-21 quiet (feedback 0, 0022 unapplied).
 - **Loop iters 10-16 (8/3 22:20 → 8/4 04:30)**: overnight watch, all quiet —
   no upstream commits, feedback 0 every poll, 0022 still unapplied. ONE
   finding (surfaced as 📣 in TASK-QUEUE): the 02:30 nightly river-guides

@@ -29,6 +29,17 @@ type Costs = {
   // VA project spend (8/3): per-contact rate uses ONLY intake-linked entries
   vaProjects?: { project: string; costUsd: number; units: number; intakeLinked: boolean }[];
   vaCostPerContact?: number | null;
+  // Serper credit runway (8/4 sentinel — Lane C serves it; renders only when
+  // present, so this is safe before the data half lands)
+  serper?: {
+    creditsLeft: number;
+    packCredits?: number;
+    expiresAt: string | null;
+    monthsLeft?: number | null;
+    burnPerMonth?: number;
+    alert?: null | "low_balance" | "expiring" | "runaway";
+    alertNote?: string | null;
+  } | null;
   note?: string;
 };
 type ManualEntry = {
@@ -233,6 +244,31 @@ export default function CostsView() {
             {data.subscriptions.length === 0 && <li className="text-xs text-zinc-400">None recorded.</li>}
           </ul>
         </div>
+
+        {/* Serper credit runway (8/4 sentinel item b) — prepaid pack, no
+            auto-recharge, credits expire: the runway must be visible without
+            anyone doing math. Renders only when the API serves `serper`. */}
+        {data.serper && (
+          <div className={`rounded-xl border bg-white p-5 md:col-span-2 ${data.serper.alert ? "border-red-300" : "border-zinc-200"}`}>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="font-semibold">Serper credit runway</h2>
+              <span className="text-sm tabular-nums">
+                <span className="text-xl font-bold text-zinc-900">{data.serper.creditsLeft.toLocaleString()}</span>
+                <span className="text-zinc-500"> credits left</span>
+                {data.serper.monthsLeft != null && <span className="text-zinc-500"> · ~{data.serper.monthsLeft} mo at current burn</span>}
+                {data.serper.expiresAt && <span className="text-zinc-500"> · expires {String(data.serper.expiresAt).slice(0, 10)}</span>}
+              </span>
+            </div>
+            {data.serper.alert && (
+              <p className="mt-2 rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-800">
+                ⚠ {data.serper.alertNote ??
+                  (data.serper.alert === "runaway"
+                    ? "Serper burn is abnormally high — check for a looping worker before the pack drains."
+                    : "Serper credits need attention — top up at serper.dev ($50 / 50k; prepaid, no auto-recharge).")}
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="rounded-xl border border-zinc-200 bg-white p-5">
           <h2 className="font-semibold">Subscription quota used (this month)</h2>

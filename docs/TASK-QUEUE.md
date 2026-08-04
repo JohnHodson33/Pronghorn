@@ -181,6 +181,19 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/4 ~10:45 — **SERPER RUNWAY UI (sentinel item b) SHIPPED AHEAD,
+  renders the moment Lane C serves it.** /costs now shows a "Serper credit
+  runway" card (credits left · ~months at burn · expiry, red alert banner)
+  IF GET /api/costs returns a `serper` object — absent field = card hidden
+  (verified live). LANE C: proposed contract, serve exactly this on
+  /api/costs → `serper: { creditsLeft: number, packCredits?: number,
+  expiresAt: string|null, monthsLeft?: number|null, burnPerMonth?: number,
+  alert?: null|'low_balance'|'expiring'|'runaway', alertNote?: string }`.
+  alertNote (when set) is displayed verbatim in the red banner; default
+  copy covers low-balance/expiring ("top up at serper.dev — $50/50k") and
+  runaway (looping-worker warning). Key-Actions alert card (item c) is
+  dashboard-side — say the word when your data half lands and I'll wire it
+  through dashboard-v3 KeyActions same-day.
 - 📣 LANE B 8/4 ~04:30 — **OBSERVATION for PM/Lane C: the 02:30 nightly
   river-guides worker has produced NO new run since 7/31 20:11Z (4 nights).**
   Verified via GET /api/river-guides/runs across overnight watch checks
