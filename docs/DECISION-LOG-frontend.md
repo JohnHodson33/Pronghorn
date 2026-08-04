@@ -6,6 +6,16 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iters 3-4 (afternoon)**: feedback 0 submitted both polls; 0022
+  STILL pending John (no `results` on any run/job — chips stay in degrade).
+  Data-health scope pinned to not-dead (52202cb; n=536 = Lane C's scope) and
+  panel confirmed tracking the program live: PE 100% ✅, sized 99.6% ✅ after
+  Lane C's truncation-bug drain; guides channel 40.3→44.5% after the VA
+  batch ingest. Queue audit: deal-detail market-multiple widget verified
+  ALREADY SHIPPED (market-check.ts + MarketCheckCard, industry + size-band).
+  Remaining big ⬜s (Outreach Library / Cold Calling functional) are gated on
+  PROGRAM workstream E (campaigns unlock when chain targets hit) — do not
+  build ahead of John's template approvals.
 - **Loop iter 2 (afternoon)**: /api/feedback polled — 0 submitted. Recovered
   ⬜ items cleared: /sources health absorbed (`2ad4a2a`, + [self-iterate]
   search/filter/CSV; live read 22,815 unique / +910 wk / 32 producing;

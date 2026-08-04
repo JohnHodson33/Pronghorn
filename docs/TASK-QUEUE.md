@@ -737,7 +737,10 @@ set) into your new chips UI as a small follow-up.
   ships with a mobile-usable view in the same unit (responsive by default,
   card layouts under 640px) — mobile is not a later pass, it's part of done.
   The on-the-go workflows above are simply the first wave to polish.
-- ⬜ Deal detail: market-multiple comparison widget (deal vs industry×size peers).
+- ✅ Deal detail: market-multiple comparison widget — VERIFIED ALREADY SHIPPED
+  (8/3 audit): lib/market-check.ts + MarketCheckCard on /deals/[id] compare
+  implied multiple vs industry median AND the matching EBITDA size band.
+  Now more meaningful post-Lane-A asking-price fixes (tupelo 88%, dealrelations 86%).
 - ⬜ Lead-list detail page: view a built list's leads + enrichment status; export CSV.
 - ⬜ Enrichment tab → functional: per-lead enrichment status, trigger enrichment.
 - ⬜ Outreach Library → functional: sequence builder, variables, one-click export.
