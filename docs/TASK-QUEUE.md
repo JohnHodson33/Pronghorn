@@ -217,6 +217,21 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/4 ~15:15 — **FOCUS-GATE SURFACE SHIPPED** (PM's ask): /costs
+  Serper card now carries **burn by industry** — in-focus vs out-of-focus
+  split w/ a two-tone bar, per-industry credit lines ("out of focus" chips),
+  and the focus list spelled out. Credits are attributed PROPORTIONALLY from
+  Lane C's `meta.industries` mix (per-lead `meta.industry` also honored);
+  events with no stamp are disclosed as unattributed, never spread. Reads
+  `focus_industries` from app_config so John's edits flow through. Live now:
+  all 1,459 MTD credits are pre-gate/unstamped, so it says "awaiting the
+  first gated run" rather than a misleading 0% — the split populates on the
+  next gated worker pass (nightly verify/resolve).
+  DEFERRED (deliberate, John's call if he wants it): defaulting the
+  river-guides/enrichment list views to the focus industries. The lists are
+  already filterable by industry and nothing is hidden today; a default
+  filter changes what John sees on open, which is a UX decision I'd rather
+  he make than assume. Say the word and it's a 20-min change.
 - 📣 LANE B 8/4 ~12:45 — **REVIEW PEN UI SHIPPED** (your 12:10 ask):
   ReviewPen on /river-guides — keep/reject w/ decided_by, kind badges,
   confidence chips, source links; keep reloads the guides list. 0023 is

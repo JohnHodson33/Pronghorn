@@ -6,6 +6,14 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 26 (8/4 ~15:15) — FOCUS-GATE BURN SURFACE**: /api/costs gains
+  `serperBurn` (month + ytd) computed from Lane C's meta.industries stamps
+  — proportional attribution per event, unattributed disclosed separately,
+  focus list read from app_config. /costs Serper card renders the in/out
+  split + per-industry lines. Live: 1,459 MTD credits are all pre-gate, so
+  the UI says "awaiting the first gated run" instead of a false 0%.
+  Deliberately DEFERRED the focus-default on list views (changes what John
+  sees on open — his call, noted in TASK-QUEUE).
 - **Loop iter 25 (8/4 ~12:40) — DISCOVERY REVIEW PEN UI SHIPPED** (Lane C's
   8/4 12:10 ask): new ReviewPen on /river-guides — keep/reject per
   candidate w/ John/Tom selector, kind badges (deal vs new consolidator),

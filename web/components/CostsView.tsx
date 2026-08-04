@@ -42,7 +42,20 @@ type Costs = {
     runwayNote?: string;
     alerts: { kind: string; title: string; detail: string }[];
   } | null;
+  // focus-gate proof (8/4): serper credits by industry, in-focus vs out
+  serperBurn?: {
+    focusList: string[];
+    month: BurnWindow;
+    ytd: BurnWindow;
+  } | null;
   note?: string;
+};
+type BurnWindow = {
+  rows: { industry: string; credits: number; inFocus: boolean }[];
+  inFocus: number;
+  outOfFocus: number;
+  attributed: number;
+  unattributed: number;
 };
 type ManualEntry = {
   id: string; at: string; service: string; activity: string;
@@ -281,6 +294,59 @@ export default function CostsView() {
                 ⚠ <span className="font-semibold">{a.title}:</span> {a.detail}
               </p>
             ))}
+
+            {/* FOCUS GATE PROOF (John 8/4): where the credits actually went.
+                In-focus vs out-of-focus is the number that shows the gate
+                working; unattributed is disclosed, never spread silently. */}
+            {data.serperBurn && data.serperBurn.month.attributed + data.serperBurn.month.unattributed > 0 && (() => {
+              const b = data.serperBurn!.month;
+              const known = b.inFocus + b.outOfFocus;
+              const pct = known ? Math.round((b.inFocus / known) * 100) : 0;
+              return (
+                <div className="mt-4 border-t border-zinc-100 pt-3">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                      Burn by industry (this month) — focus gate
+                    </span>
+                    {/* no stamped events yet ⇒ say so; never render "0% in-focus"
+                        off unattributed pre-gate burn */}
+                    <span className="text-sm tabular-nums">
+                      {known > 0 ? (
+                        <>
+                          <span className="font-bold text-emerald-800">{pct}% in-focus</span>
+                          <span className="text-zinc-500"> · {b.inFocus.toLocaleString()} in · {b.outOfFocus.toLocaleString()} out</span>
+                        </>
+                      ) : (
+                        <span className="text-zinc-500">awaiting the first gated run — no industry-stamped burn yet</span>
+                      )}
+                    </span>
+                  </div>
+                  {known > 0 && (
+                    <div className="mt-1.5 flex h-2 overflow-hidden rounded bg-zinc-100">
+                      <div className="bg-emerald-600" style={{ width: `${pct}%` }} title={`in-focus ${b.inFocus}`} />
+                      <div className="bg-amber-500" style={{ width: `${100 - pct}%` }} title={`out-of-focus ${b.outOfFocus}`} />
+                    </div>
+                  )}
+                  <ul className="mt-2 space-y-1 text-sm">
+                    {b.rows.slice(0, 8).map((r) => (
+                      <li key={r.industry} className="flex items-baseline justify-between gap-2">
+                        <span className="min-w-0 truncate">
+                          <span className={r.inFocus ? "text-zinc-700" : "text-zinc-500"}>{r.industry.replace(/_/g, " ").toLowerCase()}</span>
+                          {!r.inFocus && (
+                            <span className="ml-1.5 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">out of focus</span>
+                          )}
+                        </span>
+                        <span className="shrink-0 tabular-nums text-zinc-600">{r.credits.toLocaleString()} cr</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-2 text-[11px] text-zinc-400">
+                    Focus list: {data.serperBurn!.focusList.map((f) => f.replace(/_/g, " ").toLowerCase()).join(" · ")}.
+                    {b.unattributed > 0 && ` ${b.unattributed.toLocaleString()} credits carry no industry stamp (pre-gate events) — shown separately, not spread.`}
+                  </p>
+                </div>
+              );
+            })()}
           </div>
         )}
 

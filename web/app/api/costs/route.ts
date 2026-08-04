@@ -22,7 +22,7 @@ export const dynamic = "force-dynamic";
 // known monthly search caps for subscription services (for the quota display)
 const QUOTA_CAPS: Record<string, number> = { hunter: 500 };
 
-type UsageRow = { service: string; activity: string; units: number | string; cost_usd: number | string; meta?: { project?: string | null; intake_job_id?: string | null; note?: string | null } | null };
+type UsageRow = { service: string; activity: string; units: number | string; cost_usd: number | string; meta?: { project?: string | null; intake_job_id?: string | null; note?: string | null; industries?: Record<string, number> | null; industry?: string | null } | null };
 
 // Page through usage_events so a high-volume window is never silently capped
 // (Supabase caps a single request at 1000 rows). Honest totals > fast totals.
@@ -189,6 +189,53 @@ export async function GET() {
   const { fetchSerperRunway } = await import("@/lib/serper-runway");
   const serperRunway = await fetchSerperRunway(db);
 
+  // --- SERPER BURN BY INDUSTRY (focus gate, John 8/4): Lane C stamps
+  // meta.industries {INDUSTRY: rows} (verify/resolve/sweep) or meta.industry
+  // (per-lead linkedin_verify) on every serper event. Split in-focus vs
+  // out-of-focus so John can watch the gate working. Credits are attributed
+  // proportionally to each event's industry mix — events with no stamp land in
+  // "unattributed" rather than being silently spread (honesty rule).
+  const focusList = await (async () => {
+    try {
+      const { data } = await db.from("app_config").select("value").eq("key", "focus_industries").maybeSingle();
+      const raw = data?.value;
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (Array.isArray(parsed) && parsed.length) return parsed.map((x) => String(x).toUpperCase());
+    } catch { /* fall through to the seeded default */ }
+    return ["TREE_CARE", "LANDSCAPE", "IRRIGATION", "LAWN_CARE", "PEST"];
+  })();
+  const burnFor = (events: UsageRow[]) => {
+    const byIndustry: Record<string, number> = {};
+    let attributed = 0, unattributed = 0;
+    for (const e of events.filter((x) => x.service === "serper")) {
+      const credits = Number(e.units) || 0;
+      if (!credits) continue;
+      const mix = e.meta?.industries && Object.keys(e.meta.industries).length
+        ? e.meta.industries
+        : e.meta?.industry ? { [String(e.meta.industry).toUpperCase()]: 1 } : null;
+      if (!mix) { unattributed += credits; continue; }
+      const totalRows = Object.values(mix).reduce((s, n) => s + (Number(n) || 0), 0);
+      if (!totalRows) { unattributed += credits; continue; }
+      for (const [ind, n] of Object.entries(mix)) {
+        const share = credits * ((Number(n) || 0) / totalRows);
+        const key = String(ind).toUpperCase();
+        byIndustry[key] = (byIndustry[key] ?? 0) + share;
+        attributed += share;
+      }
+    }
+    const rows = Object.entries(byIndustry)
+      .map(([industry, credits]) => ({ industry, credits: Math.round(credits), inFocus: focusList.includes(industry) }))
+      .sort((a, b) => b.credits - a.credits);
+    return {
+      rows,
+      inFocus: Math.round(rows.filter((r) => r.inFocus).reduce((s, r) => s + r.credits, 0)),
+      outOfFocus: Math.round(rows.filter((r) => !r.inFocus).reduce((s, r) => s + r.credits, 0)),
+      attributed: Math.round(attributed),
+      unattributed: Math.round(unattributed),
+    };
+  };
+  const serperBurn = { focusList, month: burnFor(monthEvents), ytd: burnFor(ytdEvents) };
+
   return NextResponse.json({
     // NEW: two windows, same breakdown each
     month: monthWindow,
@@ -198,6 +245,8 @@ export async function GET() {
     vaCostPerContact: linkedContacts ? round(linkedCost / linkedContacts) : null,
     // prepaid-credit runway ("Serper: ~41,200 left · ~10 mo · expires …")
     serperRunway,
+    // focus-gate proof: serper credits by industry, in-focus vs out (8/4)
+    serperBurn,
     // shared context
     quotas,
     ownerContactsAcquired: owners,
