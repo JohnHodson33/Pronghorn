@@ -6,6 +6,34 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 25 (8/4 ~12:40) — DISCOVERY REVIEW PEN UI SHIPPED** (Lane C's
+  8/4 12:10 ask): new ReviewPen on /river-guides — keep/reject per
+  candidate w/ John/Tom selector, kind badges (deal vs new consolidator),
+  confidence chips, source links; keep reloads the guides list (onFiled).
+  Renders nothing when the pen is empty, one amber line pre-0023. FOUND:
+  0023 is ALREADY APPLIED (review API returns real counts, no note) — the
+  pen is empty until the next sweep re-queues the degraded MEDIUMs, so the
+  populated path ships verified-by-inspection (tsc + SSR 200 + API
+  contract match); it exercises itself on Monday's sweep cron. ⚠ Browser
+  pane fully wedged this iteration (fresh tabs time out too) — verified
+  via Invoke-WebRequest SSR checks; pane needs John to surface the app
+  window or a session restart to recover screenshots/DOM checks.
+- **Loop iter 24 (8/4 ~12:00) — SERPER SENTINEL LIVE END-TO-END**: Lane C
+  shipped the data half fast (lib/serper-runway.ts, field name
+  `serperRunway` — their shape won; my renderer adapted to it: runwayNote
+  verbatim + alerts[] banners + burn/guard line + honest not-configured
+  state). Verified live with REAL data: 49.2k credits, expires 2027-02-04,
+  and the runaway guard is ALREADY FIRING (798 credits in 24h > 500/day —
+  the alert shows on both /costs and Key Actions 🚨; likely Lane A's sweep
+  burn, John will see it exactly as designed). Item (c) Key Actions wiring
+  was Lane C's, already working.
+- **Loop iter 23 (8/4 ~11:20) — 0022 LANDED, CHIPS VERIFIED END-TO-END**:
+  first post-0022 run carries results + my queue-time label ("Newly
+  resolved · 19 selected"); chips rendered and Gained-contact click
+  filtered to exactly 15 of 467. The one queued verification is CLOSED.
+  Also: Browser pane wedged (navigate 300s timeout) — fix was tabs_create
+  a fresh tab + force navigate; PowerShell Invoke-WebRequest works as a
+  pane-free fallback for API polls.
 - **Loop iter 22 (8/4 ~10:45)**: PM is back (Serper sentinel card, John
   8/4). Shipped the Lane B half AHEAD of Lane C's data: /costs Serper
   runway card rendering off a proposed `serper` contract on /api/costs

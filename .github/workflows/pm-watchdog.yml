@@ -1,0 +1,48 @@
+# PM WATCHDOG (PM 8/4) — status without a PM session.
+#
+# WHY: the PM chat session dies (context limits, usage windows, restarts) and
+# John has had to notice and re-boot it. The auto-integrator already ships lane
+# work without any session; this closes the other half — MEASUREMENT and
+# ALERTING — so a dead PM session never means blind flying.
+#
+# Every 6h it measures the funnel + lane health + Serper runway straight from
+# the DB and writes docs/PM-STATUS.md (committed). Any session — or John —
+# reads that file and knows the real state in one look. Failures are visible in
+# the Actions tab.
+
+name: PM watchdog
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "37 */6 * * *"
+
+concurrency:
+  group: pm-watchdog
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  status:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main, fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: npm i @supabase/supabase-js@2 --no-save
+      - name: Measure and write PM-STATUS.md
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node .github/scripts/pm-status.js
+      - name: Commit if changed
+        run: |
+          git config user.name "pronghorn-watchdog"
+          git config user.email "watchdog@pronghornequity.com"
+          git add docs/PM-STATUS.md
+          git diff --staged --quiet || git commit -m "PM watchdog: status refresh [skip ci]"
+          git push origin main || true

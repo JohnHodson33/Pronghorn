@@ -34,6 +34,42 @@ John watches hit rates move without asking the PM. (E) OUTREACH RIDES ON
 TOP: templates being co-developed w/ John in the PM channel; campaigns
 unlock once (1)-(4) hit targets on a real segment.
 
+## 🎯 SERPER FOCUS GATE (John 8/4 — industry narrowing; PM measured same day)
+John's directive (8/4): thesis focus is now **TREE CARE primary; landscaping,
+irrigation, lawn care, pest control ancillary**. The old 10–12-industry
+broad sweep is deprioritized (NOT deleted — no functionality stripped yet;
+"most likely" focus, John reserves the right to revisit). Serper credits are
+the scarce resource funding the naming/contact push — spend them in-focus.
+
+PM MEASUREMENT (8/4, live DB — the reason this card exists): 8/4 burn =
+1,441 credits (770 river-guide verify · 566 consolidator sweep · 105
+enrichment). Of the 82 guide rows swept in TODAY: **51 in-focus (62%) · 31
+OUT-of-focus (38% — 13 pool, 11 commercial kitchen, 6 fencing, 1 other)**.
+Whole book: ~26% out-of-focus (64 pool · 45 kitchen · 34 fence of 549).
+At ~990/day the 50k pack lasts ~50 days; gating recovers roughly a third.
+
+BUILD (Lane C owns a+b+d, Lane A owns c, Lane B optional surface):
+(a) **Focus allowlist in app_config** (`focus_industries`): TREE_CARE
+primary + LANDSCAPE, IRRIGATION, LAWN_CARE, PEST ancillary. Every
+Serper-spending worker (river-guides verify, t1 enrichment, consolidator
+sweep, discovery, leadgen classification) processes **in-focus rows first
+and SKIPS out-of-focus by default** (flag `include_all_industries` flips it
+back — a config read, not a code strip).
+(b) **PREREQUISITE — normalize industry_group**: taxonomy is dirty (TREE vs
+TREE_CARE, POOL vs POOL_SERVICES, FENCE vs FENCING, 215 rows in catch-all
+GREEN). The gate misfires on a dirty key. One migration/backfill maps to a
+canonical set; GREEN rows get classified into it (this classification pass
+is itself Serper-cheap: name+vertical_raw heuristics first, search only
+where ambiguous).
+(c) **Sweep scoping (Lane A)**: future consolidator-sweep runs take a
+`--industries` scope defaulting to the allowlist; out-of-focus
+consolidators only on explicit ask.
+(d) **Attribution**: every serper usage_event stamps `meta.industry` (today
+it's null on all 3 activities) so /costs + PM-STATUS can show burn by
+industry and John can see the gate working. Existing out-of-focus rows KEEP
+their data (honesty rule: nothing deleted, negatives persist) — they just
+stop consuming credits.
+
 ## 🎯 END-STATE GOAL (every session aligns to this)
 A searchable, filterable, executable deal-sourcing + CRM system whose purpose is:
 **scrape every broker + build proprietary lists → enrich to OWNER contact info
@@ -181,6 +217,13 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/4 ~12:45 — **REVIEW PEN UI SHIPPED** (your 12:10 ask):
+  ReviewPen on /river-guides — keep/reject w/ decided_by, kind badges,
+  confidence chips, source links; keep reloads the guides list. 0023 is
+  APPLIED (API already returns real counts) but the pen is empty — your
+  note said re-runs re-queue the degraded MEDIUMs, so it populates on the
+  next sweep. UI verified tsc+SSR (browser pane is wedged locally);
+  populated path uses the same patterns as the verified runs surface.
 - 📣 LANE B 8/4 ~10:45 — **SERPER RUNWAY UI (sentinel item b) SHIPPED AHEAD,
   renders the moment Lane C serves it.** /costs now shows a "Serper credit
   runway" card (credits left · ~months at burn · expiry, red alert banner)
@@ -230,10 +273,14 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
   feel identical. ACCEPTANCE (John's literal workflow): filter → select 80 →
   Enrich → leave → come back later → one click on the run → see exactly who
   gained what → work that list.
-  - ✅ LANE B 8/3 — surface half SHIPPED (RunsPanel on both pages: always
-    visible, exact run-row filter, outcome chips wired to `results`,
-    unmissable-done receipts + top-bar pill, queue-time labels). Chips light
-    up the moment 0022's per-row results appear.
+  - ✅✅ LANE B 8/4 ~11:20 — **FULL CARD VERIFIED END-TO-END ON REAL DATA.**
+    0022 is applied and the first post-0022 run ("Newly resolved · 19
+    selected" — the queue-time label working in prod) carries per-row
+    results. On /river-guides: chips rendered [Gained contact 15] [→ Paid 4],
+    clicking Gained contact filtered the table to exactly 15 of 467 with the
+    new emails/LinkedIns visible. John's acceptance workflow (run → click →
+    who gained what → work the list) is live. Enrichment side uses the
+    identical code path; verifies itself on its first post-0022 job.
 - 📣 LANE B 8/3 — **DATA-HEALTH PANEL (PROGRAM workstream D) LIVE on `/`**:
   chain funnel vs targets w/ weekly deltas (snapshots in app_config
   `data_health_snapshots`, PM 7/31 baseline seeded). Live read at ship time:
@@ -779,6 +826,36 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/4 (~12:10) — ✅ **DEEP CONSOLIDATOR MAPPING SHIPPED + FIRST RUN
+  FILED 50 NEW GUIDES (river_guides 467→517; discovery card (b) done).**
+  `river_guides_sweep.js --deep`: iterate-until-dry query rounds per
+  consolidator (announcement/PR-wire/per-year/brand-family shapes, stops
+  when a round adds nothing), auto-discovers NEW consolidators, weekly cron
+  Mondays 07:00 PHX (river-guides-sweep.yml — John's 7/31 greenlight; HIGH
+  auto-files, below-HIGH human-gated). **Guards hardened before any filing**
+  (every class Lane A flagged 7/20 + three more found live today): SaaS/
+  software off-thesis · company-name fragment floor · corporate-seller
+  person check (Rentokil-style divestitures file NEEDS_NAME, not fake
+  people) · aggregator hosts (owler/linkedin/mergr/…) forced MEDIUM ·
+  &/and dedupe. **Migration 0023** = discovery_candidates review pen; until
+  John applies it MEDIUM + new consolidators are report-only (this run's
+  pen write degraded cleanly — re-runs will queue them). **JOHN: apply
+  0023.** **LANE B: review pen UI** — GET /api/river-guides/review
+  ("N candidates awaiting confirm"), POST {id, action keep|reject,
+  decided_by} — keep files the guide row automatically. The 50 new rows
+  flow the normal lifecycle (resolve→verify→enrich→address→phone nightly).
+- 📣 LANE C 8/4 (~11:20) — ✅ **CAREER-TRAJECTORY VERIFICATION SHIPPED
+  (discovery card (a)).** verify_status.js now reasons about the career
+  transition against our 50-consolidator ledger: current employer ≈ acquirer
+  OR ANY known platform → EMPLOYED verified; retired/advisor/new venture →
+  EXITED (+SECOND_TIME_SELLER); the trajectory line IS the row evidence.
+  Live sample note: *"Owner/CEO of Native Land Design (Austin, TX) →
+  Director of Advanced Technologies and Sustainability at Yellowstone
+  Landscape"* (Ben Collinsworth, high conf, +LinkedIn). First upgraded pass:
+  9/25 verified. Runs at 60/night — the whole unverified base gets the
+  trajectory treatment as the nightly sweeps. Remaining discovery card
+  parts: (b) deep consolidator mapping (next up), (c) CLOSED (seed source
+  confirmed 8/3), (d) VA tail — already flowing via /intake.
 - 📣 LANE C 8/4 — ✅ **BOTH UNLOCKS EXPLOITED THE HOUR THEY CLEARED.**
   (1) **Verify backlog chewed: 130/467 guides now status-verified (was 25)**
   — 4 passes × 60 today, 104 newly verified incl. 4 EMPLOYED→EXITED unlocks,
