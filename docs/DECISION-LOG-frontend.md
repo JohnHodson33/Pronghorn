@@ -6,6 +6,13 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 23 (8/4 ~11:20) — 0022 LANDED, CHIPS VERIFIED END-TO-END**:
+  first post-0022 run carries results + my queue-time label ("Newly
+  resolved · 19 selected"); chips rendered and Gained-contact click
+  filtered to exactly 15 of 467. The one queued verification is CLOSED.
+  Also: Browser pane wedged (navigate 300s timeout) — fix was tabs_create
+  a fresh tab + force navigate; PowerShell Invoke-WebRequest works as a
+  pane-free fallback for API polls.
 - **Loop iter 22 (8/4 ~10:45)**: PM is back (Serper sentinel card, John
   8/4). Shipped the Lane B half AHEAD of Lane C's data: /costs Serper
   runway card rendering off a proposed `serper` contract on /api/costs

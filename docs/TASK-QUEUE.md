@@ -230,10 +230,14 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
   feel identical. ACCEPTANCE (John's literal workflow): filter → select 80 →
   Enrich → leave → come back later → one click on the run → see exactly who
   gained what → work that list.
-  - ✅ LANE B 8/3 — surface half SHIPPED (RunsPanel on both pages: always
-    visible, exact run-row filter, outcome chips wired to `results`,
-    unmissable-done receipts + top-bar pill, queue-time labels). Chips light
-    up the moment 0022's per-row results appear.
+  - ✅✅ LANE B 8/4 ~11:20 — **FULL CARD VERIFIED END-TO-END ON REAL DATA.**
+    0022 is applied and the first post-0022 run ("Newly resolved · 19
+    selected" — the queue-time label working in prod) carries per-row
+    results. On /river-guides: chips rendered [Gained contact 15] [→ Paid 4],
+    clicking Gained contact filtered the table to exactly 15 of 467 with the
+    new emails/LinkedIns visible. John's acceptance workflow (run → click →
+    who gained what → work the list) is live. Enrichment side uses the
+    identical code path; verifies itself on its first post-0022 job.
 - 📣 LANE B 8/3 — **DATA-HEALTH PANEL (PROGRAM workstream D) LIVE on `/`**:
   chain funnel vs targets w/ weekly deltas (snapshots in app_config
   `data_health_snapshots`, PM 7/31 baseline seeded). Live read at ship time:
