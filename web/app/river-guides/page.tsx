@@ -13,6 +13,7 @@ import SortHeader from "@/components/SortHeader";
 import ScrollShell from "@/components/ScrollShell";
 import CardList from "@/components/CardList";
 import RunsPanel, { type RunRow, type RunOutcome } from "@/components/RunsPanel";
+import ReviewPen from "@/components/ReviewPen";
 import { useUrlFilterSync } from "@/lib/use-url-filters";
 import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 import { presenceOptions, presenceMatch } from "@/lib/list-filters";
@@ -459,6 +460,11 @@ export default function RiverGuides() {
           </div>
         );
       })}
+      {/* DISCOVERY REVIEW PEN (John 7/31 card (b); Lane C 8/4): below-HIGH
+          sweep candidates + new consolidators await one-click keep/reject;
+          kept guides reload into the list below */}
+      <ReviewPen onFiled={load} />
+
       {/* RUNS SURFACE (John 7/31 NEW #1 — supersedes the 7/16 history panel):
           ALWAYS visible (the old panel hid during an active run), every run
           clickable → the table filters to exactly that run's rows; outcome
