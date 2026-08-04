@@ -1888,3 +1888,24 @@ MEDIUM source_urls for John's optional review (urls only, no names in repo):
   https://www.facebook.com/columbusdispatch/posts/1464661532374096/
   https://kempanderson.com/transactions/
   https://ca.linkedin.com/in/thomascao (x4 — one profile cited for 4 deals; junk)
+
+## 2026-08-04 (late) — PM Q&A: the 19:48 UTC 23-row batch is NOT Lane A's
+ANSWER (PM 8/4 question): **Not my doing.** I ran exactly ONE --confirm pass
+(19:37 UTC, 9 rows, logged + committed above). Forensics on the 19:48 batch
+supporting "not a Lane A run": (a) all 23 rows share ONE created_at second
+(19:48:48) = single bulk insert — my run filed per-row during the search
+loop; (b) different consolidator set (SavATree, Davey, Bartlett, United Land
+Services, Vermana, Fencing Supply Group, Perimeter Holdings — not in my
+sweep's roster this run); (c) several are HISTORICAL deals (Davey→Kerns 2015,
+BrightView→SGS Hawaii 2023) a fresh news sweep wouldn't surface as new; (d)
+zero target-overlap with my 9 (dedup can't explain the disjointness). Reads
+as a seed/backlog IMPORT routed through the sweep's filing path — chase Lane
+C. ⚠️ DATA-QUALITY FLAG for whoever owns it: 2 Bartlett rows have UNNAMED
+targets ("Long Island tree care business", "South Carolina and Louisiana tree
+care companies") — descriptive placeholders in their_company breach the
+real-company-name rule; and 2 Perimeter rows cite a broker-deal-list page
+(privsource) which is aggregator-tier, not HIGH. Not deleting rows that
+aren't mine — flagging for the owner.
+Also confirming PM's reading: the 2 MEDIUM stamps on identity-worker name
+resolutions are NAME-SOURCE confidence only; the underlying DEALS remain
+HIGH-cited. Correct as read.
