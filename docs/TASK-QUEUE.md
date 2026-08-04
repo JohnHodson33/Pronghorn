@@ -34,6 +34,42 @@ John watches hit rates move without asking the PM. (E) OUTREACH RIDES ON
 TOP: templates being co-developed w/ John in the PM channel; campaigns
 unlock once (1)-(4) hit targets on a real segment.
 
+## 🎯 SERPER FOCUS GATE (John 8/4 — industry narrowing; PM measured same day)
+John's directive (8/4): thesis focus is now **TREE CARE primary; landscaping,
+irrigation, lawn care, pest control ancillary**. The old 10–12-industry
+broad sweep is deprioritized (NOT deleted — no functionality stripped yet;
+"most likely" focus, John reserves the right to revisit). Serper credits are
+the scarce resource funding the naming/contact push — spend them in-focus.
+
+PM MEASUREMENT (8/4, live DB — the reason this card exists): 8/4 burn =
+1,441 credits (770 river-guide verify · 566 consolidator sweep · 105
+enrichment). Of the 82 guide rows swept in TODAY: **51 in-focus (62%) · 31
+OUT-of-focus (38% — 13 pool, 11 commercial kitchen, 6 fencing, 1 other)**.
+Whole book: ~26% out-of-focus (64 pool · 45 kitchen · 34 fence of 549).
+At ~990/day the 50k pack lasts ~50 days; gating recovers roughly a third.
+
+BUILD (Lane C owns a+b+d, Lane A owns c, Lane B optional surface):
+(a) **Focus allowlist in app_config** (`focus_industries`): TREE_CARE
+primary + LANDSCAPE, IRRIGATION, LAWN_CARE, PEST ancillary. Every
+Serper-spending worker (river-guides verify, t1 enrichment, consolidator
+sweep, discovery, leadgen classification) processes **in-focus rows first
+and SKIPS out-of-focus by default** (flag `include_all_industries` flips it
+back — a config read, not a code strip).
+(b) **PREREQUISITE — normalize industry_group**: taxonomy is dirty (TREE vs
+TREE_CARE, POOL vs POOL_SERVICES, FENCE vs FENCING, 215 rows in catch-all
+GREEN). The gate misfires on a dirty key. One migration/backfill maps to a
+canonical set; GREEN rows get classified into it (this classification pass
+is itself Serper-cheap: name+vertical_raw heuristics first, search only
+where ambiguous).
+(c) **Sweep scoping (Lane A)**: future consolidator-sweep runs take a
+`--industries` scope defaulting to the allowlist; out-of-focus
+consolidators only on explicit ask.
+(d) **Attribution**: every serper usage_event stamps `meta.industry` (today
+it's null on all 3 activities) so /costs + PM-STATUS can show burn by
+industry and John can see the gate working. Existing out-of-focus rows KEEP
+their data (honesty rule: nothing deleted, negatives persist) — they just
+stop consuming credits.
+
 ## 🎯 END-STATE GOAL (every session aligns to this)
 A searchable, filterable, executable deal-sourcing + CRM system whose purpose is:
 **scrape every broker + build proprietary lists → enrich to OWNER contact info
