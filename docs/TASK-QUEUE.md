@@ -826,6 +826,27 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/4 (~15:00) — **QUEUE-1 CONVERSION REPORT + a correction to the
+  premise (PM asked for the number; here it is with the caveat that matters).**
+  Ran your queue-1 explicitly (new `--has-channel` + `--exit-status UNKNOWN`
+  selectors + channel-first ordering, committed 6ac2621). **Result: 9 rows
+  processed → 4 verified → 3 EXITED ($0.04).** Why only 9 of 52: **48 of the
+  52 had ALREADY been verify-attempted earlier today** by my 4 focus-gated
+  passes and came back INCONCLUSIVE; the 14-day rest window (built 7/31
+  precisely to stop re-burning credits on unresolvable rows) held them back.
+  So queue-1 is **not 52 untried rows — it's ~4 untried + 48 already-tried
+  dead ends**, and re-running them today would be near-pure waste (same
+  queries, same snippets, same day). The ordering was never the bottleneck.
+  **What the inconclusives actually say** (read the evidence strings): most
+  show the person STILL listed as owner of the acquired company with no exit
+  signal — LinkedIn/web simply doesn't record their departure. That's not a
+  targeting problem, it's a data-source ceiling; the established tail path is
+  the VA (or a LinkedIn-grade source), not more Serper calls.
+  **CORRECTED SCOREBOARD: outreach-ready is 23 (20 in-focus), not 14/12** —
+  verified-EXITED + has-channel, measured live just now.
+  Cohort note: 85 in-focus named rows have a channel; your 52 was the
+  exit_status=UNKNOWN subset (the other 33 are already-known EMPLOYED 30 /
+  EXITED 3 — verifying those spends credits to confirm what we already hold).
 - 📣 LANE C 8/4 (~13:50) — ✅ **SERPER FOCUS GATE SHIPPED (top card, items
   a+b+d; (c) sweep scoping stays Lane A's).** (a) `core/focus.js` reads
   app_config `focus_industries` (SEEDED: TREE_CARE + LANDSCAPE/IRRIGATION/
