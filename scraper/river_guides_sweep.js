@@ -190,8 +190,11 @@ async function main() {
       allow = new Set(INDUSTRIES.split(',').map((s) => s.trim()).filter(Boolean));
     } else {
       const cfg = await supabase.from('app_config').select('value').eq('key', 'focus_industries').maybeSingle();
-      const fromCfg = cfg.data && cfg.data.value;
-      allow = new Set(Array.isArray(fromCfg) && fromCfg.length ? fromCfg : FOCUS_DEFAULT);
+      // app_config.value is a JSON-STRING ('["TREE_CARE",…]') — parse before the
+      // Array check, or a John config edit silently falls back to the hardcode
+      let fromCfg = cfg.data && cfg.data.value;
+      if (typeof fromCfg === 'string') { try { fromCfg = JSON.parse(fromCfg); } catch { fromCfg = null; } }
+      allow = new Set(Array.isArray(fromCfg) && fromCfg.length ? fromCfg.map((x) => String(x).toUpperCase()) : FOCUS_DEFAULT);
     }
     const skipped = {};
     acquirers = acquirers.filter((a) => {
