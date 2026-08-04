@@ -17,6 +17,7 @@ const { supabase } = require('../core/db');
 const log = require('../utils/logger');
 const { recordUsage } = require('../core/usage');
 const { reportApiHealth } = require('../core/api_health');
+const { loadFocus, applyFocus, industryBreakdown } = require('../core/focus');
 const { rescore } = require('./score');
 
 // A dead key/empty balance fails EVERY call — abort the pass instead of
@@ -75,13 +76,17 @@ async function main() {
   // overnight, so re-checking nightly is pure spend.
   const REST_MS = 14 * 24 * 3600e3;
   const attemptedAt = (g) => g.contact?.verify_attempted_at ? Date.parse(g.contact.verify_attempted_at) : null;
-  const guides = (unverified || [])
+  // FOCUS GATE (John 8/4): Serper credits go to in-focus industries only;
+  // out-of-focus rows keep their data but stop consuming verify credits
+  const focus = await loadFocus();
+  const { rows: inFocus, skipped: outOfFocus } = applyFocus(unverified || [], focus, (g) => g.industry);
+  const guides = inFocus
     .filter((g) => { const at = attemptedAt(g); return !at || Date.now() - at > REST_MS; })
     .sort((a, b) => (attemptedAt(a) ?? 0) - (attemptedAt(b) ?? 0)
       || (b.screen_score ?? 0) - (a.screen_score ?? 0))
     .slice(0, limit);
-  if (!guides.length) { log.info(`No unverified resolved river guides due (${unverified?.length ?? 0} resting after a recent inconclusive attempt).`); return; }
-  log.info(`status verification: ${guides.length} of ${unverified.length} unverified (never-attempted first)${dryRun ? ' [dry]' : ''}`);
+  if (!guides.length) { log.info(`No unverified resolved river guides due (${outOfFocus} out-of-focus gated, rest resting after a recent attempt).`); return; }
+  log.info(`status verification: ${guides.length} of ${unverified.length} unverified (never-attempted first${outOfFocus ? `; ${outOfFocus} out-of-focus gated` : ''})${dryRun ? ' [dry]' : ''}`);
 
   const anthropic = new Anthropic();
   const totals = { in: 0, out: 0, serper: 0 };
@@ -159,7 +164,10 @@ async function main() {
 
   const cost = totals.in * 0.8e-6 + totals.out * 4e-6 + totals.serper * 0.001;
   if (!dryRun && totals.serper) {
-    await recordUsage('serper', 'classification', totals.serper, cost, { river_guide_verify: verified, flipped });
+    await recordUsage('serper', 'classification', totals.serper, cost, {
+      river_guide_verify: verified, flipped,
+      industries: industryBreakdown(guides, (g) => g.industry), // burn-by-industry (8/4 gate)
+    });
     await reportApiHealth('serper', true); // calls succeeded — clear any stale beacon
   }
   log.info(`status verification done: ${verified} verified (${flipped} EMPLOYED→EXITED unlocks) of ${guides.length}. Cost ≈ $${cost.toFixed(2)}.`);

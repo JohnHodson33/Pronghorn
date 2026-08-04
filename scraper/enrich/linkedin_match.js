@@ -97,13 +97,13 @@ async function findVerifiedLinkedin(anthropic, lead, ctx, log) {
       const hasCompany = corr.some((c) => /^company/i.test(c));
       const hasGeoOrTitle = corr.some((c) => /^(geo|title)/i.test(c));
       if (isCandidate && corr.length >= 2 && hasCompany && hasGeoOrTitle && v.confidence !== 'low') {
-        await recordUsage('serper', 'enrichment', queries, queries * SERPER_COST, { kind: 'linkedin_verify', lead: lead.id });
+        await recordUsage('serper', 'enrichment', queries, queries * SERPER_COST, { kind: 'linkedin_verify', lead: lead.id, industry: lead.industry_verified || null });
         return { url: v.url, corroborations: corr, confidence: v.confidence, person };
       }
       log?.info(`    linkedin: rejected for ${person} @ ${lead.name} (${v.why || 'insufficient corroboration'})`);
     } catch (e) { log?.warn(`    linkedin verify: ${e.message}`); }
   }
-  if (queries) await recordUsage('serper', 'enrichment', queries, queries * SERPER_COST, { kind: 'linkedin_verify_miss', lead: lead.id });
+  if (queries) await recordUsage('serper', 'enrichment', queries, queries * SERPER_COST, { kind: 'linkedin_verify_miss', lead: lead.id, industry: lead.industry_verified || null });
   return null;
 }
 

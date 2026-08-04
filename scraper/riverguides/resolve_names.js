@@ -45,12 +45,17 @@ async function main() {
   const limit = Number(arg('--limit', 25));
   const dryRun = process.argv.includes('--dry-run');
 
-  const { data: guides, error } = await supabase.from('river_guides').select('*')
+  const { data: allTbd, error } = await supabase.from('river_guides').select('*')
     .eq('name_status', 'TBD')
-    .order('screen_score', { ascending: false }).limit(limit);
+    .order('screen_score', { ascending: false });
   if (error) { console.error(`${error.message} — apply migration 0016 first`); process.exit(1); }
-  if (!guides?.length) { log.info('No NEEDS_NAME river guides.'); return; }
-  log.info(`identity resolution: ${guides.length} TBD rows${dryRun ? ' [dry]' : ''}`);
+  // FOCUS GATE (John 8/4): resolution credits go to in-focus industries only
+  const { loadFocus, applyFocus } = require('../core/focus');
+  const focus = await loadFocus();
+  const { rows: inFocus, skipped } = applyFocus(allTbd || [], focus, (g) => g.industry);
+  const guides = inFocus.slice(0, limit);
+  if (!guides?.length) { log.info(`No NEEDS_NAME river guides in focus (${skipped} out-of-focus gated).`); return; }
+  log.info(`identity resolution: ${guides.length} TBD rows${skipped ? ` (${skipped} out-of-focus gated)` : ''}${dryRun ? ' [dry]' : ''}`);
 
   const anthropic = new Anthropic();
   const totals = { in: 0, out: 0, serper: 0 };
@@ -109,7 +114,13 @@ async function main() {
   }
 
   const cost = totals.in * 0.8e-6 + totals.out * 4e-6 + totals.serper * 0.001;
-  if (!dryRun && totals.serper) await recordUsage('serper', 'classification', totals.serper, cost, { river_guide_resolve: resolved });
+  if (!dryRun && totals.serper) {
+    const { industryBreakdown } = require('../core/focus');
+    await recordUsage('serper', 'classification', totals.serper, cost, {
+      river_guide_resolve: resolved,
+      industries: industryBreakdown(guides, (g) => g.industry), // burn-by-industry (8/4 gate)
+    });
+  }
   log.info(`identity resolution done: ${resolved} of ${guides.length} resolved (rest stay TBD — never guessed). Cost ≈ $${cost.toFixed(2)}.`);
 }
 
