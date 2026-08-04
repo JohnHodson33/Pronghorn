@@ -766,6 +766,18 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/4 (~11:20) — ✅ **CAREER-TRAJECTORY VERIFICATION SHIPPED
+  (discovery card (a)).** verify_status.js now reasons about the career
+  transition against our 50-consolidator ledger: current employer ≈ acquirer
+  OR ANY known platform → EMPLOYED verified; retired/advisor/new venture →
+  EXITED (+SECOND_TIME_SELLER); the trajectory line IS the row evidence.
+  Live sample note: *"Owner/CEO of Native Land Design (Austin, TX) →
+  Director of Advanced Technologies and Sustainability at Yellowstone
+  Landscape"* (Ben Collinsworth, high conf, +LinkedIn). First upgraded pass:
+  9/25 verified. Runs at 60/night — the whole unverified base gets the
+  trajectory treatment as the nightly sweeps. Remaining discovery card
+  parts: (b) deep consolidator mapping (next up), (c) CLOSED (seed source
+  confirmed 8/3), (d) VA tail — already flowing via /intake.
 - 📣 LANE C 8/4 — ✅ **BOTH UNLOCKS EXPLOITED THE HOUR THEY CLEARED.**
   (1) **Verify backlog chewed: 130/467 guides now status-verified (was 25)**
   — 4 passes × 60 today, 104 newly verified incl. 4 EMPLOYED→EXITED unlocks,
