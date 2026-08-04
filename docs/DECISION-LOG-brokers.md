@@ -1968,3 +1968,68 @@ twice with forensics) and carries 2 unnamed-target rows + 2 aggregator-cited
 HIGHs for its owner to fix; (4) Serper: zero Lane A dependency (broker
 scraping + extract.js are Serper-free; the river-guides enrich/resolve/verify
 cascade is Lane C's). NEXT: TASK-QUEUE top-down + self-iterate audits.
+
+## 2026-08-04 (late-4) — INSERT-TIME DUPLICATE GUARD shipped (PM card item c = root cause)
+Built + validated against the live book. Old key `norm(acquirer)|norm(company)`
+missed every cosmetic variant; a deep SavATree dry-run proved the treadmill is
+real — **it would have filed 15 duplicate rows in one pass**, including the
+Cordwin dupe PM flagged and re-filing Crosstown/Integrity from the 19:48 batch.
+Now: 15 exact → update in place, 1 → pen. LawnPro/LawnPRO Partners now match.
+
+**Design: risk-graded, because a false merge silently destroys a real deal.**
+`exact` (identical after normalising parens/plurals/corp-suffixes) → update in
+place. `fuzzy` (prefix or brand match) → review pen, NEVER auto-merged.
+Neither path can insert a twin, so the treadmill stops either way.
+
+⚠️ **TWO FINDINGS THAT CHANGE THE MERGE PASS (Lane C — please read before
+running (a)):** I false-positive-scanned my own matcher across all 549 rows.
+Name-similarity is NOT sufficient evidence of a duplicate:
+1. **"Green Machine Lawn Care" is sold by TWO different people** — Cody Wetz
+   AND Chris Mierswa (plus a third "Green Machine" under the Swinski family).
+   Same acquirer, same company string, genuinely different deals.
+2. **Seacoast: Tim Doyle's "Seacoast Tree Care and Turf" vs Dan Mello's
+   "Seacoast Tree Care"** — the PM card lists these as two separate duplicate
+   people, and they are two different humans. Merging on company name alone
+   would fuse them.
+   Also same-name/different-person: "Total Lawn Care, Inc" (Steve Russell vs
+   Terry Jungels), "Action Tree Service Inc." (Marcus Bellini vs Don Murphy &
+   Bert Kuhn), "Environmental Designs" (Rich Dobbs vs Shawn Ryan).
+   **Recommendation: a merge must require name agreement (or one side
+   nameless), not company-name similarity.** My guard enforces exactly that
+   via a name-conflict veto — an exact company match with two DIFFERENT named
+   sellers is demoted to the pen, not merged.
+
+**Also fixed at source:** descriptive-placeholder rejection ("Long Island tree
+care business", "…tree care companies") — these produced 2 of the 19 dupes,
+can never match their real twin, and breach the real-company-name rule. They
+were also 2 of the 4 DQ defects I flagged in the 19:48 batch.
+
+**NOT run with --confirm on purpose:** Lane C's one-time merge pass is in
+flight; writing corroboration notes to the same rows concurrently could
+confuse it. The guard's value is preventing FUTURE dupes and it is live for
+the next run. PM: say the word and I'll apply the corroboration updates after
+your merge lands.
+
+🔴 **JOHN — ONE SQL TO RUN** (with the others):
+`supabase/migrations/0024_possible_duplicate_candidates.sql` — adds the
+`possible_duplicate` pen kind + a notes column. Until it's applied the sweep
+logs every possible-twin finding in full instead of writing it (nothing is
+silently dropped, but nothing reaches /river-guides either).
+
+## HANDOFF (rolling — restart from here)
+Lane A state 2026-08-04 late-4: synced, all work pushed. CLOSED THIS SESSION:
+John's #1 asking-price gap (tupelo 88%/67%, dealrelations 86%/72%, verified
+HELD after the nightly) · thin-financials tail (bizben/murphy/hedgestone/vr) ·
+gabb adapter REBUILT after 12 days dark · azbb named agents · southernmergers
+parse gap (4%→79% ask) · db_output gross_revenue refresh · Serper focus gate
+(c) · sweep insert-time duplicate guard + migration 0024.
+STATE: source_health 30/30 green; source_quality broker-gaps none-actionable;
+every remaining 0%-ask source verified structural (calder, sunacquisitions,
+bizquest/bizbuysell gated, transworld publishes no revenue).
+OPEN/WATCH: (1) migration 0024 needs John; (2) offer PM the corroboration-
+update run once Lane C's merge pass lands; (3) vr enrichment stops on 8
+transient errors some runs (self-heals); (4) gabb sold-transaction data lost
+with the old API; (5) the 19:48 UTC 8/4 23-row batch is NOT Lane A's
+(disclaimed twice, forensics logged) — its 2 placeholder rows are now
+impossible to re-create via the sweep. Serper: zero Lane A dependency.
+NEXT: TASK-QUEUE top-down + self-iterate audits.
