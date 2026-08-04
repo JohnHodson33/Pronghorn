@@ -19,6 +19,8 @@ const actionIcon: Record<string, string> = {
   stale: "⏳",
   deadline: "📅",
   api_dead: "🔌",
+  serper_low: "🪫",
+  serper_runaway: "🚨",
 };
 
 // Chart palette — validated (dataviz six checks, light surface):

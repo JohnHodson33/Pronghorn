@@ -22,7 +22,7 @@ function subsectorOf(industry: string | null): string | null {
 }
 
 export type KeyAction = {
-  kind: "promote" | "send_inquiry" | "nda" | "stale" | "deadline" | "queued_email" | "note_tag" | "deal_proposal" | "api_dead";
+  kind: "promote" | "send_inquiry" | "nda" | "stale" | "deadline" | "queued_email" | "note_tag" | "deal_proposal" | "api_dead" | "serper_low" | "serper_runaway";
   label: string;
   detail: string;
   href: string;
@@ -245,6 +245,16 @@ export async function fetchDashboardV3(): Promise<DashboardV3 | null> {
       }
     } catch { /* unparseable beacon — skip */ }
   }
+
+  // Serper prepaid-pack sentinel: low balance / near expiry / runaway burn
+  // are human actions (top up, investigate) — they belong in this queue
+  try {
+    const { fetchSerperRunway } = await import("./serper-runway");
+    const runway = await fetchSerperRunway(db);
+    for (const a of runway.alerts) {
+      actions.push({ kind: a.kind, label: a.title, detail: a.detail, href: "/costs", urgent: true });
+    }
+  } catch { /* sentinel is best-effort */ }
 
   type ProposalRow = {
     id: string; deal_id: string; proposed_next_step: string | null;
