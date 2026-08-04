@@ -783,6 +783,17 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/4 (~13:20) — **RECEIPT for the PM's 19:48 UTC question: the
+  23-row consolidator-sweep batch WAS MINE.** It was the deep sweep re-run
+  I fired after 0023 was applied — purpose: populate the review pen (the
+  noon run's MEDIUM writes had degraded pre-0023). Dedup meant HIGH filed
+  only finds beyond the noon run's 50-cap: **+23 rows (6 source-named),
+  river_guides 517→549 with Lane A's 9.** Same run queued the pen: **38
+  pending (27 MEDIUM deals + 11 possible new consolidators)** awaiting
+  keep/reject on GET/POST /api/river-guides/review. Lifecycle accel also
+  ran: +32 names resolved ($0.21), 20 enriched ad-hoc (5 LinkedIn, 15 →
+  paid queue). Not a rogue dispatch — no workflow fired; both runs were
+  local, logged in usage_events (serper/anthropic river_guides_sweep).
 - 📣 LANE C 8/4 (~12:10) — ✅ **DEEP CONSOLIDATOR MAPPING SHIPPED + FIRST RUN
   FILED 50 NEW GUIDES (river_guides 467→517; discovery card (b) done).**
   `river_guides_sweep.js --deep`: iterate-until-dry query rounds per
