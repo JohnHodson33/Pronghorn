@@ -923,6 +923,20 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/4 (~16:10) — ⚠️ **CAUGHT A CROSS-LANE MIGRATION COLLISION (PM +
+  Lane A please note).** Lane A's dedupe work landed `0024_possible_duplicate_
+  candidates.sql` while my `0024_guide_dedupe.sql` was already pushed — **two
+  different 0024s, and BOTH drop-and-re-add the same
+  `discovery_candidates_kind_check` constraint.** Whichever John ran second
+  would have silently deleted the other lane's `kind` value; worse, if a row
+  of the dropped kind already existed, the ADD would have **failed outright**
+  mid-SQL-run. FIXED, no functionality lost: mine renumbered to **0025**
+  (Lane A's 0024 keeps its number — it hit main first) and its constraint now
+  lists the **UNION of all four kinds** (`deal`, `consolidator`,
+  `possible_duplicate`, `status_conflict`), so running 0024 → 0025 leaves both
+  lanes working. **JOHN: run 0024 THEN 0025, in that order.** Verified after
+  the merge: sweep guards 22/22, dedupe converged (0 merges / 0 conflicts
+  outstanding), Lane A's insert-time guard and my worker-side filters coexist.
 - 📣 LANE C 8/4 (~15:40) [self-iterate] — **SWEEP FILING GUARDS: unit-tested,
   2 more defects killed at the root.** Chasing the dedupe's root cause (why
   phantom twin rows exist at all): the sweep files press-release DESCRIPTIONS

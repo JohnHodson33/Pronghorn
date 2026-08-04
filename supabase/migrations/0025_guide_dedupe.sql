@@ -1,4 +1,4 @@
--- 0024 — DUPLICATE PEOPLE + CONTRADICTORY STATUS (PM 8/4, urgent: 3 of the
+-- 0025 — DUPLICATE PEOPLE + CONTRADICTORY STATUS (PM 8/4, urgent: 3 of the
 -- outreach-ready cohort had a conflicting twin — we would have emailed someone
 -- as a fresh exit while our own data said they still work for the acquirer).
 --
@@ -15,7 +15,12 @@ alter table river_guides add column if not exists status_conflict jsonb;
 
 create index if not exists river_guides_merged_idx on river_guides (merged_into);
 
--- the review pen also carries status conflicts for a human decision
+-- The review pen also carries status conflicts for a human decision.
+-- ⚠️ ORDER-SAFETY: 0024 (Lane A) rewrites this SAME constraint to add
+-- 'possible_duplicate'. Two migrations that each DROP and re-ADD it would
+-- silently delete the other's kind — and if rows of the dropped kind already
+-- exist, the ADD fails outright. So this lists the UNION of every kind in use;
+-- run 0024 then 0025 and both lanes' values survive.
 alter table discovery_candidates drop constraint if exists discovery_candidates_kind_check;
 alter table discovery_candidates add constraint discovery_candidates_kind_check
-  check (kind in ('deal', 'consolidator', 'status_conflict'));
+  check (kind in ('deal', 'consolidator', 'possible_duplicate', 'status_conflict'));
