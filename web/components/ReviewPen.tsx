@@ -10,7 +10,9 @@ import { useCallback, useEffect, useState } from "react";
 
 type Candidate = {
   id: string;
-  kind: "deal" | "consolidator";
+  // possible_duplicate (0024): the sweep found a near-identical company name
+  // but a fuzzy match doesn't prove the same deal, so a human adjudicates
+  kind: "deal" | "consolidator" | "possible_duplicate";
   acquirer: string;
   company: string;
   seller_name: string | null;
@@ -21,7 +23,21 @@ type Candidate = {
   acquirer_pe_sponsor: string | null;
   source_url: string | null;
   confidence: "HIGH" | "MEDIUM" | "LOW" | null;
+  // possible_duplicate only: which river_guides row this may duplicate + any
+  // seller-name conflict — the evidence the human decides on
+  notes?: string | null;
   created_at: string;
+};
+
+const KIND_LABEL: Record<string, string> = {
+  deal: "deal",
+  consolidator: "new consolidator",
+  possible_duplicate: "possible duplicate",
+};
+const KIND_CHIP: Record<string, string> = {
+  deal: "bg-sky-100 text-sky-800",
+  consolidator: "bg-violet-100 text-violet-800",
+  possible_duplicate: "bg-amber-100 text-amber-800",
 };
 
 const confChip: Record<string, string> = {
@@ -84,7 +100,8 @@ export default function ReviewPen({ onFiled }: { onFiled?: () => void }) {
   if (pending.length === 0) return null; // pen empty — nothing to review, no box
 
   const deals = pending.filter((c) => c.kind === "deal").length;
-  const consolidators = pending.length - deals;
+  const consolidators = pending.filter((c) => c.kind === "consolidator").length;
+  const dupes = pending.filter((c) => c.kind === "possible_duplicate").length;
 
   return (
     <section className="rounded-xl border border-violet-200 bg-white p-4">
@@ -92,7 +109,11 @@ export default function ReviewPen({ onFiled }: { onFiled?: () => void }) {
         <div>
           <span className="font-semibold">Discovery review pen</span>
           <span className="ml-2 rounded-full bg-violet-100 px-2 py-0.5 text-xs font-semibold text-violet-800 tabular-nums">
-            {deals} deal{deals === 1 ? "" : "s"}{consolidators ? ` + ${consolidators} new consolidator${consolidators === 1 ? "" : "s"}` : ""} awaiting confirm
+            {[
+              `${deals} deal${deals === 1 ? "" : "s"}`,
+              consolidators ? `${consolidators} new consolidator${consolidators === 1 ? "" : "s"}` : null,
+              dupes ? `${dupes} possible duplicate${dupes === 1 ? "" : "s"}` : null,
+            ].filter(Boolean).join(" + ")} awaiting confirm
           </span>
         </div>
         <label className="flex items-center gap-1.5 text-xs text-zinc-600">
@@ -107,16 +128,21 @@ export default function ReviewPen({ onFiled }: { onFiled?: () => void }) {
       <p className="mt-1 text-xs text-zinc-500">
         Below-HIGH sweep finds — keep files the guide (deals) or adds the acquirer to future sweeps
         (consolidators); reject is kept for audit and never resurfaces.
+        {dupes > 0 && (
+          <> On a <span className="font-medium">possible duplicate</span>, keep means
+          &ldquo;not a duplicate — file it as its own deal&rdquo;; reject means &ldquo;yes, it&rsquo;s the
+          same deal we already have&rdquo; and the existing row is left untouched.</>
+        )}
       </p>
       {flash && <p className="mt-2 rounded-md bg-emerald-50 px-3 py-1.5 text-xs text-emerald-800">{flash}</p>}
       <ul className="mt-3 divide-y divide-zinc-100">
         {pending.map((c) => (
           <li key={c.id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-2.5">
-            <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${c.kind === "deal" ? "bg-sky-100 text-sky-800" : "bg-violet-100 text-violet-800"}`}>
-              {c.kind === "deal" ? "deal" : "new consolidator"}
+            <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${KIND_CHIP[c.kind] ?? "bg-zinc-100 text-zinc-600"}`}>
+              {KIND_LABEL[c.kind] ?? c.kind}
             </span>
             <span className="min-w-0 flex-1 text-sm">
-              {c.kind === "deal" ? (
+              {c.kind !== "consolidator" ? (
                 <>
                   <span className="font-medium">{c.company}</span>
                   <span className="text-zinc-500"> → {c.acquirer}{c.acquirer_pe_sponsor ? ` (${c.acquirer_pe_sponsor})` : ""}</span>
@@ -134,6 +160,13 @@ export default function ReviewPen({ onFiled }: { onFiled?: () => void }) {
               {c.source_url && (
                 <a href={c.source_url} target="_blank" rel="noopener noreferrer"
                   className="ml-1.5 text-xs text-emerald-700 hover:underline">source ↗</a>
+              )}
+              {/* maybe-dupe evidence: which row it may duplicate + any seller
+                  conflict — shown in full so the call is made on the facts */}
+              {c.kind === "possible_duplicate" && c.notes && (
+                <span className="mt-1 block whitespace-pre-wrap rounded bg-amber-50 px-2 py-1 text-xs text-amber-900">
+                  {c.notes}
+                </span>
               )}
             </span>
             {c.confidence && (

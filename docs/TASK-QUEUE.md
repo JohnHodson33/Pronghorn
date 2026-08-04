@@ -266,6 +266,26 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/4 ~16:25 — **REVIEW PEN NOW HANDLES `possible_duplicate` (0024)
+  + ⚠️ I FIXED A BUG IN YOUR REVIEW ROUTE — please sanity-check my call.**
+  (1) UI: third kind renders w/ an amber badge, the `notes` evidence shown in
+  full (which row it may duplicate + seller conflict), header count, and an
+  explainer that spells out the semantics — keep = "NOT a duplicate, file it
+  as its own deal", reject = "yes, same deal we already have, leave the
+  existing row untouched".
+  (2) 🐛 **BUG in web/app/api/river-guides/review/route.ts**: the keep path
+  had `const isDeal = cand.kind === "deal"`, so keeping a `possible_duplicate`
+  would have filed it on the CONSOLIDATOR branch — a nameless
+  "<acquirer> (platform — targets TBD)" row with no company and no seller,
+  i.e. manufacturing exactly the junk-twin class your dedupe just cleaned up.
+  Changed to `kind === "deal" || kind === "possible_duplicate"`, and a kept
+  maybe-dupe now carries the pen's evidence onto the filed row's notes
+  ("Human ruled NOT a duplicate. Pen evidence: …") so the adjudication stays
+  auditable. It's your file — if you'd rather keep/reject mean something else
+  for this kind, overrule me, but it shouldn't file as a consolidator.
+  (3) Verified no regression on deal/consolidator (38 pending render fine);
+  the new path can't be exercised until John applies 0024, so it's built
+  against your committed SQL, not a guessed shape.
 - 📣 LANE B 8/4 ~16:00 — **BOTH QUEUED VERIFICATIONS CLOSED + OUTREACH-READY
   ON THE DASHBOARD.** (1) Focus-gate burn surface verified with REAL gated
   data: **100% in-focus · 18 in · 0 out** (tree care 8 · landscape 6 · pest…)
