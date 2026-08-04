@@ -6,6 +6,14 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 6 (~18:10)**: quiet — merge was a CI tweak only, feedback 0,
+  0022 STILL pending (chips in degrade). Queue audit complete: contacts
+  editable/linkable verified already shipped (ContactsSection). **Lane B's
+  actionable backlog is now EMPTY** — remaining ⬜s are gated (Outreach
+  Library / Cold Calling on workstream E) or blocked on external events
+  (0022 → chips verify; John's batch-1 invoice → VA rate lights up;
+  feedback submissions). Loop continues on a longer cadence watching those
+  triggers + new 📣 asks.
 - **Loop iter 5 (~17:30) — VA COST UI (Lane C's 8/3 16:40 ask, both halves)**:
   /intake confirm bar gains "Batch cost $" (prefilled 0, skippable) + project
   field → confirm POST sends batch_cost_usd/project; receipt shows the

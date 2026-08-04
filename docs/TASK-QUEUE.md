@@ -712,7 +712,9 @@ set) into your new chips UI as a small follow-up.
   enum + migration with Lane C.
 - 🔥 Listing detail `/listings/[id]`: tier reasoning, event history, promote action.
 - 🔥 Global search bar (companies+contacts+listings+deals).
-- 🔥 Contacts editable/linkable (role, attach to company + deal).
+- ✅ Contacts editable/linkable — VERIFIED ALREADY SHIPPED (8/3 audit):
+  ContactsSection = inline add + edit-any-card (role/name/email/phone/
+  LinkedIn/notes), company-attached, rendered on company AND deal detail.
 - 🔥 **Broker page: add the SAME search + filters as Broker Listings** (John
   called this out). Make Brokers a searchable/filterable/exportable table.
 - 🔥 **Every list page consistent**: search + column filters + CSV export on
