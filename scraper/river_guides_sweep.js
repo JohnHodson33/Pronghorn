@@ -555,6 +555,12 @@ async function main() {
 
 // the name guards are pure — exported so they can be unit-tested without
 // running a sweep (and so `require` of this file never fires a live run)
-module.exports = { plausibleCompanyName, personShaped, isStrongSource, sameAcquirerHost: AGGREGATOR_HOST };
+// The duplicate-guard matchers are exported for the same reason, and because
+// they are the highest-risk logic in this file: a false merge silently
+// destroys a real deal, so their behaviour is pinned by tests.
+module.exports = {
+  plausibleCompanyName, personShaped, isStrongSource, sameAcquirerHost: AGGREGATOR_HOST,
+  norm, normAcq, baseKey, brandKey, isDescriptivePlaceholder, findExisting,
+};
 
 if (require.main === module) main().catch((err) => { log.error(err.message); process.exit(1); });
