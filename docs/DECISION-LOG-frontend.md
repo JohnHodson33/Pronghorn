@@ -6,6 +6,13 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 8 (~20:20) [self-iterate]**: quiet cycle (no merges, feedback
+  0, 0022 pending) → pipeline-board critique: (1) FIXED broker line printing
+  the FCBB office name twice (brokerage === broker case; verified live);
+  (2) overdue next-steps now show red + ⚠ instead of the same amber as
+  future ones (no board deal carries a due date today, so verified by
+  inspection — ISO string compare). Checked-not-broken: cards DO already
+  show next-step chips; board n is small so no search needed.
 - **Loop iter 7 (~19:15) [self-iterate]**: quiet again (feedback 0, 0022
   pending, merge trivial) → self-iterate critique of /analytics vs the
   END-STATE GOAL: the chart bars were a DEAD END (table rows linked, bars

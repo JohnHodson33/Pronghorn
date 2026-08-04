@@ -172,19 +172,25 @@ export default async function Pipeline() {
                       <div className="mt-3 border-t border-zinc-100 pt-2 text-xs text-zinc-600">
                         <span className="font-medium text-zinc-400">Broker · </span>
                         {d.broker}
-                        {d.brokerage ? `, ${d.brokerage}` : ""}
+                        {/* FCBB-style office records carry the office name in BOTH
+                            fields — don't print it twice */}
+                        {d.brokerage && d.brokerage !== d.broker ? `, ${d.brokerage}` : ""}
                       </div>
                     )}
-                    {d.nextStep && (
-                      <div className="mt-2 flex items-center justify-between rounded-md bg-amber-50 px-2 py-1.5 text-xs">
-                        <span className="truncate font-medium text-amber-900">{d.nextStep}</span>
+                    {d.nextStep && (() => {
+                      const overdue = !!d.nextStepDue && d.nextStepDue.slice(0, 10) < new Date().toISOString().slice(0, 10);
+                      return (
+                      <div className={`mt-2 flex items-center justify-between rounded-md px-2 py-1.5 text-xs ${overdue ? "bg-red-50" : "bg-amber-50"}`}>
+                        <span className={`truncate font-medium ${overdue ? "text-red-900" : "text-amber-900"}`}>{d.nextStep}</span>
                         {d.nextStepDue && (
-                          <span className="ml-2 shrink-0 font-semibold text-amber-700">
-                            {d.nextStepDue.slice(5, 10).replace("-", "/")}
+                          <span className={`ml-2 shrink-0 font-semibold ${overdue ? "text-red-700" : "text-amber-700"}`}
+                            title={overdue ? "next step is OVERDUE" : undefined}>
+                            {overdue && "⚠ "}{d.nextStepDue.slice(5, 10).replace("-", "/")}
                           </span>
                         )}
                       </div>
-                    )}
+                      );
+                    })()}
                   </Link>
                 ))}
                 {inStage.length === 0 && (
