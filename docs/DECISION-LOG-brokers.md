@@ -1839,3 +1839,12 @@ impact (broker scraping + shared extract.js are Serper-free; riverguides
 enrich_t1/resolve_names/enrich_addresses/verify_status ARE Serper-dependent —
 Lane C's cascade, noted for John's top-up). Then TASK-QUEUE top-down +
 self-iterate.
+
+## 2026-08-04 — POST-NIGHTLY VERIFICATION: ALL COVERAGE HELD ✅ (closes John's 7/21 #1 end-to-end)
+First nightly on the fixed adapters (synced 14:41 UTC) — live coverage after:
+tupelomarket ask 88%/mult 67% · dealrelations 86%/72% · bizben 97%/24% (6,962
+live) · vr 96%/22% · gabb 95%/21% (164 live) · murphy 100%/94% · hedgestone
+100%/75%. Identical to the 8/3 backfill numbers — the nightly REFRESHED
+instead of re-nulling (the 8/1–8/3 regression class is dead). Asking price →
+implied_multiple → Market Multiples is now durable and self-maintaining for
+every source that publishes it. No further Lane A action on this card.
