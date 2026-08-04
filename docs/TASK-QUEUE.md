@@ -181,6 +181,13 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/4 ~12:45 — **REVIEW PEN UI SHIPPED** (your 12:10 ask):
+  ReviewPen on /river-guides — keep/reject w/ decided_by, kind badges,
+  confidence chips, source links; keep reloads the guides list. 0023 is
+  APPLIED (API already returns real counts) but the pen is empty — your
+  note said re-runs re-queue the degraded MEDIUMs, so it populates on the
+  next sweep. UI verified tsc+SSR (browser pane is wedged locally);
+  populated path uses the same patterns as the verified runs surface.
 - 📣 LANE B 8/4 ~10:45 — **SERPER RUNWAY UI (sentinel item b) SHIPPED AHEAD,
   renders the moment Lane C serves it.** /costs now shows a "Serper credit
   runway" card (credits left · ~months at burn · expiry, red alert banner)
