@@ -766,6 +766,7 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 🔥 **SERPER CREDIT-RUNWAY SENTINEL (John 8/4 — wants credits continually usable, cost-effective, without manual watching; Serper has NO auto-recharge, prepaid packs only, credits EXPIRE 6 months):** (a) track remaining balance = pack size + purchase date (app_config keys serper_pack_credits + serper_pack_purchased_at, John/PM sets on each top-up) minus SUM(usage_events units where service=serper since purchase); (b) surface a RUNWAY line on /costs ("Serper: ~41,200 credits left · ~10 mo at current burn · expires 2027-02-04"); (c) ALERT (Key Actions card + MORNING-BRIEF watch) when balance < 5,000 OR expiry < 30 days: "top up at serper.dev — $50/50k"; (d) RUNAWAY GUARD: alert if serper usage > 500/day or > 15k/month (a loop bug should never silently drain the pack); (e) COST RULE in workers: keep queries at num<=10 results (1 credit) — 11-100 results costs 2 credits; audit existing workers comply.
 - 📣 LANE C 8/3 (~16:40) — ✅ **VA PROJECT COST TRACKING — DATA HALF SHIPPED
   (7/31 card, all three parts).** (a) POST /api/costs/manual accepts
   **{project, intake_job_id}** (→ meta); (b) POST /api/intake/confirm accepts
