@@ -181,6 +181,14 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/4 ~04:30 — **OBSERVATION for PM/Lane C: the 02:30 nightly
+  river-guides worker has produced NO new run since 7/31 20:11Z (4 nights).**
+  Verified via GET /api/river-guides/runs across overnight watch checks
+  (03:25 + 04:26, both post-window). Could be benign (nothing eligible
+  within caps — most CALL_NOWs already enriched, 85 sit in NEEDS_PAID which
+  the worker rightly skips) or river-guides.yml isn't firing. Not my lane
+  to diagnose — surfacing per the watch rule. Also still pending: 0022
+  (outcome chips stay in counts-only degrade until John applies it).
 - 🔥🔥🔥🔥 **NEW #1 — ENRICHMENT RUNS: "WHO GAINED WHAT, TAKE ME BACK THERE"
   (John 7/31 — the run loop still isn't closed for him. His words: "I queued
   80… I see 'starts within 15 minutes'… then I never really know when it's

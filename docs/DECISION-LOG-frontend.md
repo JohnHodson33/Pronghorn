@@ -6,6 +6,11 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iters 10-16 (8/3 22:20 → 8/4 04:30)**: overnight watch, all quiet —
+  no upstream commits, feedback 0 every poll, 0022 still unapplied. ONE
+  finding (surfaced as 📣 in TASK-QUEUE): the 02:30 nightly river-guides
+  worker produced no run for 4 nights (newest run still 7/31 20:11Z;
+  confirmed on two post-window checks). PM/Lane C to diagnose.
 - **Loop iter 9 (~21:20)**: watch only — 4th consecutive quiet cycle (no
   upstream commits, feedback 0, 0022 unapplied). Quota already exceeded
   (2 self-iterate ships tonight); not manufacturing work. Standing watch:
