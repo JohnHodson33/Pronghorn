@@ -1830,8 +1830,9 @@ structural) + gabb REBUILT after 12 days dark + azbb named agents + db_output
 gross_revenue refresh (conditional, screener-safe).
 VERIFY NEXT LOOP: after tonight's nightly (~13:00 UTC, lands ~14:20), confirm
 coverage HELD on tupelo/dealrelations/bizben/vr/gabb (fixed code is on main).
-OPEN: cannabinoid subdomain 404s each dealrelations run (dead — drop from
-config.subdomains when next touching config); gabb sold-transaction data lost
+OPEN: CORRECTION 8/3 (verified): "cannabinoid" is NOT a config subdomain — it
+is a stale listing SLUG on seilertucker's index whose detail page 404s; one
+tolerable 404/run, nothing to change in config; gabb sold-transaction data lost
 with old API (closed-multiples source gone); vr enrichment stops on 8
 transient errors some runs (self-heals, watch it). Serper outage: zero Lane A
 impact (broker scraping + shared extract.js are Serper-free; riverguides
