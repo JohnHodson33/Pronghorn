@@ -55,4 +55,12 @@ function industryBreakdown(rows, industryOf) {
   return out;
 }
 
-module.exports = { loadFocus, applyFocus, industryBreakdown, DEFAULT_FOCUS };
+/** A merged-away duplicate must never be processed again (8/4: merged rows kept
+ *  being verified, producing FRESH contradictions — Damon Schrosk came back
+ *  EXITED on one row and EMPLOYED on its duplicate in the same pass — and
+ *  spending credits twice on one person). Reads the 0024 column when present,
+ *  else the pre-migration contact-jsonb mirror. */
+const isMerged = (g) => !!(g?.merged_into || g?.contact?.merged_into);
+const notMerged = (rows) => rows.filter((r) => !isMerged(r));
+
+module.exports = { loadFocus, applyFocus, industryBreakdown, DEFAULT_FOCUS, isMerged, notMerged };

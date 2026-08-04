@@ -17,7 +17,7 @@ const { supabase } = require('../core/db');
 const log = require('../utils/logger');
 const { recordUsage } = require('../core/usage');
 const { reportApiHealth } = require('../core/api_health');
-const { loadFocus, applyFocus, industryBreakdown } = require('../core/focus');
+const { loadFocus, applyFocus, industryBreakdown, notMerged } = require('../core/focus');
 const { rescore } = require('./score');
 
 // A dead key/empty balance fails EVERY call — abort the pass instead of
@@ -88,7 +88,10 @@ async function main() {
   // FOCUS GATE (John 8/4): Serper credits go to in-focus industries only;
   // out-of-focus rows keep their data but stop consuming verify credits
   const focus = await loadFocus();
-  const { rows: inFocus, skipped: outOfFocus } = applyFocus(unverified || [], focus, (g) => g.industry);
+  // merged duplicates never re-enter any worker (they'd re-create the very
+  // contradictions the dedupe just resolved, at double the credit cost)
+  const live = notMerged(unverified || []);
+  const { rows: inFocus, skipped: outOfFocus } = applyFocus(live, focus, (g) => g.industry);
   const guides = inFocus
     .filter((g) => { const at = attemptedAt(g); return !at || Date.now() - at > REST_MS; })
     .filter((g) => (hasChannelOnly ? hasChannel(g) : true))

@@ -50,9 +50,10 @@ async function main() {
     .order('screen_score', { ascending: false });
   if (error) { console.error(`${error.message} — apply migration 0016 first`); process.exit(1); }
   // FOCUS GATE (John 8/4): resolution credits go to in-focus industries only
-  const { loadFocus, applyFocus } = require('../core/focus');
+  const { loadFocus, applyFocus, notMerged } = require('../core/focus');
   const focus = await loadFocus();
-  const { rows: inFocus, skipped } = applyFocus(allTbd || [], focus, (g) => g.industry);
+  // merged duplicates never re-enter a worker (they'd re-create contradictions)
+  const { rows: inFocus, skipped } = applyFocus(notMerged(allTbd || []), focus, (g) => g.industry);
   const guides = inFocus.slice(0, limit);
   if (!guides?.length) { log.info(`No NEEDS_NAME river guides in focus (${skipped} out-of-focus gated).`); return; }
   log.info(`identity resolution: ${guides.length} TBD rows${skipped ? ` (${skipped} out-of-focus gated)` : ''}${dryRun ? ' [dry]' : ''}`);
