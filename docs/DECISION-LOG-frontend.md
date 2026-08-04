@@ -6,6 +6,13 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 7 (~19:15) [self-iterate]**: quiet again (feedback 0, 0022
+  pending, merge trivial) → self-iterate critique of /analytics vs the
+  END-STATE GOAL: the chart bars were a DEAD END (table rows linked, bars
+  didn't) and the stats table had no export. Shipped: every chart bar is a
+  click-through to /listings?industry= (verified: Tree Care → 18 of 913)
+  + Export CSV of the full stats table incl. size bands (new
+  ExportStatsCsv). Skipped adding search — 29 rows doesn't need it.
 - **Loop iter 6 (~18:10)**: quiet — merge was a CI tweak only, feedback 0,
   0022 STILL pending (chips in degrade). Queue audit complete: contacts
   editable/linkable verified already shipped (ContactsSection). **Lane B's

@@ -2,6 +2,7 @@
 // pricing observation. Thesis verticals lead; all other industries are a
 // secondary reference section (John: prioritize what we actually work in).
 import { fetchMarketStats, isThesisIndustry, SIZE_BANDS, THESIS_INDUSTRIES, type IndustryStats } from "@/lib/analytics";
+import ExportStatsCsv from "@/components/ExportStatsCsv";
 
 export const dynamic = "force-dynamic";
 
@@ -90,7 +91,8 @@ export default async function Analytics() {
 
   return (
     <div className="max-w-5xl p-4 md:p-8 space-y-6">
-      <header>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
         <h1 className="text-2xl font-bold tracking-tight">Market Multiples</h1>
         <p className="text-sm text-zinc-500">
           {thesisObs.toLocaleString()} priced observations in <span className="font-medium">thesis verticals</span>{" "}
@@ -98,6 +100,8 @@ export default async function Analytics() {
           asking ÷ listed cash flow, as-reported basis (SDE vs EBITDA split in the table); medians shown,
           outliers (&lt;0.2× or &gt;20×) excluded. Grows with every scrape.
         </p>
+        </div>
+        <ExportStatsCsv rows={stats} />
       </header>
 
       <section className="rounded-xl border border-zinc-200 bg-white p-5">
@@ -106,21 +110,27 @@ export default async function Analytics() {
           Priority order (landscape, tree, pool, pest, mechanical trades…). Industries with ≥3 observations. Hover for detail.
         </p>
         <div className="space-y-2">
+          {/* whole bar row click-through → the listings behind the number
+              (no dead ends — the chart is a sourcing surface, not a picture) */}
           {chartRows.map((s) => (
-            <div key={s.industry} className="group flex items-center gap-3">
-              <div className="w-44 shrink-0 truncate text-right text-xs text-zinc-700">{s.industry}</div>
+            <a
+              key={s.industry}
+              href={`/listings?industry=${encodeURIComponent(s.industry)}`}
+              className="group flex items-center gap-3 rounded hover:bg-emerald-50/60"
+              title={`${s.industry}: median ${x(s.medMultiple)} across ${s.nMultiple} listings (SDE ${x(s.medMultipleSDE)}, EBITDA ${x(s.medMultipleEBITDA)}) — click to open them`}
+            >
+              <div className="w-44 shrink-0 truncate text-right text-xs text-zinc-700 group-hover:text-emerald-800">{s.industry}</div>
               <div className="relative h-5 flex-1 rounded-sm bg-zinc-50">
                 <div
                   className="h-5 rounded-r"
                   style={{ background: C_BAR, width: `${((s.medMultiple ?? 0) / maxMed) * 100}%` }}
-                  title={`${s.industry}: median ${x(s.medMultiple)} across ${s.nMultiple} listings (SDE ${x(s.medMultipleSDE)}, EBITDA ${x(s.medMultipleEBITDA)})`}
                 />
               </div>
               <div className="w-20 shrink-0 text-xs tabular-nums">
                 <span className="font-semibold">{x(s.medMultiple)}</span>
                 <span className="ml-1 text-zinc-400">n={s.nMultiple}</span>
               </div>
-            </div>
+            </a>
           ))}
           {chartRows.length === 0 && (
             <p className="text-xs text-zinc-400">No thesis-vertical observations yet — more scrapes will fill this in.</p>
