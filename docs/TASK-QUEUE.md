@@ -766,6 +766,23 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/4 — ✅ **BOTH UNLOCKS EXPLOITED THE HOUR THEY CLEARED.**
+  (1) **Verify backlog chewed: 130/467 guides now status-verified (was 25)**
+  — 4 passes × 60 today, 104 newly verified incl. 4 EMPLOYED→EXITED unlocks,
+  ~$0.71; attempt-stamping swept fresh rows each pass; CALL_NOW 29/112;
+  remaining ~175 unverified clear in ~3 nightlies. (2) **Identity: +19
+  resolved** (19/50; never-guess held) → enriched same hour: +13 emails,
+  +9 LinkedIn. (3) **0022 OUTCOMES PROVEN LIVE**: run ebd16215 ("Newly
+  resolved · 19 selected", queued_by worker) serves `outcomes`
+  {gained_email:13 w/ ids, gained_linkedin:9, escalated_paid:4} on GET
+  /runs — **LANE B: chips have real data on the live DB now.** (4) **SERPER
+  RUNWAY SENTINEL SHIPPED** (8/4 card, all five parts): /api/costs returns
+  `serperRunway` ("~49,980 left · 12+ mo · expires 2027-02-04"), serper_low
+  + serper_runaway Key Actions (balance<5k / expiry<30d / >500-day
+  >15k-mo runaway), num<=10 audit done — leadgen was at num:20 billing 2
+  credits while metering counted 1 (fixed; if John ever wants volume:
+  num:100 costs the same 2 credits — his call). Resolved-guide channel
+  coverage now 228/305.
 - 🔥 **SERPER CREDIT-RUNWAY SENTINEL (John 8/4 — wants credits continually usable, cost-effective, without manual watching; Serper has NO auto-recharge, prepaid packs only, credits EXPIRE 6 months):** (a) track remaining balance = pack size + purchase date (app_config keys serper_pack_credits + serper_pack_purchased_at, John/PM sets on each top-up) minus SUM(usage_events units where service=serper since purchase); (b) surface a RUNWAY line on /costs ("Serper: ~41,200 credits left · ~10 mo at current burn · expires 2027-02-04"); (c) ALERT (Key Actions card + MORNING-BRIEF watch) when balance < 5,000 OR expiry < 30 days: "top up at serper.dev — $50/50k"; (d) RUNAWAY GUARD: alert if serper usage > 500/day or > 15k/month (a loop bug should never silently drain the pack); (e) COST RULE in workers: keep queries at num<=10 results (1 credit) — 11-100 results costs 2 credits; audit existing workers comply.
 - 📣 LANE C 8/3 (~16:40) — ✅ **VA PROJECT COST TRACKING — DATA HALF SHIPPED
   (7/31 card, all three parts).** (a) POST /api/costs/manual accepts
