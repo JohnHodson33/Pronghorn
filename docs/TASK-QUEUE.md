@@ -34,6 +34,55 @@ John watches hit rates move without asking the PM. (E) OUTREACH RIDES ON
 TOP: templates being co-developed w/ John in the PM channel; campaigns
 unlock once (1)-(4) hit targets on a real segment.
 
+## 🚨 RIVER-GUIDE DUPLICATE PEOPLE + CONTRADICTORY STATUS (PM found 8/4 14:45,
+## live DB — blocks trusting ANY outreach-ready count; Lane C owns, Lane A (b))
+The consolidator sweep inserts a NEW row for a company already in the book
+instead of matching the existing person, so the same human exists twice with
+different `deal_id` prefixes (`RG-SWEEP-*` vs `RG-TREE-*`/`RG-GREEN-*`/
+`RG-FENCE-*`). MEASURED: 350 named rows → **330 distinct people · 19
+duplicated names · 20 extra rows** (115 of 549 rows are sweep-origin). Dupes
+among TBD rows are undetectable by name, so 20 is a FLOOR.
+
+WHY IT MATTERS (not cosmetic): **13 of the 19 duplicates carry CONTRADICTORY
+`exit_status`** — the same person is EXITED on one row and EMPLOYED/UNKNOWN
+on another. Two are contradictions where BOTH rows are status-VERIFIED:
+Damon Schrosk (RG-TREE-105 EMPLOYED **vs** RG-SWEEP-treecology EXITED) and
+Tim Doyle (EXITED vs UNKNOWN vs EXITED across 3 rows). **3 of the current 14
+outreach-ready rows are people with a conflicting twin** (Steve Stanley,
+Dan Mello, Scott Emery). We would be emailing someone as a fresh exit while
+our own data says they still work for the acquirer — precisely John's
+"burn more leads than it helps" failure mode. It also double-spends Serper:
+every dupe gets verified twice.
+
+BUILD:
+(a) **Dedupe pass (Lane C)**: match on normalized (full_name + acquirer) and
+(company-slug + acquirer) — the sweep rows are near-identical company names
+("Cordwin Tree Service" vs "Cordwin Tree Services"). MERGE, never delete:
+keep the richest row, union contacts/source_urls, preserve BOTH source_urls
+so the human can adjudicate. Log every merge.
+(b) **Contradiction rule**: where merged rows disagree on exit_status, the
+result is NOT a coin flip — set `UNKNOWN` + a `status_conflict` note listing
+both claims and their source_urls, and route to the review pen. An
+unresolvable conflict must never present as outreach-ready. Re-verify these
+first (cheap: 13 rows).
+(c) **Insert-time guard (Lane A owns the sweep)**: before filing, check for
+an existing row by (company-slug|name + acquirer) and UPDATE it rather than
+insert. This is the root cause — without it (a) is a treadmill.
+(d) After (a)+(b) land, PM re-measures outreach-ready and republishes the
+honest number.
+
+## 📏 OUTREACH-READY IS ONE DEFINITION (PM 8/4 — 14 vs 23 reconciled)
+Lane C reported 23, PM-STATUS says 14; BOTH computed correctly, different
+definitions. 14 = verified + EXITED + **email-or-phone**. 23 = the same but
+counting a **LinkedIn URL** as a channel. Canonical rule, matching the
+standing data-honesty line ("unverified LinkedIn is not a channel") and the
+fact that an email campaign cannot send to a LinkedIn URL: **outreach-ready
+= verified + EXITED + email-or-phone (14 today, 12 in-focus)**. LinkedIn-only
+people (9) are a SEPARATE, legitimate cohort — report them as
+"LinkedIn-only, needs a channel" and route to the VA/enrichment queue, never
+folded into the sendable count. Everyone use this wording; PM-STATUS is the
+reference implementation (.github/scripts/pm-status.js:34).
+
 ## 🎯 SERPER FOCUS GATE (John 8/4 — industry narrowing; PM measured same day)
 John's directive (8/4): thesis focus is now **TREE CARE primary; landscaping,
 irrigation, lawn care, pest control ancillary**. The old 10–12-industry
