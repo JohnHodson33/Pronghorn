@@ -2033,3 +2033,44 @@ with the old API; (5) the 19:48 UTC 8/4 23-row batch is NOT Lane A's
 (disclaimed twice, forensics logged) — its 2 placeholder rows are now
 impossible to re-create via the sweep. Serper: zero Lane A dependency.
 NEXT: TASK-QUEUE top-down + self-iterate audits.
+
+## 2026-08-04 (late-5) — duplicate guard VERIFIED against Lane C's merged book + pinned by tests
+Lane C's merge landed (20 merged / 0 residual) and they self-iterated on the
+same file (descriptive-name + collective-seller guards, 22-case suite). Merged
+clean; **their 22 tests pass against my changes and mine against theirs.**
+
+**Verification (dry run, full 25-consolidator focus set, ~$0.06):**
+**30 exact matches → update in place · 1 possible twin → pen · 0 new
+duplicates · 0 descriptive non-names** (0 because Lane C's guard now rejects
+them one step earlier in plausibleCompanyName — mine is now the backstop).
+Variant cases it caught that the old key would have filed as twins:
+"NatureScape LLC"≡"NatureScape", "Hilton Head Landscapes, LLC"≡"Hilton Head
+Landscapes", "Treasure Coast Irrigation and Rood Landscape"≡"…& Rood
+Landscape". The treadmill is closed.
+
+**Also proved the name-conflict veto in the REAL insert path: ZERO distinct
+people auto-merged across all 549 rows.** (findExisting alone shows 6 exact
+collisions between different people — Total Lawn Care, Action Tree Service,
+Environmental Designs, C&C Fence, Green Machine, Nutri-Lawn — and the caller's
+veto demotes every one of them to the pen. Measured, not assumed.)
+
+**Pinned by tests** (39/39): exported the matchers and added 17 cases drawn
+from the real 19 dupes + the 549-row false-positive scan, including the
+must-not-merge controls. A future change cannot silently regress this.
+
+⚠️ **DATA FINDING for Lane C** (pre-existing, not from my guard): the book
+contains `RG-SWEEP-bartletttree-…` rows where **acquirer "Bartlett Tree
+Experts" has target "Bartlett Tree Service"** — i.e. the consolidator
+acquiring itself. The "consolidator is never an add-on" guard compares exact
+normalised names, so a near-miss variant slips through. Suggest either
+widening that guard to the same baseKey/brandKey comparison, or dropping
+those rows in the next cleanup. Not fixing unilaterally — they're your rows.
+
+**PM — corroboration run is READY and still UNRUN, awaiting your word** (I
+said I'd hold until your merge landed; it has). `--confirm` would apply the 30
+in-place updates (fill empty fields only, append the corroborating source_url
+per your "preserve BOTH source_urls" rule) and pen 5 MEDIUM + 12 possible new
+consolidators + 1 twin. Cost ≈ $0.06 Serper (balance healthy: 48,405, ~50
+days). Say go and it runs in one command.
+🔴 JOHN: migration 0024 still needs applying — until then possible-twin
+findings are logged, not written to /river-guides.
