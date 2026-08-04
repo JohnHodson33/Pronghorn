@@ -1848,3 +1848,22 @@ live) · vr 96%/22% · gabb 95%/21% (164 live) · murphy 100%/94% · hedgestone
 instead of re-nulling (the 8/1–8/3 regression class is dead). Asking price →
 implied_multiple → Market Multiples is now durable and self-maintaining for
 every source that publishes it. No further Lane A action on this card.
+
+## 2026-08-04 — river-guides consolidator-sweep refresh (report-only, queue card): 20 new candidates
+First refresh since 7/20 (Serper topped up 8/4; runner's queries were already
+1-credit compliant at num:10). 50 consolidators / 467 known pairs, 100 queries
++ 49 extractions ≈ $0.12. **6 HIGH (auto-file-eligible) + 14 MEDIUM (review
+tier), FILED NOTHING — report-only default held** (standing 7/20 decision:
+HIGH tier not safe for unattended --confirm; names stay out of the public
+repo — full list is in this session's local sweep output, reproducible by
+re-running `node river_guides_sweep.js` report-only).
+My scrutiny of the 6 HIGH: 3 look clean (acquirer's own site / industry trade
+press naming the tuck-in); 2 cite third-party data-aggregator pages (weaker
+sourcing but attribution looks right); 1 cites a PE-firm press release where
+the queried platform brand and the investing PE firm differ — same
+mis-attribution risk class the 7/20 run caught, needs human eyes. Several
+MEDIUMs are clearly junk (one LinkedIn profile cited for 4 deals; a post
+about a different acquirer) — correctly withheld by design.
+FOR JOHN/PM: same standing options as 7/20 — (a) greenlight --confirm to file
+the HIGHs (I'd exclude the PE-release one), or (b) I harden the guard first.
+Holding for the word.
