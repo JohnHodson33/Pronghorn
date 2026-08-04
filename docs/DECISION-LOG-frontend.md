@@ -6,6 +6,15 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 24 (8/4 ~12:00) — SERPER SENTINEL LIVE END-TO-END**: Lane C
+  shipped the data half fast (lib/serper-runway.ts, field name
+  `serperRunway` — their shape won; my renderer adapted to it: runwayNote
+  verbatim + alerts[] banners + burn/guard line + honest not-configured
+  state). Verified live with REAL data: 49.2k credits, expires 2027-02-04,
+  and the runaway guard is ALREADY FIRING (798 credits in 24h > 500/day —
+  the alert shows on both /costs and Key Actions 🚨; likely Lane A's sweep
+  burn, John will see it exactly as designed). Item (c) Key Actions wiring
+  was Lane C's, already working.
 - **Loop iter 23 (8/4 ~11:20) — 0022 LANDED, CHIPS VERIFIED END-TO-END**:
   first post-0022 run carries results + my queue-time label ("Newly
   resolved · 19 selected"); chips rendered and Gained-contact click
