@@ -40,6 +40,9 @@ type Receipt = {
   // the rows that were actually written (capped 100) — receipts from before
   // 7/31 don't carry it, so it stays optional
   touched?: { action: "create" | "update"; id: string | null; label: string }[];
+  // present when a batch cost was logged at confirm time (8/3)
+  batch_cost_usd?: number;
+  cost_per_contact_delivered?: number | null;
 };
 
 // deep-link one touched row: companies have a profile page; contacts and
@@ -135,13 +138,23 @@ export default function IntakePortal() {
     run(f);
   }
 
+  // "what did this batch cost?" (John 7/31) — prefilled 0 and skippable; a
+  // real amount books a usage_event and the receipt shows the true
+  // cost-per-contact-delivered
+  const [batchCost, setBatchCost] = useState("0");
+  const [project, setProject] = useState("");
+
   async function confirm() {
     if (!preview?.job_id) return;
     setPhase("confirming");
     setErr(null);
+    const cost = Number(batchCost);
     const res = await fetch("/api/intake/confirm", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ job_id: preview.job_id, confirmed_by: who }),
+      body: JSON.stringify({
+        job_id: preview.job_id, confirmed_by: who,
+        ...(Number.isFinite(cost) && cost > 0 ? { batch_cost_usd: cost, ...(project.trim() ? { project: project.trim() } : {}) } : {}),
+      }),
     });
     const j = await res.json().catch(() => ({}));
     if (!res.ok) { setErr(j.error ?? "import failed"); setPhase("ready"); return; }
@@ -362,6 +375,26 @@ export default function IntakePortal() {
             >
               {phase === "confirming" ? "Importing…" : `Confirm import (${(c?.create ?? 0) + (c?.update ?? 0)} rows)`}
             </button>
+            {/* VA batch cost — $0 = skip; a real amount books the spend and
+                the receipt shows true cost per contact delivered */}
+            <label className="flex items-center gap-1.5 text-sm text-zinc-600">
+              Batch cost $
+              <input
+                value={batchCost}
+                onChange={(e) => setBatchCost(e.target.value.replace(/[^0-9.]/g, ""))}
+                inputMode="decimal"
+                className="w-20 rounded-md border border-zinc-300 px-2 py-1.5 text-sm outline-none focus:border-emerald-600"
+                title="What did this batch cost (VA invoice)? Leave 0 to skip — you can log it later on /costs."
+              />
+            </label>
+            {Number(batchCost) > 0 && (
+              <input
+                value={project}
+                onChange={(e) => setProject(e.target.value)}
+                placeholder="project (e.g. river-guides batch 2)…"
+                className="w-56 rounded-md border border-zinc-300 px-2 py-1.5 text-sm outline-none focus:border-emerald-600"
+              />
+            )}
             <span className="text-xs text-zinc-500">Nothing has been written yet — this is the first write.</span>
             {!preview.job_id && (
               <span className="text-xs text-amber-700">Preview couldn&apos;t be saved, so import is disabled (see the warning above).</span>
@@ -391,6 +424,15 @@ export default function IntakePortal() {
             <ul className="mt-3 space-y-1 text-xs text-red-700">
               {receipt.errorSamples.slice(0, 5).map((e, i) => <li key={i}>{e}</li>)}
             </ul>
+          )}
+          {receipt.batch_cost_usd != null && receipt.batch_cost_usd > 0 && (
+            <div className="mt-3 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-sm text-violet-900">
+              Batch cost ${receipt.batch_cost_usd.toFixed(2)} logged
+              {receipt.cost_per_contact_delivered != null
+                ? <> — <span className="font-semibold">${receipt.cost_per_contact_delivered.toFixed(2)} per contact delivered</span> ({receipt.updated} updated)</>
+                : " (no rows updated, so no per-contact rate)"}
+              . Full VA spend on <a href="/costs" className="font-semibold underline">the Costs page</a>.
+            </div>
           )}
           {/* exactly who gained data — the VA round-trip's spot-check (7/31) */}
           {(receipt.touched ?? []).length > 0 && (

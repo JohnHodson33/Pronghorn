@@ -6,6 +6,17 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 5 (~17:30) — VA COST UI (Lane C's 8/3 16:40 ask, both halves)**:
+  /intake confirm bar gains "Batch cost $" (prefilled 0, skippable) + project
+  field → confirm POST sends batch_cost_usd/project; receipt shows the
+  computed cost-per-contact-delivered banner. /costs renders the VA projects
+  ledger (vaProjects + vaCostPerContact — intake-linked entries only earn a
+  rate) and Log-a-cost gains project + intake-job-id fields so John can
+  retro-log batch 1 per Lane C's instruction. Verified live: /api/costs
+  serves vaProjects [] (card hides while empty), both form fields render,
+  /intake healthy. ⚠️ SELF-INFLICTED GOTCHA: never rm -rf web/.next while
+  the dev server is RUNNING — stop first, then clear, then start (a running
+  Turbopack chokes on ENOENT manifests).
 - **Loop iters 3-4 (afternoon)**: feedback 0 submitted both polls; 0022
   STILL pending John (no `results` on any run/job — chips stay in degrade).
   Data-health scope pinned to not-dead (52202cb; n=536 = Lane C's scope) and

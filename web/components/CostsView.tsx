@@ -26,6 +26,9 @@ type Costs = {
   ownerContactsAcquired: number;
   costPerContact: number | null;
   subscriptions: { name: string; monthly_usd: number; planned: boolean; start_date: string | null }[];
+  // VA project spend (8/3): per-contact rate uses ONLY intake-linked entries
+  vaProjects?: { project: string; costUsd: number; units: number; intakeLinked: boolean }[];
+  vaCostPerContact?: number | null;
   note?: string;
 };
 type ManualEntry = {
@@ -124,6 +127,10 @@ export default function CostsView() {
   const [note, setNote] = useState("");
   const [enteredBy, setEnteredBy] = useState("John");
   const [service, setService] = useState("upwork");
+  // VA project attribution (8/3): project groups spend; an intake job id links
+  // the entry to a delivered batch so it counts toward cost-per-contact
+  const [project, setProject] = useState("");
+  const [intakeJobId, setIntakeJobId] = useState("");
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState<string | null>(null);
   const [formErr, setFormErr] = useState<string | null>(null);
@@ -158,13 +165,15 @@ export default function CostsView() {
         note: note || null,
         entered_by: enteredBy,
         service,
+        ...(project.trim() ? { project: project.trim() } : {}),
+        ...(intakeJobId.trim() ? { intake_job_id: intakeJobId.trim() } : {}),
       }),
     });
     const j = await res.json().catch(() => ({}));
     setBusy(false);
     if (!res.ok) { setFormErr(j.error ?? "could not log the cost"); return; }
-    setSaved(`Logged ${usd(Number(amount))}${units ? ` for ${units} units` : ""}.`);
-    setAmount(""); setUnits(""); setNote(""); setDated("");
+    setSaved(`Logged ${usd(Number(amount))}${units ? ` for ${units} units` : ""}${project.trim() ? ` to ${project.trim()}` : ""}.`);
+    setAmount(""); setUnits(""); setNote(""); setDated(""); setProject(""); setIntakeJobId("");
     load();
   }
 
@@ -248,6 +257,46 @@ export default function CostsView() {
             {data.quotas.length === 0 && <li className="text-xs text-zinc-400">No quota-metered usage yet this month.</li>}
           </ul>
         </div>
+
+        {/* VA projects — the true cost-per-contact-delivered ledger (8/3).
+            Only intake-linked batches earn a rate: hour-logged spend shows in
+            the lines but can't claim contacts it didn't provably deliver. */}
+        {(data.vaProjects ?? []).length > 0 && (
+          <div className="rounded-xl border border-zinc-200 bg-white p-5 md:col-span-2">
+            <div className="flex items-baseline justify-between">
+              <h2 className="font-semibold">VA projects</h2>
+              {data.vaCostPerContact != null && (
+                <span className="text-sm">
+                  <span className="text-zinc-500">cost / contact delivered </span>
+                  <span className="text-xl font-bold tabular-nums text-emerald-800">{usd(data.vaCostPerContact)}</span>
+                </span>
+              )}
+            </div>
+            <p className="mt-1 text-xs text-zinc-500">
+              The rate counts only intake-linked batches (contacts provably delivered through /intake).
+            </p>
+            <ul className="mt-2 space-y-1 text-sm">
+              {data.vaProjects!.map((p) => (
+                <li key={p.project} className="flex flex-wrap items-baseline gap-x-2">
+                  <span className="min-w-0 flex-1 truncate text-zinc-700">{p.project}</span>
+                  <span className="tabular-nums font-medium">{usd(p.costUsd)}</span>
+                  <span className="tabular-nums text-zinc-500">{p.units} contacts</span>
+                  {p.intakeLinked ? (
+                    <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-800"
+                      title="linked to an intake batch — counts toward the per-contact rate">
+                      intake-linked · {p.units > 0 ? usd(p.costUsd / p.units) : "—"}/contact
+                    </span>
+                  ) : (
+                    <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-500"
+                      title="hour-logged spend — shows here but doesn't claim a per-contact rate">
+                      hours only
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       {/* Log a cost — the Upwork VA invoices are the whole point of this form */}
@@ -289,6 +338,18 @@ export default function CostsView() {
           <label className="sm:col-span-2 lg:col-span-1">
             <span className="block text-[11px] font-medium uppercase tracking-wide text-zinc-500">Note</span>
             <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Upwork invoice #123" className={`mt-0.5 ${inputCls}`} />
+          </label>
+          <label className="lg:col-span-2">
+            <span className="block text-[11px] font-medium uppercase tracking-wide text-zinc-500">Project</span>
+            <input value={project} onChange={(e) => setProject(e.target.value)}
+              placeholder="river-guides batch 1" className={`mt-0.5 ${inputCls}`} />
+          </label>
+          <label className="lg:col-span-2">
+            <span className="block text-[11px] font-medium uppercase tracking-wide text-zinc-500">
+              Intake job id <span className="normal-case text-zinc-400">(links a delivered batch → per-contact rate)</span>
+            </span>
+            <input value={intakeJobId} onChange={(e) => setIntakeJobId(e.target.value)}
+              placeholder="b6c8e1b2-…" className={`mt-0.5 font-mono text-xs ${inputCls}`} />
           </label>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-3">
