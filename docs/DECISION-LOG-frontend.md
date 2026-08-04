@@ -6,6 +6,10 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 9 (~21:20)**: watch only — 4th consecutive quiet cycle (no
+  upstream commits, feedback 0, 0022 unapplied). Quota already exceeded
+  (2 self-iterate ships tonight); not manufacturing work. Standing watch:
+  0022 → chip verification, feedback, 📣 asks.
 - **Loop iter 8 (~20:20) [self-iterate]**: quiet cycle (no merges, feedback
   0, 0022 pending) → pipeline-board critique: (1) FIXED broker line printing
   the FCBB office name twice (brokerage === broker case; verified live);
