@@ -81,6 +81,93 @@ function norm(s) {
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// ── DUPLICATE-PERSON ROOT CAUSE (PM 8/4; TASK-QUEUE item c) ──────────────────
+// The exact key above missed cosmetic variants, so the sweep filed a SECOND row
+// for a deal already in the book and the same human ended up twice with
+// contradictory exit_status. Measured failure modes on the live 19 dupes:
+//   plural      "Cordwin Tree Service"  vs "Cordwin Tree Services"
+//   parenthetical "Treecology (Portland)" vs "Treecology"
+//   qualifier   "VanCuren Services + Midwest Land Clearing" vs "VanCuren Services"
+//   generic tail "Heads Up Landscaping"  vs "Heads Up Landscape Contractors"
+//   acquirer    "LawnPro"                vs "LawnPRO Partners"
+// MUST NOT over-merge: Chris Mierswa really does own BOTH "Green Machine Lawn
+// Care" and "Sea of Green Lawn Care" under LawnPro — two deals, one person.
+// So matching is conservative: a miss files a reviewable row, an over-merge
+// silently destroys a real deal.
+
+// Acquirer identity — norm() already drops group/holdings; "partners" is the
+// remaining variant that split LawnPro/LawnPRO Partners across three dupes.
+function normAcq(s) {
+  return norm(String(s || '').replace(/\bpartners\b/gi, ' '));
+}
+
+// Whole-word generics — these carry no brand identity, so what remains after
+// removing them is the distinctive part of the name. Whole-word only, so
+// "Treecology" keeps its "tree".
+const GENERIC_WORDS = /\b(tree|trees|service|services|lawn|lawns|care|landscaping|landscape|landscapes|contractor|contractors|turf|pest|pool|pools|nursery|fertilizing|maintenance|kitchen|repair|repairs|commercial|residential|custom|supply|solutions|management|inc|llc|ltd|co|corp|company|companies|group|holdings|partners|the|and)\b/g;
+
+const singular = (w) => (w.length > 3 && w.endsWith('s') && !w.endsWith('ss') ? w.slice(0, -1) : w);
+
+// Plain identity: parentheticals dropped, corporate suffixes dropped, tokens
+// singularised. "JC Pools Services", "JC Pool Services" and "Concord Custom
+// Lawn Care, LLC" all collapse onto their twin.
+function baseKey(s) {
+  return String(s || '').toLowerCase()
+    .replace(/\([^)]*\)/g, ' ')            // "(Portland)", "(CKR)"
+    .replace(/&/g, ' and ')
+    .replace(/\b(inc|llc|ltd|co|corp|company|group|holdings|partners|the)\b/g, ' ')
+    .split(/[^a-z0-9]+/).filter(Boolean).map(singular).join('');
+}
+
+// Brand identity: the distinctive tokens only. Catches the generic-tail class
+// ("Heads Up Landscaping" ≡ "Heads Up Landscape Contractors") that baseKey's
+// prefix test cannot, because the tails differ mid-string.
+function brandKey(s) {
+  return String(s || '').toLowerCase()
+    .replace(/\([^)]*\)/g, ' ')
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(GENERIC_WORDS, ' ')
+    .split(/\s+/).filter(Boolean).map(singular).join('');
+}
+
+// Is `company` a description rather than a name? The 8/4 batch filed "Long
+// Island tree care business" and "South Carolina and Louisiana tree care
+// companies" — placeholders that can never match their real twin and breach
+// the firm rule that a deal record requires a real company name. Plural
+// "companies" and bare "business" are descriptive; singular "Company" is a
+// legitimate suffix ("Joe's Landscaping Company") and stays.
+function isDescriptivePlaceholder(name) {
+  return /\b(business|businesses|operations|ops|companies|firms|locations|assets)$/i.test(String(name || '').trim());
+}
+
+// Existence test → { row, tier } or null. Tiers are graded by RISK, because a
+// false merge silently destroys a real deal:
+//   'exact' — identical after normalisation. Safe to treat as the same deal.
+//   'fuzzy' — prefix or brand match. Detects the twin but CANNOT prove it:
+//             validated against the live book, "Green Machine" (Swinski
+//             family) vs "Green Machine Lawn Care" (Cody Wetz) and Tim Doyle's
+//             "Seacoast Tree Care and Turf" vs Dan Mello's "Seacoast Tree
+//             Care" all match here yet are DIFFERENT deals. Never auto-merged;
+//             routed to the review pen for a human.
+// Caller policy: exact → update in place, fuzzy → pen. Neither ever inserts a
+// twin, so the duplicate treadmill stops under both outcomes.
+function findExisting(index, acquirer, company) {
+  const bucket = index.get(normAcq(acquirer));
+  if (!bucket) return null;
+  const bk = baseKey(company);
+  for (const row of bucket) if (row._base === bk) return { row, tier: 'exact' };
+  for (const row of bucket) {
+    const [short, long] = row._base.length <= bk.length ? [row._base, bk] : [bk, row._base];
+    if (short.length >= 8 && long.startsWith(short)) return { row, tier: 'fuzzy' };
+  }
+  const brand = brandKey(company);
+  if (brand.length >= 5) {
+    for (const row of bucket) if (row._brand === brand) return { row, tier: 'fuzzy' };
+  }
+  return null;
+}
+
 // DB industry enum → a search word (e.g. TREE_CARE → "tree care").
 function industryWord(ind) {
   return ind ? ind.toLowerCase().replace(/_/g, ' ').replace(/\bservices?\b/, 'service').trim() : '';
@@ -174,9 +261,17 @@ async function main() {
   const apiKey = process.env.ANTHROPIC_API_KEY;
 
   // 1. Consolidators + existing deals straight from the DB (never invented).
-  const { data: rows, error } = await supabase.from('river_guides').select('acquirer, their_company, industry, acquirer_pe_sponsor');
+  const { data: rows, error } = await supabase.from('river_guides')
+    .select('deal_id, full_name, acquirer, their_company, industry, acquirer_pe_sponsor, deal_year, location_city, location_state, source_url, notes');
   if (error) throw new Error(error.message);
-  const known = new Set(rows.map((r) => `${norm(r.acquirer)}|${norm(r.their_company)}`));
+  // Match index for the insert-time duplicate guard: acquirer bucket → rows
+  // pre-keyed by both identities (computed once, not per candidate).
+  const bookIndex = new Map();
+  for (const r of rows) {
+    const a = normAcq(r.acquirer);
+    if (!bookIndex.has(a)) bookIndex.set(a, []);
+    bookIndex.get(a).push({ ...r, _base: baseKey(r.their_company), _brand: brandKey(r.their_company) });
+  }
   const meta = new Map(); // acquirer -> {industry, sponsor}
   for (const r of rows) if (r.acquirer && !meta.has(r.acquirer)) meta.set(r.acquirer, { industry: r.industry, sponsor: r.acquirer_pe_sponsor });
   const acquirersAll = [...meta.keys()].filter(Boolean); // full list = the "is a consolidator" check
@@ -209,10 +304,12 @@ async function main() {
         `skipped ${skTotal} out-of-focus (${Object.entries(skipped).map(([k, v]) => `${k}:${v}`).join(', ')}) — pass --industries all to override`);
     }
   }
-  log.info(`Sweep: ${acquirers.length} consolidator(s) from DB, ${known.size} known (acquirer,company) pairs`);
+  log.info(`Sweep: ${acquirers.length} consolidator(s) from DB, ${rows.length} known deal row(s)`);
 
   const DEEP = process.argv.includes('--deep');
-  const found = [];
+  const found = [];       // genuinely new deals → file
+  const matched = [];     // already in the book → update (exact) or pen (fuzzy)
+  const placeholders = []; // rejected descriptive non-names
   const newConsolidators = new Map(); // norm(name) → {name, source_url}
   let queries = 0;
   let extractions = 0;
@@ -246,12 +343,35 @@ async function main() {
           if (acquirersAll.some((c) => norm(c) === norm(a.company))) continue;
           // fragment guard (Lane A 7/20: 2-6-char junk names reached HIGH)
           if (!plausibleCompanyName(a.company)) continue;
+          // descriptive-placeholder guard (8/4): "Long Island tree care
+          // business" is not a company name — it can never match its real twin
+          // and breaks the rule that a deal record needs a real company name.
+          if (isDescriptivePlaceholder(a.company)) { placeholders.push(`${acq} → ${a.company}`); continue; }
           const key = `${norm(acq)}|${norm(a.company)}`;
-          if (known.has(key) || found.some((f) => f.key === key)) continue;
-          known.add(key);
-          fresh++;
+          if (found.some((f) => f.key === key) || matched.some((f) => f.key === key)) continue;
           // a corporate "seller" (divestiture) is not a river guide person
           const sellerIsPerson = a.resolved && personShaped(a.seller_name);
+
+          // INSERT-TIME DUPLICATE GUARD (root cause of the duplicate people).
+          const hit = findExisting(bookIndex, acq, a.company);
+          if (hit) {
+            // NAME-CONFLICT VETO: one company name can front two real deals —
+            // the live book has "Green Machine Lawn Care" sold by Cody Wetz AND
+            // by Chris Mierswa. When both sides name a seller and the names
+            // disagree, this is not provably the same deal, so it drops to the
+            // pen rather than being absorbed into the existing row.
+            const conflict = !!(hit.row.full_name && sellerIsPerson
+              && norm(hit.row.full_name) !== norm(a.seller_name));
+            matched.push({
+              key, tier: conflict ? 'fuzzy' : hit.tier, conflict,
+              existing: hit.row, acquirer: acq,
+              their_company: a.company, deal_year: a.deal_year,
+              seller_name: sellerIsPerson ? a.seller_name : null,
+              city: a.city, state: a.state, source_url: a.source_url,
+            });
+            continue; // never file a twin — updated or penned below
+          }
+          fresh++;
           found.push({
             key,
             acquirer: acq,
@@ -302,7 +422,38 @@ async function main() {
   for (const f of batch) log.info(`  ${DRY ? '[dry-run] ' : ''}FILE  ${f.acquirer} → ${f.their_company}${f.resolved ? ` (seller: ${f.seller_name})` : ''} [HIGH] ${f.source_url || ''}`);
   for (const f of medium) log.info(`        review ${f.acquirer} → ${f.their_company} [MEDIUM] ${f.source_url || ''}`);
   for (const c of newConsolidators.values()) log.info(`        new consolidator? ${c.name} ${c.source_url || ''}`);
+
+  // Already-in-the-book candidates (the duplicate root cause). Exact matches
+  // corroborate the existing row; fuzzy matches are only CANDIDATE twins and
+  // go to the pen — neither ever files a second row for the same deal.
+  const exactHits = matched.filter((f) => f.tier === 'exact');
+  const fuzzyHits = matched.filter((f) => f.tier !== 'exact');
+  if (matched.length || placeholders.length) {
+    log.info(`Duplicate guard: ${exactHits.length} exact match(es) → update in place, ${fuzzyHits.length} possible twin(s) → review pen, ${placeholders.length} descriptive non-name(s) rejected`);
+    for (const f of exactHits) log.info(`  ${DRY ? '[dry-run] ' : ''}UPDATE ${f.acquirer} → ${f.their_company} ≡ ${f.existing.deal_id} (${f.existing.their_company})`);
+    for (const f of fuzzyHits) log.info(`        possible dup ${f.acquirer} → ${f.their_company} ~ ${f.existing.deal_id} (${f.existing.their_company})${f.existing.full_name ? ` [${f.existing.full_name}]` : ''}${f.conflict ? ' ⚠ SELLER-NAME CONFLICT — different people, likely two real deals' : ''}`);
+    for (const p of placeholders) log.info(`        rejected non-name ${p}`);
+  }
   if (DRY) { log.info('Sweep complete — REPORT-ONLY (pass --confirm to file HIGH + pen MEDIUM/new-consolidators for review)'); return; }
+
+  // Corroborate exact matches: never overwrite an existing value (a later
+  // sweep must not clobber verified data), fill only genuinely-empty fields,
+  // and always PRESERVE BOTH source_urls so a human can adjudicate.
+  for (const f of exactHits) {
+    const e = f.existing;
+    const patch = {};
+    if (!e.deal_year && f.deal_year) patch.deal_year = f.deal_year;
+    if (!e.location_city && f.city) patch.location_city = f.city;
+    if (!e.location_state && f.state) patch.location_state = f.state;
+    const known = String(e.source_url || '');
+    if (f.source_url && !known.includes(f.source_url) && !String(e.notes || '').includes(f.source_url)) {
+      patch.notes = `${e.notes ? `${e.notes} ` : ''}[sweep ${new Date().toISOString().slice(0, 10)}] also reported as "${f.their_company}" — corroborating source: ${f.source_url}`;
+    }
+    if (!Object.keys(patch).length) continue;
+    const { error: upErr } = await supabase.from('river_guides').update(patch).eq('deal_id', e.deal_id);
+    if (upErr) log.warn(`update ${e.deal_id}: ${upErr.message}`);
+    else log.info(`  updated ${e.deal_id} (${Object.keys(patch).join(', ')})`);
+  }
 
   // REVIEW PEN (0023): MEDIUM deals + possible new consolidators wait for
   // John's one-click keep/reject on /river-guides — never silently filed,
@@ -327,6 +478,29 @@ async function main() {
       if (/discovery_candidates/.test(penErr.message)) log.warn('review pen not stored — apply migration 0023');
       else log.warn(`review pen: ${penErr.message}`);
     } else log.info(`review pen: ${penRows.length} candidate(s) queued for John (MEDIUM deals + possible new consolidators)`);
+  }
+
+  // Possible twins go in SEPARATELY: they need migration 0024 (a third `kind`
+  // + notes column), and a constraint error must not take the MEDIUM rows down
+  // with them. If the migration hasn't been applied yet, every dropped row is
+  // printed in full so the finding is recoverable from the log rather than
+  // silently lost.
+  if (fuzzyHits.length) {
+    const dupRows = fuzzyHits.map((f) => ({
+      kind: 'possible_duplicate', acquirer: f.acquirer, company: f.their_company,
+      seller_name: f.seller_name || null,
+      deal_year: f.deal_year, city: f.city, state: f.state,
+      source_url: f.source_url, confidence: 'MEDIUM',
+      notes: f.conflict
+        ? `SELLER-NAME CONFLICT vs ${f.existing.deal_id} ("${f.existing.their_company}"): that row names ${f.existing.full_name}, this source names ${f.seller_name}. Same company name, different people — probably TWO real deals. Keep both unless a source proves otherwise.`
+        : `possible duplicate of ${f.existing.deal_id} ("${f.existing.their_company}"${f.existing.full_name ? `, ${f.existing.full_name}` : ''}) — same acquirer, near-identical company name. Confirm same deal → merge; different deal → keep both.`,
+    }));
+    const { error: dupErr } = await supabase.from('discovery_candidates')
+      .upsert(dupRows, { onConflict: 'acquirer,company', ignoreDuplicates: true });
+    if (dupErr) {
+      log.warn(`possible-duplicate pen NOT stored (${dupErr.message}) — apply migration 0024_possible_duplicate_candidates.sql. The ${dupRows.length} finding(s) below were NOT written:`);
+      for (const d of dupRows) log.warn(`  ${d.acquirer} → ${d.company} :: ${d.notes}`);
+    } else log.info(`possible-duplicate pen: ${dupRows.length} candidate twin(s) queued for human review (never auto-merged)`);
   }
   if (batch.length === 0) { log.info('Sweep complete — nothing HIGH to file'); return; }
 
