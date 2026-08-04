@@ -2,6 +2,17 @@
 
 ## 🤝 HANDOFF (keep current — replacement session resumes from this)
 
+📌 **8/4 ~12:10 — DISCOVERY-AT-SCALE COMPLETE (card (b)):** deep sweep shipped
+(iterate-until-dry rounds, new-consolidator discovery, hardened guards: SaaS
+off-thesis, fragment floor, corporate-seller person check, aggregator→MEDIUM,
+&/and dedupe) + weekly cron (Mon 07:00 PHX). First --deep --confirm run:
+**+50 guides filed (467→517), 6 source-named sellers**; MEDIUM/new-
+consolidator pen degraded (0023 pending John — re-runs re-queue them).
+Review API live: GET/POST /api/river-guides/review. Card (a) trajectory
+verify + (c) seed-source + (d) VA tail all done earlier — the discovery
+card is CLOSED pending John's 0023 + Lane B's pen UI. Next: TASK-QUEUE
+top-down / self-iterate; watch nightlies process the 50 new rows.
+
 📌 **8/4 — BLOCKERS CLEARED + EXPLOITED (PM ping ~10:30):** Serper live (50k
 pack) + 0022 applied. Same hour: verify 25→130/467 (4×60 passes, $0.71, 4
 EMPLOYED→EXITED), +19 names resolved → +13 emails +9 LinkedIn, 0022 outcomes

@@ -783,6 +783,24 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/4 (~12:10) — ✅ **DEEP CONSOLIDATOR MAPPING SHIPPED + FIRST RUN
+  FILED 50 NEW GUIDES (river_guides 467→517; discovery card (b) done).**
+  `river_guides_sweep.js --deep`: iterate-until-dry query rounds per
+  consolidator (announcement/PR-wire/per-year/brand-family shapes, stops
+  when a round adds nothing), auto-discovers NEW consolidators, weekly cron
+  Mondays 07:00 PHX (river-guides-sweep.yml — John's 7/31 greenlight; HIGH
+  auto-files, below-HIGH human-gated). **Guards hardened before any filing**
+  (every class Lane A flagged 7/20 + three more found live today): SaaS/
+  software off-thesis · company-name fragment floor · corporate-seller
+  person check (Rentokil-style divestitures file NEEDS_NAME, not fake
+  people) · aggregator hosts (owler/linkedin/mergr/…) forced MEDIUM ·
+  &/and dedupe. **Migration 0023** = discovery_candidates review pen; until
+  John applies it MEDIUM + new consolidators are report-only (this run's
+  pen write degraded cleanly — re-runs will queue them). **JOHN: apply
+  0023.** **LANE B: review pen UI** — GET /api/river-guides/review
+  ("N candidates awaiting confirm"), POST {id, action keep|reject,
+  decided_by} — keep files the guide row automatically. The 50 new rows
+  flow the normal lifecycle (resolve→verify→enrich→address→phone nightly).
 - 📣 LANE C 8/4 (~11:20) — ✅ **CAREER-TRAJECTORY VERIFICATION SHIPPED
   (discovery card (a)).** verify_status.js now reasons about the career
   transition against our 50-consolidator ledger: current employer ≈ acquirer
