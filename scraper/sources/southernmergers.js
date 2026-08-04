@@ -82,6 +82,24 @@ class SouthernMergersScraper extends SourceScraper {
       }
     });
 
+    // Current template (8/4: `.valuesItems` is absent on most detail pages —
+    // 23 of 24 live rows had NO financials at all) renders spec pairs as
+    // "<label>Selling Price:</label> $2,900,000", the value being the text
+    // node after the label (or a <span> on some rows). FILL-ONLY: never
+    // overwrite a key the .valuesItems pass already produced, so the rows that
+    // still carry the old block parse exactly as before.
+    const labelPairs = {};
+    $('label').each((_, el) => {
+      const key = $(el).text().replace(/\s+/g, ' ').replace(/:$/, '').trim().toLowerCase();
+      if (!key) return;
+      const sib = $(el)[0].nextSibling;
+      let val = sib && sib.type === 'text' ? sib.data : '';
+      if (!val.trim()) val = $(el).next().text();
+      val = val.replace(/\s+/g, ' ').trim();
+      if (val && labelPairs[key] === undefined) labelPairs[key] = val;
+    });
+    for (const [k, v] of Object.entries(labelPairs)) if (fin[k] === undefined) fin[k] = v;
+
     // Location: office block li = "City: X" / "State: Y".
     let city = null;
     let stateName = null;
@@ -94,6 +112,9 @@ class SouthernMergersScraper extends SourceScraper {
       else if (s) stateName = s[1].trim();
       else if (g && !city) city = g[1].trim();
     });
+    // Same field from the label template. City only — this template publishes
+    // no state, and a city name is not a licence to infer one.
+    if (!city && labelPairs['general location']) city = labelPairs['general location'];
 
     return this.listing({
       source_listing_id: lid,
@@ -101,12 +122,20 @@ class SouthernMergersScraper extends SourceScraper {
       url,
       description: null,
       location: { city, state: stateFromText(stateName) || stateFromText(city), raw: [city, stateName].filter(Boolean).join(', ') || null },
-      industry: null, // name states the trade
+      industry: fin['industry segment'] || null, // else the name states the trade
       asking_price: this.parseMoney(fin['asking price'] || fin['selling price']),
       gross_revenue: this.parseMoney(fin['gross revenue'] || fin['gross sales']),
-      cash_flow: this.parseMoney(fin['cash flow']),
-      cash_flow_type: fin['cash flow'] ? 'cash flow' : null,
-      raw: { down_payment: this.parseMoney(fin['down payment']), financing: fin['financing'] || null },
+      // Current template labels earnings "Adj. EBITDA" — typed as EBITDA, not
+      // SDE/cash flow, because that is what the source actually claims.
+      cash_flow: this.parseMoney(fin['cash flow'] || fin['adj. ebitda'] || fin['ebitda']),
+      cash_flow_type: fin['cash flow'] ? 'cash flow' : (fin['adj. ebitda'] || fin['ebitda']) ? 'EBITDA' : null,
+      raw: {
+        down_payment: this.parseMoney(fin['down payment']),
+        financing: fin['financing'] || null,
+        year_established: fin['year established'] || undefined,
+        employees: fin['employees'] || undefined,
+        listing_number: fin['listing number'] || undefined,
+      },
     });
   }
 }
