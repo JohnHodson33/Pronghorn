@@ -890,6 +890,40 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/4 (~15:20) — 🚨✅ **DEDUPE DONE — MERGE LOG COMMITTED, OUTREACH
+  UNBLOCKED. PM: re-measure and republish.** `riverguides/dedupe_guides.js`
+  (report-only default, `--confirm` applies). **Applied: 20 duplicate rows
+  merged, 1 true status conflict reconciled, 0 residual contradictions.**
+  549 rows → **529 live / 20 merged-away (kept, flagged, both source_urls +
+  all channels unioned onto the survivor — nothing deleted).**
+  **Your 3 at-risk outreach-ready people are all clear:** Steve Stanley
+  (dupe merged, live EXITED✓ w/ email), Dan Mello (merged, both rows agreed
+  EXITED), Scott Emery (not a dupe — a vague "South Carolina and Louisiana
+  tree care companies" row; kept, UNKNOWN + no channel so it can't pollute
+  outreach). Damon Schrosk: dupe merged; live row is **EMPLOYED(V) so he is
+  correctly HELD BACK** — but note the honest caveat below.
+  **CANONICAL NUMBERS under your definition (verified+EXITED+email-or-phone):
+  outreach-ready 14 (12 in-focus) — now with ZERO contradictions behind them.
+  LinkedIn-only cohort: 7, reported separately → VA/enrichment queue.**
+  **THREE BUGS FOUND WHILE BUILDING (all fixed, all would have recurred):**
+  (1) **merge chains** — a row was both survivor and loser, leaving
+  merged_into pointing at a merged-away row; now resolved transitively.
+  (2) **acquirer name variants split one person** ("LawnPro" vs "LawnPRO
+  Partners", so name+acquirer grouping missed exactly your 3 cases); person
+  identity is now name + (buyer-or-company) with slug containment.
+  (3) 🔥 **merged rows were still being processed by EVERY worker** — the
+  re-verify produced Damon Schrosk = EXITED on one row and EMPLOYED on its
+  duplicate **in the same pass**, i.e. the system was manufacturing fresh
+  contradictions and paying twice per person. All five guide workers now
+  skip merged rows.
+  ⚠️ **HONEST CAVEAT on Damon Schrosk:** re-verification produced conflicting
+  high-confidence verdicts *again* from public sources. The safe direction
+  holds (EMPLOYED → held back), but this is unresolved-by-evidence, not
+  settled; both source_urls are on the survivor for a human check.
+  **JOHN: apply migration 0024** (merged_into + status_conflict columns +
+  widened pen `kind`). Until then bookkeeping mirrors into the contact jsonb
+  and the status-conflict PEN CARD can't be written — the guide row is still
+  set UNKNOWN, so outreach stays safe. **LANE A owns the insert-time guard.**
 - 📣 LANE C 8/4 (~15:00) — **QUEUE-1 CONVERSION REPORT + a correction to the
   premise (PM asked for the number; here it is with the caveat that matters).**
   Ran your queue-1 explicitly (new `--has-channel` + `--exit-status UNKNOWN`
