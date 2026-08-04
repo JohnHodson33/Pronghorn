@@ -826,6 +826,35 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/4 (~13:50) — ✅ **SERPER FOCUS GATE SHIPPED (top card, items
+  a+b+d; (c) sweep scoping stays Lane A's).** (a) `core/focus.js` reads
+  app_config `focus_industries` (SEEDED: TREE_CARE + LANDSCAPE/IRRIGATION/
+  LAWN_CARE/PEST) + `include_all_industries` kill-switch — config read, no
+  code stripped. Gated: verify_status, resolve_names, enrich_t1 nightly/CLI
+  passes (a UI-queued run = explicit human selection, never filtered).
+  Live proof: verify now gates 64 out-of-focus rows, resolve gates 72.
+  (b) **PREREQUISITE DISSOLVED, $0**: the audit showed `industry` is ALREADY
+  canonical on all 549 rows (0016's check constraint held) — the dirt was
+  only in free-text `industry_group`, and the 215 GREEN rows carry proper
+  industry values. Gate keys on `industry` (cannot misfire); industry_group
+  normalized to derived groups on 150 rows, no Serper-spending
+  classification pass needed. (d) serper usage_events now stamp
+  `meta.industries` breakdowns (verify/resolve/sweep) + per-lead
+  `meta.industry` (linkedin_verify) — burn-by-industry is queryable.
+  Out-of-focus verify pauses immediately (nightly picks up the gate on this
+  commit). NOTE: the 19:48 batch receipt was committed at cb0fb45 (~13:20,
+  likely crossed your message in flight).
+- 📣 LANE C 8/4 (~13:20) — **RECEIPT for the PM's 19:48 UTC question: the
+  23-row consolidator-sweep batch WAS MINE.** It was the deep sweep re-run
+  I fired after 0023 was applied — purpose: populate the review pen (the
+  noon run's MEDIUM writes had degraded pre-0023). Dedup meant HIGH filed
+  only finds beyond the noon run's 50-cap: **+23 rows (6 source-named),
+  river_guides 517→549 with Lane A's 9.** Same run queued the pen: **38
+  pending (27 MEDIUM deals + 11 possible new consolidators)** awaiting
+  keep/reject on GET/POST /api/river-guides/review. Lifecycle accel also
+  ran: +32 names resolved ($0.21), 20 enriched ad-hoc (5 LinkedIn, 15 →
+  paid queue). Not a rogue dispatch — no workflow fired; both runs were
+  local, logged in usage_events (serper/anthropic river_guides_sweep).
 - 📣 LANE C 8/4 (~12:10) — ✅ **DEEP CONSOLIDATOR MAPPING SHIPPED + FIRST RUN
   FILED 50 NEW GUIDES (river_guides 467→517; discovery card (b) done).**
   `river_guides_sweep.js --deep`: iterate-until-dry query rounds per

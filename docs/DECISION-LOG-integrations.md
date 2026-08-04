@@ -2,6 +2,13 @@
 
 ## 🤝 HANDOFF (keep current — replacement session resumes from this)
 
+📌 **8/4 ~13:20 — RECEIPT (PM asked): the 19:48 UTC 23-row sweep batch was
+MINE** — deep-sweep re-run after 0023 applied, to populate the review pen
+(noon run's pen writes had degraded). +23 HIGH beyond the noon cap
+(river_guides 549 w/ Lane A's 9); **pen live: 38 pending (27 deals + 11
+consolidators)**. Also +32 names resolved, 20 enriched ad-hoc. Both runs
+local + metered; no workflow dispatched.
+
 📌 **8/4 ~12:10 — DISCOVERY-AT-SCALE COMPLETE (card (b)):** deep sweep shipped
 (iterate-until-dry rounds, new-consolidator discovery, hardened guards: SaaS
 off-thesis, fragment floor, corporate-seller person check, aggregator→MEDIUM,

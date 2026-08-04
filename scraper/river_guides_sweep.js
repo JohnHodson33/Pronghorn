@@ -271,7 +271,13 @@ async function main() {
       log.warn(`${acq}: ${err.message}`);
     }
   }
-  if (queries) await recordUsage('serper', 'river_guides_sweep', queries, queries * SERPER_COST, { kind: 'consolidator_sweep' });
+  if (queries) {
+    // burn-by-industry (8/4 focus gate, item d): which industries the queried
+    // consolidators belong to — /costs + PM-STATUS read this
+    const byInd = {};
+    for (const a of acquirers) { const k = String(meta.get(a)?.industry || 'UNKNOWN').toUpperCase(); byInd[k] = (byInd[k] || 0) + 1; }
+    await recordUsage('serper', 'river_guides_sweep', queries, queries * SERPER_COST, { kind: 'consolidator_sweep', industries: byInd });
+  }
   if (extractions) await recordUsage('anthropic', 'river_guides_sweep', extractions, extractions * HAIKU_COST, { kind: 'target_extraction' });
 
   // Two sources phrase one deal differently ("Precision Pool & Spa" vs
