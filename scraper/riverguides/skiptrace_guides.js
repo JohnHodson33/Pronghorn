@@ -132,7 +132,8 @@ async function loadEligible() {
   const { data, error } = await supabase.from('river_guides').select('*').eq('name_status', 'RESOLVED');
   if (error) throw new Error(`${error.message} — apply migration 0016 first`);
   const RANK = { NEEDS_PAID: 0, T1_DONE: 1, PENDING_T1: 2 };
-  return (data || []).filter(eligible)
+  const { notMerged } = require('../core/focus'); // merged dupes never re-trace ($0.02 each)
+  return notMerged(data || []).filter(eligible)
     .sort((a, b) => (RANK[a.enrichment_status] ?? 3) - (RANK[b.enrichment_status] ?? 3)
       || (b.screen_score ?? 0) - (a.screen_score ?? 0));
 }

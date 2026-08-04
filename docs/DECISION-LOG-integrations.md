@@ -2,6 +2,28 @@
 
 ## 🤝 HANDOFF (keep current — replacement session resumes from this)
 
+📌 **8/4 ~15:20 — 🚨 DEDUPE + STATUS RECONCILIATION (PM urgent; outreach was
+blocked).** `riverguides/dedupe_guides.js`: **20 rows merged, 1 true conflict
+reconciled, 0 residual contradictions; 549 → 529 live.** Merge never deletes —
+loser retained w/ merged_into, channels + both source_urls unioned onto the
+survivor. Serial sellers (6) deliberately KEPT: a second sale is a buy signal,
+and merging Tim Doyle's two companies would have destroyed it. Conflicts pick
+NO winner: exit_status → UNKNOWN, both claims recorded, re-verify queued.
+**Canonical outreach-ready (PM's def: verified+EXITED+email-or-phone) = 14
+(12 in-focus), zero contradictions behind it; LinkedIn-only 7 → VA queue.**
+THREE BUGS FOUND WHILE BUILDING: (1) merge chains (survivor also a loser) —
+resolved transitively; (2) acquirer variants ("LawnPro" vs "LawnPRO Partners")
+split one person, which is exactly why the PM's 3 named cases escaped a
+name+acquirer grouping — identity is now name + buyer-or-company; (3) 🔥
+**merged rows were still processed by every worker** — Damon Schrosk
+re-verified EXITED on one row and EMPLOYED on its duplicate in the SAME pass:
+the system was manufacturing contradictions and double-paying. All five guide
+workers now skip merged rows (core/focus.js `notMerged`). Also fixed a silent
+failure in my own pen write (the constraint's name contains
+"discovery_candidates", so my substring test swallowed the error).
+⚠️ Damon Schrosk remains unresolved-by-evidence (sources genuinely disagree);
+safe direction holds. **JOHN: migration 0024.**
+
 📌 **8/4 ~15:00 — QUEUE-1 RESULT + THE REAL CEILING.** PM's queue-1 (in-focus
 + named + has-channel + UNKNOWN) run explicitly: **9 processed → 4 verified →
 3 EXITED, $0.04.** The other 48 were attempt-stamped earlier today

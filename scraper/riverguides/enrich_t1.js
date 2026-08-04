@@ -90,7 +90,8 @@ async function main() {
   // FOCUS GATE (John 8/4) — nightly/CLI passes only; a UI-queued run is an
   // explicit human selection and is never silently filtered
   if (!run && guides?.length) {
-    const { loadFocus, applyFocus } = require('../core/focus');
+    const { loadFocus, applyFocus, notMerged } = require('../core/focus');
+    guides = notMerged(guides); // merged dupes never re-enrich
     const gated = applyFocus(guides, await loadFocus(), (g) => g.industry);
     if (gated.skipped) log.info(`  focus gate: ${gated.skipped} out-of-focus guide(s) skipped`);
     guides = gated.rows;

@@ -117,7 +117,8 @@ async function main() {
   // address is skiptrace fuel — target guides that still lack a phone,
   // NEEDS_PAID (the queue John named) first, then the rest by score
   const RANK = { NEEDS_PAID: 0, T1_DONE: 1, PENDING_T1: 2 };
-  const targets = (all || [])
+  const { notMerged } = require('../core/focus');
+  const targets = notMerged(all || [])
     .filter((g) => g.their_company && g.location_state && !g.contact?.phone)
     .filter((g) => retry ? g.contact?.company_address?.status !== 'FOUND'
       : !g.contact?.company_address)

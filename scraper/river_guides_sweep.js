@@ -64,9 +64,19 @@ const OFF_THESIS = /\b(line[- ]clearance|utility vegetation|resource group|distr
 // a mis-parsed release). A real business name has a real word in it — reject
 // fragments before they can file. This is a floor, not a matcher: legit short
 // brands ("TruGreen") pass; "of", "LLC", "Fair" don't.
+// A press release often DESCRIBES the target instead of naming it ("its Long
+// Island tree care business", "South Carolina and Louisiana tree care
+// companies"). Those aren't company names: they file as phantom rows that then
+// look like duplicate twins of the real one (found 8/4 during the dedupe pass).
+const DESCRIPTIVE = new RegExp([
+  '\\b(companies|businesses|business|operations|assets|locations|branches|division|divisions)\\s*$',
+  '^(certain|select|various|multiple|several|two|three|four|its|their)\\b',
+].join('|'), 'i');
+
 function plausibleCompanyName(name) {
   const n = String(name || '').trim();
   if (norm(n).length < 5) return false;
+  if (DESCRIPTIVE.test(n)) return false;
   const words = n.split(/\s+/).filter((w) => /[a-z]/i.test(w));
   if (!words.length) return false;
   // at least one word ≥4 chars containing a vowel (a real word, not an acronym fragment)
@@ -252,7 +262,11 @@ function discoverNewConsolidators(results, knownAcquirers) {
 function personShaped(name) {
   const n = String(name || '').trim();
   if (!n || n.split(/\s+/).length < 2) return false;
-  return !/\b(llc|inc|corp|company|companies|holdings|group|brands|services|pest|lawn|tree|pool|rentokil|terminix|capital|partners|equity)\b/i.test(n);
+  // collective sellers ("Swinski family", "the Ash brothers") are not a person:
+  // filing one as a RESOLVED name sends every downstream worker hunting for a
+  // human who doesn't exist (caught by the guard unit tests, 8/4)
+  if (/\b(family|families|brothers|bros|sisters|estate|trust|heirs|partners)\b/i.test(n)) return false;
+  return !/\b(llc|inc|corp|company|companies|holdings|group|brands|services|pest|lawn|tree|pool|rentokil|terminix|capital|equity)\b/i.test(n);
 }
 
 async function main() {
@@ -539,4 +553,8 @@ async function main() {
   log.info(`Sweep complete — ${ins.length} new add-on(s) filed (${batch.filter((f) => f.resolved).length} with a source-named seller, rest TBD/NEEDS_NAME)`);
 }
 
-main().catch((err) => { log.error(err.message); process.exit(1); });
+// the name guards are pure — exported so they can be unit-tested without
+// running a sweep (and so `require` of this file never fires a live run)
+module.exports = { plausibleCompanyName, personShaped, isStrongSource, sameAcquirerHost: AGGREGATOR_HOST };
+
+if (require.main === module) main().catch((err) => { log.error(err.message); process.exit(1); });
