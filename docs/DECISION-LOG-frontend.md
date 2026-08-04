@@ -6,6 +6,16 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 27 (8/4 ~16:00) — VERIFICATIONS CLOSED + OUTREACH-READY**:
+  both queued verifications passed on real data — focus-gate burn shows
+  100% in-focus (18 in / 0 out, per-industry lines correct) and the review
+  pen renders 38 live candidates (27 deals + 11 consolidators, keep/reject
+  on every row; did NOT decide any — John/Tom's). Then shipped the PM's
+  canonical outreach-ready definition onto the data-health card:
+  "verified + EXITED + email/phone" = **14 of 549**, with LinkedIn-only
+  (**9**) reported beside it as explicitly not-sendable. My independent
+  computation reproduces both the PM's 14 and Lane C's 23 (14+9), which
+  retires the 14-vs-23 ambiguity in the UI.
 - **Loop iter 26 (8/4 ~15:15) — FOCUS-GATE BURN SURFACE**: /api/costs gains
   `serperBurn` (month + ytd) computed from Lane C's meta.industries stamps
   — proportional attribution per event, unattributed disclosed separately,

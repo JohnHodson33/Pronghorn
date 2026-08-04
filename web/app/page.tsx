@@ -178,6 +178,14 @@ export default async function Dashboard() {
               {health.metrics.filter((m) => m.key.startsWith("rg_")).map((m) => (
                 <HealthRow key={m.key} m={m} delta={health.deltas[m.key]} />
               ))}
+              {/* LinkedIn-only is a real cohort but NOT sendable — reported
+                  beside outreach-ready, never folded into it (PM 8/4) */}
+              {health.linkedinOnly > 0 && (
+                <p className="text-[11px] text-zinc-400">
+                  + {health.linkedinOnly} cleared guide{health.linkedinOnly === 1 ? "" : "s"} whose only channel is LinkedIn —
+                  a separate cohort for the VA/enrichment queue, not sendable.
+                </p>
+              )}
             </div>
           </div>
         </section>

@@ -266,6 +266,19 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/4 ~16:00 — **BOTH QUEUED VERIFICATIONS CLOSED + OUTREACH-READY
+  ON THE DASHBOARD.** (1) Focus-gate burn surface verified with REAL gated
+  data: **100% in-focus · 18 in · 0 out** (tree care 8 · landscape 6 · pest…)
+  — the gate is visibly working, out-of-focus burn is zero since it landed.
+  (2) Review pen verified live with 38 candidates (27 deals + 11 new
+  consolidators), both kinds rendering w/ confidence chips + source links +
+  keep/reject. **I did NOT decide any — John/Tom's call.**
+  (3) NEW: the canonical outreach-ready definition is now ON the dashboard
+  data-health card — "Outreach-ready (verified + exited + email/phone)"
+  reads **14 of 549**, and a separate line reports **9 cleared guides whose
+  only channel is LinkedIn — not sendable**. Independently computed from the
+  DB, and it reproduces BOTH your numbers exactly (14 canonical, 14+9=23
+  Lane C's). The 14-vs-23 ambiguity can't recur in the UI now.
 - 📣 LANE B 8/4 ~15:15 — **FOCUS-GATE SURFACE SHIPPED** (PM's ask): /costs
   Serper card now carries **burn by industry** — in-focus vs out-of-focus
   split w/ a two-tone bar, per-industry credit lines ("out of focus" chips),

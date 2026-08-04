@@ -13,7 +13,7 @@ import { loadSizeModel } from "./size-model";
 
 export type MetricKey =
   | "lead_pe" | "lead_sized" | "lead_named" | "lead_channel"
-  | "rg_named" | "rg_verified" | "rg_channel";
+  | "rg_named" | "rg_verified" | "rg_channel" | "rg_outreach_ready";
 
 export type Metric = { key: MetricKey; label: string; pct: number; count: number; n: number; target: number };
 
@@ -25,18 +25,25 @@ export type DataHealth = {
   // pct-point change vs the reference snapshot (null = no reference yet)
   deltas: Partial<Record<MetricKey, number>>;
   deltaRefAt: string | null; // date of the snapshot the deltas compare against
+  // cleared-to-contact people whose only channel is LinkedIn — a real cohort
+  // for the VA/enrichment queue, deliberately NOT part of outreach-ready
+  linkedinOnly: number;
 };
 
 // PROGRAM targets (TASK-QUEUE 7/31)
 const TARGETS: Record<MetricKey, number> = {
   lead_pe: 95, lead_sized: 90, lead_named: 80, lead_channel: 60,
   rg_named: 80, rg_verified: 50, rg_channel: 60,
+  // no PROGRAM target yet — it's the end of the chain, shown for truth not scoring
+  rg_outreach_ready: 25,
 };
 
 // PM's measured 7/31 baseline (on-target n=597 / guides n=467) — seeds the
 // snapshot history so week-1 deltas compare against something real.
 const BASELINE = {
   at: "2026-07-31",
+  // rg_outreach_ready not measured on 7/31 — omitted rather than invented, so
+  // its delta stays blank until the first real snapshot
   metrics: { lead_pe: 2, lead_sized: 63, lead_named: 45, lead_channel: 23, rg_named: 61, rg_verified: 5, rg_channel: 40 } as Record<MetricKey, number>,
 };
 
@@ -86,17 +93,26 @@ export async function fetchDataHealth(): Promise<DataHealth | null> {
   // --- river guides
   type GuideRow = {
     full_name: string | null; current_status_verified: boolean | null;
+    exit_status: string | null;
     contact: { email?: string | null; phone?: string | null; linkedin_url?: string | null } | null;
   };
   const rgRes = await db.from("river_guides")
-    .select("full_name, current_status_verified, contact")
+    .select("full_name, current_status_verified, exit_status, contact")
     .limit(5000);
   const guides = (rgRes.data ?? []) as unknown as GuideRow[];
-  let rgNamed = 0, rgVerified = 0, rgChannel = 0;
+  // OUTREACH-READY IS ONE DEFINITION (PM 8/4, reconciling the 14-vs-23 split):
+  // verified + EXITED + email-or-phone. A LinkedIn URL is NOT a channel an
+  // email campaign can send to, so LinkedIn-only people are a separate cohort
+  // counted alongside — never folded into the sendable number.
+  let rgNamed = 0, rgVerified = 0, rgChannel = 0, rgReady = 0, rgLinkedinOnly = 0;
   for (const g of guides) {
     if (g.full_name) rgNamed++;
     if (g.current_status_verified) rgVerified++;
-    if (g.contact?.email || g.contact?.phone || g.contact?.linkedin_url) rgChannel++;
+    const sendable = !!(g.contact?.email || g.contact?.phone);
+    if (sendable || g.contact?.linkedin_url) rgChannel++;
+    const cleared = !!g.current_status_verified && g.exit_status === "EXITED";
+    if (cleared && sendable) rgReady++;
+    else if (cleared && g.contact?.linkedin_url) rgLinkedinOnly++;
   }
 
   const n = leads.length, gn = guides.length;
@@ -104,6 +120,7 @@ export async function fetchDataHealth(): Promise<DataHealth | null> {
     lead_pe: pctOf(pe, n), lead_sized: pctOf(sized, n),
     lead_named: pctOf(named, n), lead_channel: pctOf(channel, n),
     rg_named: pctOf(rgNamed, gn), rg_verified: pctOf(rgVerified, gn), rg_channel: pctOf(rgChannel, gn),
+    rg_outreach_ready: pctOf(rgReady, gn),
   };
 
   // --- weekly snapshots in app_config (non-fatal on any failure)
@@ -137,10 +154,12 @@ export async function fetchDataHealth(): Promise<DataHealth | null> {
     rg_named: "Guides named",
     rg_verified: "Guides exit-verified",
     rg_channel: "Guides w/ contact channel",
+    rg_outreach_ready: "Outreach-ready (verified + exited + email/phone)",
   };
   const counts: Record<MetricKey, [number, number]> = {
     lead_pe: [pe, n], lead_sized: [sized, n], lead_named: [named, n], lead_channel: [channel, n],
     rg_named: [rgNamed, gn], rg_verified: [rgVerified, gn], rg_channel: [rgChannel, gn],
+    rg_outreach_ready: [rgReady, gn],
   };
 
   return {
@@ -152,5 +171,6 @@ export async function fetchDataHealth(): Promise<DataHealth | null> {
     })),
     deltas,
     deltaRefAt: ref?.at ?? null,
+    linkedinOnly: rgLinkedinOnly,
   };
 }
