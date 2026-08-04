@@ -185,6 +185,10 @@ export async function GET() {
     .map(([project, p]) => ({ project, costUsd: round(p.costUsd), units: p.units, intakeLinked: p.intakeLinked }))
     .sort((a, b) => b.costUsd - a.costUsd);
 
+  // Serper prepaid-pack runway (sentinel — packs expire, no auto-recharge)
+  const { fetchSerperRunway } = await import("@/lib/serper-runway");
+  const serperRunway = await fetchSerperRunway(db);
+
   return NextResponse.json({
     // NEW: two windows, same breakdown each
     month: monthWindow,
@@ -192,6 +196,8 @@ export async function GET() {
     // VA per-project spend (YTD) + honest per-contact rate (intake-linked only)
     vaProjects,
     vaCostPerContact: linkedContacts ? round(linkedCost / linkedContacts) : null,
+    // prepaid-credit runway ("Serper: ~41,200 left · ~10 mo · expires …")
+    serperRunway,
     // shared context
     quotas,
     ownerContactsAcquired: owners,

@@ -2,6 +2,15 @@
 
 ## 🤝 HANDOFF (keep current — replacement session resumes from this)
 
+📌 **8/4 — BLOCKERS CLEARED + EXPLOITED (PM ping ~10:30):** Serper live (50k
+pack) + 0022 applied. Same hour: verify 25→130/467 (4×60 passes, $0.71, 4
+EMPLOYED→EXITED), +19 names resolved → +13 emails +9 LinkedIn, 0022 outcomes
+PROVEN on live run ebd16215 (label/queued_by/outcomes all serving), Serper
+runway sentinel shipped (runway line + low/expiry/runaway alerts + num<=10
+audit — leadgen num:20 was double-billing vs metering, fixed). Channel
+coverage 228/305 resolved. Remaining: ~175 unverified clear in ~3 nightlies;
+NEEDS_NAME ~160 continues at 25/night; VA invoice still unlogged (John).
+
 📌 **8/3 SESSION #4 RESUMED (PM ping; merged main — auto-integrator is live).**
 PM calibration absorbed: scope funnel claims precisely (my 7/31 "100%" was
 enriched-only; PM's 63% was of ALL on-target). SHIPPED TODAY:

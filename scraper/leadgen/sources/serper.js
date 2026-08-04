@@ -85,7 +85,11 @@ async function fetchSerperLeads(industry, geography, opts = {}, log) {
       }
     }
     if (engines.includes('serper_web')) {
-      const data = await post(key, 'search', { q: `${q} company`, num: 20 });
+      // John's 8/4 cost rule: num<=10 = 1 credit (11-100 = 2). The old num:20
+      // silently billed 2 credits while credits++ counted 1 — metering lied.
+      // (If volume ever matters more: num:100 at 2 credits is 5x results per
+      // credit vs two num:10 queries — John's call, not a silent override.)
+      const data = await post(key, 'search', { q: `${q} company`, num: 10 });
       credits++;
       for (const r of data.organic || []) {
         if (!r.link || /yelp|angi|thumbtack|houzz|facebook|bbb\.org|yellowpages|linkedin/i.test(r.link)) continue;
