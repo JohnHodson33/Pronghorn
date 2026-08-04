@@ -1,0 +1,44 @@
+# Weekly DEEP consolidator-mapping sweep (John 7/31: "finding new river guides
+# is the bottleneck… in a perfect world the site just creates that list" — his
+# bottleneck statement overrides the earlier cron hold).
+#
+# --deep: iterate query rounds per consolidator until dry (full acquisition
+# log, not a past-year top-up). --confirm: HIGH candidates auto-file (guards:
+# shared corroboration + off-thesis incl. SaaS + company-name fragment floor);
+# MEDIUM + possible NEW consolidators go to the review pen (0023) for John's
+# one-click keep/reject — writes below HIGH always stay human-gated.
+#
+# Cost ≈ 50 consolidators × up to 8 queries + extractions ≈ $0.5-0.9/run.
+name: River Guides Deep Sweep
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 14 * * 1" # Mondays 07:00 PHX
+
+concurrency:
+  group: river-guides-sweep
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: scraper
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: scraper/package-lock.json
+      - run: npm ci
+      - name: Deep sweep (HIGH auto-files, MEDIUM + new consolidators → review pen)
+        run: node river_guides_sweep.js --deep --confirm --limit 50
