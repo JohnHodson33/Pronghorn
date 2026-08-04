@@ -6,6 +6,18 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 25 (8/4 ~12:40) — DISCOVERY REVIEW PEN UI SHIPPED** (Lane C's
+  8/4 12:10 ask): new ReviewPen on /river-guides — keep/reject per
+  candidate w/ John/Tom selector, kind badges (deal vs new consolidator),
+  confidence chips, source links; keep reloads the guides list (onFiled).
+  Renders nothing when the pen is empty, one amber line pre-0023. FOUND:
+  0023 is ALREADY APPLIED (review API returns real counts, no note) — the
+  pen is empty until the next sweep re-queues the degraded MEDIUMs, so the
+  populated path ships verified-by-inspection (tsc + SSR 200 + API
+  contract match); it exercises itself on Monday's sweep cron. ⚠ Browser
+  pane fully wedged this iteration (fresh tabs time out too) — verified
+  via Invoke-WebRequest SSR checks; pane needs John to surface the app
+  window or a session restart to recover screenshots/DOM checks.
 - **Loop iter 24 (8/4 ~12:00) — SERPER SENTINEL LIVE END-TO-END**: Lane C
   shipped the data half fast (lib/serper-runway.ts, field name
   `serperRunway` — their shape won; my renderer adapted to it: runwayNote

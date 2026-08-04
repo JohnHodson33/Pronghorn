@@ -1867,3 +1867,24 @@ about a different acquirer) — correctly withheld by design.
 FOR JOHN/PM: same standing options as 7/20 — (a) greenlight --confirm to file
 the HIGHs (I'd exclude the PE-release one), or (b) I harden the guard first.
 Holding for the word.
+
+## 2026-08-04 (eve) — PM GREENLIGHT executed: sweep HIGHs FILED (9 rows, DB-verified)
+PM (new session) greenlit filing the HIGH tier. Before filing I verified the
+one HIGH I'd flagged (PE-release attribution): three independent sources —
+the platform's own site, the advising law firm, and the wire release —
+corroborate it as the platform's 12th add-on acquisition. Clean.
+`--confirm` run (fresh queries, ~$0.12): **9 HIGHs filed** — the fresh pass
+surfaced 3 more candidates clearing the same guard bar than the morning
+report (acquirer-own-site / trade-press cites). DB-verified: exactly 9 rows
+in river_guides since 19:30 UTC, source=consolidator-sweep — 8 TBD/NEEDS_NAME
+(identity worker names the human), 1 RESOLVED (seller literally named in the
+acquirer's own release). 14 MEDIUM stay UNFILED per the hard rule.
+MEDIUM source_urls for John's optional review (urls only, no names in repo):
+  https://www.marketresearchfuture.com/reports/landscaping-services-market-68321
+  https://www.facebook.com/lawnandlandscape/posts/1261269782687433/ (x2 — post is about a different acquirer; junk)
+  https://www.instagram.com/keesen_landscape/?hl=en
+  https://greenindustrylaw.com/forests-of-deals-the-rise-of-ma-in-the-u-s-tree-care-industry/
+  https://hallecapital.com/
+  https://www.facebook.com/columbusdispatch/posts/1464661532374096/
+  https://kempanderson.com/transactions/
+  https://ca.linkedin.com/in/thomascao (x4 — one profile cited for 4 deals; junk)
