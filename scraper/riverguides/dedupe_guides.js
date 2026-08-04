@@ -94,12 +94,12 @@ function pickSurvivor(rows) {
 async function main() {
   const { data: all, error } = await supabase.from('river_guides').select('*');
   if (error) { console.error(error.message); process.exit(1); }
-  // 0024 gives merged_into / status_conflict their own columns. Until John
+  // 0025 gives merged_into / status_conflict their own columns. Until John
   // applies it, the SAFETY-CRITICAL half still runs: a contradicted person
   // drops to exit_status UNKNOWN (existing column) and leaves the sendable
   // cohort immediately. Bookkeeping mirrors into the contact jsonb meanwhile.
-  const has0024 = Object.prototype.hasOwnProperty.call(all?.[0] ?? {}, 'merged_into');
-  if (!has0024) log.warn('migration 0024 not applied — writing merge/conflict bookkeeping into contact jsonb; exit_status safety fix still applies');
+  const has0025 = Object.prototype.hasOwnProperty.call(all?.[0] ?? {}, 'merged_into');
+  if (!has0025) log.warn('migration 0025 not applied — writing merge/conflict bookkeeping into contact jsonb; exit_status safety fix still applies');
   const mergedOf = (r) => r.merged_into ?? r.contact?.merged_into ?? null;
   const rows = (all || []).filter((r) => !mergedOf(r)); // already-merged stay out
 
@@ -204,7 +204,7 @@ async function main() {
     const { error: e1 } = await supabase.from('river_guides').update(patch).eq('deal_id', survivor.deal_id);
     if (e1) { log.error(`  ${survivor.deal_id}: ${e1.message}`); continue; }
     const loserNote = [loser.notes, `merged into ${survivor.deal_id} on ${new Date().toISOString().slice(0, 10)} (duplicate deal; data preserved, row retained)`].filter(Boolean).join('\n');
-    const loserPatch = has0024
+    const loserPatch = has0025
       ? { merged_into: survivor.deal_id, notes: loserNote, updated_at: new Date().toISOString() }
       : { contact: { ...(loser.contact || {}), merged_into: survivor.deal_id }, notes: loserNote, updated_at: new Date().toISOString() };
     const { error: e2 } = await supabase.from('river_guides').update(loserPatch).eq('deal_id', loser.deal_id);
@@ -223,7 +223,7 @@ async function main() {
     for (const r of c.rows) {
       const contact = { ...(r.contact || {}) };
       delete contact.verify_attempted_at; // re-verify NOW, don't wait out the rest window
-      if (!has0024) contact.status_conflict = conflict;
+      if (!has0025) contact.status_conflict = conflict;
       const patch = {
         exit_status: 'UNKNOWN',
         current_status_verified: false,
@@ -231,7 +231,7 @@ async function main() {
         notes: [r.notes, `⚠ status conflict ${new Date().toISOString().slice(0, 10)}: ${claims.map((x) => `${x.deal_id}=${x.exit_status}`).join(' vs ')} — set UNKNOWN pending re-verification (no winner picked)`].filter(Boolean).join('\n'),
         updated_at: new Date().toISOString(),
       };
-      if (has0024) patch.status_conflict = conflict;
+      if (has0025) patch.status_conflict = conflict;
       const { error: e } = await supabase.from('river_guides').update(patch).eq('deal_id', r.deal_id);
       if (e) log.error(`  ${r.deal_id}: ${e.message}`);
     }
@@ -248,7 +248,7 @@ async function main() {
     // (the exact silent-failure class this whole pass exists to kill).
     if (pErr) {
       log.warn(/kind_check/.test(pErr.message)
-        ? `  pen: status-conflict card needs migration 0024 (widened kind constraint) — the guide row IS already set UNKNOWN, so outreach is safe meanwhile`
+        ? `  pen: status-conflict card needs migration 0025 (widened kind constraint) — the guide row IS already set UNKNOWN, so outreach is safe meanwhile`
         : `  pen: ${pErr.message}`);
     }
     flagged++;
