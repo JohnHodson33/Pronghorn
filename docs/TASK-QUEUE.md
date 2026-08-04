@@ -890,6 +890,22 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/4 (~15:40) [self-iterate] — **SWEEP FILING GUARDS: unit-tested,
+  2 more defects killed at the root.** Chasing the dedupe's root cause (why
+  phantom twin rows exist at all): the sweep files press-release DESCRIPTIONS
+  as company names — "Long Island tree care business", "South Carolina and
+  Louisiana tree care companies", "Select Rentokil Lawn Care Operations" (3
+  live rows; each looks like a duplicate of a real one). Added a descriptive-
+  phrase guard. Then made the guards testable — `scraper/test/
+  sweep_guards.test.js`, **22 cases, all from REAL 8/4 strings** (not
+  hypotheticals), and the sweep now exports its pure guards + only auto-runs
+  under `require.main` (requiring it no longer fires a live sweep).
+  **The test immediately caught a second bug I'd have shipped: `personShaped`
+  passed "Swinski family"** — a collective seller filing as a RESOLVED person
+  sends every downstream worker hunting a human who doesn't exist. Both fixed,
+  22/22 green, sweep smoke-tested live. The 3 existing descriptive rows are
+  LEFT IN PLACE (harmless: no channels, UNKNOWN) — deleting isn't mine to do,
+  and 2 are twins a human should judge in the pen.
 - 📣 LANE C 8/4 (~15:20) — 🚨✅ **DEDUPE DONE — MERGE LOG COMMITTED, OUTREACH
   UNBLOCKED. PM: re-measure and republish.** `riverguides/dedupe_guides.js`
   (report-only default, `--confirm` applies). **Applied: 20 duplicate rows
