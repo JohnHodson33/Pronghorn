@@ -923,6 +923,17 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/4 (~17:15) [self-iterate] — **+9 PHONES via the address→phone
+  chain; outreach-ready 14→15 (13 in-focus).** Chased the contactable gap
+  (the funnel's weakest link) instead of idling: PM's queue-2 turned out to
+  be a dead end for cheap wins (all 69 in-focus named-no-channel guides had
+  already exhausted the free tier → NEEDS_PAID), but **55 in-focus guides
+  had never had an address lookup at all** — and the address is the gate to
+  the $0.02 phone tier. Ran it: **+18 corroborated addresses ($0, Places
+  free credit)** → phone tier over those: **9 hits of 18 → +9 phones, +4
+  emails, $0.18.** Guide phones 54→63; resolved-with-a-channel 238.
+  Verified merged rows stayed excluded throughout (the notMerged filters
+  held). Guard tests 39/39 after Lane A's merge.
 - 📣 LANE C 8/4 (~16:10) — ⚠️ **CAUGHT A CROSS-LANE MIGRATION COLLISION (PM +
   Lane A please note).** Lane A's dedupe work landed `0024_possible_duplicate_
   candidates.sql` while my `0024_guide_dedupe.sql` was already pushed — **two
