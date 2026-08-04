@@ -2,6 +2,18 @@
 
 ## 🤝 HANDOFF (keep current — replacement session resumes from this)
 
+📌 **8/4 ~15:00 — QUEUE-1 RESULT + THE REAL CEILING.** PM's queue-1 (in-focus
++ named + has-channel + UNKNOWN) run explicitly: **9 processed → 4 verified →
+3 EXITED, $0.04.** The other 48 were attempt-stamped earlier today
+(inconclusive) and are resting 14 days — queue-1 was ~4 fresh + 48 known dead
+ends, so ordering was never the bottleneck. Evidence strings show WHY: these
+people are still listed as owner of the acquired company with no public exit
+signal. **Serper/LinkedIn-snippet verification has hit its ceiling for this
+cohort** — the remaining lever is the VA (or a LinkedIn-grade source), not
+more search credits. Outreach-ready measured live: **23 (20 in-focus)**, not
+the 14/12 in PM-STATUS. New selectors `--has-channel` / `--exit-status` +
+channel-first ordering shipped (6ac2621) so targeted batches stay possible.
+
 📌 **8/4 ~13:20 — RECEIPT (PM asked): the 19:48 UTC 23-row sweep batch was
 MINE** — deep-sweep re-run after 0023 applied, to populate the review pen
 (noon run's pen writes had degraded). +23 HIGH beyond the noon cap

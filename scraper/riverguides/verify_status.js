@@ -76,13 +76,27 @@ async function main() {
   // overnight, so re-checking nightly is pure spend.
   const REST_MS = 14 * 24 * 3600e3;
   const attemptedAt = (g) => g.contact?.verify_attempted_at ? Date.parse(g.contact.verify_attempted_at) : null;
+  // TARGETED QUEUES (PM 8/4, measured): the highest credits-to-outcome cohort
+  // is "named + already has a contact channel + exit UNKNOWN" — one verify call
+  // each converts a row straight to outreach-ready if the person has exited.
+  // Default ordering would bury these behind unnamed/channel-less rows.
+  //   --has-channel            only rows with an email/phone/LinkedIn
+  //   --exit-status UNKNOWN    only rows whose exit_status is still that value
+  const hasChannelOnly = process.argv.includes('--has-channel');
+  const exitFilter = arg('--exit-status', null);
+  const hasChannel = (g) => !!(g.contact && (g.contact.email || g.contact.phone || g.contact.linkedin_url));
   // FOCUS GATE (John 8/4): Serper credits go to in-focus industries only;
   // out-of-focus rows keep their data but stop consuming verify credits
   const focus = await loadFocus();
   const { rows: inFocus, skipped: outOfFocus } = applyFocus(unverified || [], focus, (g) => g.industry);
   const guides = inFocus
     .filter((g) => { const at = attemptedAt(g); return !at || Date.now() - at > REST_MS; })
+    .filter((g) => (hasChannelOnly ? hasChannel(g) : true))
+    .filter((g) => (exitFilter ? g.exit_status === exitFilter.toUpperCase() : true))
+    // a row that already has a channel converts to outreach-ready on a single
+    // call — it outranks score even in default runs
     .sort((a, b) => (attemptedAt(a) ?? 0) - (attemptedAt(b) ?? 0)
+      || (hasChannel(b) ? 1 : 0) - (hasChannel(a) ? 1 : 0)
       || (b.screen_score ?? 0) - (a.screen_score ?? 0))
     .slice(0, limit);
   if (!guides.length) { log.info(`No unverified resolved river guides due (${outOfFocus} out-of-focus gated, rest resting after a recent attempt).`); return; }
