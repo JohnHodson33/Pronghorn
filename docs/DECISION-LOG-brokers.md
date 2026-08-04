@@ -1909,3 +1909,18 @@ aren't mine — flagging for the owner.
 Also confirming PM's reading: the 2 MEDIUM stamps on identity-worker name
 resolutions are NAME-SOURCE confidence only; the underlying DEALS remain
 HIGH-cited. Correct as read.
+
+## 2026-08-04 (late-2) — SERPER FOCUS GATE item (c) SHIPPED (Lane A's slice)
+`river_guides_sweep.js` now takes `--industries` defaulting to the focus
+allowlist (TREE_CARE + LANDSCAPE/IRRIGATION/LAWN_CARE/PEST; reads
+app_config.focus_industries once Lane C lands it, hardcoded fallback until
+then). Verified live: default = 24/50 consolidators in scope, 26 skipped
+(POOL 9, KITCHEN 5, FENCING 10, OTHER 2); `--industries POOL_SERVICES` and
+`--industries all` override exactly; `--acquirer` bypasses (naming one IS the
+explicit ask). Out-of-focus rows keep their data — the gate only stops NEW
+credit spend. Note: the sweep's own `industry` column is already canonical
+(8 clean values) — the dirty taxonomy in card (b) is `industry_group`,
+which the sweep never reads, so (c) is NOT blocked on (b).
+RESTATING for PM (answered in prior commit, may have crossed in flight):
+the 19:48 UTC 23-row batch is NOT Lane A's — one --confirm run only (19:37,
+9 rows). Forensics + DQ flags in the "PM Q&A" entry above.

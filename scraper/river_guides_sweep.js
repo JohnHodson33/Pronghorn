@@ -42,6 +42,19 @@ const LIMIT = limIdx > -1 ? Number(process.argv[limIdx + 1]) || 50 : 50;
 const acqIdx = process.argv.indexOf('--acquirer');
 const ONLY_ACQ = acqIdx > -1 ? process.argv[acqIdx + 1] : null;
 
+// SERPER FOCUS GATE (John 8/4, TASK-QUEUE item c): Serper credits are spent
+// in-focus by default — TREE_CARE primary + LANDSCAPE / IRRIGATION /
+// LAWN_CARE / PEST ancillary. Out-of-focus consolidators (pool, kitchen,
+// fencing, other) are swept only on an explicit --industries ask:
+//   --industries all                     sweep everything (old behavior)
+//   --industries POOL_SERVICES,FENCING   sweep exactly these
+// The allowlist is read from app_config key `focus_industries` when Lane C
+// lands it; this hardcoded default applies until then. --acquirer bypasses
+// the gate (naming one consolidator IS the explicit ask).
+const FOCUS_DEFAULT = ['TREE_CARE', 'LANDSCAPE', 'IRRIGATION', 'LAWN_CARE', 'PEST'];
+const indIdx = process.argv.indexOf('--industries');
+const INDUSTRIES = indIdx > -1 ? (process.argv[indIdx + 1] || '').toUpperCase() : null;
+
 // Spec §7 excludes these arms — not owner-operator sellers, so not river guides:
 // utility line-clearance, distribution/supply, engineering/consulting units
 // (Davey RESOURCE GROUP's power-transmission deals surfaced in a live sweep).
@@ -169,6 +182,30 @@ async function main() {
   const acquirersAll = [...meta.keys()].filter(Boolean); // full list = the "is a consolidator" check
   let acquirers = acquirersAll;
   if (ONLY_ACQ) acquirers = acquirers.filter((a) => a.toLowerCase() === ONLY_ACQ.toLowerCase());
+
+  // Focus gate — skip out-of-focus consolidators unless explicitly asked.
+  if (!ONLY_ACQ && INDUSTRIES !== 'ALL') {
+    let allow;
+    if (INDUSTRIES) {
+      allow = new Set(INDUSTRIES.split(',').map((s) => s.trim()).filter(Boolean));
+    } else {
+      const cfg = await supabase.from('app_config').select('value').eq('key', 'focus_industries').maybeSingle();
+      const fromCfg = cfg.data && cfg.data.value;
+      allow = new Set(Array.isArray(fromCfg) && fromCfg.length ? fromCfg : FOCUS_DEFAULT);
+    }
+    const skipped = {};
+    acquirers = acquirers.filter((a) => {
+      const ind = (meta.get(a) || {}).industry || 'UNKNOWN';
+      if (allow.has(ind)) return true;
+      skipped[ind] = (skipped[ind] || 0) + 1;
+      return false;
+    });
+    const skTotal = Object.values(skipped).reduce((x, y) => x + y, 0);
+    if (skTotal) {
+      log.info(`Focus gate: ${acquirers.length} consolidator(s) in scope [${[...allow].join(', ')}]; ` +
+        `skipped ${skTotal} out-of-focus (${Object.entries(skipped).map(([k, v]) => `${k}:${v}`).join(', ')}) — pass --industries all to override`);
+    }
+  }
   log.info(`Sweep: ${acquirers.length} consolidator(s) from DB, ${known.size} known (acquirer,company) pairs`);
 
   const DEEP = process.argv.includes('--deep');
