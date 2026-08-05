@@ -9,23 +9,31 @@
 // Degrades with an apply-0016 note until John runs the migration.
 import { NextResponse } from "next/server";
 import { hasDb, serverDb } from "@/lib/db";
+import { excludeMergedColumn, excludeMergedJsonb, selectLiveGuides } from "@/lib/guide-merge";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
   const url = new URL(req.url);
-  let q = serverDb().from("river_guides").select("*")
-    .order("screen_score", { ascending: false }).limit(1000);
   const f = (k: string) => url.searchParams.get(k);
-  if (f("band")) q = q.eq("priority_band", f("band"));
-  if (f("status")) q = q.eq("enrichment_status", f("status"));
-  if (f("industry")) q = q.eq("industry", f("industry"));
-  if (f("state")) q = q.eq("location_state", f("state"));
-  if (f("name_status")) q = q.eq("name_status", f("name_status"));
-  if (f("q")) q = q.or(`full_name.ilike.%${f("q")}%,their_company.ilike.%${f("q")}%,acquirer.ilike.%${f("q")}%`);
 
-  const { data, error } = await q;
+  // Merged-away duplicates stay in the table for provenance but must NOT show
+  // in the list — the same person appearing twice with contradictory exit
+  // status is what nearly put a still-employed person in an outreach batch.
+  const { data, error } = await selectLiveGuides<Record<string, unknown>>((variant) => {
+    let q = serverDb().from("river_guides").select("*")
+      .order("screen_score", { ascending: false }).limit(1000);
+    if (variant === "column") q = excludeMergedColumn(q);
+    else if (variant === "jsonb") q = excludeMergedJsonb(q);
+    if (f("band")) q = q.eq("priority_band", f("band"));
+    if (f("status")) q = q.eq("enrichment_status", f("status"));
+    if (f("industry")) q = q.eq("industry", f("industry"));
+    if (f("state")) q = q.eq("location_state", f("state"));
+    if (f("name_status")) q = q.eq("name_status", f("name_status"));
+    if (f("q")) q = q.or(`full_name.ilike.%${f("q")}%,their_company.ilike.%${f("q")}%,acquirer.ilike.%${f("q")}%`);
+    return q;
+  });
   if (error) return NextResponse.json({ error: `${error.message} — apply migration 0016/0017` }, { status: 503 });
 
   // page contract: contact dots read g.contact.{email,phone,linkedin_url};
