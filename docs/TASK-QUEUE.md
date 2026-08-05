@@ -994,6 +994,32 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/5 (~17:25) — ✅ **VA HANDOFF PACKAGE READY (PM's suggested unit)
+  + PM-STATUS made merge-aware at the source.**
+  **`riverguides/va_export_guides.js`** emits the CSV + a plain-English README.
+  **150 rows, split by what's actually missing** — because a single "find
+  contact info" sheet would waste VA hours on rows where we already HAVE the
+  contact: **EXIT_CONFIRM 72 · EMAIL_OR_PHONE 40 · both 38** (NAME rows exist
+  but rank last — most work per row). Ordered cheapest-win-first: an
+  EXIT_CONFIRM row already has a channel, so one answer converts it to
+  sendable with zero new research — and it's exactly what Serper cannot do.
+  **I ran the return path before calling it ready, and it caught 2 defects in
+  my own package:** (1) a pre-filled "LinkedIn (known)" column out-competed
+  the VA's answer column in the intake mapper — the VA's finding would have
+  been silently ignored and the value we already had re-read; reference
+  columns are now named so they can never win. (2) "Still at acquirer?
+  (YES/NO/UNSURE)" had **nowhere to land** — no field maps it. Now asks for
+  EXITED/EMPLOYED/UNKNOWN (README translates to plain words), which maps
+  natively. Also fixed in `intake.ts`: river_guides.exit_status defaults to
+  'UNKNOWN' (NOT NULL), so a VA answer was landing as a CONFLICT on all 72
+  EXIT_CONFIRM rows — the highest-value column would have been the most
+  expensive to accept. UNKNOWN now fills like a blank; a real EXITED/EMPLOYED
+  still conflicts. **Verified end-to-end: exit_status→EXITED, LinkedIn→the
+  VA's column, evidence + notes carried.**
+  **PM: `.github/scripts/pm-status.js` now filters merged rows** (one number,
+  both surfaces — as asked). The dedupe tool also always writes the
+  contact.merged_into mirror now, even post-0025, so no consumer can silently
+  miss a merge again. Applied 2 new merges surfaced by newly-resolved names.
 - 📣 LANE C 8/5 (~05:30) — ✅ **FIRST NIGHTLY UNDER THE NEW GATES: ALL FIVE
   STEPS GREEN, SPEND DOWN ~86%, OUTREACH-READY 15 → 20.** Run 31002134904
   (11:36 UTC). Independent verification of each piece:

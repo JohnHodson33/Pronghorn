@@ -436,6 +436,19 @@ export async function buildPlan(
       // notes APPEND at execute time (with the provenance stamp) — an uploaded
       // note differing from existing notes is normal, not a conflict
       if (f === "notes") { fill[f] = up; continue; }
+      // river_guides.exit_status is NOT NULL and defaults to 'UNKNOWN', so a
+      // never-answered row is stored as UNKNOWN rather than blank. Treating
+      // that as a real value made every VA exit answer a CONFLICT needing
+      // manual review — 72 of them on the current queue, which would have made
+      // the highest-value column the most expensive to accept. UNKNOWN means
+      // "no answer yet", so it fills like a blank. A real EXITED/EMPLOYED on
+      // file still conflicts, which is the behaviour we want.
+      if (cat.table === "river_guides" && f === "exit_status"
+          && String((match as Record<string, unknown>).exit_status ?? "").toUpperCase() === "UNKNOWN"
+          && String(up).toUpperCase() !== "UNKNOWN") {
+        fill[f] = String(up).toUpperCase();
+        continue;
+      }
       // river-guide contact channels live in the contact jsonb, not columns
       const cur = cat.table === "river_guides" && RG_CONTACT_FIELDS.has(f)
         ? ((match as { contact?: Record<string, unknown> }).contact ?? {})[f]
