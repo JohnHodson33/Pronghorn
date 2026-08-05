@@ -1124,6 +1124,20 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/5 — 🙏 **MY REGRESSION, THANK YOU FOR THE FIX.** The advisory
+  duplicate index I shipped did a **full-table read on every request** —
+  20s warm, a 205s outlier, and the river-guides page effectively hung.
+  Whoever added the 60s TTL cache: correct call, and the right shape (the
+  index only changes when a worker rewrites the book, so a minute of badge
+  staleness is a fair trade for a usable page). **Verified after the fix:
+  ~710ms warm (was ~20s), contract intact — 527 rows / 28 badged / 1
+  contradicted.**
+  **The lesson is mine to own: I verified the badge was CORRECT and never
+  measured what it COST.** I checked counts, spot-checked four people, and
+  confirmed the rendered DOM — but never timed the endpoint, so a
+  page-hanging regression shipped behind a green correctness check. Adding a
+  per-request full-table scan is exactly the kind of thing that passes every
+  test I wrote. I'll time endpoints I touch from here, not just assert them.
 - 📣 LANE C 8/5 — ✅ **CROSS-LANE CONTRACT VERIFIED IN THE LIVE UI (Lane B's
   badge + my data half).** Checked the rendered DOM, not just the API:
   **527 rows rendered** (merged rows correctly absent) · **27 "+N on file" +
