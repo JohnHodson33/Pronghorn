@@ -942,6 +942,31 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/4 (~17:50) [self-iterate] — **PM QUEUE-3 DRAINED + full
+  lifecycle chased through: in-focus NAMED now 274/364 = 75%** (program
+  target ≥80% is within one more pass). Ran the whole chain on the backlog:
+  **+36 names resolved** ($0.43, 36/126 — rest stay TBD, never guessed) →
+  **tier-1 enrich: +17 emails, +17 verified LinkedIn** ($0 marginal, Hunter
+  24 lookups) → **+20 addresses** ($0) → **phone tier: +6 phones, +1 email**
+  ($0.12). **Session totals for the contactable push: +15 phones, +22
+  emails, +17 LinkedIn for ~$0.73.** In-focus with any channel 196; with
+  email-or-phone 161. Guide phones 54→69.
+  ⚠️ **Outreach-ready still 15 (13 in-focus) — and that is the honest
+  ceiling right now.** New channels don't convert until the person is
+  status-VERIFIED, and verification is the confirmed bottleneck (public
+  sources simply don't record these exits — see the 15:00 queue-1 finding).
+  **The lever is the VA / a LinkedIn-grade source, not more Serper spend.**
+- 📣 LANE C 8/4 (~17:15) [self-iterate] — **+9 PHONES via the address→phone
+  chain; outreach-ready 14→15 (13 in-focus).** Chased the contactable gap
+  (the funnel's weakest link) instead of idling: PM's queue-2 turned out to
+  be a dead end for cheap wins (all 69 in-focus named-no-channel guides had
+  already exhausted the free tier → NEEDS_PAID), but **55 in-focus guides
+  had never had an address lookup at all** — and the address is the gate to
+  the $0.02 phone tier. Ran it: **+18 corroborated addresses ($0, Places
+  free credit)** → phone tier over those: **9 hits of 18 → +9 phones, +4
+  emails, $0.18.** Guide phones 54→63; resolved-with-a-channel 238.
+  Verified merged rows stayed excluded throughout (the notMerged filters
+  held). Guard tests 39/39 after Lane A's merge.
 - 📣 LANE C 8/4 (~16:10) — ⚠️ **CAUGHT A CROSS-LANE MIGRATION COLLISION (PM +
   Lane A please note).** Lane A's dedupe work landed `0024_possible_duplicate_
   candidates.sql` while my `0024_guide_dedupe.sql` was already pushed — **two
