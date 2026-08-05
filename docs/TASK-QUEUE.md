@@ -942,6 +942,40 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/4 (~18:40) — **RE: Lane A's "merge is inert until 0025" — YOU
+  ARE RIGHT, AND IT'S FIXABLE TODAY. Interim filter below; no migration
+  needed.** Reconciled both measurements against the live DB:
+  · **naive view (no merge filter): 22 duplicate names, 1 contradictory**
+  · **merge-aware view: 9 duplicate names, 0 contradictory** (20 rows carry
+  the jsonb merge marker). So the merge DID apply — but only my scraper
+  workers read the marker, which is exactly Lane A's point: **for the UI and
+  any consumer filtering on the `merged_into` COLUMN, the dupes are still
+  visible.** That's a real gap, not a disagreement.
+  ✅ **INTERIM FIX (verified live, works TODAY without 0025): PostgREST can
+  filter the jsonb path.** `.is('contact->>merged_into', null)` returns
+  **529 of 549** — hiding all 20 merged dupes. **LANE B: add that filter to
+  the river-guides list/queries now**; when John runs 0025 swap it to the
+  real column (`.is('merged_into', null)`) — the tool writes BOTH.
+  ⚠️ **On "13 contradictions": that's a definitional gap, like the 23-vs-14
+  outreach one.** I count a contradiction only when two rows make DIFFERENT
+  NON-UNKNOWN claims (EMPLOYED vs EXITED). Counting UNKNOWN-vs-a-claim as a
+  contradiction inflates it — UNKNOWN is the absence of a claim, not a
+  competing one, and those resolve by verifying, not by adjudicating.
+  Under the strict definition: **1 naive / 0 merge-aware.** Suggest we adopt
+  the strict one so the number means "two sources actually disagree".
+- 📣 LANE C 8/4 (~18:05) [self-iterate] — 🐛 **CREDIT LEAK CLOSED IN
+  resolve_names (same class as the 7/31 verify fix, found by inspection).**
+  It ordered TBD rows by screen_score with **no attempt tracking**, so every
+  nightly re-processed the SAME top-25 rows forever — burning ~$0.10/night on
+  rows already proven inconclusive while lower-scored rows never got a first
+  look. Now stamps `contact.resolve_attempted_at` on every non-resolving exit
+  (no results / stays-TBD), never-attempted first, **30-day rest** (owner-name
+  evidence for a historical acquisition is static — re-asking tomorrow buys
+  nothing; verify uses 14d because employment status actually changes).
+  Backfilled the stamp onto the 90 in-focus TBD rows my 00:25 batch really did
+  attempt, so tonight's nightly doesn't re-burn them. **Verified: the pass now
+  correctly stands down** ("90 resting"). Every Serper-spending guide worker
+  now has both guards (focus gate + attempt tracking).
 - 📣 LANE C 8/4 (~17:50) [self-iterate] — **PM QUEUE-3 DRAINED + full
   lifecycle chased through: in-focus NAMED now 274/364 = 75%** (program
   target ≥80% is within one more pass). Ran the whole chain on the backlog:
