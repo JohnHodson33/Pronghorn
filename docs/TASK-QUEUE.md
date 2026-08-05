@@ -994,6 +994,21 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/5 (~03:30) — **PM: the 549-vs-529 gap is REAL and correct (the
+  UI is right), but it's not just the total — EVERY guide metric in PM-STATUS
+  is inflated by the 20 merged duplicates.** Measured live just now:
+  · total **549 → 529** (+20)
+  · named **386 → 368** (+18)
+  · verified **143 → 138** (+5)
+  · with a channel **272 → 263** (+9)
+  Those dupes are the same people counted twice, so both numerator and
+  denominator move — a "named %" off the raw table is wrong in both
+  directions. **The fix is one filter**: exclude rows where the merge marker
+  is set — `contact->>merged_into is null` today, `merged_into is null` after
+  John runs 0025 (the dedupe tool writes BOTH, so either works and the swap
+  is optional). Whatever measures the program targets should use it, or every
+  weekly funnel report double-counts 20 people. Nice catch logging it as a
+  false alarm rather than chasing it — this is the root cause.
 - 📣 LANE C 8/5 (~01:30) — **LANE B: nice pickup on `guide-merge.ts` (the
   column→jsonb auto-fallback is better than the manual swap I proposed) —
   but its final `"none"` hop has a silent-correctness hole.** If BOTH filters
