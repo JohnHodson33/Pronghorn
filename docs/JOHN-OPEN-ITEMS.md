@@ -1,77 +1,67 @@
 # Pronghorn — open items for John
-_Rewritten 7/16 ~16:10 · Single source of truth for everything awaiting you.
-Ask "what's open?" anytime._
+_Rewritten 8/5 10:20 by PM (prior version was 7/16 and badly stale) · Single
+source of truth for everything awaiting you. Ask "what's open?" anytime._
 
-## ⏳ ON YOU (short — most of the list cleared today)
-1. **Send Robert the invite — Tue 7/21, 2–4pm PT (AAFE).** He replied 7/15
-   22:56: *"Hi John, anytime Tue works great"* (still UNREAD in your inbox);
-   your offered window was Tue 2–4pm PT and that slot is **free** on your
-   calendar (only a Kemp Anderson intro at 10:30am that day). Robert
-   Fahrenhorst · robert@peregrine-advisors.com · 714-261-1149. **The IOI is
-   drafted AFTER this call — target Wed 7/22.** Say "draft it" once the call
-   is done and the PM produces it from the CIM.
-2. **Tom** — still awaiting his first login/feedback + his Notion token
-   (docs/NOTION-CONNECT.md is his guide).
+## ⏳ ON YOU — 2 REAL ITEMS
 
-## ⏸️ PARKED BY JOHN (7/16 — do not resurface until he raises them)
-- **5 sample outreach drafts** (/improvements card 611290ff) → auto-drafting
-  stays PAUSED until reviewed. Nothing sends regardless.
-- **Repo public → private** (PM recommendation stands: private + ~$30 Actions
-  spending limit; river-guide seed data is 232 named private individuals and
-  the repo is world-readable today). Parked at John's direction.
-- **VA hire** ($6/hr Upwork; cohort-validated ~80-85%). The NEEDS_PAID queue
-  is now 40+ named guides — the ready-made first assignment when he wants it.
+### 1. 🚨 RUN TWO SQL FILES — this is BLOCKING the outreach list
+Supabase SQL editor, **0024 first, then 0025** (both are order-safe, but run
+them in that order):
+- `supabase/migrations/0024_possible_duplicate_candidates.sql`
+- `supabase/migrations/0025_guide_dedupe.sql`
 
-## ✅ DEAL DESK (current as of 7/16 16:10)
-- **All American Fence Erectors** (fencing, $5.4M rev / $1.9M AEBITDA @35%):
-  stage CIM Received. **Q&A call w/ Robert (Peregrine) Tue 7/21 2–4pm PT —
-  needs John's invite. IOI drafted after the call, target Wed 7/22.**
-  (Corrected 7/16: the old "IOI due 7/17" was wrong.)
-- **Landmark Pest Management**: IOI submitted 7/10 ($41–45M); follow-up in
-  Key Actions.
-- **Project Lifeline — Odulaire**: ⛔ **PASSED 7/16 (John: not pursuing)** —
-  moved off the pipeline board; findable on /deals forever.
-- **Tree Service (FCBB)**: CIM received, ready-to-promote in Key Actions.
+WHY IT MATTERS: the consolidator sweep was filing a second row for a company
+already in the book, so the same person exists twice with **contradictory exit
+status** — 22 duplicated names live right now, and **3 of them sit inside the
+20 "outreach-ready" people** (Steve Stanley, Dan Mello, Scott Emery). Without
+these columns the fix cannot run: we'd be emailing someone as a fresh exit
+while our own data says they still work for the acquirer — the exact "burn
+more leads than it helps" failure. The code is written and merged; it is inert
+until the columns exist. The website already hides the dupes at read time
+(that's why the site shows 529 guides and PM-STATUS says 549) — but the
+underlying rows, and the contradiction, are still there.
 
-## 🟡 TWO SMALL DECISIONS (Lane A raised; no rush)
-1. **Weekly cron the river-guides consolidator sweep (~$0.17/run)?** It's live
-   and PM-verified (26 new deals filed 7/16, river_guides 434→460; 0 integrity
-   violations — files DEAL only, identity worker names the human, verbatim
-   guard makes fabrication structurally impossible, unit-tested 11/11). Today
-   it needs a manual --confirm. Cron-ing it means unattended writes — safe
-   given the guard, but your call. PM recommends yes (weekly).
-2. **16 MEDIUM-confidence candidates were found but deliberately NOT written**
-   (every past defect came from a MEDIUM source — aggregator profiles, an FB
-   post, an irrigation-board PDF). They're confirmable by a human from their
-   source_urls. Want them surfaced somewhere reviewable, or leave them out?
+### 2. 📝 RIVER-GUIDE OUTREACH TEMPLATE — co-develop with me
+**20 people are outreach-ready (18 in your focus industries) and blocked only
+on approved copy.** Your read on the old auto-drafts was that they'd "burn
+more leads than it helps," and I agree — so I'm not generating another one
+cold. All I need to start: **the one email you'd actually send to Dan Mello
+tomorrow, even two rough sentences.** I'll build the template around your
+voice (short, peer-to-peer, one concrete fact per guide, equity-not-fees),
+bring you a redline, and nothing sends until you sign off.
 
-## 💡 TIMELY INTEL (PM surfaced 7/16 eve — your call whether to act)
-- **Pool Troopers sellers = a second-liquidity-event cluster, right now.**
-  Lane A's consolidator sweep independently caught that **SPS PoolCare
-  acquired Pool Troopers in Jan 2026**. We already have **24 Pool Troopers
-  sellers seeded as river guides** — and their 2021 sellers (e.g. Jake & Lee
-  Su, Rolan Richard, both already EXITED + CALL_NOW) likely just had a SECOND
-  exit when their acquirer sold. The river-guides research spec flagged this
-  exact scenario as prime timing: a founder who sold, rolled equity, and just
-  got a second bite is liquid, proven, and thinking about what's next. If you
-  want, PM can prioritize the Pool Troopers cluster for status-verification +
-  enrichment ahead of the rest. Filter: /river-guides → search "Pool Troopers".
+## 🟡 WORTH A DECISION WHEN YOU HAVE A MINUTE
+- **The VA hire is now the highest-leverage unblock.** Lane C proved Serper
+  has hit its ceiling on status verification for the current cohort (of 52
+  "one call away" rows, 48 were already-attempted inconclusives; only 3 new
+  exits came back). **126 named guides sit in the paid/VA queue.** The $6/hr
+  Upwork hire you parked is the remaining lever for converting them.
+- **16 MEDIUM-confidence sweep candidates** are deliberately unfiled (every
+  past data defect came from a MEDIUM source). They're human-confirmable from
+  their source URLs — want them in the review pen, or left out?
 
-## 🔎 RUNNING FOR YOU (no action needed)
-- **River guides**: 434 seeded · tree-care tier-1 done (37 emails, 21
-  verified LinkedIns, 71% hit) · 40+ escalated to NEEDS_PAID (the VA queue) ·
-  16 status-verified. Page now shows real Email/Phone/LinkedIn columns, live
-  run progress, clickable run history, cost-before-click.
-- **Broker coverage** 28% → 39.4% (8,651 listings linked; 1,652 brokers).
-- **Nightly scrape CI**: fixed (Node 20→22) — self-driving again.
-- **Migrations 0004–0018**: ALL applied. No SQL asks outstanding.
+## ✅ RUNNING FOR YOU (no action needed)
+- **Serper focus gate is LIVE** (your 8/4 narrowing): tree care primary;
+  landscape, irrigation, lawn care, pest ancillary. First full nightly under
+  the gate spent **100% in-focus** — attributed burn shows 0 out-of-focus
+  units. Yesterday 1,539 credits; today 406 by 10am. Nothing was deleted —
+  out-of-focus rows keep their data and one config flag re-widens it.
+- **Broker asking-price coverage**: southernmergers 4%→79%, and it passed its
+  first unattended nightly. Tupelo/DealRelations fixes from 8/3 holding.
+- **Deal desk**: AAFE Passed (franchise ROFR + EBITDA quality) · Landmark IOI
+  submitted · Monster Tree + NatureScapes at CIM Received.
+- Nightly scrape, river-guides workers, leadgen, outlook sync, auto-integrator
+  and the 6-hourly PM watchdog all green on CI — they survive a dead session.
 
-## ⚠️ WATCH (PM tracking, no action needed)
-- **Outlook sync was failing all day 7/16** (fixed ~22:15 by Lane C's token
-  store) — which is why Robert's reply never reached the CRM on its own.
-  Queued to Lane C: sync-failure alerting + scheduling-intent detection so
-  the next "anytime Tue works" becomes a Key Actions card automatically.
+## 📊 THE NUMBERS (PM-verified against the DB 8/5 10:15, not lane self-reports)
+- Funnel: PE-status **100%** ✅ · sized **100%** ✅ · owner named **47%**
+  (target 80%) · owner contactable **28%** (target 60%) · n=536.
+- River guides: 549 rows / 529 after dedupe-at-read · 386 named · 169
+  verified · **20 outreach-ready (18 in-focus)** · 126 in the VA queue.
+- Serper: 48,055 credits left. The "~40 days" on PM-STATUS is a trailing
+  average that predates the gate — real runway is materially longer and I'll
+  republish once a full week of gated burn is in.
 
 ## Communication note (standing)
-If a chat reply seems missing/truncated, say "resend" — substantive state
-always lives here + MORNING-BRIEF.md.
+If a chat reply seems missing or truncated, say "resend" — substantive state
+always lives here and in PM-STATUS.md.

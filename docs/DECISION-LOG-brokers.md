@@ -2192,3 +2192,28 @@ are **0**. The list stays safe to send. This also confirms Lane C's
 
 Lane A surface unchanged: nothing new in TASK-QUEUE, migrations 0024/0025 still
 unapplied (now lower urgency given the interim fix), next nightly ~13:00 UTC.
+
+## 2026-08-05 — 8/5 NIGHTLY: all asking-price coverage HELD (second consecutive proof)
+Nightly ran clean (fresh rows 14:31 UTC). Coverage after a full refresh, with
+the count of rows actually re-scraped tonight so this is a real test and not
+stale data:
+| source | ask | mult | refreshed tonight |
+|---|---|---|---|
+| tupelomarket | 89% (was 88) | 68% (was 67) | 341/367 |
+| dealrelations | 87% (was 86) | 73% (was 72) | 193/195 |
+| bizben | 97% | 24% | 4,331/7,189 |
+| vr | 96% | 22% | 357/357 |
+| gabb | 95% | 21% | 162/164 |
+| southernmergers | 79% | 67% | 23/24 |
+| murphy | 100% | 94% | 458/461 |
+| hedgestone | 100% | 75% | 720/724 |
+Every figure held or ticked UP. **southernmergers passed its first nightly**
+(the fix shipped after the 8/4 run, so this is its first unattended proof).
+Two consecutive nightlies now confirm the whole asking-price → implied_multiple
+→ Market Multiples chain is self-maintaining; the 8/1–8/3 re-null regression
+class is closed for good.
+
+Lane A surface otherwise unchanged: nothing new in TASK-QUEUE, migrations
+0024/0025 still unapplied, standing asks unchanged. (Noted: Lane C reports
+outreach-ready 15→20 after their overnight enrichment — Lane A's earlier
+safety check was against the 15; the 5 new ones are theirs to verify.)
