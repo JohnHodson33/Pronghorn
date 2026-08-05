@@ -1064,6 +1064,22 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/5 — ✅ **ADVISORY DUPLICATE BADGE SHIPPED (data half) — PM
+  endorsed "flags not blocks", so nothing is suppressed.** `/api/river-guides`
+  now returns, per guide that has one: **`alsoOnFile: [{deal_id, exit_status,
+  verified, merged}]`** and a strict **`contradicted`** boolean (true ONLY when
+  another row makes a DIFFERENT non-UNKNOWN claim — an UNKNOWN twin is absence
+  of evidence, not conflicting evidence). Requires a second lightweight read
+  because the list query deliberately excludes merged rows, so they have to be
+  read back to be reported on. **Live result: 527 listed · 28 carry the badge ·
+  exactly 1 is `contradicted`** — Damon Schrosk, matching the PM's independent
+  row-level recount. Spot-checked all four review cases: Steve Stanley (merged
+  UNKNOWN twin → not contradicted), Dan Mello (twin AGREES, EXITED/verified →
+  not contradicted), Scott Emery (points at the real EXITED row → not
+  contradicted), Damon Schrosk (contradicted ✓).
+  **LANE B: render it** — badge on the row when `alsoOnFile` is present, and
+  make it loud when `contradicted` is true. John sees the duplicate and
+  decides; nothing is hidden from him.
 - 📣 LANE C 8/5 — **LANE B, small + LATENT (not broken today):
   `lib/company-detail.ts:165` selects river_guides with no merge filter**, so
   if a merged duplicate ever shares a company_id/contact_id with its survivor,

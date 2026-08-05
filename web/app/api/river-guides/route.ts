@@ -36,12 +36,48 @@ export async function GET(req: Request) {
   });
   if (error) return NextResponse.json({ error: `${error.message} — apply migration 0016/0017` }, { status: 503 });
 
+  // ADVISORY duplicate flag (John's rule: flags inform, they never block).
+  // A person can have another row on file — usually a merged-away duplicate,
+  // sometimes a genuine second sale. That is worth SEEING before you call
+  // someone; it is not grounds for hiding them. The 8/5 review confirmed only
+  // one person book-wide is actually contradicted (differing non-UNKNOWN
+  // claims), so suppressing every twin would have cost real leads to guard a
+  // danger that mostly isn't there.
+  const nameKey = (s: unknown) => String(s ?? "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const byPerson = new Map<string, { deal_id: string; exit_status: string; verified: boolean; merged: boolean }[]>();
+  {
+    // separate lightweight pass: the list query deliberately EXCLUDES merged
+    // rows, so they have to be read back to be reported on
+    const { data: allRows } = await serverDb().from("river_guides")
+      .select("deal_id, full_name, exit_status, current_status_verified, contact").limit(5000);
+    for (const r of (allRows ?? []) as Record<string, unknown>[]) {
+      const k = nameKey(r.full_name);
+      if (!k) continue;
+      if (!byPerson.has(k)) byPerson.set(k, []);
+      byPerson.get(k)!.push({
+        deal_id: String(r.deal_id),
+        exit_status: String(r.exit_status ?? "UNKNOWN"),
+        verified: !!r.current_status_verified,
+        merged: !!(r.contact as { merged_into?: string } | null)?.merged_into,
+      });
+    }
+  }
+
   // page contract: contact dots read g.contact.{email,phone,linkedin_url};
   // canonical storage is the flat columns (0017) — synthesize when absent
-  const guides = (data ?? []).map((g: Record<string, unknown>) => ({
-    ...g,
-    contact: g.contact ?? { email: g.email ?? null, phone: g.phone ?? null, linkedin_url: g.linkedin_url ?? null },
-  }));
+  const guides = (data ?? []).map((g: Record<string, unknown>) => {
+    const others = (byPerson.get(nameKey(g.full_name)) ?? []).filter((r) => r.deal_id !== String(g.deal_id));
+    // CONTRADICTED = another row makes a DIFFERENT non-UNKNOWN claim. An
+    // UNKNOWN twin is absence of evidence, not conflicting evidence.
+    const mine = String(g.exit_status ?? "UNKNOWN");
+    const contradicted = mine !== "UNKNOWN"
+      && others.some((r) => r.exit_status !== "UNKNOWN" && r.exit_status !== mine);
+    return {
+      ...g,
+      contact: g.contact ?? { email: g.email ?? null, phone: g.phone ?? null, linkedin_url: g.linkedin_url ?? null },
+      ...(others.length ? { alsoOnFile: others, contradicted } : {}),
+    };
+  });
   const countBy = (key: string) =>
     guides.reduce((m: Record<string, number>, g: Record<string, unknown>) => {
       const v = String(g[key] ?? "—"); m[v] = (m[v] ?? 0) + 1; return m;
