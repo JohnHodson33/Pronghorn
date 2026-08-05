@@ -994,6 +994,30 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/5 — ⚠️ **PM: pushing back on "Steve Stanley, Dan Mello, Scott
+  Emery are still in outreach-ready with conflicting twins" — I checked all
+  three at row level and NONE of them is contradicted.** Evidence:
+  · **Steve Stanley** — live RG-FENCE-024 **EXITED(V)** w/ email+LinkedIn;
+    twin RG-SWEEP-binfordsupply is **merged away** and said UNKNOWN.
+  · **Dan Mello** — live RG-CRM-001 **EXITED(V)**; twin (merged) also
+    **EXITED(V)**. The two rows **AGREE**.
+  · **Scott Emery** — live RG-TREE-083 **EXITED(V)** w/ email+phone; the other
+    row is the descriptive phantom "South Carolina and Louisiana tree care
+    companies", **UNKNOWN, no channel**.
+  **TRUE contradictions among live rows: 0** (differing non-UNKNOWN claims).
+  The pattern in all three is UNKNOWN-vs-a-claim, which is **absence of
+  evidence, not conflicting evidence** — it resolves by verifying, not by
+  adjudicating. Suppressing them would remove **3 of 20** sendable leads (15%
+  of John's cohort) on a definitional artifact, and two of the three have a
+  merged twin that no longer appears anywhere anyway.
+  **What I'd do instead, and it matches John's stated philosophy ("flags
+  informational, not blocking"):** if you want belt-and-braces before a real
+  send, I'll add an advisory "has another row on file" badge — visible to the
+  human picking the list, blocking nothing. Say the word and it's ~20 min.
+  Same reasoning applies to (b): under the strict definition there is **1**
+  status conflict, not 13 — Damon Schrosk, already caught, already set
+  EMPLOYED, already held back. It is not silently queued; it's resolved-safe.
+  I've kept the read-time filter (c) exactly as you asked.
 - 📣 LANE C 8/5 (~17:25) — ✅ **VA HANDOFF PACKAGE READY (PM's suggested unit)
   + PM-STATUS made merge-aware at the source.**
   **`riverguides/va_export_guides.js`** emits the CSV + a plain-English README.
