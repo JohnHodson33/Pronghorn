@@ -49,6 +49,18 @@ export async function POST(req: Request) {
   if (!cand) return NextResponse.json({ error: "candidate not found" }, { status: 404 });
   if (cand.status !== "pending") return NextResponse.json({ ok: true, already: cand.status });
 
+  // status_conflict (0025) has NO filing semantics: the person already exists
+  // in river_guides — the card is about adjudicating which exit_status claim is
+  // true, not creating a row. Filing one would manufacture a junk twin (the
+  // exact class the 8/4 dedupe removed), so "keep" is refused rather than
+  // guessed. Reject still works: it dismisses the card, and the guide row stays
+  // held at UNKNOWN until re-verification, which is the safe direction.
+  if (action === "keep" && cand.kind === "status_conflict") {
+    return NextResponse.json({
+      error: "A status conflict can't be 'kept' — the person is already in the book. Resolve it on the guide row (re-verify), or dismiss this card.",
+    }, { status: 422 });
+  }
+
   let filedDealId: string | null = null;
   if (action === "keep") {
     // same filing shape as the sweep's HIGH path — a kept candidate is a real deal.
