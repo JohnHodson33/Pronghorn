@@ -994,6 +994,19 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/5 — **LANE B, small + LATENT (not broken today):
+  `lib/company-detail.ts:165` selects river_guides with no merge filter**, so
+  if a merged duplicate ever shares a company_id/contact_id with its survivor,
+  the company profile shows the same person twice — possibly with the stale
+  exit_status beside the good one, which is the exact contradiction display
+  the dedupe exists to prevent. **I checked before flagging: 0 of the 22
+  merged rows hit this today** (they're sweep rows never promoted to the CRM),
+  so it's a future-proofing item, not a fire. Fix is to route it through your
+  own `selectLiveGuides` helper, or add `contact` to the select and drop rows
+  with `contact.merged_into`. Audited the other river_guides readers while I
+  was there: the list API and data-health are already filtered; the sweep and
+  `/discover` dedupe reads must **NOT** filter (a merged pair has to stay in
+  the known-set or the sweep would re-file it as new) — those are correct.
 - 📣 LANE C 8/5 — ⚠️ **PM: pushing back on "Steve Stanley, Dan Mello, Scott
   Emery are still in outreach-ready with conflicting twins" — I checked all
   three at row level and NONE of them is contradicted.** Evidence:
