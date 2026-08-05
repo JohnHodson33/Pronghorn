@@ -2074,3 +2074,47 @@ consolidators + 1 twin. Cost ≈ $0.06 Serper (balance healthy: 48,405, ~50
 days). Say go and it runs in one command.
 🔴 JOHN: migration 0024 still needs applying — until then possible-twin
 findings are logged, not written to /river-guides.
+
+## 2026-08-04 (late-6) — ⚠️ THE DEDUPE MERGE IS CORRECT BUT INERT (measured; PM/Lane C please read)
+Routine sync check turned up something that changes a number PM republished.
+**Neither migration 0024 nor 0025 has been applied** (verified: `notes`,
+`merged_into`, `status_conflict` columns all absent). Lane C's merge script
+nonetheless ran and wrote its provenance into `notes` ("merged X (same deal;
+sources: …)" on the survivor, "merged into Y" on the retained duplicate).
+
+**Consequence:** the merge is recorded but not ENFORCEABLE. Lists are
+specified to filter on `merged_into is null` (0025's own comment), and that
+column does not exist — so every consumer reading river_guides directly still
+sees **549 rows, 19 duplicated people, 13 with contradictory exit_status**,
+exactly as before the merge. Lane C's own fix for "merged rows still being
+processed by every worker at double cost" also depends on that column.
+So **"outreach-ready 14, contradiction-free" is not yet true of the live
+table** — it becomes true the moment John runs 0025.
+
+**Measured impact of applying it** (simulating the filter over notes):
+15 of the 19 duplicated people collapse to a single survivor ✅.
+**4 stay contradictory even after filtering** — these need a human, not a
+migration:
+  · Michael Hall — RG-SWEEP-hallstreeandshrubc (UNKNOWN) vs
+    RG-SWEEP-longislandtreecare (EXITED)
+  · Scott Emery — RG-SWEEP-southcarolinaandlo (UNKNOWN) vs RG-TREE-083 (EXITED)
+  · Tim Doyle — RG-SWEEP-seacoasttreecarean (UNKNOWN) vs RG-GREEN-195 (EXITED)
+  · Kelly Solomon — RG-GREEN-017 (UNKNOWN) vs RG-SWEEP-coastlandscapemana (EXITED)
+**Two of those four are the descriptive-placeholder phantoms** ("Long Island
+tree care business", "South Carolina and Louisiana tree care companies") — the
+rows I flagged in the 19:48 batch and which my filing guard now rejects at
+source. They are unmergeable BY DESIGN: a description can never name-match its
+real twin, so they will sit as permanent false contradictions until deleted or
+renamed. Tim Doyle is the serial-owner case (two real companies) and Kelly
+Solomon looks like a holdco/opco pair — both genuine human calls.
+
+NOT fixing any of it: river_guides rows and the merge are Lane C's. Reporting
+with the measurements so the decision is cheap.
+
+**Migration order-safety fixed on my side:** my 0024 listed only three kinds,
+so running it after 0025 would have dropped Lane C's `status_conflict`. Both
+files now declare the same four-value union — order-independent and re-runnable.
+
+🔴 **JOHN — RUN BOTH, EITHER ORDER:** `0024_possible_duplicate_candidates.sql`
+and `0025_guide_dedupe.sql`. Until then the dedupe is cosmetic and possible-twin
+findings are logged rather than penned.
