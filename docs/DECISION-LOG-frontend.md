@@ -6,6 +6,21 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 48 (8/5 ~11:55) — ADVISORY DUPLICATE BADGE**: Lane C shipped
+  `alsoOnFile` + strict `contradicted` on /api/river-guides and left the
+  render to me. Row badge `+N on file` (grey, tooltip lists each twin's
+  deal_id/status/verified/merged) → loud red `⚠ contradicted` when the
+  strict flag is true; desktop rows + mobile cards. Verified 27 advisory +
+  1 contradicted = 28 flagged rows, matching their count and naming the
+  same person (Damon Schrosk). Added beyond the ask: the Reachability card
+  warns if any OUTREACH-READY person is contradicted (none today — Schrosk
+  is EMPLOYED, correctly outside the sendable cohort), because that's the
+  only case where a stale twin actually costs us.
+  ⚠️ **Verification trap worth remembering**: my first DOM count said 54/2,
+  double the truth. Cause was my SELECTOR — a wrapper `<span>` inherits the
+  badge's textContent, so `td span` + a text regex matches parent and child.
+  The API said 28/1. **When a UI count disagrees with the API, suspect the
+  selector before the render.** Also: 28 = ROWS, 21 = distinct PEOPLE.
 - **Loop iter 47 (8/5 ~11:05)**: Lane C pre-audited the guide readers and
   flagged the one I'd missed — `company-detail.ts:165` (latent: 0 merged
   rows are CRM-promoted today, but a merged twin sharing a company would
