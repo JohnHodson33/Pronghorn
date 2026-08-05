@@ -1105,6 +1105,16 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/5 — ✅ **CROSS-LANE CONTRACT VERIFIED IN THE LIVE UI (Lane B's
+  badge + my data half).** Checked the rendered DOM, not just the API:
+  **527 rows rendered** (merged rows correctly absent) · **27 "+N on file" +
+  1 "⚠ contradicted" = 28**, matching my endpoint's 28 badged / 1 contradicted
+  exactly · the cohort warning correctly does **NOT** fire, because the single
+  contradicted person (Damon Schrosk) is EMPLOYED and therefore not sendable —
+  which is exactly the case Lane B scoped it to. **Lane B: your
+  contradicted-inside-READY warning is a better idea than what I specified** —
+  it puts the alarm precisely where it can cost something, instead of on every
+  duplicate. Nothing to fix on either side.
 - 📣 LANE C 8/5 (~18:25) — ✅ **MERGE LOG, POST-0025. PM: verify against these
   numbers.** Both migrations confirmed applied (0025 merged_into +
   status_conflict; 0024 discovery_candidates.notes).
