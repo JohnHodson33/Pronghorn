@@ -12,7 +12,9 @@ type Candidate = {
   id: string;
   // possible_duplicate (0024): the sweep found a near-identical company name
   // but a fuzzy match doesn't prove the same deal, so a human adjudicates
-  kind: "deal" | "consolidator" | "possible_duplicate";
+  // status_conflict (0025): two rows about the same PERSON disagree on
+  // exit_status; nothing to file, the guide row is held at UNKNOWN
+  kind: "deal" | "consolidator" | "possible_duplicate" | "status_conflict";
   acquirer: string;
   company: string;
   seller_name: string | null;
@@ -33,11 +35,13 @@ const KIND_LABEL: Record<string, string> = {
   deal: "deal",
   consolidator: "new consolidator",
   possible_duplicate: "possible duplicate",
+  status_conflict: "status conflict",
 };
 const KIND_CHIP: Record<string, string> = {
   deal: "bg-sky-100 text-sky-800",
   consolidator: "bg-violet-100 text-violet-800",
   possible_duplicate: "bg-amber-100 text-amber-800",
+  status_conflict: "bg-red-100 text-red-800",
 };
 
 const confChip: Record<string, string> = {
@@ -102,6 +106,7 @@ export default function ReviewPen({ onFiled }: { onFiled?: () => void }) {
   const deals = pending.filter((c) => c.kind === "deal").length;
   const consolidators = pending.filter((c) => c.kind === "consolidator").length;
   const dupes = pending.filter((c) => c.kind === "possible_duplicate").length;
+  const conflicts = pending.filter((c) => c.kind === "status_conflict").length;
 
   return (
     <section className="rounded-xl border border-violet-200 bg-white p-4">
@@ -113,6 +118,7 @@ export default function ReviewPen({ onFiled }: { onFiled?: () => void }) {
               `${deals} deal${deals === 1 ? "" : "s"}`,
               consolidators ? `${consolidators} new consolidator${consolidators === 1 ? "" : "s"}` : null,
               dupes ? `${dupes} possible duplicate${dupes === 1 ? "" : "s"}` : null,
+              conflicts ? `${conflicts} status conflict${conflicts === 1 ? "" : "s"}` : null,
             ].filter(Boolean).join(" + ")} awaiting confirm
           </span>
         </div>
@@ -132,6 +138,11 @@ export default function ReviewPen({ onFiled }: { onFiled?: () => void }) {
           <> On a <span className="font-medium">possible duplicate</span>, keep means
           &ldquo;not a duplicate — file it as its own deal&rdquo;; reject means &ldquo;yes, it&rsquo;s the
           same deal we already have&rdquo; and the existing row is left untouched.</>
+        )}
+        {conflicts > 0 && (
+          <> A <span className="font-medium">status conflict</span> has nothing to file — the person is
+          already in the book and held at UNKNOWN (so they can&rsquo;t reach outreach) until re-verified.
+          Open the person to see both claims and their sources.</>
         )}
       </p>
       {flash && <p className="mt-2 rounded-md bg-emerald-50 px-3 py-1.5 text-xs text-emerald-800">{flash}</p>}
@@ -172,22 +183,44 @@ export default function ReviewPen({ onFiled }: { onFiled?: () => void }) {
             {c.confidence && (
               <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${confChip[c.confidence]}`}>{c.confidence}</span>
             )}
-            <span className="flex shrink-0 gap-1.5">
-              <button
-                onClick={() => decide(c, "keep")}
-                disabled={busy === c.id}
-                className="rounded-md bg-emerald-700 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
-              >
-                {busy === c.id ? "…" : "Keep"}
-              </button>
-              <button
-                onClick={() => decide(c, "reject")}
-                disabled={busy === c.id}
-                className="rounded-md border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 hover:border-red-400 hover:text-red-600 disabled:opacity-50"
-              >
-                Reject
-              </button>
-            </span>
+            {/* a status conflict has nothing to file — the person is already in
+                the book, held at UNKNOWN. Offer the evidence + dismiss, never
+                a "Keep" that would mint a junk twin. */}
+            {c.kind === "status_conflict" ? (
+              <span className="flex shrink-0 items-center gap-1.5">
+                <a
+                  href={`/river-guides?q=${encodeURIComponent(c.seller_name ?? c.company)}`}
+                  className="rounded-md border border-zinc-300 px-3 py-1 text-xs font-semibold text-emerald-800 hover:border-emerald-600"
+                  title="Open this person — both claims and source URLs are on the guide row"
+                >
+                  Open person →
+                </a>
+                <button
+                  onClick={() => decide(c, "reject")}
+                  disabled={busy === c.id}
+                  className="rounded-md border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 hover:border-red-400 hover:text-red-600 disabled:opacity-50"
+                >
+                  {busy === c.id ? "…" : "Dismiss card"}
+                </button>
+              </span>
+            ) : (
+              <span className="flex shrink-0 gap-1.5">
+                <button
+                  onClick={() => decide(c, "keep")}
+                  disabled={busy === c.id}
+                  className="rounded-md bg-emerald-700 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
+                >
+                  {busy === c.id ? "…" : "Keep"}
+                </button>
+                <button
+                  onClick={() => decide(c, "reject")}
+                  disabled={busy === c.id}
+                  className="rounded-md border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 hover:border-red-400 hover:text-red-600 disabled:opacity-50"
+                >
+                  Reject
+                </button>
+              </span>
+            )}
           </li>
         ))}
       </ul>

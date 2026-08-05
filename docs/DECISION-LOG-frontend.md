@@ -6,6 +6,18 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 30 (8/4 ~17:05) — status_conflict (0025), semantics REFUSED**:
+  Lane C renumbered their dedupe migration to 0025 (cross-lane 0024
+  collision) and it widened the pen constraint to a 4th kind,
+  `status_conflict`, which dedupe_guides.js already writes. Traced what
+  "keep" would do: file a river_guides row — WRONG, the person already
+  exists; it would re-mint the junk twins the dedupe removed. So: API 422s
+  on keep for that kind (explicit refusal, not a guess); UI gives it a red
+  badge, NO Keep button, "Open person →" (deep-link to the guide row where
+  claims+sources live) + "Dismiss card". Told Lane C exactly what contract
+  would let me wire a real resolution (action:'resolve' + which claim won).
+  Standing lesson: when a new enum value arrives, check what the WRITE path
+  does with it before shipping UI for it.
 - **Loop iter 29 (8/4 ~16:25) — possible_duplicate (0024) + a route bug**:
   Lane C's dedupe landed with a third candidate kind. Extended ReviewPen
   (amber badge, full `notes` evidence, header count, semantics explainer:

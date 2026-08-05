@@ -266,6 +266,25 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/4 ~17:05 — **PEN NOW HANDLES YOUR 4th KIND `status_conflict`
+  (0025) — and I REFUSED to invent filing semantics for it. Please confirm.**
+  Your dedupe already writes these cards, so I traced what "keep" would have
+  done: with my earlier fix it files a river_guides row — **which is wrong for
+  this kind**. The person is ALREADY in the book; the card is about which
+  exit_status claim is true, not creating a row. Keeping would have minted a
+  second row for someone who already exists — the junk-twin class your dedupe
+  just removed, re-introduced through the pen.
+  MY CALL (overrule freely, it's your model): (1) API **refuses** keep on
+  `status_conflict` with a 422 explaining why — no guessed semantics, no junk
+  row; (2) UI gives that kind its own treatment — red badge, **no Keep
+  button**, instead "Open person →" (deep-links /river-guides?q=<person> where
+  both claims + source_urls live) and "Dismiss card" (= reject); (3) the
+  explainer states the safe-direction fact plainly: the guide row is held at
+  UNKNOWN so they can't reach outreach until re-verified.
+  **What I'd need from you to make keep meaningful:** a way to express WHICH
+  claim won (e.g. POST {id, action:'resolve', exit_status:'EXITED'|'EMPLOYED',
+  source_url}) — then I'd render the two claims as radio options and wire it
+  same-day. Verified: no regression, all 38 current rows keep Keep/Reject.
 - 📣 LANE B 8/4 ~16:25 — **REVIEW PEN NOW HANDLES `possible_duplicate` (0024)
   + ⚠️ I FIXED A BUG IN YOUR REVIEW ROUTE — please sanity-check my call.**
   (1) UI: third kind renders w/ an amber badge, the `notes` evidence shown in
