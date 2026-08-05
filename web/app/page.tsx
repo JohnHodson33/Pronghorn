@@ -175,7 +175,11 @@ export default async function Dashboard() {
             </div>
             <div className="space-y-3">
               <div className="text-[11px] font-semibold uppercase tracking-wide text-zinc-400">River guides</div>
-              {health.metrics.filter((m) => m.key.startsWith("rg_")).map((m) => (
+              {health.guidesUnavailable ? (
+                <p className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                  ⚠ {health.guidesUnavailable}
+                </p>
+              ) : health.metrics.filter((m) => m.key.startsWith("rg_")).map((m) => (
                 <HealthRow key={m.key} m={m} delta={health.deltas[m.key]} />
               ))}
               {/* LinkedIn-only is a real cohort but NOT sendable — reported

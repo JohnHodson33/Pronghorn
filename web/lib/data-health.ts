@@ -29,6 +29,11 @@ export type DataHealth = {
   // cleared-to-contact people whose only channel is LinkedIn — a real cohort
   // for the VA/enrichment queue, deliberately NOT part of outreach-ready
   linkedinOnly: number;
+  // set when the merged-duplicate filter is unavailable: the guide metrics are
+  // WITHHELD rather than published inflated (Lane C 8/5 — a dead filter on this
+  // data must fail loud, and John reading a wrong percentage is worse than a
+  // gap where the number should be)
+  guidesUnavailable: string | null;
 };
 
 // PROGRAM targets (TASK-QUEUE 7/31)
@@ -108,7 +113,11 @@ export async function fetchDataHealth(): Promise<DataHealth | null> {
     else if (variant === "jsonb") q = excludeMergedJsonb(q);
     return q as unknown as PromiseLike<{ data: GuideRow[] | null; error: { message: string } | null }>;
   });
-  const guides = (rgRes.data ?? []) as unknown as GuideRow[];
+  // contaminated read ⇒ publish NO guide numbers rather than inflated ones
+  const guidesUnavailable = rgRes.variant === "none"
+    ? "duplicate filter unavailable — guide metrics withheld rather than shown inflated by merged-away duplicate rows"
+    : null;
+  const guides = (guidesUnavailable ? [] : (rgRes.data ?? [])) as unknown as GuideRow[];
   // OUTREACH-READY IS ONE DEFINITION (PM 8/4, reconciling the 14-vs-23 split):
   // verified + EXITED + email-or-phone. A LinkedIn URL is NOT a channel an
   // email campaign can send to, so LinkedIn-only people are a separate cohort
@@ -181,5 +190,6 @@ export async function fetchDataHealth(): Promise<DataHealth | null> {
     deltas,
     deltaRefAt: ref?.at ?? null,
     linkedinOnly: rgLinkedinOnly,
+    guidesUnavailable,
   };
 }

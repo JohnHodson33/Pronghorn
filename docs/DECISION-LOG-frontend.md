@@ -6,6 +6,19 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 41 (8/5 ~04:00) — SILENT-FALLBACK HOLE CLOSED** (Lane C caught
+  it): `selectLiveGuides`' final "none" hop returns UNFILTERED rows, i.e.
+  merged dupes back in, and no caller inspected `variant` — while my own
+  doc-comment claimed it never returns silently-unfiltered data. Comment
+  corrected to state the opposite plainly. Deliberately kept non-throwing
+  (a list + red banner beats a blank page), pushing the honesty burden to
+  each call site: data-health now WITHHOLDS all guide metrics on a
+  contaminated read (Lane C's fail-loud preference — an inflated percentage
+  John trusts is worse than a gap), and /river-guides badges the API's
+  `warning` in red with "don't build an outreach list off this view".
+  Verified: filter active → 529, no false banner, metrics normal.
+  **Lesson: a comment asserting a safety property is a claim that needs the
+  same scrutiny as the code — mine was wrong for two commits.**
 - **Loop iters 36-40 (8/4 22:40 → 8/5 02:50)** — mostly quiet (feedback 15/0,
   pen 38, guides 529, dupes 9 every pass). Two things worth keeping:
   (1) **Surfaced**: PM-STATUS reports 549 guides where the UI reports 529 —

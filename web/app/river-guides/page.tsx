@@ -111,6 +111,9 @@ const ARCHETYPE_LABEL: Record<string, string> = {
 export default function RiverGuides() {
   const [guides, setGuides] = useState<Guide[] | null>(null);
   const [apiDown, setApiDown] = useState(false);
+  // set when the API couldn't apply the merged-duplicate filter — the list may
+  // show the same person twice with contradictory exit status, so say so
+  const [dataWarning, setDataWarning] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [bandsSel, setBandsSel] = useState<Set<string>>(new Set());
   const [industriesSel, setIndustriesSel] = useState<Set<string>>(new Set());
@@ -161,6 +164,7 @@ export default function RiverGuides() {
       if (!res.ok) throw new Error(String(res.status));
       const j = await res.json();
       setGuides(j.guides ?? j.rows ?? []);
+      setDataWarning(j.warning ?? null);
       setApiDown(false);
     } catch {
       if (attempt < 3) {
@@ -419,6 +423,16 @@ export default function RiverGuides() {
           >
             Retry now
           </button>
+        </div>
+      )}
+
+      {/* the merged-duplicate filter failed server-side (Lane C 8/5): the same
+          person can appear twice with contradictory exit status, which is how
+          a still-employed operator nearly reached an outreach batch. Loud, red,
+          and specific about what not to trust — never a silent degrade. */}
+      {dataWarning && (
+        <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm font-medium text-red-800">
+          ⚠ {dataWarning} — do not build an outreach list off this view until it clears.
         </div>
       )}
 

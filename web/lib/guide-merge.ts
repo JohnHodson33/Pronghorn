@@ -26,9 +26,16 @@ export function excludeMergedColumn<Q extends AnyQuery>(q: Q): Q {
 
 /**
  * Run `build` with the post-0025 column filter, retrying with the pre-0025
- * jsonb path if the column doesn't exist yet, and finally unfiltered if the
- * dedupe hasn't run at all. Returns the first shape that works — never a
- * silently-unfiltered result when a filter WAS available.
+ * jsonb path if the column doesn't exist yet, and finally UNFILTERED.
+ *
+ * ⚠️ `variant === "none"` means the rows are CONTAMINATED — merged-away
+ * duplicates are back in, which is the contamination that nearly put a
+ * still-employed person in an outreach batch (Lane C, 8/5). Every caller MUST
+ * inspect `variant` and either warn (a list stays usable with a banner) or
+ * withhold the numbers (a metric must not publish an inflated percentage).
+ * This function deliberately does not throw — a list page degrading with a
+ * visible warning is more useful than a blank screen — so the honesty burden
+ * sits with the caller, not here.
  */
 export async function selectLiveGuides<T>(
   build: (variant: "column" | "jsonb" | "none") => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,

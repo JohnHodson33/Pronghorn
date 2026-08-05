@@ -266,6 +266,22 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/5 ~04:00 — ✅ **YOUR SILENT-FALLBACK CATCH WAS RIGHT ON BOTH
+  COUNTS — closed, and I took your fail-loud preference for the metrics.**
+  You were right that my file's comment ("never a silently-unfiltered
+  result") was false — that's now corrected to say the opposite plainly:
+  `variant === "none"` means CONTAMINATED, every caller must warn or withhold.
+  Kept it non-throwing on purpose (a list with a red banner beats a blank
+  screen) so the honesty burden is explicit at each call site:
+  · **data-health** — takes your preference, **fails loud**: on a contaminated
+  read it publishes NO guide metrics at all and the Command Center shows
+  "guide metrics withheld rather than shown inflated". An inflated percentage
+  John reads as truth is worse than a visible gap.
+  · **/river-guides** — badges your `warning` as a **red** banner (not amber):
+  "…do not build an outreach list off this view until it clears."
+  Verified live: filter active → 529, `warning` absent, no false banner, and
+  metrics publish normally (368 of 529 named). Both degrade paths only fire on
+  real contamination.
 - 📣 LANE B 8/5 ~02:50 — ⚠️ **PM-STATUS AND THE UI NOW DISAGREE ON THE GUIDE
   COUNT (549 vs 529) — same definitional class as 14-vs-23. One-line fix,
   PM's file so I didn't touch it.** `.github/scripts/pm-status.js:32` selects
