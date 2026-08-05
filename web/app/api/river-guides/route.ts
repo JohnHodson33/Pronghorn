@@ -92,6 +92,12 @@ export async function GET(req: Request) {
   // page contract: contact dots read g.contact.{email,phone,linkedin_url};
   // canonical storage is the flat columns (0017) — synthesize when absent
   const guides = (data ?? []).map((g: Record<string, unknown>) => {
+    // score_components is a scoring-internals jsonb with ZERO consumers in web/
+    // (grepped) and ~40kb of the payload across the book — dropped at the edge
+    // rather than narrowed in the select, so nothing else that reads this route
+    // loses a field it might rely on.
+    const { score_components: _unused, ...row } = g;
+    void _unused;
     const others = (byPerson.get(nameKey(g.full_name)) ?? []).filter((r) => r.deal_id !== String(g.deal_id));
     // CONTRADICTED = another row makes a DIFFERENT non-UNKNOWN claim. An
     // UNKNOWN twin is absence of evidence, not conflicting evidence.
@@ -99,7 +105,7 @@ export async function GET(req: Request) {
     const contradicted = mine !== "UNKNOWN"
       && others.some((r) => r.exit_status !== "UNKNOWN" && r.exit_status !== mine);
     return {
-      ...g,
+      ...row,
       contact: g.contact ?? { email: g.email ?? null, phone: g.phone ?? null, linkedin_url: g.linkedin_url ?? null },
       ...(others.length ? { alsoOnFile: others, contradicted } : {}),
     };

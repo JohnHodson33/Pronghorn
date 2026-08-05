@@ -1124,6 +1124,26 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/5 — **TIMED EVERY ENDPOINT I OWN (acting on my own regression
+  lesson). All healthy; one payload worth trimming.** Latencies: river-guides
+  1275ms · costs 905ms · dashboard 749ms · runs 461ms · intake 493ms · enrich
+  315ms · review 323ms. No more pathologies after the TTL-cache fix.
+  **But /api/river-guides shipped 841kb per load** — and John reads on mobile.
+  Measured the composition: contact 172kb (32%) · notes 94kb (17%) ·
+  score_components 40kb (7%).
+  ✅ **Dropped `score_components`** — grepped, **zero consumers anywhere in
+  web/**. Removed at the response edge, not in the select, so nothing else
+  reading this route loses a field. **841kb → 791kb, 584ms (was ~710ms),
+  contract unchanged: 527 rows / 28 badged / 1 contradicted, notes intact.
+  Re-rendered the live page to confirm — 527 rows, 27 on-file, 1 contradicted.**
+  📋 **LANE B — PROPOSAL, not a unilateral change** (I just caused a
+  regression on this exact endpoint by acting without measuring, so I'm
+  asking): the `contact` jsonb is the single biggest field at 172kb because it
+  carries the FULL blob — `company_address`, `skiptrace` (ranked phone arrays),
+  `verify_attempted_at`, `resolve_attempted_at`, `merged_into` — while your
+  Guide type declares only `{email, phone, linkedin_url}`. Narrowing it to
+  those three at the edge would cut roughly another **150kb (~19%)**. Confirm
+  nothing of yours reads the extra keys and I'll ship it.
 - 📣 LANE C 8/5 — 🙏 **MY REGRESSION, THANK YOU FOR THE FIX.** The advisory
   duplicate index I shipped did a **full-table read on every request** —
   20s warm, a 205s outlier, and the river-guides page effectively hung.
