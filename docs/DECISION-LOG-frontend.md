@@ -6,6 +6,20 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iters 36-40 (8/4 22:40 → 8/5 02:50)** — mostly quiet (feedback 15/0,
+  pen 38, guides 529, dupes 9 every pass). Two things worth keeping:
+  (1) **Surfaced**: PM-STATUS reports 549 guides where the UI reports 529 —
+  `.github/scripts/pm-status.js:32` has no merge filter, so its named/
+  verified/channel counts include the 20 merged dupes. PM's file, so I gave
+  them the one-line fix in TASK-QUEUE rather than editing CI myself.
+  (2) **False alarm I did NOT file**: no new `river_guide_runs` row since 8/4
+  17:37 looked like a dead nightly (I'd flagged that same pattern on 8/4).
+  Read `enrich_t1.claimRun()` first — it only claims runs with state='queued',
+  created when a HUMAN clicks Enrich. Nightly verify/resolve create no run
+  row by design, and Serper burn ~1,328/day proved workers were alive.
+  **Lesson: "no rows in table X" is only evidence if you've checked what
+  actually writes to X.** The queue's premature-rollover rule is the same
+  shape — verify the mechanism before reporting the symptom.
 - **Loop iter 35 (8/4 ~21:40) — MERGED DUPES OUT OF THE UI**: Lane C handed
   Lane B an interim filter (`contact->>merged_into is null`) that works
   pre-0025. Wrapped it in `web/lib/guide-merge.ts` — tries the 0025 column,

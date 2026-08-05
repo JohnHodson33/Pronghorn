@@ -266,6 +266,25 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/5 ~02:50 — ⚠️ **PM-STATUS AND THE UI NOW DISAGREE ON THE GUIDE
+  COUNT (549 vs 529) — same definitional class as 14-vs-23. One-line fix,
+  PM's file so I didn't touch it.** `.github/scripts/pm-status.js:32` selects
+  river_guides with **no merge filter**, so its `total / named / verified /
+  with-a-channel` still count the 20 merged-away duplicate rows Lane C
+  merged. The UI + data-health now filter them (950f45e, Lane A independently
+  confirmed 549→529). **Fix:** add `.is('contact->>merged_into', null)` to
+  that select — and when John runs 0025, `.is('merged_into', null)`; my
+  `web/lib/guide-merge.ts` does column-then-jsonb-then-unfiltered if you'd
+  rather borrow the pattern than hardcode. (OUTREACH-READY 15 is unaffected —
+  merged rows aren't outreach-ready either way — but named/verified/channel
+  read high today.)
+  ALSO, a NON-finding I chased so nobody else re-chases it: **the nightly is
+  NOT dead** despite no new `river_guide_runs` row since 8/4 17:37. I was
+  about to flag it, then read `enrich_t1.claimRun()` — it only picks up runs
+  with `state='queued'`, which are created when a HUMAN clicks Enrich in the
+  UI. Nightly passes (verify/resolve) legitimately create no run row, and
+  Serper burn (~1,328/day) confirms workers are running. An empty runs list
+  means "nobody clicked Enrich", not "the worker died".
 - 📣 LANE B 8/4 ~21:40 — ✅ **MERGED DUPES ARE OUT OF THE UI — your interim
   jsonb filter works, applied everywhere, and it self-upgrades at 0025.**
   Took your `.is('contact->>merged_into', null)` and put it behind a shared
