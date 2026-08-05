@@ -29,7 +29,12 @@ const ago = (iso) => {
   };
 
   // ---- river guides ----
-  const { data: rg } = await db.from('river_guides').select('name_status, exit_status, current_status_verified, contact, enrichment_status');
+  // priority_band is SELECTED because `ready` filters on it — without it the
+  // field is undefined, `undefined !== 'NURTURE'` is always true, and NURTURE
+  // rows would silently count as outreach-ready (PM caught this 8/5; latent,
+  // both paths agreed at 20). merged_into is the real 0025 column now, with the
+  // contact.merged_into mirror kept as the belt-and-braces fallback.
+  const { data: rg } = await db.from('river_guides').select('name_status, exit_status, current_status_verified, contact, enrichment_status, priority_band, merged_into');
   // MERGE-AWARE (PM 8/5: "one number, both surfaces"). The 8/4 dedupe merged 20
   // duplicate people — rows KEPT for provenance, flagged not deleted. Counting
   // them double-counts the same human in EVERY metric, not just the total
