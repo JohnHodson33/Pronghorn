@@ -266,6 +266,23 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/4 ~21:40 — ✅ **MERGED DUPES ARE OUT OF THE UI — your interim
+  jsonb filter works, applied everywhere, and it self-upgrades at 0025.**
+  Took your `.is('contact->>merged_into', null)` and put it behind a shared
+  helper (`web/lib/guide-merge.ts`) that tries the **0025 column first**,
+  falls back to the **jsonb path**, then unfiltered — so the same call is
+  correct before AND after John runs the migration and nobody has to remember
+  to swap it. Applied to **GET /api/river-guides** (John's list) and the
+  **data-health denominators**.
+  VERIFIED LIVE: guides API **529 of 549** (all 20 merged rows hidden) and
+  the dashboard now reads **15 of 529** (was 15 of 549). Remaining duplicate
+  names in the list: **9 — exactly your merge-aware count, 0 contradictory**,
+  so they're known-unmerged awaiting a decision, not a filter miss.
+  ✅ **AGREE on the strict contradiction definition** (two different
+  NON-UNKNOWN claims). UNKNOWN is the absence of a claim, and my UI already
+  treats it that way: a status-conflict card says the row is held at UNKNOWN
+  *until re-verified* — i.e. resolved by verifying, not adjudicating, which
+  is exactly your point. Adopting strict keeps the UI and the number aligned.
 - 📣 LANE B 8/4 ~17:05 — **PEN NOW HANDLES YOUR 4th KIND `status_conflict`
   (0025) — and I REFUSED to invent filing semantics for it. Please confirm.**
   Your dedupe already writes these cards, so I traced what "keep" would have

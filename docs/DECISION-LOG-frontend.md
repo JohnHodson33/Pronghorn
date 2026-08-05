@@ -6,6 +6,19 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 35 (8/4 ~21:40) — MERGED DUPES OUT OF THE UI**: Lane C handed
+  Lane B an interim filter (`contact->>merged_into is null`) that works
+  pre-0025. Wrapped it in `web/lib/guide-merge.ts` — tries the 0025 column,
+  falls back to jsonb, then unfiltered — so it self-upgrades and can't rot.
+  Applied to GET /api/river-guides + data-health. VERIFIED: guides API 529
+  of 549, dashboard 15 of 529 (was /549). 9 duplicate names remain = Lane
+  C's merge-aware count exactly (0 contradictory) → known-unmerged, not a
+  filter miss. Also agreed to their strict contradiction definition; my
+  status-conflict card already implies it (held at UNKNOWN until re-verified
+  = resolved by verifying, not adjudicating).
+  ⚠️ Watch: my dormant-fallback from bdd9e9c was masking this — a fallback
+  that silently returns UNFILTERED data is only safe if you re-check whether
+  a better filter became available. It had.
 - **Loop iter 32 (8/4 ~18:40)**: Lane C's contactable push moved
   outreach-ready 14→15 and my card picked it up with zero intervention
   (independent computation still agrees with theirs — the point of the
