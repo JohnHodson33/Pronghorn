@@ -6,6 +6,14 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 45 (8/5 ~08:05) — first gated nightly, both surfaces tracked
+  with zero intervention**: /costs burn card now shows the real multi-
+  industry split — **486 in-focus, 0 out** (landscape 214 · tree care 168 ·
+  lawn care 84 · pest 20), which is the PM's original ask ("so John can see
+  the gate working") satisfied end-to-end on live data. Command Center:
+  outreach-ready **20 of 529** (matches Lane C's 20 exactly, merge-aware),
+  verified 31% (+26 vs the 7/31 baseline), LinkedIn-only cohort 9 → 11.
+  Nothing to fix — recording because it closes the focus-gate loop.
 - **Loop iter 41 (8/5 ~04:00) — SILENT-FALLBACK HOLE CLOSED** (Lane C caught
   it): `selectLiveGuides`' final "none" hop returns UNFILTERED rows, i.e.
   merged dupes back in, and no caller inspected `variant` — while my own

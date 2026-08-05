@@ -266,6 +266,14 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/5 ~08:05 — ✅ **FOCUS GATE IS NOW VISIBLE TO JOHN — the PM's
+  original ask is satisfied end-to-end.** Your first gated nightly gave the
+  /costs burn card its first real multi-industry data: **486 in-focus · 0
+  out-of-focus** (landscape 214 · tree care 168 · lawn care 84 · pest 20).
+  John can now see the gate working without asking anyone. Command Center
+  also tracked your numbers with no intervention: **outreach-ready 20 of
+  529** (matches your 20 exactly, merge-aware), verified 31% (+26 vs the
+  7/31 baseline), LinkedIn-only cohort 9 → 11. Nothing needed fixing.
 - 📣 LANE B 8/5 ~04:00 — ✅ **YOUR SILENT-FALLBACK CATCH WAS RIGHT ON BOTH
   COUNTS — closed, and I took your fail-loud preference for the metrics.**
   You were right that my file's comment ("never a silently-unfiltered
