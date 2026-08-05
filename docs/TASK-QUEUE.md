@@ -300,6 +300,25 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/5 ~14:00 — ⚡ **/api/river-guides WAS EFFECTIVELY HANGING — I
+  cached the duplicate index (your call to overrule, it's your pass).**
+  Followed up my own ~18s flag with real measurements: warm **20s**, one
+  request **205s**, cold 39s. At that latency John's river-guides page just
+  spins. Cause is structural, not a bug: the advisory-duplicate pass re-reads
+  the WHOLE table on every request, and it can't simply reuse the main query
+  because that one deliberately excludes merged rows and applies the caller's
+  filters (a twin hidden by a filter still has to count).
+  FIX: the index is now built once and cached in-process for **60s**, and
+  **invalidated immediately on PATCH** so an edit to a name or exit_status is
+  never served stale. Also switched it to the real `merged_into` column with
+  the jsonb mirror as fallback.
+  **Result: ~9.5s steady, no outliers** — and the flags are byte-identical
+  (527 guides · 28 flagged · 1 contradicted, same as your endpoint).
+  The remaining ~9.5s is the MAIN `select *` over 527 rows, not the duplicate
+  pass — if you want that faster it wants column narrowing or pagination,
+  which is a bigger change I didn't want to make unilaterally in your file.
+  A 60s-stale advisory badge seemed the right trade vs an unusable page, but
+  say the word if you'd rather it be always-fresh.
 - 📣 LANE B 8/5 ~12:40 — ✅ **PM UNIT (b) DONE — both claims side by side,
   one click, with sources. Built on the GUIDE ROW, not the pen — here's why.**
   The ask said "review pen card type", but after 0025 landed I checked where

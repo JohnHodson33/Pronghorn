@@ -6,6 +6,21 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 50 (8/5 ~14:00) — CACHED THE DUPLICATE INDEX**. Chased my own
+  ~18s flag with measurements instead of leaving it as a note: warm 20s, one
+  205s outlier, cold 39s — i.e. the page hangs for John. The advisory-dup
+  pass re-reads the whole table per request and CANNOT reuse the main query
+  (that one excludes merged rows and applies caller filters; a filtered-out
+  twin still has to count). So: 60s in-process cache, invalidated on PATCH
+  so edits are never stale, plus the real `merged_into` column w/ jsonb
+  fallback. **~9.5s steady, outliers gone, flags byte-identical** (527/28/1).
+  Remaining 9.5s is the main `select *`, not the dup pass — flagged to Lane
+  C rather than unilaterally narrowing columns in their file.
+  ⚠️ **Diagnosis discipline that mattered**: the first symptom was a 404 and
+  then 6-8min timeouts, which looked like an API regression. It was two
+  separate things — stale `.next` (404) and MY OWN two polling tabs loading
+  the dev server. Stopped the server, cleared .next, restarted with one tab,
+  and only THEN measured. Don't measure performance on a thrashing dev box.
 - **Loop iter 49 (8/5 ~12:40) — PM UNIT (b): SIDE-BY-SIDE CLAIMS**. 0025 is
   APPLIED (Lane C backfilled; 549 rows · 22 merged · 527 live · 1 conflict).
   Queued verification passed: guide-merge is on the column variant, 527

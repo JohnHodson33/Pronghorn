@@ -13,6 +13,50 @@ import { excludeMergedColumn, excludeMergedJsonb, selectLiveGuides } from "@/lib
 
 export const dynamic = "force-dynamic";
 
+const nameKey = (s: unknown) => String(s ?? "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+type PersonRow = { deal_id: string; exit_status: string; verified: boolean; merged: boolean };
+
+// ADVISORY duplicate index (John's rule: flags inform, they never block).
+// A person can have another row on file — usually a merged-away duplicate,
+// sometimes a genuine second sale. That is worth SEEING before you call
+// someone; it is not grounds for hiding them.
+//
+// It needs a SECOND read because the list query deliberately excludes merged
+// rows, so they have to be read back to be reported on — and that read is
+// unfiltered by design (a twin hidden by the caller's filters still counts).
+// Measured 8/5: that made every request re-read the whole table, and the route
+// ran 20s warm with a 205s outlier — the river-guides page effectively hung.
+// The index only changes when a worker rewrites the book, so a short TTL cache
+// is proportionate: the badge can be up to a minute stale, the page can't be
+// unusable. In-process and best-effort — a cold lambda just rebuilds it.
+const DUP_TTL_MS = 60_000;
+let dupCache: { at: number; index: Map<string, PersonRow[]> } | null = null;
+
+async function duplicateIndex(): Promise<Map<string, PersonRow[]>> {
+  if (dupCache && Date.now() - dupCache.at < DUP_TTL_MS) return dupCache.index;
+  const index = new Map<string, PersonRow[]>();
+  const cols = "deal_id, full_name, exit_status, current_status_verified, contact";
+  // merged_into is 0025; fall back to the jsonb mirror on an older DB
+  const withCol = await serverDb().from("river_guides").select(`${cols}, merged_into`).limit(5000);
+  const allRows: Record<string, unknown>[] | null = withCol.error
+    ? ((await serverDb().from("river_guides").select(cols).limit(5000)).data as Record<string, unknown>[] | null)
+    : (withCol.data as Record<string, unknown>[] | null);
+  for (const r of allRows ?? []) {
+    const k = nameKey(r.full_name);
+    if (!k) continue;
+    if (!index.has(k)) index.set(k, []);
+    index.get(k)!.push({
+      deal_id: String(r.deal_id),
+      exit_status: String(r.exit_status ?? "UNKNOWN"),
+      verified: !!r.current_status_verified,
+      // 0025 column, with the pre-0025 jsonb mirror still honored
+      merged: !!(r.merged_into ?? (r.contact as { merged_into?: string } | null)?.merged_into),
+    });
+  }
+  dupCache = { at: Date.now(), index };
+  return index;
+}
+
 export async function GET(req: Request) {
   if (!hasDb()) return NextResponse.json({ error: "no db" }, { status: 503 });
   const url = new URL(req.url);
@@ -43,25 +87,7 @@ export async function GET(req: Request) {
   // one person book-wide is actually contradicted (differing non-UNKNOWN
   // claims), so suppressing every twin would have cost real leads to guard a
   // danger that mostly isn't there.
-  const nameKey = (s: unknown) => String(s ?? "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-  const byPerson = new Map<string, { deal_id: string; exit_status: string; verified: boolean; merged: boolean }[]>();
-  {
-    // separate lightweight pass: the list query deliberately EXCLUDES merged
-    // rows, so they have to be read back to be reported on
-    const { data: allRows } = await serverDb().from("river_guides")
-      .select("deal_id, full_name, exit_status, current_status_verified, contact").limit(5000);
-    for (const r of (allRows ?? []) as Record<string, unknown>[]) {
-      const k = nameKey(r.full_name);
-      if (!k) continue;
-      if (!byPerson.has(k)) byPerson.set(k, []);
-      byPerson.get(k)!.push({
-        deal_id: String(r.deal_id),
-        exit_status: String(r.exit_status ?? "UNKNOWN"),
-        verified: !!r.current_status_verified,
-        merged: !!(r.contact as { merged_into?: string } | null)?.merged_into,
-      });
-    }
-  }
+  const byPerson = await duplicateIndex();
 
   // page contract: contact dots read g.contact.{email,phone,linkedin_url};
   // canonical storage is the flat columns (0017) — synthesize when absent
@@ -121,6 +147,9 @@ export async function PATCH(req: Request) {
   }
   const { error } = await db.from("river_guides").update(patch).eq("deal_id", dealId);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // an edit can change a name or exit_status → the duplicate/contradiction
+  // index is stale; drop it so the next read reflects the edit immediately
+  dupCache = null;
   return NextResponse.json({ ok: true });
 }
 
