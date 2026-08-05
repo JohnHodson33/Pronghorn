@@ -6,6 +6,17 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 46 (8/5 ~10:30) — REACHABILITY COHORTS on /river-guides** (PM
+  8/5 unit a). A "Reachability" chip row above the bands, in John's canonical
+  terms: **Outreach-ready 20 · LinkedIn only — needs a channel 11 · Cleared,
+  no channel 9 · Not cleared yet 489** (sums to 529; the 20/11 match the
+  Command Center exactly). Each chip filters (URL-persisted `?cohort=`), the
+  rule is spelled out beneath it, and a LinkedIn-only row carries an amber
+  "only" badge next to its profile link so it can't be misread as sendable
+  while working the list. Also added as a header/mobile FilterDropdown per
+  the LIST-UX standard. Verified live: LinkedIn-only → 11 of 529, 11 badges.
+  NOTE: cohort is derived client-side from the same fields the dashboard
+  uses, so the two surfaces can't drift.
 - **Loop iter 45 (8/5 ~08:05) — first gated nightly, both surfaces tracked
   with zero intervention**: /costs burn card now shows the real multi-
   industry split — **486 in-focus, 0 out** (landscape 214 · tree care 168 ·

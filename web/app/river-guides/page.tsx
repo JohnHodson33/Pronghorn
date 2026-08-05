@@ -101,6 +101,38 @@ const STATUS_CHIP: Record<string, string> = {
   ENRICHED: "bg-emerald-100 text-emerald-800",
   VERIFIED: "bg-emerald-700 text-white",
 };
+// REACHABILITY COHORTS (PM 8/5) — the canonical rule, made visible:
+// outreach-ready = status-VERIFIED + EXITED + email-or-phone. A LinkedIn URL
+// is NOT a channel an email or call campaign can use, so LinkedIn-only people
+// are their own labelled group and must never read as sendable.
+type Cohort = "READY" | "LINKEDIN_ONLY" | "CLEARED_NO_CHANNEL" | "NOT_CLEARED";
+const COHORTS: Cohort[] = ["READY", "LINKEDIN_ONLY", "CLEARED_NO_CHANNEL", "NOT_CLEARED"];
+const COHORT_LABEL: Record<Cohort, string> = {
+  READY: "Outreach-ready",
+  LINKEDIN_ONLY: "LinkedIn only — needs a channel",
+  CLEARED_NO_CHANNEL: "Cleared, no channel",
+  NOT_CLEARED: "Not cleared yet",
+};
+const COHORT_CHIP: Record<Cohort, string> = {
+  READY: "bg-emerald-700 text-white",
+  LINKEDIN_ONLY: "bg-amber-100 text-amber-900",
+  CLEARED_NO_CHANNEL: "bg-zinc-100 text-zinc-600",
+  NOT_CLEARED: "bg-zinc-50 text-zinc-500",
+};
+const COHORT_HELP: Record<Cohort, string> = {
+  READY: "Status-verified + EXITED + an email or phone — the only group a campaign can actually send to",
+  LINKEDIN_ONLY: "Verified + EXITED but the ONLY channel is a LinkedIn URL — not sendable; route to the VA/enrichment queue for an email or phone",
+  CLEARED_NO_CHANNEL: "Verified + EXITED but no channel at all yet — enrichment or the VA has to find one",
+  NOT_CLEARED: "Not yet status-verified as EXITED — no outreach until verification clears them",
+};
+function cohortOf(g: { exit_status: string; current_status_verified: boolean; contact: Guide["contact"] }): Cohort {
+  const cleared = g.current_status_verified && g.exit_status === "EXITED";
+  if (!cleared) return "NOT_CLEARED";
+  if (g.contact?.email || g.contact?.phone) return "READY";
+  if (g.contact?.linkedin_url) return "LINKEDIN_ONLY";
+  return "CLEARED_NO_CHANNEL";
+}
+
 const ARCHETYPE_LABEL: Record<string, string> = {
   A_EXITED_OPERATOR: "★ Exited operator",
   B_EX_CONSOLIDATOR_DEALMAKER: "Ex-consolidator",
@@ -123,6 +155,7 @@ export default function RiverGuides() {
   const [emailSel, setEmailSel] = useState<Set<string>>(new Set());
   const [phoneSel, setPhoneSel] = useState<Set<string>>(new Set());
   const [linkedinSel, setLinkedinSel] = useState<Set<string>>(new Set());
+  const [cohortSel, setCohortSel] = useState<Set<string>>(new Set());
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -181,7 +214,7 @@ export default function RiverGuides() {
   const fromCsv = (v: string | null) => new Set((v ?? "").split(",").filter(Boolean));
   useUrlFilterSync(
     () => ({
-      q, band: csvSet(bandsSel), industry: csvSet(industriesSel),
+      q, band: csvSet(bandsSel), cohort: csvSet(cohortSel), industry: csvSet(industriesSel),
       status: csvSet(statusSel), exit: csvSet(exitSel), state: csvSet(statesSel),
       email: csvSet(emailSel), phone: csvSet(phoneSel), linkedin: csvSet(linkedinSel),
       sort: sortKey, dir: sortKey && sortDir === "asc" ? "asc" : null,
@@ -189,6 +222,7 @@ export default function RiverGuides() {
     (p) => {
       if (p.get("q")) setQ(p.get("q")!);
       if (p.get("band")) setBandsSel(fromCsv(p.get("band")));
+      if (p.get("cohort")) setCohortSel(fromCsv(p.get("cohort")));
       if (p.get("industry")) setIndustriesSel(fromCsv(p.get("industry")));
       if (p.get("status")) setStatusSel(fromCsv(p.get("status")));
       if (p.get("exit")) setExitSel(fromCsv(p.get("exit")));
@@ -204,13 +238,18 @@ export default function RiverGuides() {
       if (p.get("sort")) setSortKey(p.get("sort"));
       if (p.get("dir") === "asc") setSortDir("asc");
     },
-    [q, bandsSel, industriesSel, statusSel, exitSel, statesSel, emailSel, phoneSel, linkedinSel, sortKey, sortDir],
+    [q, bandsSel, cohortSel, industriesSel, statusSel, exitSel, statesSel, emailSel, phoneSel, linkedinSel, sortKey, sortDir],
   );
 
   const all = guides ?? [];
   const bandCounts = useMemo(() => {
     const m: Record<string, number> = {};
     for (const g of all) m[g.priority_band] = (m[g.priority_band] ?? 0) + 1;
+    return m;
+  }, [all]);
+  const cohortCounts = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const g of all) { const c = cohortOf(g); m[c] = (m[c] ?? 0) + 1; }
     return m;
   }, [all]);
   const opt = (vals: (string | null)[], labeler?: (v: string) => string) => {
@@ -239,6 +278,7 @@ export default function RiverGuides() {
       ? all.filter((g) => runIds.includes(g.deal_id))
       : all.filter((g) => {
       if (bandsSel.size && !bandsSel.has(g.priority_band)) return false;
+      if (cohortSel.size && !cohortSel.has(cohortOf(g))) return false;
       if (industriesSel.size && !industriesSel.has(g.industry)) return false;
       if (statusSel.size && !statusSel.has(g.enrichment_status)) return false;
       if (exitSel.size && !exitSel.has(`${g.exit_status}${g.current_status_verified ? " ✓" : " ⚠"}`)) return false;
@@ -279,7 +319,7 @@ export default function RiverGuides() {
       const d = BANDS.indexOf(a.priority_band) - BANDS.indexOf(b.priority_band);
       return d !== 0 ? d : (b.screen_score ?? 0) - (a.screen_score ?? 0);
     });
-  }, [all, q, bandsSel, industriesSel, statusSel, exitSel, statesSel, emailSel, phoneSel, linkedinSel, sortKey, sortDir, openRun, openRunIds]);
+  }, [all, q, bandsSel, cohortSel, industriesSel, statusSel, exitSel, statesSel, emailSel, phoneSel, linkedinSel, sortKey, sortDir, openRun, openRunIds]);
 
   // COST BEFORE THE CLICK (John 7/16: "the cost should show up beforehand… to
   // the extent anything shows up more expensive, I want us to be thoughtful").
@@ -512,6 +552,30 @@ export default function RiverGuides() {
 
       {notice && <div className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-800">{notice}</div>}
 
+      {/* REACHABILITY COHORTS (PM 8/5) — who can actually be contacted, in
+          John's canonical terms. LinkedIn-only is its own labelled group so it
+          can never be mistaken for sendable; click any chip to filter. */}
+      <div className="rounded-xl border border-zinc-200 bg-white px-4 py-3">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-zinc-500">Reachability</span>
+          {COHORTS.map((c) => (
+            <button
+              key={c}
+              onClick={() => setCohortSel((prev) => { const n = new Set(prev); n.has(c) ? n.delete(c) : n.add(c); return n; })}
+              title={COHORT_HELP[c]}
+              className={`rounded-full px-2.5 py-1 text-xs font-semibold transition ${cohortSel.has(c) ? "ring-2 ring-emerald-600 " : ""}${COHORT_CHIP[c]}`}
+            >
+              {COHORT_LABEL[c]} · {cohortCounts[c] ?? 0}
+            </button>
+          ))}
+        </div>
+        <p className="mt-1.5 text-[11px] text-zinc-500">
+          Outreach-ready = status-verified + EXITED + <span className="font-medium">email or phone</span>. A LinkedIn URL
+          isn&rsquo;t a channel a campaign can send to, so those people are counted separately and belong in the
+          VA/enrichment queue until they have an email or phone.
+        </p>
+      </div>
+
       {/* band counts header — the working split */}
       <div className="flex flex-wrap items-center gap-1.5">
         {BANDS.map((b) => (
@@ -727,9 +791,19 @@ export default function RiverGuides() {
                     </td>
                     <td className="px-3 py-2.5">
                       {g.contact?.linkedin_url ? (
-                        <a href={g.contact.linkedin_url} target="_blank" rel="noreferrer" className="text-emerald-800 hover:underline" title={g.contact.linkedin_url}>
-                          profile ↗
-                        </a>
+                        <span className="flex items-center gap-1">
+                          <a href={g.contact.linkedin_url} target="_blank" rel="noreferrer" className="text-emerald-800 hover:underline" title={g.contact.linkedin_url}>
+                            profile ↗
+                          </a>
+                          {/* LinkedIn is the ONLY channel → say so on the row,
+                              so it can't be mistaken for sendable */}
+                          {cohortOf(g) === "LINKEDIN_ONLY" && (
+                            <span className="rounded bg-amber-100 px-1 py-0.5 text-[10px] font-semibold text-amber-900"
+                              title={COHORT_HELP.LINKEDIN_ONLY}>
+                              only
+                            </span>
+                          )}
+                        </span>
                       ) : (
                         <span className="text-zinc-300">—</span>
                       )}
@@ -792,6 +866,9 @@ export default function RiverGuides() {
         }}
         controls={
           <>
+            <FilterDropdown label="Reach" name="Reachability"
+              options={COHORTS.map((c) => ({ value: c, label: COHORT_LABEL[c], count: cohortCounts[c] ?? 0 }))}
+              selected={cohortSel} onChange={setCohortSel} />
             <FilterDropdown label="Band"
               options={BANDS.map((b) => ({ value: b, label: BAND_LABEL[b], count: bandCounts[b] ?? 0 }))}
               selected={bandsSel} onChange={setBandsSel} />

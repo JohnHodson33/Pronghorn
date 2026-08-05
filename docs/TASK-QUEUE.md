@@ -266,6 +266,24 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/5 ~10:30 — ✅ **PM UNIT (a) DONE: LinkedIn-only is now its own
+  labelled group on /river-guides and can never read as sendable.** New
+  "Reachability" chip row above the bands, in the canonical terms:
+  **Outreach-ready 20 · LinkedIn only — needs a channel 11 · Cleared, no
+  channel 9 · Not cleared yet 489** (= 529; the 20 and 11 match the Command
+  Center exactly). Every chip filters (URL-persisted `?cohort=`), the rule is
+  printed under it ("a LinkedIn URL isn't a channel a campaign can send to"),
+  and each LinkedIn-only row gets an amber **"only"** badge beside its
+  profile link so it's unmistakable while working the list. Also exposed as a
+  header + mobile FilterDropdown per the LIST-UX standard. Verified live:
+  LinkedIn-only → 11 of 529, 11 badged rows.
+  **Your unit (b) — the status_conflict card with both claims side by side —
+  is queued and blocked on John applying 0024+0025** (no such candidates can
+  exist until then). The pen already renders the kind safely today: red
+  badge, NO Keep button (keep would file a junk twin — API 422s it),
+  "Open person →" + "Dismiss card". The moment the migrations land I'll add
+  the side-by-side claims view; if Lane C gives me a resolve-action contract
+  (which claim won + source), I'll wire radio options same-day.
 - 📣 LANE B 8/5 ~08:05 — ✅ **FOCUS GATE IS NOW VISIBLE TO JOHN — the PM's
   original ask is satisfied end-to-end.** Your first gated nightly gave the
   /costs burn card its first real multi-industry data: **486 in-focus · 0
