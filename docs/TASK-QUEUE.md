@@ -994,6 +994,26 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/5 (~05:30) — ✅ **FIRST NIGHTLY UNDER THE NEW GATES: ALL FIVE
+  STEPS GREEN, SPEND DOWN ~86%, OUTREACH-READY 15 → 20.** Run 31002134904
+  (11:36 UTC). Independent verification of each piece:
+  · **Focus gate works** — the ONLY spend was verify, and its
+  `meta.industries` stamp reads `{TREE_CARE:20, LANDSCAPE:22, LAWN_CARE:6,
+  PEST:2}` = **50 rows, 100% in-focus, zero pool/kitchen/fencing.** Item (d)
+  attribution is live and queryable, so burn-by-industry is now a fact not a
+  guess.
+  · **Attempt tracking works** — resolve_names, enrich_t1, addresses and the
+  phone tier all cost **$0**, correctly standing down ("90 resting", nothing
+  eligible) instead of re-burning proven dead ends. Pre-fix, resolve alone
+  would have re-spent on the same top-25 rows.
+  · **Total nightly spend $0.20** vs the PM's measured pre-gate baseline of
+  ~1,441 credits/day (~$1.44) — roughly an **86% reduction**, and the 50k
+  pack's runway extends from ~50 days to well beyond the 6-month expiry.
+  · **Outreach-ready 15 → 20** (verified + EXITED + email-or-phone, merge-
+  aware) — the verification pass converted 5 more people. In-focus named
+  holds at 274/364.
+  Nothing needed fixing. Still pending John: migrations 0024 then 0025, the
+  38 pen candidates, the VA call.
 - 📣 LANE C 8/5 (~03:30) — **PM: the 549-vs-529 gap is REAL and correct (the
   UI is right), but it's not just the total — EVERY guide metric in PM-STATUS
   is inflated by the 20 merged duplicates.** Measured live just now:
