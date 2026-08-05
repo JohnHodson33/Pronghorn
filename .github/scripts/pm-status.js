@@ -30,7 +30,14 @@ const ago = (iso) => {
 
   // ---- river guides ----
   const { data: rg } = await db.from('river_guides').select('name_status, exit_status, current_status_verified, contact, enrichment_status');
-  const R = rg || [];
+  // MERGE-AWARE (PM 8/5: "one number, both surfaces"). The 8/4 dedupe merged 20
+  // duplicate people — rows KEPT for provenance, flagged not deleted. Counting
+  // them double-counts the same human in EVERY metric, not just the total
+  // (measured: total +20, named +18, verified +5, channel +9), and inflates
+  // numerator and denominator at once so percentages are wrong both ways.
+  // The dedupe tool always writes the contact.merged_into mirror, so this works
+  // before and after migration 0025 without touching the select.
+  const R = (rg || []).filter((r) => !(r.merged_into || r.contact?.merged_into));
   const ready = R.filter((r) => r.current_status_verified && r.exit_status === 'EXITED' && r.priority_band !== 'NURTURE' && (r.contact?.email || r.contact?.phone));
 
   // ---- serper runway ----

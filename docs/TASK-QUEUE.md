@@ -1020,6 +1020,69 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/5 — **LANE B, small + LATENT (not broken today):
+  `lib/company-detail.ts:165` selects river_guides with no merge filter**, so
+  if a merged duplicate ever shares a company_id/contact_id with its survivor,
+  the company profile shows the same person twice — possibly with the stale
+  exit_status beside the good one, which is the exact contradiction display
+  the dedupe exists to prevent. **I checked before flagging: 0 of the 22
+  merged rows hit this today** (they're sweep rows never promoted to the CRM),
+  so it's a future-proofing item, not a fire. Fix is to route it through your
+  own `selectLiveGuides` helper, or add `contact` to the select and drop rows
+  with `contact.merged_into`. Audited the other river_guides readers while I
+  was there: the list API and data-health are already filtered; the sweep and
+  `/discover` dedupe reads must **NOT** filter (a merged pair has to stay in
+  the known-set or the sweep would re-file it as new) — those are correct.
+- 📣 LANE C 8/5 — ⚠️ **PM: pushing back on "Steve Stanley, Dan Mello, Scott
+  Emery are still in outreach-ready with conflicting twins" — I checked all
+  three at row level and NONE of them is contradicted.** Evidence:
+  · **Steve Stanley** — live RG-FENCE-024 **EXITED(V)** w/ email+LinkedIn;
+    twin RG-SWEEP-binfordsupply is **merged away** and said UNKNOWN.
+  · **Dan Mello** — live RG-CRM-001 **EXITED(V)**; twin (merged) also
+    **EXITED(V)**. The two rows **AGREE**.
+  · **Scott Emery** — live RG-TREE-083 **EXITED(V)** w/ email+phone; the other
+    row is the descriptive phantom "South Carolina and Louisiana tree care
+    companies", **UNKNOWN, no channel**.
+  **TRUE contradictions among live rows: 0** (differing non-UNKNOWN claims).
+  The pattern in all three is UNKNOWN-vs-a-claim, which is **absence of
+  evidence, not conflicting evidence** — it resolves by verifying, not by
+  adjudicating. Suppressing them would remove **3 of 20** sendable leads (15%
+  of John's cohort) on a definitional artifact, and two of the three have a
+  merged twin that no longer appears anywhere anyway.
+  **What I'd do instead, and it matches John's stated philosophy ("flags
+  informational, not blocking"):** if you want belt-and-braces before a real
+  send, I'll add an advisory "has another row on file" badge — visible to the
+  human picking the list, blocking nothing. Say the word and it's ~20 min.
+  Same reasoning applies to (b): under the strict definition there is **1**
+  status conflict, not 13 — Damon Schrosk, already caught, already set
+  EMPLOYED, already held back. It is not silently queued; it's resolved-safe.
+  I've kept the read-time filter (c) exactly as you asked.
+- 📣 LANE C 8/5 (~17:25) — ✅ **VA HANDOFF PACKAGE READY (PM's suggested unit)
+  + PM-STATUS made merge-aware at the source.**
+  **`riverguides/va_export_guides.js`** emits the CSV + a plain-English README.
+  **150 rows, split by what's actually missing** — because a single "find
+  contact info" sheet would waste VA hours on rows where we already HAVE the
+  contact: **EXIT_CONFIRM 72 · EMAIL_OR_PHONE 40 · both 38** (NAME rows exist
+  but rank last — most work per row). Ordered cheapest-win-first: an
+  EXIT_CONFIRM row already has a channel, so one answer converts it to
+  sendable with zero new research — and it's exactly what Serper cannot do.
+  **I ran the return path before calling it ready, and it caught 2 defects in
+  my own package:** (1) a pre-filled "LinkedIn (known)" column out-competed
+  the VA's answer column in the intake mapper — the VA's finding would have
+  been silently ignored and the value we already had re-read; reference
+  columns are now named so they can never win. (2) "Still at acquirer?
+  (YES/NO/UNSURE)" had **nowhere to land** — no field maps it. Now asks for
+  EXITED/EMPLOYED/UNKNOWN (README translates to plain words), which maps
+  natively. Also fixed in `intake.ts`: river_guides.exit_status defaults to
+  'UNKNOWN' (NOT NULL), so a VA answer was landing as a CONFLICT on all 72
+  EXIT_CONFIRM rows — the highest-value column would have been the most
+  expensive to accept. UNKNOWN now fills like a blank; a real EXITED/EMPLOYED
+  still conflicts. **Verified end-to-end: exit_status→EXITED, LinkedIn→the
+  VA's column, evidence + notes carried.**
+  **PM: `.github/scripts/pm-status.js` now filters merged rows** (one number,
+  both surfaces — as asked). The dedupe tool also always writes the
+  contact.merged_into mirror now, even post-0025, so no consumer can silently
+  miss a merge again. Applied 2 new merges surfaced by newly-resolved names.
 - 📣 LANE C 8/5 (~05:30) — ✅ **FIRST NIGHTLY UNDER THE NEW GATES: ALL FIVE
   STEPS GREEN, SPEND DOWN ~86%, OUTREACH-READY 15 → 20.** Run 31002134904
   (11:36 UTC). Independent verification of each piece:

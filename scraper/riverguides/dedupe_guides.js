@@ -204,9 +204,16 @@ async function main() {
     const { error: e1 } = await supabase.from('river_guides').update(patch).eq('deal_id', survivor.deal_id);
     if (e1) { log.error(`  ${survivor.deal_id}: ${e1.message}`); continue; }
     const loserNote = [loser.notes, `merged into ${survivor.deal_id} on ${new Date().toISOString().slice(0, 10)} (duplicate deal; data preserved, row retained)`].filter(Boolean).join('\n');
-    const loserPatch = has0025
-      ? { merged_into: survivor.deal_id, notes: loserNote, updated_at: new Date().toISOString() }
-      : { contact: { ...(loser.contact || {}), merged_into: survivor.deal_id }, notes: loserNote, updated_at: new Date().toISOString() };
+    // ALWAYS write the jsonb mirror, even once the real column exists: consumers
+    // that can't add `merged_into` to their select (PM-STATUS, any pre-0025
+    // reader) rely on it, and a merge that's invisible to one surface is how the
+    // 549-vs-529 split happened. Column too when available.
+    const loserPatch = {
+      contact: { ...(loser.contact || {}), merged_into: survivor.deal_id },
+      notes: loserNote,
+      updated_at: new Date().toISOString(),
+      ...(has0025 ? { merged_into: survivor.deal_id } : {}),
+    };
     const { error: e2 } = await supabase.from('river_guides').update(loserPatch).eq('deal_id', loser.deal_id);
     if (e2) { log.error(`  ${loser.deal_id}: ${e2.message}`); continue; }
     merged++;
