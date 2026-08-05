@@ -2151,3 +2151,44 @@ broker-contact gaps none-actionable ✅ · freshness all <48h · sweep guards
 Standing asks unchanged: PM's word on the corroboration --confirm run (30
 in-place updates ready); John to apply 0024 + 0025 (either order — both now
 declare the same union).
+
+## 2026-08-05 — ⚠️ DEDUPE IS NOT IDEMPOTENT AGAINST THE NAMING PIPELINE (new systemic finding)
+Verified Lane C's interim fix independently — it works, with one correction to
+the claim, and it exposed a bigger issue.
+
+**Interim fix CONFIRMED working:** 20 rows carry `contact.merged_into`, exactly
+matching the 20 marked in `notes` (**zero gap** between the two markers), and
+filtering on it drops the book 549 → 529. So UI consumers do get a deduped view
+without migration 0025. Good call.
+
+**Correction to "hides all 20 dupes":** it hides 20 merged-away ROWS, but **9
+duplicated PEOPLE remain visible** among live rows. Not a defect in the fix —
+those 9 were never merged.
+
+**THE REAL FINDING — the duplicate count is not stable, it GROWS with naming.**
+This morning I measured 4 residual differing-status pairs; now there are 7.
+The three new ones (Bob Blandford, Sidney Sparkman, John Eisenhower) were all
+created by the **identity worker resolving names at 00:29 today — after the
+merge pass ran at 22:00**. Two rows that were previously TBD became the same
+person, instantly re-creating a duplicate the merge could not have seen.
+PM's card already said "dupes among TBD rows are undetectable by name, so 20
+is a FLOOR" — this is that floor rising in real time, ~3 new duplicate people
+within 3 hours of the merge.
+
+**Recommendation (Lane C's call, mirrors what I built for the sweep):** the
+one-time merge pass will never converge on its own. Either re-run dedupe after
+every name-resolution wave, or better — put the guard at the point of naming:
+before the identity worker writes a resolved `full_name`, check whether another
+row already has that name under the same acquirer, and merge/flag instead of
+creating a twin. That is the naming-side analogue of the insert-time guard that
+fixed this for the sweep, and it is the only version that converges.
+
+**Reassurance for John:** re-verified after the new duplicates appeared —
+**outreach-ready is still 15, and still ZERO sendable rows are contradicted by
+an EMPLOYED twin.** All 9 remaining duplicate pairs are "loose" (one side
+UNKNOWN = absence of information); strict EXITED-vs-EMPLOYED contradictions
+are **0**. The list stays safe to send. This also confirms Lane C's
+"1 strict vs 13 loose" contradiction-definition gap — measured independently.
+
+Lane A surface unchanged: nothing new in TASK-QUEUE, migrations 0024/0025 still
+unapplied (now lower urgency given the interim fix), next nightly ~13:00 UTC.
