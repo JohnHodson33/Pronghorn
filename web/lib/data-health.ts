@@ -96,9 +96,17 @@ export async function fetchDataHealth(): Promise<DataHealth | null> {
     exit_status: string | null;
     contact: { email?: string | null; phone?: string | null; linkedin_url?: string | null } | null;
   };
-  const rgRes = await db.from("river_guides")
-    .select("full_name, current_status_verified, exit_status, contact")
+  // Merged-away duplicate rows must not inflate the denominators (Lane C 8/4:
+  // "lists filter on merged_into is null" — 20 rows merged, kept for
+  // provenance). merged_into arrives with 0025, so ask for it and fall back to
+  // the unfiltered read while the migration is pending.
+  const rgWithMerged = await db.from("river_guides")
+    .select("full_name, current_status_verified, exit_status, contact, merged_into")
+    .is("merged_into", null)
     .limit(5000);
+  const rgRes = rgWithMerged.error
+    ? await db.from("river_guides").select("full_name, current_status_verified, exit_status, contact").limit(5000)
+    : rgWithMerged;
   const guides = (rgRes.data ?? []) as unknown as GuideRow[];
   // OUTREACH-READY IS ONE DEFINITION (PM 8/4, reconciling the 14-vs-23 split):
   // verified + EXITED + email-or-phone. A LinkedIn URL is NOT a channel an

@@ -2118,3 +2118,36 @@ files now declare the same four-value union — order-independent and re-runnabl
 🔴 **JOHN — RUN BOTH, EITHER ORDER:** `0024_possible_duplicate_candidates.sql`
 and `0025_guide_dedupe.sql`. Until then the dedupe is cosmetic and possible-twin
 findings are logged rather than penned.
+
+## 2026-08-05 — independent check: outreach-ready 15 is TRUSTWORTHY (good news for John)
+Migrations 0024/0025 still NOT applied, so the dedupe remains inert (previous
+entry stands). Given Lane C is now publishing outreach-ready counts off that
+unfiltered table, I recomputed the cohort independently rather than trusting
+the number — this is the set John would actually email.
+
+**Reproduced Lane C's figure exactly: 15** (verified + EXITED + email-or-phone,
+PM's canonical definition), computed from raw rows with my own query. Two
+lanes agreeing from different code is a real check, not a restatement.
+
+**Contamination is nearly gone, and the residue is benign:**
+· **ZERO sendable rows are contradicted by an EMPLOYED twin** — that was the
+  actual danger PM named ("emailing someone as a fresh exit while our own data
+  says they still work for the acquirer"). It does not exist in the live data.
+· **ZERO sendable rows are themselves merged-away duplicates**, so there is no
+  double-send risk.
+· **ONE flag: Scott Emery** (RG-TREE-083 EXITED-verified) has a live twin
+  RG-SWEEP-southcarolinaandlo = **UNKNOWN**. UNKNOWN is an absence of
+  information, not a contradiction of EXITED — and that twin is one of the
+  descriptive-placeholder phantoms ("South Carolina and Louisiana tree care
+  companies") my filing guard now rejects at source.
+**Verdict: the 15 are safe to send.** PM's earlier "3 of 14 at risk" (Steve
+Stanley, Dan Mello, Scott Emery) has resolved to 0 real risks — the merge
+fixed two and the third is a phantom-row artifact.
+
+Audits this iteration: source_health 30/30 green · source_quality
+broker-contact gaps none-actionable ✅ · freshness all <48h · sweep guards
+39/39. Nothing actionable in Lane A's own surface.
+
+Standing asks unchanged: PM's word on the corroboration --confirm run (30
+in-place updates ready); John to apply 0024 + 0025 (either order — both now
+declare the same union).
