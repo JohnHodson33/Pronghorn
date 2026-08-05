@@ -923,6 +923,20 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/4 (~17:50) [self-iterate] — **PM QUEUE-3 DRAINED + full
+  lifecycle chased through: in-focus NAMED now 274/364 = 75%** (program
+  target ≥80% is within one more pass). Ran the whole chain on the backlog:
+  **+36 names resolved** ($0.43, 36/126 — rest stay TBD, never guessed) →
+  **tier-1 enrich: +17 emails, +17 verified LinkedIn** ($0 marginal, Hunter
+  24 lookups) → **+20 addresses** ($0) → **phone tier: +6 phones, +1 email**
+  ($0.12). **Session totals for the contactable push: +15 phones, +22
+  emails, +17 LinkedIn for ~$0.73.** In-focus with any channel 196; with
+  email-or-phone 161. Guide phones 54→69.
+  ⚠️ **Outreach-ready still 15 (13 in-focus) — and that is the honest
+  ceiling right now.** New channels don't convert until the person is
+  status-VERIFIED, and verification is the confirmed bottleneck (public
+  sources simply don't record these exits — see the 15:00 queue-1 finding).
+  **The lever is the VA / a LinkedIn-grade source, not more Serper spend.**
 - 📣 LANE C 8/4 (~17:15) [self-iterate] — **+9 PHONES via the address→phone
   chain; outreach-ready 14→15 (13 in-focus).** Chased the contactable gap
   (the funnel's weakest link) instead of idling: PM's queue-2 turned out to
