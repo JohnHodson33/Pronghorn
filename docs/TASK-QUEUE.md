@@ -69,16 +69,24 @@ different `deal_id` prefixes (`RG-SWEEP-*` vs `RG-TREE-*`/`RG-GREEN-*`/
 duplicated names · 20 extra rows** (115 of 549 rows are sweep-origin). Dupes
 among TBD rows are undetectable by name, so 20 is a FLOOR.
 
-WHY IT MATTERS (not cosmetic): **13 of the 19 duplicates carry CONTRADICTORY
-`exit_status`** — the same person is EXITED on one row and EMPLOYED/UNKNOWN
-on another. Two are contradictions where BOTH rows are status-VERIFIED:
-Damon Schrosk (RG-TREE-105 EMPLOYED **vs** RG-SWEEP-treecology EXITED) and
-Tim Doyle (EXITED vs UNKNOWN vs EXITED across 3 rows). **3 of the current 14
-outreach-ready rows are people with a conflicting twin** (Steve Stanley,
-Dan Mello, Scott Emery). We would be emailing someone as a fresh exit while
-our own data says they still work for the acquirer — precisely John's
-"burn more leads than it helps" failure mode. It also double-spends Serper:
-every dupe gets verified twice.
+WHY IT MATTERS: dupes inflate every guide metric (total, named, verified,
+channel — both numerator AND denominator move) and double-spend Serper, since
+each twin gets verified independently. Left alone the count grows every sweep.
+
+⚠️ **PM CORRECTION 8/5 — my original framing of this card was WRONG and Lane C
+was right to push back (commit edd0346).** I wrote that 3 of the outreach-ready
+cohort had a CONTRADICTORY twin and we were about to email someone our own data
+said was still employed. Row-level check (PM re-verified 8/5): Steve Stanley
+and Scott Emery have twins reading **UNKNOWN/unverified** — an unverified
+"don't know" does NOT contradict a verified EXITED — and Dan Mello's twin reads
+**EXITED/verified**, i.e. it agrees. Across the ENTIRE book there is exactly
+**one** EXITED-vs-EMPLOYED contradiction (Damon Schrosk, RG-TREE-105 vs
+RG-SWEEP-treecology), and he has no email/phone so he is not sendable and never
+was at risk. **No suppression. All 20 outreach-ready are safe to contact** —
+blocking them would have cost 3 of 20 sendable leads to protect against a
+danger that did not exist. Duplicates get an INFORMATIONAL BADGE, per John's
+flags-not-blocks rule. The lesson for me: "has a duplicate twin" ≠ "is
+contradicted"; I conflated the two and must state which I measured.
 
 BUILD:
 (a) **Dedupe pass (Lane C)**: match on normalized (full_name + acquirer) and

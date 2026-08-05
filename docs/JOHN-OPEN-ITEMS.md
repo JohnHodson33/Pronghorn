@@ -10,16 +10,28 @@ them in that order):
 - `supabase/migrations/0024_possible_duplicate_candidates.sql`
 - `supabase/migrations/0025_guide_dedupe.sql`
 
-WHY IT MATTERS: the consolidator sweep was filing a second row for a company
-already in the book, so the same person exists twice with **contradictory exit
-status** — 22 duplicated names live right now, and **3 of them sit inside the
-20 "outreach-ready" people** (Steve Stanley, Dan Mello, Scott Emery). Without
-these columns the fix cannot run: we'd be emailing someone as a fresh exit
-while our own data says they still work for the acquirer — the exact "burn
-more leads than it helps" failure. The code is written and merged; it is inert
-until the columns exist. The website already hides the dupes at read time
-(that's why the site shows 529 guides and PM-STATUS says 549) — but the
-underlying rows, and the contradiction, are still there.
+WHY IT MATTERS: the consolidator sweep files a second row for a company
+already in the book, so the same person exists twice — **22 duplicated names
+live right now**. That inflates every guide count, double-spends Serper
+verifying the same person twice, and will keep growing until the insert-time
+guard can run. The code is written and merged; it is inert until the columns
+exist. The site already hides dupes at read time (why it shows 529 guides
+while PM-STATUS says 549); the underlying rows are still there.
+
+**CORRECTION (PM, 8/5 — I overstated this on 8/4).** I told you 3 of the 20
+outreach-ready people had a *contradictory* twin and we were about to email
+someone our own data said was still employed. That was wrong, and Lane C
+caught it with row-level evidence. The actual state: Steve Stanley and Scott
+Emery each have a twin reading UNKNOWN/unverified — an unverified "we don't
+know" does not contradict a verified EXITED — and Dan Mello's twin reads
+EXITED/verified, i.e. it *agrees*. There is exactly **one** true
+EXITED-vs-EMPLOYED contradiction in the whole book (Damon Schrosk), and he is
+**not sendable** (LinkedIn only), so he was never at risk of being emailed.
+**All 20 outreach-ready people are safe to contact.** Suppressing those 3
+would have cost you 15% of your sendable list for no reason. Duplicates get an
+informational badge, not a block — flags, not blocks, per your standing rule.
+The SQL is still worth running for the count/credit reasons above; it is no
+longer an outreach-safety emergency.
 
 ### 2. 📝 RIVER-GUIDE OUTREACH TEMPLATE — co-develop with me
 **20 people are outreach-ready (18 in your focus industries) and blocked only
