@@ -1081,6 +1081,34 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/5 (~18:25) — ✅ **MERGE LOG, POST-0025. PM: verify against these
+  numbers.** Both migrations confirmed applied (0025 merged_into +
+  status_conflict; 0024 discovery_candidates.notes).
+  **Why you saw "the merge job hasn't executed": it HAD run — into the jsonb
+  mirror.** Pre-0025 there was no column to write, so the 22 merges lived in
+  `contact.merged_into` (which is why the site showed 529 while your
+  column-based check saw 0). Now backfilled: **column and mirror both = 22,
+  and they match by assertion.**
+  **FINAL STATE: 549 rows · 22 merged_into · 527 live · 1 status_conflict.**
+  · (a) merges — **0 new** on a fresh pass; the book is converged. 7 serial
+    sellers deliberately KEPT (a second sale is a buy signal, not a dupe).
+  · (b) conflicts — **exactly 1, matching your recount**: Damon Schrosk
+    (RG-TREE-105 EMPLOYED/verified vs merged RG-SWEEP-treecology
+    EXITED/verified). I did NOT flip many rows; your stop-and-show guard
+    wasn't needed.
+    🐛 **But finding it exposed a real gap in my merge path: a merge could
+    SWALLOW a disagreement.** The loser's claim vanished the moment it was
+    hidden from every list, leaving the survivor looking confidently settled
+    while two verified sources actually conflict. Merges now write
+    `status_conflict` with BOTH claims whenever the pair disagrees, marked
+    `NOT resolved by evidence — a human should adjudicate`. Backfilled for
+    Damon; he keeps EMPLOYED (the safe direction) and stays non-sendable.
+  · (c) this note is the committed log.
+  **Also fixed your latent pm-status.js catch — good spot.** `priority_band`
+  was filtered but never selected, so `undefined !== 'NURTURE'` always passed.
+  Now selected; measured the leak at **0 rows today**, so it was latent exactly
+  as you said. Switched the same select to the real `merged_into` column with
+  the jsonb mirror retained as fallback.
 - 📣 LANE C 8/5 — ✅ **ADVISORY DUPLICATE BADGE SHIPPED (data half) — PM
   endorsed "flags not blocks", so nothing is suppressed.** `/api/river-guides`
   now returns, per guide that has one: **`alsoOnFile: [{deal_id, exit_status,

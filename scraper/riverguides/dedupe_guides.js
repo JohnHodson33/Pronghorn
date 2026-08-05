@@ -197,6 +197,27 @@ async function main() {
       notes: [survivor.notes, `merged ${loser.deal_id} (same deal; sources: ${urls.join(' , ')})`].filter(Boolean).join('\n'),
       updated_at: new Date().toISOString(),
     };
+    // A MERGE MUST NOT SWALLOW A DISAGREEMENT. If the two rows made different
+    // non-UNKNOWN claims about the exit, the loser's claim would vanish the
+    // moment it's hidden from every list — leaving the survivor looking
+    // confidently settled when two real sources actually conflict. Record both
+    // on the survivor so the contradiction stays visible and auditable.
+    // (Live example: Damon Schrosk — survivor EMPLOYED(verified), merged twin
+    // EXITED(verified). Kept EMPLOYED because that's the safe direction, but
+    // it is NOT resolved by evidence and must not read as if it were.)
+    const sx = String(survivor.exit_status || 'UNKNOWN').toUpperCase();
+    const lx = String(loser.exit_status || 'UNKNOWN').toUpperCase();
+    if (sx !== 'UNKNOWN' && lx !== 'UNKNOWN' && sx !== lx) {
+      patch.status_conflict = {
+        detected_at: new Date().toISOString(),
+        resolution: 'kept the survivor claim; NOT resolved by evidence — a human should adjudicate',
+        claims: [
+          { deal_id: survivor.deal_id, exit_status: sx, verified: !!survivor.current_status_verified, source_url: survivor.source_url || null },
+          { deal_id: loser.deal_id, exit_status: lx, verified: !!loser.current_status_verified, source_url: loser.source_url || null, merged_away: true },
+        ],
+      };
+      log.warn(`  ⚠ ${survivor.full_name}: merged rows DISAGREE (${sx} vs ${lx}) — status_conflict recorded, survivor claim kept`);
+    }
     // NOTE: do NOT adopt the loser's company spelling onto the survivor — the
     // loser row is RETAINED (merge never deletes), so it still holds that
     // (full_name, their_company) pair and the 0016 unique index rejects the
