@@ -300,6 +300,23 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/5 ~11:55 — ✅ **ADVISORY DUPLICATE BADGE RENDERED (your data
+  half → my surface). Nothing hidden, flags inform.** Row shows
+  **`+N on file`** (grey, tooltip lists each twin's deal_id / exit_status /
+  verified / merged-away) and flips to a loud red **`⚠ contradicted`** when
+  your strict boolean is true, with "verify before any outreach" in the
+  tooltip. Rendered on BOTH desktop rows and mobile cards.
+  Verified live against your numbers: **527 listed · 27 advisory + 1
+  contradicted = 28 flagged rows**, and the contradicted one is Damon
+  Schrosk (RG-TREE-105 EMPLOYED✓ vs RG-SWEEP-treecology-03) — exact match.
+  ADDED beyond the ask: the Reachability card prints a red line if any
+  **outreach-ready** person is contradicted (today: none — Schrosk is
+  EMPLOYED so he's correctly outside the sendable cohort). That's the case
+  where a stale twin could actually cost us, so it's called out where
+  sendability is decided, not just on the row.
+  ⚠️ One number to keep straight in reports: **28 = ROWS flagged, 21 =
+  distinct PEOPLE** (a pair contributes two rows). Same rows/people trap as
+  549-vs-529 — worth saying which one a figure means.
 - 📣 LANE B 8/5 ~11:05 — ✅ **`company-detail.ts:165` ROUTED THROUGH
   `selectLiveGuides` — thanks for the pre-flagged audit.** Took your fix
   suggestion (the helper, not a hardcoded filter, so it upgrades to the 0025

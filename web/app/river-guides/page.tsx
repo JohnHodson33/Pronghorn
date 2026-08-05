@@ -69,7 +69,37 @@ type Guide = {
   contact_id: string | null;
   company_id: string | null;
   notes: string | null; // verify-worker evidence lives here (PM 7/16 item j)
+  // ADVISORY duplicate flag (Lane C 8/5): other rows on file for the same
+  // person. `contradicted` only when another row makes a DIFFERENT non-UNKNOWN
+  // claim — an UNKNOWN twin is absence of evidence, not conflicting evidence.
+  // John's rule: flags inform, they never block, so nothing is hidden.
+  alsoOnFile?: { deal_id: string; exit_status: string; verified: boolean; merged: boolean }[];
+  contradicted?: boolean;
 };
+
+// one advisory badge, loud when the twin actually disagrees
+function DuplicateBadge({ g }: { g: Guide }) {
+  const others = g.alsoOnFile ?? [];
+  if (!others.length) return null;
+  const detail = others
+    .map((o) => `${o.deal_id}: ${o.exit_status}${o.verified ? " ✓verified" : ""}${o.merged ? " (merged away)" : ""}`)
+    .join("\n");
+  return g.contradicted ? (
+    <span
+      className="ml-1 rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-800"
+      title={`CONTRADICTED — another row on file makes a different claim about this person:\n${detail}\n\nVerify before any outreach.`}
+    >
+      ⚠ contradicted
+    </span>
+  ) : (
+    <span
+      className="ml-1 rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-600"
+      title={`Another row is on file for this person (no conflicting claim):\n${detail}`}
+    >
+      +{others.length} on file
+    </span>
+  );
+}
 
 const BANDS = ["CALL_NOW", "ENRICH_THEN_ASSESS", "NURTURE", "RESOLVE_NAME_FIRST"] as const;
 const BAND_LABEL: Record<string, string> = {
@@ -574,6 +604,18 @@ export default function RiverGuides() {
           isn&rsquo;t a channel a campaign can send to, so those people are counted separately and belong in the
           VA/enrichment queue until they have an email or phone.
         </p>
+        {/* a contradicted person inside the sendable cohort is the one case
+            worth calling out here — flagged, not hidden (John's rule) */}
+        {(() => {
+          const bad = all.filter((g) => g.contradicted && cohortOf(g) === "READY").length;
+          if (!bad) return null;
+          return (
+            <p className="mt-1.5 text-[11px] font-medium text-red-700">
+              ⚠ {bad} of the outreach-ready {bad === 1 ? "person has" : "people have"} a contradicting row on file —
+              verify before sending (filter the ⚠ contradicted badge in the list below).
+            </p>
+          );
+        })()}
       </div>
 
       {/* band counts header — the working split */}
@@ -730,8 +772,11 @@ export default function RiverGuides() {
                     <td className="whitespace-nowrap px-3 py-2.5">
                       <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${bandChip[g.priority_band]}`}>{BAND_LABEL[g.priority_band]}</span>
                     </td>
-                    <td className="max-w-40 truncate px-3 py-2.5 font-medium">
-                      {g.full_name ?? <span className="italic text-amber-600">TBD</span>}
+                    <td className="max-w-40 px-3 py-2.5 font-medium">
+                      <span className="block truncate">
+                        {g.full_name ?? <span className="italic text-amber-600">TBD</span>}
+                        <DuplicateBadge g={g} />
+                      </span>
                       <div className="truncate text-xs font-normal text-zinc-400" title={ARCHETYPE_LABEL[g.archetype] ?? g.archetype}>{ARCHETYPE_LABEL[g.archetype] ?? g.archetype}</div>
                     </td>
                     <td className="max-w-64 px-3 py-2.5">
@@ -895,6 +940,7 @@ export default function RiverGuides() {
                 />
                 <span className="min-w-0 flex-1">
                   {g.full_name ?? <span className="italic text-amber-600">TBD</span>}
+                  <DuplicateBadge g={g} />
                   <span className="block text-xs font-normal text-zinc-400">{ARCHETYPE_LABEL[g.archetype] ?? g.archetype}</span>
                 </span>
               </span>
