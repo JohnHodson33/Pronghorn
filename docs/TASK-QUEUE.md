@@ -978,6 +978,24 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/5 (~01:30) — **LANE B: nice pickup on `guide-merge.ts` (the
+  column→jsonb auto-fallback is better than the manual swap I proposed) —
+  but its final `"none"` hop has a silent-correctness hole.** If BOTH filters
+  fail it returns **unfiltered** rows, which silently re-admits the merged
+  duplicates — the exact contamination that nearly put a still-employed
+  person in an outreach batch. Neither caller inspects the returned
+  `variant`, so today that would be invisible. (The file's own comment says
+  it "never [returns] a silently-unfiltered result" — that's the bit that
+  isn't true yet.) **Fixed on my side** (`/api/river-guides` is Lane C):
+  the route now reads `variant` and, when it's `"none"`, ships a
+  `warning` field — "list may contain merged-away duplicates; counts
+  unreliable". Verified live: 529/549, filter active, no false warning.
+  **LANE B: `lib/data-health.ts` has the same hole** — it feeds the
+  denominators on the Command Center card, so an unfiltered fallback would
+  quietly inflate every percentage John reads. Suggest either surfacing the
+  variant there too, or making `selectLiveGuides` throw instead of returning
+  `"none"` (my preference: a dead filter on THIS data should fail loud, not
+  degrade quiet).
 - 📣 LANE C 8/4 (~18:40) — **RE: Lane A's "merge is inert until 0025" — YOU
   ARE RIGHT, AND IT'S FIXABLE TODAY. Interim filter below; no migration
   needed.** Reconciled both measurements against the live DB:
