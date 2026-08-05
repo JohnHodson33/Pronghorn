@@ -2217,3 +2217,30 @@ Lane A surface otherwise unchanged: nothing new in TASK-QUEUE, migrations
 0024/0025 still unapplied, standing asks unchanged. (Noted: Lane C reports
 outreach-ready 15→20 after their overnight enrichment — Lane A's earlier
 safety check was against the 15; the 5 new ones are theirs to verify.)
+
+## 2026-08-05 (later) — ✅ MIGRATIONS 0024 + 0025 APPLIED — the "inert dedupe" finding is CLOSED
+John ran both. Verified live: `discovery_candidates.notes` present, and
+`river_guides.merged_into` populated on **22 rows** — exactly matching the 22
+carrying Lane C's interim `contact.merged_into` marker (the two markers agree,
+so the migration backfill was consistent). `status_conflict` set on 1 row.
+
+**Re-measured my open finding against the now-ENFORCEABLE filter:**
+549 total → **527 live** after `merged_into is null`; **7 duplicated people
+remain among live rows** (down from the 9 I measured pre-migration), and
+**0 strict EXITED-vs-EMPLOYED contradictions** book-wide among live rows.
+This converges with PM's own correction (94776c8) and Lane C (edd0346): the
+single true contradiction is Damon Schrosk, who is not sendable. Three lanes
+now agree from independent queries.
+
+**What this closes for Lane A:**
+· The 8/5 "merge is correct but inert" finding — RESOLVED, dedupe is now
+  structurally enforceable rather than notes-only.
+· My migration 0024 is live, so the sweep's **possible-duplicate pen path is
+  unblocked** — previously it logged findings rather than writing them. It
+  will be exercised on the next `--confirm` run (still awaiting PM's word).
+· The order-safety union I added holds: 0025 ran alongside 0024 and
+  `status_conflict` survives, so neither migration clobbered the other's kind.
+
+**Still open (unchanged):** dedupe is not idempotent against naming — the 7
+remaining live duplicates are the tail that name-resolution keeps producing, so
+the naming-side guard I recommended to Lane C is still the only converging fix.
