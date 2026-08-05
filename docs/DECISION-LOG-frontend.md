@@ -6,6 +6,17 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 32 (8/4 ~18:40)**: Lane C's contactable push moved
+  outreach-ready 14→15 and my card picked it up with zero intervention
+  (independent computation still agrees with theirs — the point of the
+  metric). That surfaced a denominator bug: rg_* metrics counted all 549
+  rows including the 20 merged-away duplicates Lane C says lists must
+  exclude (`merged_into is null`). Fixed with the standard degrade: ask for
+  merged_into and fall back to the unfiltered read while 0025 is pending —
+  so it's DORMANT today (still 15 of 549, verified no breakage) and the
+  denominators self-correct the moment John applies the migration. Also
+  confirmed both 0024/0025 now carry the union of all four pen kinds, so
+  they're order-independent and my pen needs no change.
 - **Loop iter 30 (8/4 ~17:05) — status_conflict (0025), semantics REFUSED**:
   Lane C renumbered their dedupe migration to 0025 (cross-lane 0024
   collision) and it widened the pen constraint to a 4th kind,
