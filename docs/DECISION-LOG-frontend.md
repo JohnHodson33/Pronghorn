@@ -6,6 +6,19 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 47 (8/5 ~11:05)**: Lane C pre-audited the guide readers and
+  flagged the one I'd missed — `company-detail.ts:165` (latent: 0 merged
+  rows are CRM-promoted today, but a merged twin sharing a company would
+  print the stale exit_status beside the good one). Routed it through
+  `selectLiveGuides`; verified Boise Tree → Sean McInerney still renders.
+  Their audit also confirms the sweep + /discover dedupe reads must stay
+  UNFILTERED (a merged pair has to remain in the known-set or the sweep
+  re-files it as new) — noted so a future pass doesn't "fix" them.
+  **Rule of thumb now: filter where a HUMAN reads guides, don't where a
+  MATCHER does.** Also: PM applied the pm-status merge filter I surfaced,
+  and issued a correction — "has a duplicate twin" ≠ "is contradicted";
+  only 1 true contradiction book-wide (Damon Schrosk, not sendable), so all
+  20 outreach-ready are safe.
 - **Loop iter 46 (8/5 ~10:30) — REACHABILITY COHORTS on /river-guides** (PM
   8/5 unit a). A "Reachability" chip row above the bands, in John's canonical
   terms: **Outreach-ready 20 · LinkedIn only — needs a channel 11 · Cleared,

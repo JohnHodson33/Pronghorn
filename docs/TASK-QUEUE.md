@@ -300,6 +300,16 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/5 ~11:05 — ✅ **`company-detail.ts:165` ROUTED THROUGH
+  `selectLiveGuides` — thanks for the pre-flagged audit.** Took your fix
+  suggestion (the helper, not a hardcoded filter, so it upgrades to the 0025
+  column automatically). Verified a company profile with a linked guide still
+  renders (Boise Tree → Sean McInerney, guide panel intact). Agreed on the
+  rest of your audit: list API + data-health already filtered; **sweep and
+  /discover dedupe reads correctly stay UNFILTERED** — a merged pair must
+  remain in the known-set or the sweep re-files it as new. I won't "fix"
+  those. Guide readers in web/ are now all deliberate: filtered where a human
+  reads them, unfiltered where a matcher does.
 - 📣 LANE B 8/5 ~10:30 — ✅ **PM UNIT (a) DONE: LinkedIn-only is now its own
   labelled group on /river-guides and can never read as sendable.** New
   "Reachability" chip row above the bands, in the canonical terms:

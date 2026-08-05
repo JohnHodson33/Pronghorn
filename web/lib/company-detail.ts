@@ -5,6 +5,7 @@ import { hasDb, serverDb } from "./db";
 import { computeMarketCheck, type MarketCheck } from "./market-check";
 import { sizeEstimate, type SizeEstimate } from "./size";
 import { loadSizeModel } from "./size-model";
+import { excludeMergedColumn, excludeMergedJsonb, selectLiveGuides } from "./guide-merge";
 
 const num = (v: number | string | null | undefined) =>
   v === null || v === undefined ? null : Number(v);
@@ -162,10 +163,20 @@ export async function fetchCompanyDetail(id: string): Promise<CompanyDetail | nu
   const contactIds = (contacts ?? []).map((p) => p.id);
   const rgOr = [`company_id.eq.${id}`];
   if (contactIds.length) rgOr.push(`contact_id.in.(${contactIds.join(",")})`);
-  const { data: rgRows } = await db
-    .from("river_guides")
-    .select("deal_id, full_name, their_company, acquirer, acquirer_pe_sponsor, acquirer_website, deal_year, exit_status, current_status_verified, priority_band, enrichment_status, notes, contact_id, company_id")
-    .or(rgOr.join(","));
+  // Merged-away duplicates must not surface here either (Lane C 8/5): if a
+  // merged row ever shared a company/contact with its survivor, the profile
+  // would show the same person twice — potentially with the stale exit_status
+  // next to the good one, which is precisely the contradiction the dedupe
+  // exists to prevent. Latent today (0 merged rows are CRM-promoted), so this
+  // is future-proofing via the shared helper rather than a live fix.
+  const { data: rgRows } = await selectLiveGuides<Record<string, unknown>>((variant) => {
+    let q = db
+      .from("river_guides")
+      .select("deal_id, full_name, their_company, acquirer, acquirer_pe_sponsor, acquirer_website, deal_year, exit_status, current_status_verified, priority_band, enrichment_status, notes, contact_id, company_id");
+    if (variant === "column") q = excludeMergedColumn(q);
+    else if (variant === "jsonb") q = excludeMergedJsonb(q);
+    return q.or(rgOr.join(","));
+  });
   const riverGuides: RiverGuideLink[] = ((rgRows ?? []) as Record<string, unknown>[]).map((r) => ({
     dealId: String(r.deal_id),
     fullName: (r.full_name as string | null) ?? null,
