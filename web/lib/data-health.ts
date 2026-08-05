@@ -10,6 +10,7 @@
 import { hasDb, serverDb } from "./db";
 import { sizeEstimate } from "./size";
 import { loadSizeModel } from "./size-model";
+import { excludeMergedColumn, excludeMergedJsonb, selectLiveGuides } from "./guide-merge";
 
 export type MetricKey =
   | "lead_pe" | "lead_sized" | "lead_named" | "lead_channel"
@@ -97,16 +98,16 @@ export async function fetchDataHealth(): Promise<DataHealth | null> {
     contact: { email?: string | null; phone?: string | null; linkedin_url?: string | null } | null;
   };
   // Merged-away duplicate rows must not inflate the denominators (Lane C 8/4:
-  // "lists filter on merged_into is null" — 20 rows merged, kept for
-  // provenance). merged_into arrives with 0025, so ask for it and fall back to
-  // the unfiltered read while the migration is pending.
-  const rgWithMerged = await db.from("river_guides")
-    .select("full_name, current_status_verified, exit_status, contact, merged_into")
-    .is("merged_into", null)
-    .limit(5000);
-  const rgRes = rgWithMerged.error
-    ? await db.from("river_guides").select("full_name, current_status_verified, exit_status, contact").limit(5000)
-    : rgWithMerged;
+  // 20 rows merged, kept for provenance). The shared helper prefers the 0025
+  // column and falls back to the jsonb path that works today.
+  const rgRes = await selectLiveGuides<GuideRow>((variant) => {
+    let q = db.from("river_guides")
+      .select("full_name, current_status_verified, exit_status, contact")
+      .limit(5000);
+    if (variant === "column") q = excludeMergedColumn(q);
+    else if (variant === "jsonb") q = excludeMergedJsonb(q);
+    return q as unknown as PromiseLike<{ data: GuideRow[] | null; error: { message: string } | null }>;
+  });
   const guides = (rgRes.data ?? []) as unknown as GuideRow[];
   // OUTREACH-READY IS ONE DEFINITION (PM 8/4, reconciling the 14-vs-23 split):
   // verified + EXITED + email-or-phone. A LinkedIn URL is NOT a channel an
