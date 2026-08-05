@@ -54,13 +54,37 @@ async function main() {
   const focus = await loadFocus();
   // merged duplicates never re-enter a worker (they'd re-create contradictions)
   const { rows: inFocus, skipped } = applyFocus(notMerged(allTbd || []), focus, (g) => g.industry);
-  const guides = inFocus.slice(0, limit);
-  if (!guides?.length) { log.info(`No NEEDS_NAME river guides in focus (${skipped} out-of-focus gated).`); return; }
-  log.info(`identity resolution: ${guides.length} TBD rows${skipped ? ` (${skipped} out-of-focus gated)` : ''}${dryRun ? ' [dry]' : ''}`);
+
+  // ATTEMPT TRACKING (8/4 — the same leak fixed in verify_status on 7/31, found
+  // here by inspection after a 126-row batch): score-ordering alone re-processed
+  // the SAME top-N TBD rows every nightly run, so the cap burned on proven dead
+  // ends (~$0.10/night, forever) while lower-scored rows never got a first look.
+  // Never-attempted first; a row that stayed TBD rests 30 days — owner-name
+  // evidence for a historical acquisition is essentially static, so re-asking
+  // tomorrow buys nothing.
+  const REST_MS = 30 * 24 * 3600e3;
+  const attemptedAt = (g) => (g.contact?.resolve_attempted_at ? Date.parse(g.contact.resolve_attempted_at) : null);
+  const due = inFocus.filter((g) => { const at = attemptedAt(g); return !at || Date.now() - at > REST_MS; });
+  const guides = due
+    .sort((a, b) => (attemptedAt(a) ?? 0) - (attemptedAt(b) ?? 0)
+      || (b.screen_score ?? 0) - (a.screen_score ?? 0))
+    .slice(0, limit);
+  const resting = inFocus.length - due.length;
+  if (!guides?.length) { log.info(`No NEEDS_NAME river guides due (${skipped} out-of-focus gated, ${resting} resting after a recent inconclusive attempt).`); return; }
+  log.info(`identity resolution: ${guides.length} of ${inFocus.length} in-focus TBD (never-attempted first${skipped ? `; ${skipped} out-of-focus gated` : ''}${resting ? `; ${resting} resting` : ''})${dryRun ? ' [dry]' : ''}`);
 
   const anthropic = new Anthropic();
   const totals = { in: 0, out: 0, serper: 0 };
   let resolved = 0;
+
+  // an attempt that ends TBD still consumed the lookups — stamp it so the next
+  // pass moves on to never-attempted rows instead of re-asking the same ones
+  const markAttempted = async (g) => {
+    if (dryRun) return;
+    await supabase.from('river_guides')
+      .update({ contact: { ...(g.contact || {}), resolve_attempted_at: new Date().toISOString() } })
+      .eq('deal_id', g.deal_id);
+  };
 
   for (const g of guides) {
     try {
@@ -69,7 +93,7 @@ async function main() {
         ...await serper(`"${g.their_company}" ${g.location_state || ''} founder OR owner ${g.deal_year || ''}`),
       ];
       totals.serper += 2;
-      if (!results.length) { log.info(`  – ${g.their_company}: no results`); continue; }
+      if (!results.length) { log.info(`  – ${g.their_company}: no results`); await markAttempted(g); continue; }
 
       const msg = await anthropic.messages.create({
         model: 'claude-haiku-4-5-20251001', max_tokens: 400, system: SYSTEM,
@@ -86,6 +110,7 @@ async function main() {
       if (!v.owner_name || !v.source_url || v.confidence === 'low' ||
           String(v.owner_name).trim().split(/\s+/).length < 2) {
         log.info(`  – ${g.their_company}: stays TBD (${(v.why || 'no explicit owner evidence').slice(0, 90)})`);
+        await markAttempted(g);
         continue;
       }
 
