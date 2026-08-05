@@ -34,6 +34,32 @@ John watches hit rates move without asking the PM. (E) OUTREACH RIDES ON
 TOP: templates being co-developed w/ John in the PM channel; campaigns
 unlock once (1)-(4) hit targets on a real segment.
 
+## 🔴 EMPTY MEETING-NOTE DETECTOR (John 8/5 — a real loss already happened;
+## Lane C owns, small build, high value)
+John clicked transcribe for the **7/31 Shore Capital tree-care thesis
+walk-through** (Michael Aubrey MP / Cyrus Hessabi VP / Carter Selzer, plus
+Tom + John). Notion CREATED the page — created and last-edited timestamps are
+byte-identical at `2026-07-31T13:59:15.504Z`, one minute before the meeting —
+and **nothing was ever written to it**. The hour with Shore's critique of our
+thesis is gone; only the email follow-up survives. Full reconstruction:
+`C:\Users\johnd\CRM Set up\Shore-TreeCare-Walkthrough-2026-07-31-RECONSTRUCTION.md`.
+
+**This is the THIRD occurrence** — Notion's "Archive (empty notes)" already
+holds 2026-06-30 and 2026-07-09. Nobody was alerted any of the three times;
+John found this one himself, 5 days late, by going looking.
+
+BUILD: the CRM already sweeps the Notion Meeting Notes area. Add a check —
+any meeting note whose body is still empty **~2h after the meeting end time**
+raises a **Key Actions card**: "<date> <title> captured nothing — recover from
+the Teams recap now" with a link to the calendar item and the attendee list.
+Detection signature is exact and cheap: `created_time == last_edited_time` and
+an empty content block. At T+2h recovery is trivial (Teams recap, or ask the
+other attendee same-day); at T+5d it is archaeology.
+NOTE for whoever builds it: Graph API access to Teams transcripts is DISABLED
+on this tenant (verified 8/5 — `GraphAccessToTranscriptsDisabled`), so we
+cannot auto-pull the transcript as a fallback. The card must point a HUMAN at
+the Teams Recap tab. Do not build a recovery path that silently no-ops.
+
 ## 🚨 RIVER-GUIDE DUPLICATE PEOPLE + CONTRADICTORY STATUS (PM found 8/4 14:45,
 ## live DB — blocks trusting ANY outreach-ready count; Lane C owns, Lane A (b))
 The consolidator sweep inserts a NEW row for a company already in the book
