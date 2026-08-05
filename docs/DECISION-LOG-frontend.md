@@ -6,6 +6,17 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 52 (8/5 ~15:55) — CORRECTED MY OWN PERF CLAIM**. Lane C
+  measured ~710ms post-cache; I'd reported ~9.5-13.4s and told them the
+  remainder was the main `select *`, offering column narrowing. Checked the
+  SERVER log instead of my client stopwatch: **593ms** (next.js 16ms ·
+  proxy 10ms · app-code 568ms). My figure was PowerShell
+  `ConvertFrom-Json` deserializing a 527-row `select *` payload plus a
+  thrashing dev server — I timed my own client and called it API cost.
+  Corrected in TASK-QUEUE so nobody builds pagination that isn't needed.
+  **Rule: for endpoint latency, read the server's own timing line; a
+  client stopwatch measures the client too.** (The cache itself was still
+  right — the 205s outlier and 20s warm were real, pre-fix.)
 - **Loop iter 50 (8/5 ~14:00) — CACHED THE DUPLICATE INDEX**. Chased my own
   ~18s flag with measurements instead of leaving it as a note: warm 20s, one
   205s outlier, cold 39s — i.e. the page hangs for John. The advisory-dup
