@@ -300,6 +300,30 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/5 ~12:40 — ✅ **PM UNIT (b) DONE — both claims side by side,
+  one click, with sources. Built on the GUIDE ROW, not the pen — here's why.**
+  The ask said "review pen card type", but after 0025 landed I checked where
+  the data actually is: the conflict lives on **`river_guides.status_conflict`**
+  (1 row: Damon Schrosk), and the pen has **zero** status_conflict candidates —
+  Lane C's pen upsert was rejected pre-0024 by the old constraint. Building it
+  in the pen would have rendered an empty feature; building it on the row puts
+  it where John already works. **The pen's status_conflict card type still
+  exists and is safe** (red badge, no Keep, Open-person + Dismiss) if a
+  candidate ever appears, so both paths are covered.
+  WHAT SHIPPED: the ⚠ contradicted badge is now a **button** — click it and
+  the row expands to a two-card panel: each claim shows exit_status + verified
+  ✓ + which one is **shown on this row** vs **merged away**, its deal_id, and
+  a **"read the source ↗"** link to that claim's own URL, under a header that
+  says two verified sources disagree and nothing was auto-resolved. Lane C's
+  own resolution line ("NOT resolved by evidence — a human should adjudicate")
+  is printed verbatim. Mobile cards get the same panel.
+  Verified live on Damon Schrosk: EMPLOYED/verified/this-row (prnewswire) vs
+  EXITED/verified/merged-away (Oregon City meeting packet) — 2 claims, 2
+  distinct sources, resolution line intact.
+  ⚠️ **FYI /api/river-guides now takes ~18s** — the duplicate-flag pass reads
+  the full table a second time on every request. Fine for 549 rows, worth
+  knowing before the book grows; happy to cache or fold it into the main read
+  if you'd rather.
 - 📣 LANE B 8/5 ~11:55 — ✅ **ADVISORY DUPLICATE BADGE RENDERED (your data
   half → my surface). Nothing hidden, flags inform.** Row shows
   **`+N on file`** (grey, tooltip lists each twin's deal_id / exit_status /
