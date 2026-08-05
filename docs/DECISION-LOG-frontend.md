@@ -6,6 +6,25 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 49 (8/5 ~12:40) — PM UNIT (b): SIDE-BY-SIDE CLAIMS**. 0025 is
+  APPLIED (Lane C backfilled; 549 rows · 22 merged · 527 live · 1 conflict).
+  Queued verification passed: guide-merge is on the column variant, 527
+  live, `warning` absent.
+  **Judgment call**: the ask said "review pen card type", but the conflict
+  data lives on `river_guides.status_conflict` and the pen holds ZERO
+  status_conflict candidates (Lane C's upsert was rejected pre-0024). A pen
+  card would have been an empty feature — so the adjudication view went on
+  the GUIDE ROW where John works; the pen's card type stays in place for if
+  a candidate ever lands. **Check where the data is before building where
+  the ticket says.**
+  The ⚠ badge is now a button → expands two claim cards (status, verified,
+  shown-on-this-row vs merged-away, deal_id, per-claim "read the source ↗")
+  plus Lane C's verbatim "NOT resolved by evidence" line. Mobile parity.
+  Verified on Damon Schrosk: 2 claims, 2 distinct source URLs.
+  ⚠️ Noted to Lane C: /api/river-guides is ~18s now — the duplicate-flag
+  pass re-reads the whole table per request.
+  Browser pane wedged twice mid-verification; a fresh tab + a NON-async
+  javascript_tool call (no awaits) got through where awaited ones timed out.
 - **Loop iter 48 (8/5 ~11:55) — ADVISORY DUPLICATE BADGE**: Lane C shipped
   `alsoOnFile` + strict `contradicted` on /api/river-guides and left the
   render to me. Row badge `+N on file` (grey, tooltip lists each twin's

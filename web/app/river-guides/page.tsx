@@ -75,22 +75,83 @@ type Guide = {
   // John's rule: flags inform, they never block, so nothing is hidden.
   alsoOnFile?: { deal_id: string; exit_status: string; verified: boolean; merged: boolean }[];
   contradicted?: boolean;
+  // 0025: both claims + sources when two verified sources disagree
+  status_conflict?: StatusConflict | null;
 };
 
+// STATUS CONFLICT (0025): two verified sources disagree about the same person.
+// The system deliberately does NOT pick a winner — it keeps the safe direction
+// and shows both claims with their sources so a human adjudicates on evidence.
+type StatusConflict = {
+  detected_at?: string;
+  resolution?: string;
+  claims?: { deal_id: string; exit_status: string; verified?: boolean; source_url?: string | null; merged_away?: boolean }[];
+};
+
+function ClaimsPanel({ sc, live }: { sc: StatusConflict; live: string }) {
+  const claims = sc.claims ?? [];
+  if (!claims.length) return null;
+  return (
+    <div className="mb-3 max-w-4xl">
+      <div className="flex flex-wrap items-baseline gap-2 text-xs">
+        <span className="font-semibold text-red-800">⚠ Two verified sources disagree</span>
+        <span className="text-zinc-500">
+          Nothing was auto-resolved — the safe claim is being shown and this person stays out of outreach until a human decides.
+        </span>
+      </div>
+      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        {claims.map((c) => {
+          const isLive = c.deal_id === live;
+          return (
+            <div key={c.deal_id}
+              className={`rounded-lg border p-2.5 text-xs ${isLive ? "border-emerald-300 bg-white" : "border-zinc-200 bg-white/70"}`}>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className={`rounded px-1.5 py-0.5 text-[11px] font-bold ${
+                  c.exit_status === "EXITED" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"
+                }`}>
+                  {c.exit_status}
+                </span>
+                {c.verified && <span className="text-[10px] font-semibold text-emerald-700">verified ✓</span>}
+                {isLive && <span className="rounded bg-emerald-700 px-1.5 py-0.5 text-[10px] font-semibold text-white">shown on this row</span>}
+                {c.merged_away && <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] text-zinc-500">merged away</span>}
+              </div>
+              <div className="mt-1 font-mono text-[10px] text-zinc-400">{c.deal_id}</div>
+              {c.source_url ? (
+                <a href={c.source_url} target="_blank" rel="noopener noreferrer"
+                  className="mt-1 block truncate text-emerald-700 hover:underline" title={c.source_url}>
+                  read the source ↗
+                </a>
+              ) : (
+                <span className="mt-1 block text-zinc-400">no source URL recorded</span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {sc.resolution && <p className="mt-1.5 text-[11px] text-zinc-500">{sc.resolution}</p>}
+      {sc.detected_at && (
+        <p className="text-[11px] text-zinc-400">detected {String(sc.detected_at).slice(0, 10)}</p>
+      )}
+    </div>
+  );
+}
+
 // one advisory badge, loud when the twin actually disagrees
-function DuplicateBadge({ g }: { g: Guide }) {
+function DuplicateBadge({ g, onOpen }: { g: Guide; onOpen?: () => void }) {
   const others = g.alsoOnFile ?? [];
   if (!others.length) return null;
   const detail = others
     .map((o) => `${o.deal_id}: ${o.exit_status}${o.verified ? " ✓verified" : ""}${o.merged ? " (merged away)" : ""}`)
     .join("\n");
   return g.contradicted ? (
-    <span
-      className="ml-1 rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-800"
-      title={`CONTRADICTED — another row on file makes a different claim about this person:\n${detail}\n\nVerify before any outreach.`}
+    <button
+      type="button"
+      onClick={onOpen}
+      className="ml-1 rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-800 hover:bg-red-200"
+      title={`CONTRADICTED — another row on file makes a different claim about this person:\n${detail}\n\n${g.status_conflict ? "Click to see both claims and their sources." : "Verify before any outreach."}`}
     >
-      ⚠ contradicted
-    </span>
+      ⚠ contradicted{g.status_conflict ? " ▾" : ""}
+    </button>
   ) : (
     <span
       className="ml-1 rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-600"
@@ -775,7 +836,9 @@ export default function RiverGuides() {
                     <td className="max-w-40 px-3 py-2.5 font-medium">
                       <span className="block truncate">
                         {g.full_name ?? <span className="italic text-amber-600">TBD</span>}
-                        <DuplicateBadge g={g} />
+                        <DuplicateBadge g={g} onOpen={() => setEvidenceOpen((prev) => {
+                          const n = new Set(prev); n.has(g.deal_id) ? n.delete(g.deal_id) : n.add(g.deal_id); return n;
+                        })} />
                       </span>
                       <div className="truncate text-xs font-normal text-zinc-400" title={ARCHETYPE_LABEL[g.archetype] ?? g.archetype}>{ARCHETYPE_LABEL[g.archetype] ?? g.archetype}</div>
                     </td>
@@ -862,16 +925,23 @@ export default function RiverGuides() {
                       {[g.location_city, g.location_state].filter(Boolean).join(", ") || "—"}
                     </td>
                   </tr>
-                  {evidenceOpen.has(g.deal_id) && g.notes && (
-                    <tr className="bg-amber-50/50">
+                  {evidenceOpen.has(g.deal_id) && (g.notes || g.status_conflict) && (
+                    <tr className={g.status_conflict ? "bg-red-50/60" : "bg-amber-50/50"}>
                       <td colSpan={12} className="px-6 py-3">
-                        <div className="max-w-4xl text-xs">
-                          <span className="font-semibold text-amber-800">Verification evidence</span>
-                          <span className="ml-2 text-zinc-500">
-                            {g.current_status_verified ? "current status verified ✓" : "as-of-close — UNVERIFIED ⚠ · confirm before outreach"}
-                          </span>
-                          <p className="mt-1 whitespace-pre-wrap text-zinc-700">{g.notes}</p>
-                        </div>
+                        {/* BOTH CLAIMS SIDE BY SIDE (PM 8/5 unit b): when two
+                            verified sources disagree we do NOT pick a winner —
+                            show each claim with its own source so a human can
+                            adjudicate in one click. */}
+                        {g.status_conflict && <ClaimsPanel sc={g.status_conflict} live={g.deal_id} />}
+                        {g.notes && (
+                          <div className="max-w-4xl text-xs">
+                            <span className="font-semibold text-amber-800">Verification evidence</span>
+                            <span className="ml-2 text-zinc-500">
+                              {g.current_status_verified ? "current status verified ✓" : "as-of-close — UNVERIFIED ⚠ · confirm before outreach"}
+                            </span>
+                            <p className="mt-1 whitespace-pre-wrap text-zinc-700">{g.notes}</p>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   )}
@@ -983,6 +1053,10 @@ export default function RiverGuides() {
                   </span>
                 ),
               },
+              ...(g.status_conflict ? [{
+                label: "Conflict",
+                value: <ClaimsPanel sc={g.status_conflict} live={g.deal_id} />,
+              }] : []),
               ...(evidenceOpen.has(g.deal_id) && g.notes ? [{
                 label: "Evidence",
                 value: (
