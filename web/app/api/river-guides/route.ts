@@ -21,7 +21,7 @@ export async function GET(req: Request) {
   // Merged-away duplicates stay in the table for provenance but must NOT show
   // in the list — the same person appearing twice with contradictory exit
   // status is what nearly put a still-employed person in an outreach batch.
-  const { data, error } = await selectLiveGuides<Record<string, unknown>>((variant) => {
+  const { data, error, variant: mergeFilter } = await selectLiveGuides<Record<string, unknown>>((variant) => {
     let q = serverDb().from("river_guides").select("*")
       .order("screen_score", { ascending: false }).limit(1000);
     if (variant === "column") q = excludeMergedColumn(q);
@@ -56,6 +56,13 @@ export async function GET(req: Request) {
       exit: countBy("exit_status"),
     },
     total: guides.length,
+    // selectLiveGuides falls back column → jsonb → UNFILTERED. That last hop
+    // silently re-admits merged duplicates — the contamination that nearly put
+    // a still-employed person in an outreach batch — so it must never be
+    // invisible. Surfaced, not swallowed; Lane B can badge it.
+    ...(mergeFilter === "none"
+      ? { warning: "duplicate filter unavailable — this list may contain merged-away duplicate rows; treat counts as unreliable until it recovers" }
+      : {}),
   });
 }
 
