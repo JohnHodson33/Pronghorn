@@ -2345,3 +2345,35 @@ Wrong trade. Re-evaluate if 8/7 also fails.
 59m. If it creeps again, the durable fix is not a bigger timeout — it is
 making `syncListings` write per-source as each finishes, so a timeout costs
 one source instead of the night.
+
+## 2026-08-06 (cont. 2) — 🚨 ESCALATION: the timeout fix is BLOCKED off main by a failing auto-integrator
+Checked as top priority. Status at 16:54 UTC:
+· **`origin/main` still reads `timeout-minutes: 60`.** My fix (86930f5, →90)
+  is on lane/brokers and is NOT an ancestor of main.
+· **The auto-integrator is failing.** Its last run (16:24 UTC, id 31119706333)
+  ended `cancelled` after exactly 15m01s — the five runs before it each
+  succeeded in 1m. Not its 25m timeout, and not concurrency
+  (`cancel-in-progress: false`). The 16:44 cycle did not fire at all. No
+  integrator run has succeeded since my push, so nothing is reaching main.
+· I could not attribute the failure to my own commits — the cancelled job
+  exposes no step detail via the API, and my changes touch only
+  `.github/workflows/nightly-scrape.yml`, `scraper/`, `supabase/migrations/`
+  and docs (nothing in `web/`, which is what the build gate compiles).
+
+**DEADLINE: 13:00 UTC 8/7.** Scheduled workflows run from the default branch,
+so unless 90 is on main by then the nightly hits the same 60m wall and we lose
+a SECOND consecutive night (8/6 already produced zero rows).
+
+**THE ONE-LINE FIX for whoever gets there first** — on main, in
+`.github/workflows/nightly-scrape.yml`, `timeout-minutes: 60` → `90`. Or merge
+lane/brokers, which carries it plus the reasoning.
+
+**CONTINGENCY I can execute WITHOUT main (identified, not yet used).**
+`run_supabase.js` reads per-source enable flags from the DATABASE
+(`loadSourceToggles`, overriding config.json), so runtime can be cut without
+shipping code: setting `scrape_sources.enabled = false` on the heaviest source
+makes the nightly finish inside the existing 60m. Trigger: if the fix is still
+off main ~2h before 13:00 UTC 8/7, disable the single heaviest source for one
+night — losing one source's freshness beats losing all thirty — then re-enable
+immediately after. Not doing it now: ~20h and many integrator cycles remain,
+and it is a data-affecting change that should stay a last resort.
