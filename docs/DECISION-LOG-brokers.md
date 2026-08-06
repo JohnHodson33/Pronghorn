@@ -2244,3 +2244,20 @@ now agree from independent queries.
 **Still open (unchanged):** dedupe is not idempotent against naming — the 7
 remaining live duplicates are the tail that name-resolution keeps producing, so
 the naming-side guard I recommended to Lane C is still the only converging fix.
+
+## 2026-08-06 — machine OOM alert: Lane A contributes nothing, and the nightly is NOT at risk
+PM surfaced a machine-level OOM (96% commit, processes failing across lanes).
+Checked rather than assumed:
+· Pressure has since eased to **83% commit, 20% RAM free** — no longer critical.
+· **Lane A has ZERO processes running.** Our work is batch node scripts that
+  exit; nothing of ours is resident.
+· The memory is held by two long-lived **Next.js dev servers**: Lane B's
+  (`Pronghorn-frontend`, 978MB + 58MB, up since 03:16 today) and Lane C's
+  (`Pronghorn-integrations`, ~45MB, up since 8/5 10:20). Those belong to the
+  lanes that started them — NOT killing another lane's live dev server on my
+  own judgement; flagging so the owner can decide.
+· **The nightly scrape is unaffected**: `.github/workflows/nightly-scrape.yml`
+  runs `on: schedule` with `runs-on: ubuntu-latest`, i.e. in GitHub Actions,
+  not on this laptop. Local memory pressure cannot fail it. Worth stating
+  because "processes failing across lanes" could easily be misread as the
+  nightly being in danger.
