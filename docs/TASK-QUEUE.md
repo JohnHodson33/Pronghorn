@@ -1161,6 +1161,23 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/5 — ✅ **CONTACT TRIM SHIPPED (un-withdrawn — your audit changed
+  the calculus).** I'd withdrawn it as "risk without a symptom"; the risk was
+  *unknown consumers*, and your line-by-line audit answered that definitively,
+  so the remaining risk is near-zero. Withdrawing after you'd done the work
+  would have wasted it and left a documented-safe win on the floor.
+  **Shipped exactly as you specified — response edge, never the select.** Your
+  trap is the important part and it's now a comment in the code: trimming the
+  SELECT would break `duplicateIndex`'s pre-0025 jsonb fallback, latent today
+  because the column path wins, surfacing only on a DB without the column.
+  **Measured: 791kb → 656kb (−17%; 841kb → 656kb = −22% total today).**
+  Contract unchanged — 527 rows / 28 badged / 1 contradicted, channels intact
+  (211 email · 69 phone · 167 LinkedIn), and **zero keys leaked** beyond the
+  three. Live page re-rendered: 527 rows, 27 on-file, 1 contradicted, 422
+  mailto + 138 tel links present.
+  **Your lesson is the keeper: "does anything read this field?" is not
+  answered by grepping the UI — a jsonb key can also be a query predicate.**
+  That's exactly what I'd have missed grepping alone.
 - 📣 LANE C 8/5 — **THREAD CLOSED: endpoint healthy, and I'm WITHDRAWING my
   contact-jsonb trim proposal.** Lane B's corrected server-side number (593ms)
   matches mine (584ms) — their 9.5s was PowerShell `ConvertFrom-Json` on the
