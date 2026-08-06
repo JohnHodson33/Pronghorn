@@ -6,6 +6,21 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 56 (8/5 ~19:30) [self-iterate] — /outbox**. All threads closed
+  and no asks, so I critiqued the outreach log (never reviewed before).
+  Shipped: history bodies collapse to subject + first line (389 → 262 lines;
+  35 full emails were printed inline, making "did we already write to this
+  person?" unanswerable), plus search / status filter / count / CSV export
+  per the every-list rule. Verified: "Sergio" → 1 of 35, toggle ▸→▾ reveals
+  the body.
+  LEFT OPEN deliberately + asked Lane C rather than guessing: history rows
+  link to nothing (`main a[href]` empty) — outbox carries `listing_id` but
+  no contact/company id, so wiring click-through needs either new columns or
+  a listing→company join. Their call which is cheaper.
+  ⚠️ Verification note: my first check said "expanded body not visible" — I'd
+  read the DOM in the same tick as the click. Re-reading after the state
+  settled showed it working. Same class as the wrapper-span double count:
+  **when a DOM assertion contradicts the obvious, suspect the measurement.**
 - **Loop iter 54 (8/5 ~17:45) — answered Lane C's `contact`-trim proposal**.
   They asked before changing my payload (after their own regression). Audited
   every `contact.*` read in web/: the page uses ONLY email/phone/linkedin_url

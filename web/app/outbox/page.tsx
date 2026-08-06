@@ -7,6 +7,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import OutreachRules from "@/components/OutreachRules";
+import { buildCsv, csvDate, downloadCsv } from "@/lib/csv";
 
 type OutboxEmail = {
   id: string;
@@ -34,6 +35,7 @@ function Draft({ email, onChanged }: { email: OutboxEmail; onChanged: () => void
   const [body, setBody] = useState(email.body);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [open, setOpen] = useState(false); // history bodies collapse by default
   const queued = email.status === "queued";
   const dirty = subject !== email.subject || body !== email.body;
 
@@ -126,9 +128,26 @@ function Draft({ email, onChanged }: { email: OutboxEmail; onChanged: () => void
           )}
         </>
       ) : (
+        // History used to print every body in full — ~30 drafts × 5 paragraphs
+        // made the log impossible to scan ("have we already written to this
+        // person?"). Collapsed to subject + first line; click to read it all.
         <div className="space-y-1">
-          <div className="text-sm font-medium">{email.subject}</div>
-          <div className="whitespace-pre-wrap text-sm text-zinc-600">{email.body}</div>
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            className="flex w-full items-start gap-1.5 text-left"
+          >
+            <span aria-hidden className="mt-0.5 shrink-0 text-[10px] text-zinc-400">{open ? "▾" : "▸"}</span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-medium">{email.subject}</span>
+              {!open && (
+                <span className="block truncate text-sm text-zinc-500">
+                  {email.body.split("\n").find((l) => l.trim()) ?? ""}
+                </span>
+              )}
+            </span>
+          </button>
+          {open && <div className="whitespace-pre-wrap pl-4 text-sm text-zinc-600">{email.body}</div>}
         </div>
       )}
     </div>
@@ -138,6 +157,8 @@ function Draft({ email, onChanged }: { email: OutboxEmail; onChanged: () => void
 export default function Outbox() {
   const [emails, setEmails] = useState<OutboxEmail[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [q, setQ] = useState("");
+  const [statusSel, setStatusSel] = useState("");
 
   async function load() {
     const res = await fetch("/api/outbox", { cache: "no-store" });
@@ -151,6 +172,22 @@ export default function Outbox() {
 
   const queued = (emails ?? []).filter((e) => e.status === "queued");
   const rest = (emails ?? []).filter((e) => e.status !== "queued");
+  const history = rest.filter((e) => {
+    if (statusSel && e.status !== statusSel) return false;
+    if (!q) return true;
+    const hay = `${e.to_name ?? ""} ${e.to_email ?? ""} ${e.subject ?? ""} ${e.body ?? ""}`.toLowerCase();
+    return hay.includes(q.toLowerCase());
+  });
+
+  function exportCsv() {
+    downloadCsv(
+      `pronghorn-outbox-${csvDate()}.csv`,
+      buildCsv(
+        ["status", "to_name", "to_email", "subject", "created_at"],
+        history.map((e) => [e.status, e.to_name, e.to_email, e.subject, e.created_at])
+      )
+    );
+  }
 
   return (
     <div className="max-w-4xl p-4 md:p-8 space-y-6">
@@ -185,10 +222,42 @@ export default function Outbox() {
 
       {rest.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">History</h2>
-          {rest.map((e) => (
-            <Draft key={e.id} email={e} onChanged={load} />
-          ))}
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">History</h2>
+            {/* the whole point of a sent-log is answering "have we already
+                written to this person?" — that needs search, not scrolling */}
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search name / email / subject…"
+              className="w-60 rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-600"
+            />
+            <select
+              value={statusSel}
+              onChange={(e) => setStatusSel(e.target.value)}
+              className="rounded-md border border-zinc-300 px-2.5 py-1.5 text-sm outline-none focus:border-emerald-600"
+            >
+              <option value="">All statuses</option>
+              {[...new Set(rest.map((e) => e.status))].sort().map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+            <span className="text-sm text-zinc-500 tabular-nums">{history.length} of {rest.length}</span>
+            <button
+              onClick={exportCsv}
+              disabled={history.length === 0}
+              className="ml-auto rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-50 disabled:opacity-50"
+            >
+              Export CSV ({history.length})
+            </button>
+          </div>
+          {history.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-zinc-200 p-6 text-center text-sm text-zinc-400">
+              No drafts match that search.
+            </div>
+          ) : (
+            history.map((e) => <Draft key={e.id} email={e} onChanged={load} />)
+          )}
         </section>
       )}
     </div>
