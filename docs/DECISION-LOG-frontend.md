@@ -6,6 +6,19 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 59 (8/5 ~22:15) [self-iterate] — MOBILE PASS caught my own
+  regression**. Deliberately re-checked recent desktop-first work at 375px
+  instead of building something new. Body scrollWidth was **408 on a 375
+  viewport — the app slid sideways on every route**, caused by `shrink-0` on
+  ActiveJobPill's STRIP once I'd added a second and third pill. Strip now
+  `min-w-0 overflow-x-auto`; pills keep `shrink-0 whitespace-nowrap`.
+  Verified 375px clean on /river-guides, /outbox, company profile (cohort
+  chips wrap, 527 cards, est badges unclipped) and 1280px unchanged.
+  **Lesson: a component that's fine with one child can break the page with
+  three — re-measure the container after every addition, and check the
+  BODY width, not just whether your new element looks right.**
+  Also verified Lane C's contact trim against my contract: 3 keys only,
+  channels 211/69/167, status_conflict intact (top-level, not in `contact`).
 - **Loop iter 58 (8/5 ~21:20) [self-iterate] — company profile: mark
   estimates**. Critiqued the last un-reviewed surface. It's in good shape
   (contacts+channels, listing history, docs, activity, stars, completeness,

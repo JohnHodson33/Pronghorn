@@ -83,11 +83,15 @@ export default function ActiveJobPill() {
 
   const c = job?.counts ?? {};
   return (
-    <span className="flex shrink-0 items-center gap-1.5">
+    // `shrink-0` on the STRIP made two or three pills widen the whole page on
+    // a phone (375px viewport → 408px body, i.e. the app slid sideways). The
+    // pills themselves must not squash, but the strip must be allowed to
+    // shrink and scroll inside itself — John reads this on an iPhone.
+    <span className="flex min-w-0 items-center gap-1.5 overflow-x-auto [-webkit-overflow-scrolling:touch]">
       {job && (
         <a
           href="/enrichment"
-          className="flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 hover:bg-emerald-200"
+          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 hover:bg-emerald-200"
           title="Enrichment job in progress — click for the live view"
         >
           <span className="inline-block animate-spin">⚙</span>
@@ -97,7 +101,7 @@ export default function ActiveJobPill() {
       {queuedMail > 0 && (
         <a
           href="/outbox"
-          className="flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-200"
+          className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-200"
           title="Inquiry drafts awaiting your one-click send"
         >
           📮 {queuedMail} to send
@@ -107,7 +111,7 @@ export default function ActiveJobPill() {
         <a
           key={d.href}
           href={d.href}
-          className="flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 hover:bg-emerald-200"
+          className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 hover:bg-emerald-200"
           title="An enrichment run finished while you were away — click to see who gained what"
         >
           ✅ {d.n} run{d.n === 1 ? "" : "s"} done
@@ -116,7 +120,7 @@ export default function ActiveJobPill() {
       {pendingProposals > 0 && (
         <a
           href="/#key-actions"
-          className="flex items-center gap-1 rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-800 hover:bg-violet-200"
+          className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-800 hover:bg-violet-200"
           title="Deal next-step updates detected in Outlook replies — approve or dismiss on Key Actions"
         >
           📩 {pendingProposals} deal update{pendingProposals === 1 ? "" : "s"}

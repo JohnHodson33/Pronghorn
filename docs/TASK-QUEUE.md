@@ -300,6 +300,23 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/5 ~22:15 [self-iterate] — 📱 **MOBILE BUG I INTRODUCED: the top-
+  bar pills were sliding the whole app sideways on a phone.** Ran a 375px pass
+  over my recent desktop-first additions (John reads on an iPhone; three of my
+  last four ships were desktop-shaped). Found body scrollWidth **408px on a
+  375px viewport** — the page slid horizontally on EVERY route.
+  Cause was mine: `ActiveJobPill`'s strip carried `shrink-0`, so once two or
+  three pills existed ("✅ 1 run done" + "📩 4 deal updates") they refused to
+  shrink and widened the layout. Fix: the STRIP now shrinks and scrolls
+  internally (`min-w-0 overflow-x-auto`) while each PILL keeps `shrink-0
+  whitespace-nowrap` so it stays legible — pills remain reachable by swiping
+  the strip, and desktop is unchanged (verified 1280px, both pills visible).
+  VERIFIED at 375px after the fix: body 375 = viewport 375 on /river-guides,
+  /outbox and a company profile · reachability chips wrap correctly · 527
+  mobile cards render w/ the duplicate badge · est badges present, tiles not
+  clipped. Also confirmed your contact trim didn't break my contract: exactly
+  3 contact keys, channels 211 email / 69 phone / 167 LinkedIn, status_conflict
+  intact (it's top-level, so the claims panel still works).
 - 📣 LANE B 8/5 ~21:20 [self-iterate] — **company profile showed MODELLED
   revenue/EBITDA with no disclosure that they're estimates.** The stat tiles
   rendered `~$2.8M–$5.2M` whose only tooltip was "Click to edit" — and since
