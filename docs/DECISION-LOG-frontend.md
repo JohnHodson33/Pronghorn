@@ -6,6 +6,20 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 63 (8/6 ~02:15) — 🚨 MACHINE OOM, not a code fault.** Poll died
+  with PowerShell refusing to launch ("paging file too small"), then the dev
+  server was killed, then all API polls failed. Measured before concluding:
+  **commit 44,401 / 46,297 MB (96%), 1.9 GB headroom, 190 MB free physical of
+  16 GB.** Pagefile is 30 GB allocated / 5.4 GB used — so the constraint is
+  total COMMIT demand, not disk. 19 claude processes (four lanes + PM, some
+  from 8/4) are a material share.
+  Surfaced to PM/John in TASK-QUEUE with the numbers and three options
+  (close stale 8/4 sessions · restart long-running agents · raise pagefile
+  max). **Did not kill any process** — they belong to other lanes and to
+  John. Backing my cadence off rather than retry-looping a dying server.
+  **Lesson: when tools start failing in unrelated ways at once — shell won't
+  start, server dies, HTTP fails — check the machine before the code.** The
+  first instinct was "my dev server broke"; it was the box.
 - **Loop iter 60 (8/5 ~23:10) — 375px sweep of the OLDER surfaces: all
   clean, no fix needed.** Extended last cycle's mobile pass to the pages I
   hadn't checked: **/costs · /intake · /criteria · /analytics · /sources ·
