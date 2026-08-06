@@ -104,9 +104,24 @@ export async function GET(req: Request) {
     const mine = String(g.exit_status ?? "UNKNOWN");
     const contradicted = mine !== "UNKNOWN"
       && others.some((r) => r.exit_status !== "UNKNOWN" && r.exit_status !== mine);
+    // CONTACT TRIM — RESPONSE EDGE ONLY, NEVER THE SELECT (Lane B audited every
+    // contact.* read 8/5 and flagged the trap): the stored jsonb also carries
+    // company_address, skiptrace (ranked phone arrays), verify/resolve attempt
+    // stamps and merged_into — ~150kb across the book that no client reads.
+    // `contact.merged_into` DOES have two server-side consumers (guide-merge's
+    // `contact->>merged_into` predicate and duplicateIndex's pre-0025 fallback),
+    // but both run their OWN queries, so trimming the response can't reach
+    // them — whereas narrowing the select would break the pre-0025 fallback on
+    // any DB without the column. Hence: edge only.
+    const c = (g.contact ?? {}) as Record<string, unknown>;
+    const contact = {
+      email: (c.email ?? g.email ?? null) as string | null,
+      phone: (c.phone ?? g.phone ?? null) as string | null,
+      linkedin_url: (c.linkedin_url ?? g.linkedin_url ?? null) as string | null,
+    };
     return {
       ...row,
-      contact: g.contact ?? { email: g.email ?? null, phone: g.phone ?? null, linkedin_url: g.linkedin_url ?? null },
+      contact,
       ...(others.length ? { alsoOnFile: others, contradicted } : {}),
     };
   });
