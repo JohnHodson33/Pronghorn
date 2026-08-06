@@ -6,6 +6,18 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 66 (8/6 ~05:25) — the OOM's biggest contributor was MY dev
+  server; stopped it between polls.** Lane A triaged: they hold zero
+  processes, the memory is two Next dev servers, and mine was **978 MB +
+  58 MB** — the largest single holder. They flagged rather than killed it
+  (right call — not their process).
+  **New standing practice: start → poll → STOP each cycle.** The server only
+  served ~30s of verification per hour and held ~1 GB the rest of the time.
+  Nothing depends on it staying up — John reads the deployed Vercel site.
+  Measured after stopping: commit **83.4% → 80.7%**, free physical +1 GB.
+  **Lesson: I raised the OOM alarm and was the biggest cause of it. Check
+  your own footprint before the fleet's — the loudest reporter isn't
+  automatically the innocent party.**
 - **Loop iter 63 (8/6 ~02:15) — 🚨 MACHINE OOM, not a code fault.** Poll died
   with PowerShell refusing to launch ("paging file too small"), then the dev
   server was killed, then all API polls failed. Measured before concluding:
