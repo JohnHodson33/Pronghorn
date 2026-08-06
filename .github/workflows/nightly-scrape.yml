@@ -35,7 +35,18 @@ concurrency:
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # 8/6: the 8/5 run was CANCELLED at exactly 60m — this ceiling firing, not
+    # a manual cancel (concurrency is cancel-in-progress:false, so nothing else
+    # can kill it). Durations had been climbing into it: ~40m through late
+    # July, 47m on 8/2-8/3, 59m on 8/4, 60m on 8/5. The climb is Lane A's own
+    # doing — the 8/3-8/4 detail-enrichment work (tupelo per-listing API +
+    # detail fallback, bizben 250 detail fetches, hedgestone 150, the gabb
+    # rebuild's index+detail crawl) added roughly 10 minutes of polite,
+    # rate-limited fetching. That coverage is worth keeping, so raise the
+    # ceiling rather than trim it back. 90 leaves ~30m headroom over today's
+    # worst case; if runs ever approach it again, trim the max_detail_enrich
+    # caps instead of raising this further.
+    timeout-minutes: 90
     defaults:
       run:
         working-directory: scraper

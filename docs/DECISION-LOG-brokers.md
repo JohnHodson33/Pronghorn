@@ -2261,3 +2261,46 @@ Checked rather than assumed:
   not on this laptop. Local memory pressure cannot fail it. Worth stating
   because "processes failing across lanes" could easily be misread as the
   nightly being in danger.
+
+## 2026-08-06 — 🔴 FOUND: the 8/5 nightly was CANCELLED BY MY OWN RUNTIME GROWTH (timeout raised)
+Routine "did the nightly land?" check turned into a real find. At 15:09 UTC
+the freshest listing was still 8/5 14:31 — over 24h stale. Rather than assume
+a lag, I queried the GitHub Actions API directly:
+
+| run | started | outcome | duration |
+|---|---|---|---|
+| 8/6 | 15:06:52 | **in_progress** (just late) | — |
+| **8/5** | 15:08:17 | **CANCELLED** | **60m** |
+| 8/4 | 15:16:29 | success | 59m |
+| 8/3 | 15:37:57 | success | 47m |
+| 8/2 | 14:23:36 | success | 47m |
+| 7/23–8/1 | — | success ×9 | 39–43m |
+
+**The 8/5 cancellation was the `timeout-minutes: 60` ceiling firing.** It
+cannot have been anything else — `concurrency.cancel-in-progress: false`, so
+no other run can kill it, and the duration is exactly 60m.
+
+**Cause is Lane A's own work, and I own it.** Durations sat at ~40m through
+late July, moved to 47m, then jumped to 59m on 8/4 and hit the ceiling on 8/5
+— exactly tracking my 8/3–8/4 commits (`350303d` tupelo/dealrelations,
+`24139b6` bizben+murphy+hedgestone, `1cabc00` gabb rebuild). Those added
+roughly ten minutes of polite, rate-limited fetching: tupelo's per-listing CRM
+API call plus a detail-page fallback for the ~60% that 404, bizben's 250
+detail fetches, hedgestone's 150, and gabb's index+detail crawl.
+
+**FIX: `timeout-minutes` 60 → 90.** The coverage those fetches bought (asking
+price 1%→89%, a dead source revived, a 4%→79% parse gap) is worth more than
+the ten minutes, so raise the ceiling rather than trim the work. 90 leaves
+~30m headroom over the worst observed run. Documented in the workflow itself
+that if runs ever approach 90 again, the right lever is trimming the
+`max_detail_enrich` caps, NOT raising this further.
+
+**Was 8/5 data lost?** No — all 30 sources show `last_run_status: ok` with
+8/5 14:33 timestamps, so the scrape phase completed; the cancellation landed
+after it. But we were one slow source away from losing a night, and today's
+run started 126 minutes late (the longest lag yet), so the margin was real.
+
+NOTE the schedule reality for anyone reading run times: the cron says 13:00
+UTC but GitHub has actually started these between 14:22 and 15:38 — lag of
+82–158 minutes. Judge "did it run?" by the Actions API, not the cron.
+Next tick: confirm the 8/6 run (in flight) completed, then verify coverage.
