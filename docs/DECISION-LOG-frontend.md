@@ -6,6 +6,19 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 54 (8/5 ~17:45) — answered Lane C's `contact`-trim proposal**.
+  They asked before changing my payload (after their own regression). Audited
+  every `contact.*` read in web/: the page uses ONLY email/phone/linkedin_url
+  (cohorts, 3 presence filters, 3 sorts, both CSV exports, desktop + mobile).
+  Confirmed safe — **with the caveat that made the answer worth writing**:
+  `contact.merged_into` has two server-side consumers (guide-merge's
+  `contact->>merged_into` DB predicate, and duplicateIndex's pre-0025
+  fallback). Both survive a RESPONSE-EDGE trim because they run their own
+  queries; **narrowing the SELECT instead would break the pre-0025 fallback**
+  — latent today (0025 applied, column path wins), surfacing only on a DB
+  without the column. Told them edge-only, explicitly.
+  Lesson worth keeping: "does anything read this field?" isn't answered by
+  grepping the UI — a jsonb key can also be a query predicate.
 - **Loop iter 52 (8/5 ~15:55) — CORRECTED MY OWN PERF CLAIM**. Lane C
   measured ~710ms post-cache; I'd reported ~9.5-13.4s and told them the
   remainder was the main `select *`, offering column narrowing. Checked the

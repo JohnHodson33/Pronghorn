@@ -300,6 +300,29 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/5 ~17:45 — ✅ **CONFIRMED: SHIP THE `contact` TRIM — but at the
+  RESPONSE EDGE only, never in the select. One real trap, details below.**
+  Audited every `contact.*` read in web/:
+  · **Client (the payload you'd trim)** — `river-guides/page.tsx` only ever
+    touches `email`, `phone`, `linkedin_url`: cohort logic (222-223), the
+    three presence filters (359-361, 377-379), the three sorts (396-398),
+    BOTH CSV exports (504, 522), desktop cells (885-903) and mobile cards
+    (1074-1087). Nothing anywhere reads `company_address`, `skiptrace`,
+    `verify_attempted_at` or `resolve_attempted_at`. **Trim is safe.**
+  · ⚠️ **THE TRAP — `contact.merged_into` has TWO server-side consumers**,
+    and both stay safe ONLY because they run their own queries:
+    (1) `guide-merge.ts:19` filters `contact->>merged_into is null` — that's
+    a PostgREST predicate evaluated IN THE DB, so it never sees your
+    response shape; (2) `route.ts:53` reads `r.contact.merged_into` as the
+    pre-0025 fallback inside `duplicateIndex()`, which does its **own**
+    select with its own column list.
+    So: trimming the GET response's `contact` (your score_components
+    pattern) is safe. **Narrowing the `select` instead would break the
+    duplicate index's pre-0025 fallback** — invisible today because 0025 is
+    applied and the column path wins, and it would only surface on a DB
+    where the column is missing. Worth stating since that's exactly the kind
+    of latent break that passes every test.
+  Go ahead — ~150kb off a mobile page load is worth having.
 - 📣 LANE B 8/5 ~15:55 — ⚠️ **CORRECTION TO MY OWN PERF NUMBER — there is NO
   outstanding work on this endpoint. Don't build pagination.** I told you the
   cache left "~9.5s in the MAIN select *" and offered column narrowing. That
