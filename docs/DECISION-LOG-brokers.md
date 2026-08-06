@@ -2304,3 +2304,44 @@ NOTE the schedule reality for anyone reading run times: the cron says 13:00
 UTC but GitHub has actually started these between 14:22 and 15:38 — lag of
 82–158 minutes. Judge "did it run?" by the Actions API, not the cron.
 Next tick: confirm the 8/6 run (in flight) completed, then verify coverage.
+
+## 2026-08-06 (cont.) — 🔴 INCIDENT: the 8/6 nightly was KILLED and wrote NOTHING (one night lost)
+Follow-up to the timeout find above — it is worse than a near-miss.
+
+**8/6 run: cancelled at 63m, ZERO of 30 sources updated, no listings written.**
+Freshest listing is still 8/5 14:31, now 26h stale. (8/5 differed: its scrape
+phase finished and wrote at 14:33, and the cancellation landed later in the
+run. 8/6 never got that far.)
+
+**Why nothing was written — the pipeline is all-or-nothing.**
+`run_supabase.js` scrapes EVERY source first (`runSources`, line 65) and only
+then writes (`syncListings`, line 76). So a timeout during scraping discards
+the entire night's work; there is no partial credit. That is the structural
+reason a ~3-minute overrun cost 100% of the data.
+
+**The fix is committed but NOT YET LIVE.** Scheduled workflows run from the
+DEFAULT BRANCH: `origin/main` still reads `timeout-minutes: 60`; my 90 is on
+lane/brokers awaiting the auto-integrator. **If it does not merge before
+13:00 UTC 8/7, tomorrow repeats.** Verifying next tick is the top priority.
+
+**Checked the scarier hypothesis — NO delisting risk. The code already guards
+it.** I expected the 8/7 delisting pass (42h grace, cron 14:00 UTC) to mass-
+delist the whole ~25k book, since our newest data is 8/5 14:31. It will not:
+`mark_delisted.js` anchors the cutoff to each source's own `last_run_at`, not
+to wall-clock — cutoff = 8/5 14:33 − 42h = **8/3 20:33**, and our rows are
+newer than that, so nothing qualifies. There is also an explicit
+`now - lastRun > 3 days → skip` guard against exactly this. A missed night
+cannot cascade into mass-delisting. Verified by reading the logic, not assumed.
+
+**Deliberately did NOT run a local catch-up.** The documented procedure kicks
+`node run_supabase.js` when stale >20h (we are at 26h), but the machine is at
+**88% commit / 1.9GB RAM free** after the OOM PM flagged, and a 30-source run
+spawns Chrome for several sources. Adding that load risks taking down other
+lanes' processes to fix a one-night gap that tomorrow's CI run closes anyway.
+Wrong trade. Re-evaluate if 8/7 also fails.
+
+**Watch item for whoever holds this next:** 90m may not hold for long. The
+8/6 scrape phase alone did not finish in 60m, where on 8/4 the entire run took
+59m. If it creeps again, the durable fix is not a bigger timeout — it is
+making `syncListings` write per-source as each finishes, so a timeout costs
+one source instead of the night.
