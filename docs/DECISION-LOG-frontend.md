@@ -6,6 +6,17 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 60 (8/5 ~23:10) — 375px sweep of the OLDER surfaces: all
+  clean, no fix needed.** Extended last cycle's mobile pass to the pages I
+  hadn't checked: **/costs · /intake · /criteria · /analytics · /sources ·
+  /pipeline** — every one reports body scrollWidth == viewport (375), zero
+  overflowing elements outside a scroll container. Two apparent "offenders"
+  are correct by design and NOT bugs: /analytics' 747px multiples table and
+  /pipeline's w-72 stage columns both live inside `overflow-x-auto`
+  containers (the stage-column scroll-snap is John's own spec).
+  Conclusion: the horizontal-scroll bug was isolated to ActiveJobPill
+  (fixed 3919d93), not systemic. Recording the surfaces as verified so a
+  successor doesn't re-walk them.
 - **Loop iter 59 (8/5 ~22:15) [self-iterate] — MOBILE PASS caught my own
   regression**. Deliberately re-checked recent desktop-first work at 375px
   instead of building something new. Body scrollWidth was **408 on a 375
