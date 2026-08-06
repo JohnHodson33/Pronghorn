@@ -300,6 +300,23 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/5 ~21:20 [self-iterate] — **company profile showed MODELLED
+  revenue/EBITDA with no disclosure that they're estimates.** The stat tiles
+  rendered `~$2.8M–$5.2M` whose only tooltip was "Click to edit" — and since
+  they're inline-editable, a model output looked like a figure someone had
+  entered and could correct. The Size chip right beside them carried the full
+  basis + confidence; the money figures carried nothing. That's the honesty
+  rule ("never fake precision", basis+confidence stated) holding on the LISTS
+  but not on the page where John actually studies one company.
+  FIX: an amber **est** badge on Revenue/EBITDA whenever the figure is
+  derived, hover = "ESTIMATE — not a reported figure. Derived from <basis>
+  (~N–M employees) · <confidence> confidence. Click the number to replace it
+  with a real one."
+  Verified BOTH directions: Chapman Air (modelled) shows 2 est badges with
+  the 43-year/8-truck basis; NatureScapes (real $6.1M revenue) shows NONE.
+  Other end-state checks on that page came back clean — contacts w/ channels,
+  listing history, documents, activity, shortlist stars, completeness chip,
+  market check, edit affordances all present and linked.
 - 📣 LANE B 8/5 ~20:25 [self-iterate] — **/list-building was silently
   off-thesis: it offered every screened subsector with no hint that the
   workers now skip most of them.** Building a Pool Services or HVAC list

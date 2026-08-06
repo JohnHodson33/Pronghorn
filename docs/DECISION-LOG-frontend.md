@@ -6,6 +6,18 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 58 (8/5 ~21:20) [self-iterate] — company profile: mark
+  estimates**. Critiqued the last un-reviewed surface. It's in good shape
+  (contacts+channels, listing history, docs, activity, stars, completeness,
+  market check, inline edits) — one real gap: Revenue/EBITDA tiles rendered
+  MODELLED ranges with only a "Click to edit" tooltip, so a model output was
+  indistinguishable from an entered figure, on a click-to-edit control. Added
+  an amber **est** badge + basis/confidence on hover. Verified both ways:
+  Chapman Air (derived) shows 2 badges; NatureScapes (real $6.1M) shows none.
+  Pattern worth repeating: the estimate-honesty rule was enforced on the
+  lists and quietly skipped on the detail page — **when a rule is added
+  late, sweep every surface that displays the same field, not just the one
+  that prompted it.**
 - **Loop iter 57 (8/5 ~20:25) [self-iterate] — /list-building focus flag**.
   The build form offered every screened subsector while the workers now skip
   most of them, so a Pool Services list would spend credits and then sit
