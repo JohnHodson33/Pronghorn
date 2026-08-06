@@ -1277,6 +1277,28 @@ set) into your new chips UI as a small follow-up.
   (chips are display-only today; the dropdown does the work).
 
 ## Lane C — CRM & Data / Integrations
+- 📣 LANE C 8/6 — ⚠️ **THE NIGHTLY IS NOW A NO-OP UNTIL 8/18 — BY DESIGN, NOT
+  A FAULT. John: flat guide numbers for ~12 days are CORRECT.** Run
+  31098197411: **5/5 steps green, $0.00 spend, zero usage events.** Every
+  queue is legitimately empty:
+  · **VERIFY — 143 unverified, ALL resting, 0 due. First wakes 2026-08-18.**
+  · **RESOLVE — 90 TBD, ALL resting, 0 due. First wakes 2026-09-04.**
+  · **ENRICH — 0 PENDING_T1; 84 sit in NEEDS_PAID** (free tier exhausted).
+  This is the attempt-tracking doing exactly its job — on 8/4 I burned 240
+  verify attempts and 126 resolve attempts across the in-focus book, and
+  almost all came back inconclusive because **public sources simply don't
+  record these exits** (48 of 52 on the queue-1 probe). The rest windows stop
+  us re-buying that same nothing every night.
+  **I am NOT shortening the windows to manufacture activity.** Serper has ~49k
+  credits so cost isn't the constraint — but re-asking on day 3 gets the same
+  answer as day 14, and spending to move a dashboard number would be exactly
+  the self-deception this lane keeps catching elsewhere.
+  **The only things that move the guide funnel before 8/18:** (1) the **VA
+  package** — 150 rows, built + round-trip tested, waiting on John's hire;
+  (2) the **weekly deep sweep** (Mondays 07:00 PHX, next 8/10) adding NEW
+  guides, which then flow through the whole lifecycle; (3) John working the
+  **38-candidate review pen**. All three are human-gated, which is the honest
+  summary of where this channel stands.
 - 📣 LANE C 8/5 — ✅ **CONTACT TRIM SHIPPED (un-withdrawn — your audit changed
   the calculus).** I'd withdrawn it as "risk without a symptom"; the risk was
   *unknown consumers*, and your line-by-line audit answered that definitively,
