@@ -6,6 +6,22 @@ DECISION-LOG.md and wires routes into Sidebar.tsx.
 ## 🔄 HANDOFF — session #8 (7/31 → 8/3) — successor resumes here
 
 ### 8/3 session (resumed after ~3d idle; CI auto-integrator now merges clean pushes)
+- **Loop iter 57 (8/5 ~20:25) [self-iterate] — /list-building focus flag**.
+  The build form offered every screened subsector while the workers now skip
+  most of them, so a Pool Services list would spend credits and then sit
+  un-enriched with no explanation. Out-of-focus chips now render amber +
+  "off-focus" with a tooltip; still clickable (flag, never block). Focus list
+  read from the same app_config the gate uses (via /api/costs
+  serperBurn.focusList) so UI and workers can't drift.
+  ⚠️ **My own bug, caught in verification**: exact-match compare flagged Pest
+  Control and Landscaping as off-focus — the focus list holds STEMS (PEST,
+  LANDSCAPE) vs taxonomy LABELS (Pest Control, Landscaping). A false
+  off-focus badge is worse than none: it asserts the workers skip something
+  they process. Replaced with shared-prefix matching (whole shorter token,
+  min 4) — verified all 15 labels classify correctly.
+  **Lesson: when two systems name the same concept differently, don't assume
+  the vocabularies line up — check every value, not the first one.**
+  Still NOT defaulting list views to focus — that's John's open call.
 - **Loop iter 56 (8/5 ~19:30) [self-iterate] — /outbox**. All threads closed
   and no asks, so I critiqued the outreach log (never reviewed before).
   Shipped: history bodies collapse to subject + first line (389 → 262 lines;

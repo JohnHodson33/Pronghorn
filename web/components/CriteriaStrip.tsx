@@ -7,6 +7,26 @@ import { useEffect, useState } from "react";
 
 type Taxon = { label: string; aliases: string[] };
 
+// The focus list holds canonical STEMS ("PEST", "LANDSCAPE", "TREE_CARE") while
+// the taxonomy carries human labels ("Pest Control", "Landscaping", "Tree
+// Care"), so an exact match wrongly flags Pest Control and Landscaping as
+// off-focus — worse than not flagging at all, since it claims the workers skip
+// something they process. Match on a shared prefix instead: the whole shorter
+// token (min 4 chars) must line up, which pairs PEST/PEST_CONTROL and
+// LANDSCAPE/LANDSCAPING while keeping PLUMBING and ROOFING out.
+const canon = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]+/g, "_");
+export function inFocus(label: string, focus: string[]): boolean {
+  const key = canon(label);
+  return focus.some((f) => {
+    const t = canon(f);
+    const need = Math.min(6, Math.min(t.length, key.length));
+    if (need < 4) return t === key;
+    let i = 0;
+    while (i < t.length && i < key.length && t[i] === key[i]) i++;
+    return i >= need;
+  });
+}
+
 export default function CriteriaStrip({
   onPickIndustry,
   onPickGeography,
@@ -17,6 +37,12 @@ export default function CriteriaStrip({
   const [subsectors, setSubsectors] = useState<string[]>([]);
   const [states, setStates] = useState<string[]>([]);
   const [sizeLine, setSizeLine] = useState<string | null>(null);
+  // FOCUS GATE (John 8/4: tree care primary; landscape/irrigation/lawn/pest
+  // ancillary). The scraper workers already SKIP out-of-focus rows, but this
+  // form still offers every screened subsector — so building a Pool Services
+  // list silently spends Serper credits the gate exists to protect. Flag it,
+  // never block it (John's rule) — the chip still works if he wants it.
+  const [focus, setFocus] = useState<string[] | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -38,6 +64,12 @@ export default function CriteriaStrip({
           );
         }
         setStates((c.priority_states ?? []) as string[]);
+        // same source of truth the gate reads (app_config focus_industries),
+        // surfaced by /api/costs — absent field just means "don't flag"
+        try {
+          const f = await fetch("/api/costs").then((r) => (r.ok ? r.json() : null));
+          if (Array.isArray(f?.serperBurn?.focusList)) setFocus(f.serperBurn.focusList as string[]);
+        } catch {}
         const money = (n: number | null) =>
           n === null ? null : n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : `$${Math.round(n / 1000)}K`;
         const lo = money(c.min_cash_flow === null ? null : Number(c.min_cash_flow));
@@ -55,16 +87,25 @@ export default function CriteriaStrip({
         <a href="/criteria" className="mr-1 font-semibold text-emerald-800 hover:underline">
           Screening criteria →
         </a>
-        {subsectors.map((s) => (
-          <button
-            key={s}
-            onClick={() => onPickIndustry(s)}
-            className="rounded-full border border-emerald-300 bg-white px-2.5 py-0.5 font-medium text-emerald-800 hover:bg-emerald-100"
-            title="Fill the industry field"
-          >
-            {s}
-          </button>
-        ))}
+        {subsectors.map((s) => {
+          const off = focus !== null && !inFocus(s, focus);
+          return (
+            <button
+              key={s}
+              onClick={() => onPickIndustry(s)}
+              className={`rounded-full border px-2.5 py-0.5 font-medium ${
+                off
+                  ? "border-amber-300 bg-white text-amber-800 hover:bg-amber-50"
+                  : "border-emerald-300 bg-white text-emerald-800 hover:bg-emerald-100"
+              }`}
+              title={off
+                ? `Outside the current thesis focus — the nightly workers skip ${s} rows, so a list built here won't get enriched or verified until the focus list changes. Still clickable if you want it.`
+                : "Fill the industry field"}
+            >
+              {s}{off && <span className="ml-1 opacity-70">off-focus</span>}
+            </button>
+          );
+        })}
         {states.map((s) => (
           <button
             key={s}

@@ -300,6 +300,29 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/5 ~20:25 [self-iterate] — **/list-building was silently
+  off-thesis: it offered every screened subsector with no hint that the
+  workers now skip most of them.** Building a Pool Services or HVAC list
+  spends Serper credits on rows the focus gate refuses to enrich or verify —
+  so the list just sits there half-built and John has no way to know why.
+  FIX (flag, never block — John's rule): out-of-focus subsector chips now
+  render amber with an **off-focus** tag and a tooltip saying the nightly
+  workers skip that industry, so a list built there won't get enriched until
+  the focus list changes. The chip still works if he wants it anyway. Focus
+  list is read from the SAME app_config source the gate uses (via
+  /api/costs `serperBurn.focusList`), so it can't drift from the workers.
+  Verified live: in-focus = Pest Control · Tree Care · Landscaping · Lawn
+  Care · Irrigation (exactly John's thesis); off-focus = Pool Services, HVAC,
+  Plumbing, Electrical, Roofing, Restoration, Lake/Pond, Windows & Doors,
+  Cleaning/Janitorial, Property Maintenance.
+  ⚠️ Caught in my own verification: an exact-match compare wrongly flagged
+  **Pest Control and Landscaping** as off-focus, because the focus list holds
+  stems (`PEST`, `LANDSCAPE`) while the taxonomy has labels ("Pest Control",
+  "Landscaping"). A false off-focus badge is worse than none — it claims the
+  workers skip something they process. Now matches on a shared prefix.
+  NOTE this is the *labelling* half only — I still have NOT defaulted any list
+  view to the focus industries, since that changes what John sees on open and
+  is his call (still unanswered).
 - 📣 LANE B 8/5 ~19:30 [self-iterate] — **/outbox critique + fix.** No open
   asks, so I opened the outreach log and judged it against the end-state rule
   (searchable/filterable/exportable, records clickable+linked). Findings:
