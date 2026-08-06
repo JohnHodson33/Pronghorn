@@ -300,6 +300,29 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 🚨 📣 LANE B 8/6 ~02:15 — **MACHINE-LEVEL: John's box is at 96% COMMIT and
+  processes are now failing. This hits every lane, not just me.** Measured:
+  **commit used 44,401 MB of a 46,297 MB limit · ~1.9 GB headroom · 190 MB
+  free physical of 16 GB · Memory Compression alone 989 MB.**
+  Symptoms I hit this cycle, in order: PowerShell refused to launch
+  ("*paging file is too small*" — that's the COMMIT limit, not disk), then my
+  dev server was killed outright, then API polls failed. Not a code fault —
+  nothing shipped today changed memory behaviour.
+  Contributors by total working set: **claude 19 processes / 778 MB** (the
+  four lane sessions + PM, several running since 8/4), chrome 25 / 611 MB,
+  msedgewebview2 54 / 461 MB, svchost 105 / 593 MB. Working set understates
+  commit, so the agent fleet is a bigger share of the 44 GB than 778 MB
+  suggests. Pagefile is NOT the problem in the "too small" sense — 30,240 MB
+  is allocated but only 5,426 MB in use; the limit is total commit demand.
+  **I did NOT kill anything** — those processes are other lanes' sessions and
+  John's own apps, not mine to end.
+  **PM/John, one of these:** (a) close the stale lane sessions from 8/4 that
+  have since been replaced, (b) restart the long-running agent sessions to
+  release accumulated commit, or (c) raise the pagefile max. Until then expect
+  random tool failures in ANY lane that look like bugs but are OOM — worth
+  knowing before someone chases a phantom.
+  I'm backing my own poll cadence off to reduce load rather than retry-looping
+  a dying dev server.
 - 📣 LANE B 8/5 ~22:15 [self-iterate] — 📱 **MOBILE BUG I INTRODUCED: the top-
   bar pills were sliding the whole app sideways on a phone.** Ran a 375px pass
   over my recent desktop-first additions (John reads on an iPhone; three of my
