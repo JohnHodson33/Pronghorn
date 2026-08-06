@@ -300,6 +300,64 @@ the handoff commit is the LAST thing you do, not the first thing you skip.
 - ⬜ SELF-ITERATE: audit every live source for coverage gaps + broken parses.
 
 ## Lane B — Frontend  (new `web/app/*`, `web/lib/*`, `web/components/*`; NOT Sidebar.tsx)
+- 📣 LANE B 8/5 ~21:20 [self-iterate] — **company profile showed MODELLED
+  revenue/EBITDA with no disclosure that they're estimates.** The stat tiles
+  rendered `~$2.8M–$5.2M` whose only tooltip was "Click to edit" — and since
+  they're inline-editable, a model output looked like a figure someone had
+  entered and could correct. The Size chip right beside them carried the full
+  basis + confidence; the money figures carried nothing. That's the honesty
+  rule ("never fake precision", basis+confidence stated) holding on the LISTS
+  but not on the page where John actually studies one company.
+  FIX: an amber **est** badge on Revenue/EBITDA whenever the figure is
+  derived, hover = "ESTIMATE — not a reported figure. Derived from <basis>
+  (~N–M employees) · <confidence> confidence. Click the number to replace it
+  with a real one."
+  Verified BOTH directions: Chapman Air (modelled) shows 2 est badges with
+  the 43-year/8-truck basis; NatureScapes (real $6.1M revenue) shows NONE.
+  Other end-state checks on that page came back clean — contacts w/ channels,
+  listing history, documents, activity, shortlist stars, completeness chip,
+  market check, edit affordances all present and linked.
+- 📣 LANE B 8/5 ~20:25 [self-iterate] — **/list-building was silently
+  off-thesis: it offered every screened subsector with no hint that the
+  workers now skip most of them.** Building a Pool Services or HVAC list
+  spends Serper credits on rows the focus gate refuses to enrich or verify —
+  so the list just sits there half-built and John has no way to know why.
+  FIX (flag, never block — John's rule): out-of-focus subsector chips now
+  render amber with an **off-focus** tag and a tooltip saying the nightly
+  workers skip that industry, so a list built there won't get enriched until
+  the focus list changes. The chip still works if he wants it anyway. Focus
+  list is read from the SAME app_config source the gate uses (via
+  /api/costs `serperBurn.focusList`), so it can't drift from the workers.
+  Verified live: in-focus = Pest Control · Tree Care · Landscaping · Lawn
+  Care · Irrigation (exactly John's thesis); off-focus = Pool Services, HVAC,
+  Plumbing, Electrical, Roofing, Restoration, Lake/Pond, Windows & Doors,
+  Cleaning/Janitorial, Property Maintenance.
+  ⚠️ Caught in my own verification: an exact-match compare wrongly flagged
+  **Pest Control and Landscaping** as off-focus, because the focus list holds
+  stems (`PEST`, `LANDSCAPE`) while the taxonomy has labels ("Pest Control",
+  "Landscaping"). A false off-focus badge is worse than none — it claims the
+  workers skip something they process. Now matches on a shared prefix.
+  NOTE this is the *labelling* half only — I still have NOT defaulted any list
+  view to the focus industries, since that changes what John sees on open and
+  is his call (still unanswered).
+- 📣 LANE B 8/5 ~19:30 [self-iterate] — **/outbox critique + fix.** No open
+  asks, so I opened the outreach log and judged it against the end-state rule
+  (searchable/filterable/exportable, records clickable+linked). Findings:
+  (1) 🔧 **FIXED — history printed every draft's FULL BODY inline**: 35 sent
+  emails × ~5 paragraphs = 389 lines of prose. You couldn't answer "have we
+  already written to this person?" without scrolling the whole log. Bodies now
+  collapse to subject + first line, click to expand (389 → 262 lines).
+  (2) 🔧 **FIXED — no search/filter/export** on a 35-row log, against the
+  standing every-list rule. Added search (name/email/subject/body), a status
+  filter, a live count, and CSV export of the filtered view. Verified:
+  "Sergio" → 1 of 35.
+  (3) ⬜ **STILL OPEN, not mine to guess**: history rows link to NOTHING —
+  `main a[href]` is empty. A sent draft names a person and a company but you
+  can't click through to either record, which breaks "every record linked to
+  its related records". The outbox row carries `listing_id` but not
+  contact/company ids. **LANE C: if outbox rows can carry `contact_id` /
+  `company_id` (or I can join via listing_id → listing → company), I'll wire
+  the links same-day** — say which is cheaper on your side.
 - 📣 LANE B 8/5 ~17:45 — ✅ **CONFIRMED: SHIP THE `contact` TRIM — but at the
   RESPONSE EDGE only, never in the select. One real trap, details below.**
   Audited every `contact.*` read in web/:

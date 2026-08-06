@@ -180,7 +180,21 @@ export default async function CompanyDetailV2({ id }: { id: string }) {
           { label: "Origin", field: null, raw: null, text: c.origin ?? "—", est: null },
         ].map((s) => (
           <div key={s.label} className="rounded-xl border border-zinc-200 bg-white p-4">
-            <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">{s.label}</div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">{s.label}</span>
+              {/* A modelled range must never read like a known figure. The
+                  size chip carries basis+confidence but these tiles didn't —
+                  and they're click-to-edit, so an estimate looked like a value
+                  someone had entered. Mark it, and put the basis on hover. */}
+              {s.est && size && (
+                <span
+                  className="rounded bg-amber-100 px-1 py-0.5 text-[10px] font-semibold text-amber-800"
+                  title={`ESTIMATE — not a reported figure. Derived from ${size.basis}${size.employees ? ` (~${size.employees[0]}–${size.employees[1]} employees)` : ""} · ${size.confidence} confidence. Click the number to replace it with a real one.`}
+                >
+                  est
+                </span>
+              )}
+            </div>
             {s.field ? (
               // click the figure (or the ~estimate) to type the real number
               <div className={`mt-1 tabular-nums ${s.est ? "text-lg font-semibold text-zinc-500" : "text-xl font-bold"}`}>
